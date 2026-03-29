@@ -324,8 +324,8 @@ function buildGallery() {
   );
   document.getElementById('playerGrid').innerHTML = list.map(p => `
     <div class="player-tile" onclick="openPlayer('${p.name.replace(/'/g,"\'")}')">
-      ${p.hero
-        ? `<img class="tile-img" src="${p.hero}" loading="lazy"
+      ${p.thumb
+        ? `<img class="tile-img" src="${p.thumb}" loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
            <div class="tile-placeholder">${ic(p.sport)}</div>`
         : `<div class="tile-placeholder">${ic(p.sport)}</div>`}
