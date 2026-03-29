@@ -129,8 +129,8 @@ html, body { height: 100%; overflow: hidden; background: var(--md-surface); colo
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; flex-shrink: 0;
 }
-.profile-meta { flex: 1; padding-top: 36px; }  /* top padding so it clears the overlap */
-.profile-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 8px; }
+.profile-meta { flex: 1; padding-top: 42px; }
+.profile-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 8px; padding-top: 4px; }
 .tonal-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--md-secondary-container); color: var(--md-on-secondary-container); border: none; padding: 7px 16px; border-radius: 50px; font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; }
 .tonal-btn:active { opacity: 0.75; }
 
@@ -165,12 +165,14 @@ html, body { height: 100%; overflow: hidden; background: var(--md-surface); colo
 .sheet.open { display: block; animation: sheetUp 0.32s cubic-bezier(0.2,0,0,1); }
 @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .sheet-handle { width: 32px; height: 4px; border-radius: 2px; background: var(--md-outline-variant); margin: 12px auto 0; }
-.sheet-img { width: 100%; aspect-ratio: 3/4; object-fit: contain; background: var(--md-surface); display: block; }
-.sheet-img-ph { width: 100%; aspect-ratio: 3/4; background: var(--md-surface); display: flex; align-items: center; justify-content: center; font-size: 80px; }
+.sheet-img-wrap { background: var(--md-surface); padding: 20px 32px 12px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+.sheet-img { width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); display: block; }
+.sheet-img-ph { width: 100%; aspect-ratio: 3/4; background: var(--md-surface-2); display: flex; align-items: center; justify-content: center; font-size: 80px; border-radius: 8px; }
 .sheet-body { padding: 18px 22px 8px; }
-.sheet-label { font-size: 12px; color: var(--md-primary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
-.sheet-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 2px; }
-.sheet-sub { font-size: 14px; color: var(--md-on-surface-variant); margin-bottom: 18px; }
+.sheet-label { font-size: 12px; color: var(--md-primary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.sheet-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.sheet-year { font-size: 14px; color: var(--md-on-surface-variant); margin-bottom: 2px; }
+.sheet-set-num { font-size: 14px; color: var(--md-on-surface-variant); margin-bottom: 18px; }
 .sheet-divider { height: 1px; background: var(--md-outline-variant); margin-bottom: 18px; }
 .sheet-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
 .sf-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--md-on-surface-variant); font-weight: 500; margin-bottom: 3px; }
@@ -418,22 +420,25 @@ function openCard(idx) {
   const c = filtered[idx]; if (!c) return;
   const ic_ = ic(curPlayer.sport);
   const graded = c.g && c.g !== '';
+  const setNum = [c.s||'Unknown Set', c.n ? `#${c.n}` : ''].filter(Boolean).join(' · ');
   document.getElementById('sheetBody').innerHTML = `
-    ${c.img
-      ? `<img class="sheet-img" src="${c.img}"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-         <div class="sheet-img-ph" style="display:none">${ic_}</div>`
-      : `<div class="sheet-img-ph">${ic_}</div>`}
+    <div class="sheet-img-wrap">
+      ${c.img
+        ? `<img class="sheet-img" src="${c.img}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+           <div class="sheet-img-ph" style="display:none">${ic_}</div>`
+        : `<div class="sheet-img-ph">${ic_}</div>`}
+    </div>
     <div class="sheet-body">
-      <div class="sheet-label">${curPlayer.name}</div>
-      <div class="sheet-title">${c.s||'Unknown Set'}</div>
-      <div class="sheet-sub">${c.y||''}${c.t?' · '+c.t:''}</div>
+      <div class="sheet-title">${curPlayer.name}</div>
+      <div class="sheet-year">${c.y||''}</div>
+      <div class="sheet-set-num">${setNum}</div>
       <div class="sheet-divider"></div>
       <div class="sheet-fields">
-        <div><div class="sf-lbl">Card #</div><div class="sf-val">${c.n?'#'+c.n:'—'}</div></div>
         <div><div class="sf-lbl">Grade</div><div class="sf-val ${graded?'accent':''}">${graded?(c.gc+' '+c.g).trim():'Raw'}</div></div>
-        <div><div class="sf-lbl">Team</div><div class="sf-val">${c.t||'—'}</div></div>
         <div><div class="sf-lbl">Paid</div><div class="sf-val ${c.p>0?'accent':''}">${fmt(c.p||0)}</div></div>
+        <div><div class="sf-lbl">Team</div><div class="sf-val">${c.t||'—'}</div></div>
+        <div><div class="sf-lbl">Manufacturer</div><div class="sf-val">${c.n?'#'+c.n:'—'}</div></div>
       </div>
       <button class="close-btn" onclick="closeSheet()">Done</button>
     </div>`;
