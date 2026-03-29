@@ -359,18 +359,18 @@ function openPlayer(name) {
   const ic_ = ic(curPlayer.sport);
 
   // Header image
-  document.getElementById('headerImgWrap').innerHTML = curPlayer.hero
-    ? `<img class="detail-header-img" src="${curPlayer.hero}"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-       <div class="detail-header-placeholder">${ic_}</div>`
-    : `<div class="detail-header-placeholder">${ic_}</div>`;
+document.getElementById('headerImgWrap').innerHTML = curPlayer.hero
+  ? `<img class="detail-header-img" src="${curPlayer.hero}" 
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+     <div class="detail-header-placeholder">${ic_}</div>`
+  : `<div class="detail-header-placeholder">${ic_}</div>`;
 
   // Profile thumb (straddles header boundary)
-  document.getElementById('profileThumbWrap').innerHTML = curPlayer.hero
-    ? `<img class="profile-thumb" src="${curPlayer.hero}"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-       <div class="profile-thumb-ph" style="display:none">${ic_}</div>`
-    : `<div class="profile-thumb-ph">${ic_}</div>`;
+document.getElementById('profileThumbWrap').innerHTML = curPlayer.thumb
+  ? `<img class="profile-thumb" src="${curPlayer.thumb}" 
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+     <div class="profile-thumb-ph" style="display:none">${ic_}</div>`
+  : `<div class="profile-thumb-ph">${ic_}</div>`;
 
   // Profile meta (name + edit button)
   document.getElementById('profileMeta').innerHTML = `
