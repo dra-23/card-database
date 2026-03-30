@@ -43,7 +43,7 @@
   --md-primary: #E8192C;
   --md-surface: #0A0A0A;
   --md-surface-1: #111111;
-  --md-surface-2: #1D1B20; /* Material 3 Surface Container */
+  --md-surface-2: #1D1B20;
   --md-on-surface: #E6E1E5;
   --md-on-surface-variant: #CAC4D0;
   --md-outline: #938F99;
@@ -51,15 +51,9 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: Absolute layering + display:none to kill the ghosting issue for good */
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); }
-
 #gallery-view { z-index: 5; display: flex; }
-#detail-view { 
-  z-index: 50; 
-  display: none; 
-  transform: translateX(100%); 
-}
+#detail-view { z-index: 50; display: none; transform: translateX(100%); }
 #detail-view.active { display: flex; transform: translateX(0); }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
@@ -79,13 +73,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* Card List */
+/* List */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* MATERIAL EXPRESSIVE SEARCH BAR */
+/* Material Expressive Search */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
   width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; 
@@ -97,7 +91,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .filter-bar { display: flex; gap: 16px; padding: 4px 16px 16px; border-bottom: 1px solid var(--md-surface-2); margin-bottom: 12px; }
 .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--md-on-surface-variant); font-weight: 500; }
 
-/* Switch */
 .switch { position: relative; width: 36px; height: 18px; display: inline-block; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; inset: 0; background: #49454F; border-radius: 20px; transition: .3s; cursor: pointer; }
@@ -105,10 +98,11 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 input:checked + .slider { background-color: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Edit / Add Buttons */
-.expressive-btn { width: 100%; background: var(--md-surface-2); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 16px; border-radius: 28px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-.expressive-btn:active { background: #333; }
+/* Buttons */
+.expressive-btn { width: 100%; background: var(--md-surface-2); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 16px; border-radius: 28px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
+.ebay-btn { background: #0064D2 !important; color: white !important; border: none !important; }
+.tcdb-btn { background: #FF8200 !important; color: white !important; border: none !important; }
 
 /* Sheets */
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 998; }
@@ -152,6 +146,16 @@ input:checked + .slider:before { transform: translateX(18px); }
       <button onclick="window.openPlayerForm(window.selectedPlayer.id)" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:5px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
+  
+  <div class="search-container">
+    <svg class="search-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" id="cardSearchInput" class="search-input" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+  </div>
+  <div class="filter-bar">
+    <div class="toggle-item"><span>Wishlist</span><label class="switch"><input type="checkbox" id="wishToggle" onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div>
+    <div class="toggle-item"><span>Graded</span><label class="switch"><input type="checkbox" id="gradToggle" onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div>
+  </div>
+
   <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
   <button class="fab" onclick="window.openCardForm()"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
 </div>
@@ -191,7 +195,6 @@ function renderGallery() {
     const bC = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
     return bC - aC || a.id.localeCompare(b.id);
   });
-
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
@@ -208,6 +211,8 @@ function renderGallery() {
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   if (!window.selectedPlayer) return;
+  cardSearchQuery = "";
+  document.getElementById('cardSearchInput').value = "";
   renderDetail(window.selectedPlayer);
   const dv = document.getElementById('detail-view');
   dv.style.display = 'flex';
@@ -234,26 +239,15 @@ function renderDetail(player) {
   if (showGradedOnly) cards = cards.filter(c => c.Grade && c.Grade.toString().trim() !== "");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
-  const searchHtml = `
-    <div class="search-container">
-      <svg class="search-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      <input type="text" class="search-input" placeholder="Search cards..." value="${cardSearchQuery}" oninput="window.updateCardSearch(this.value)">
-    </div>`;
-
-  const filterHtml = `<div class="filter-bar"><div class="toggle-item"><span>Wishlist</span><label class="switch"><input type="checkbox" ${showWishlistOnly?'checked':''} onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div><div class="toggle-item"><span>Graded</span><label class="switch"><input type="checkbox" ${showGradedOnly?'checked':''} onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div></div>`;
-
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
 
-  document.getElementById('cardList').innerHTML = searchHtml + filterHtml + cards.map(c => {
+  document.getElementById('cardList').innerHTML = cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
-    
-    // FIX: Safe conversion to string before calling .trim()
     const gradeStr = c.Grade ? c.Grade.toString().trim() : "";
     const gradeBadge = gradeStr !== "" ? `<span class="badge-inline">${gradeStr}</span>` : '';
-    
     return `<div class="card-item ${!isOwned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')" onmousedown="window.startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${gradeBadge}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
@@ -269,15 +263,72 @@ window.closeAll = () => { document.querySelectorAll('.sheet, .scrim').forEach(el
 window.handleCardTap = (id) => {
   if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  document.getElementById('cardDetailBody').innerHTML = `<img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;"><h2>${c.Year} ${c.Set}</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;"><div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number||'N/A'}</div></div><div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade||'Raw'}</div></div></div><button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card</button>`;
+  const q = encodeURIComponent(`${c.Year} ${c.Set} ${window.selectedPlayer.Player || window.selectedPlayer.id} #${c.Number} sold`);
+  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`;
+  const tcdbUrl = c.TCDB_Link || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
+
+  document.getElementById('cardDetailBody').innerHTML = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
+    <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;">
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade || 'Raw'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Sport</div><div>${c.Sport || 'Other'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Status</div><div>${(c.Owned===true||c.Owned==="true")?'Owned':'Wishlist'}</div></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:24px;">
+      <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn ebay-btn">Check eBay Sold Value</button></a>
+      <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn tcdb-btn">View on TCDB.com</button></a>
+      <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card Information</button>
+    </div>`;
   document.getElementById('cardDetailSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'card'}, '');
 };
 
+window.openCardForm = (id = null) => {
+  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
+  const isO = (c.Owned === true || c.Owned === "true");
+  let existingCo = "", existingGr = "";
+  if (c.Grade) { const p = c.Grade.toString().split(' '); existingCo = p[0]; existingGr = p.slice(1).join(' '); }
+
+  const cos = ["PSA", "BGS", "SGC", "CGC"];
+  const grades = []; for(let i=10; i>=1; i-=0.5) grades.push(i % 1 === 0 ? i.toString() : i.toFixed(1));
+
+  document.getElementById('modalBody').innerHTML = `
+    <h2 style="margin-bottom:24px;">Card</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>
+    ${window.input('cf-s', 'Set', c.Set)}
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div class="input-group"><div class="input-label">Co</div><select id="cf-co" class="select-field"><option value="">Raw</option>${cos.map(o=>`<option value="${o}" ${existingCo===o?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div class="input-group"><div class="input-label">Grade</div><select id="cf-gr" class="select-field"><option value="">N/A</option>${grades.map(g=>`<option value="${g}" ${existingGr===g?'selected':''}>${g}</option>`).join('')}</select></div>
+    </div>
+    <div class="input-group"><div class="input-label">Sport</div><select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>
+    ${window.input('cf-i', 'Image URL', c['App Image'])}
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div>
+    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
+  document.getElementById('modalSheet').classList.add('open');
+  document.getElementById('globalScrim').classList.add('open');
+  history.pushState({v:'modal'}, '');
+};
+
+window.saveCard = async (id) => {
+  const co = document.getElementById('cf-co').value;
+  const gr = document.getElementById('cf-gr').value;
+  const data = { 
+    Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, 
+    Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, 
+    Grade: co ? `${co} ${gr}` : gr, Sport: document.getElementById('cf-sp').value, 
+    "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked 
+  };
+  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
+  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
+  window.closeAll();
+};
+
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2>${window.input('pf-n', 'Name', p.Player || p.id)}${window.input('pf-m', 'Thumb', p['Main Image'])}${window.input('pf-b', 'Banner', p['Banner_Image'])}<button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
+  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2>${window.input('pf-n', 'Name', p.Player || p.id)}${window.input('pf-m', 'Thumb URL', p['Main Image'])}${window.input('pf-b', 'Banner URL', p['Banner_Image'])}<button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'modal'}, '');
@@ -287,25 +338,6 @@ window.savePlayer = async () => {
   const name = document.getElementById('pf-n').value;
   const data = { Player: name, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value };
   await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
-  window.closeAll();
-};
-
-window.openCardForm = (id = null) => {
-  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
-  const isO = (c.Owned === true || c.Owned === "true");
-  let co = "", gr = ""; if (c.Grade) { const p = c.Grade.toString().split(' '); co = p[0]; gr = p.slice(1).join(' '); }
-  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Card</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>${window.input('cf-s', 'Set', c.Set)}<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-co', 'Co (PSA)', co)}${window.input('cf-gr', 'Grade', gr)}</div><div class="input-group" style="position:relative; margin-bottom:20px;"><div class="input-label" style="position:absolute; left:12px; top:-8px; background:var(--md-surface-2); padding:0 4px; font-size:12px; color:var(--md-on-surface-variant);">Sport</div><select id="cf-sp" class="select-field" style="width:100%; background:transparent; border:1.5px solid var(--md-outline); border-radius:12px; padding:16px; color:#fff; font-size:16px; outline:none;"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>${window.input('cf-i', 'Image URL', c['App Image'])}<div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div><button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
-  document.getElementById('modalSheet').classList.add('open');
-  document.getElementById('globalScrim').classList.add('open');
-  history.pushState({v:'modal'}, '');
-};
-
-window.saveCard = async (id) => {
-  const co = document.getElementById('cf-co').value.toUpperCase();
-  const gr = document.getElementById('cf-gr').value;
-  const data = { Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, Grade: co ? `${co} ${gr}` : gr, Sport: document.getElementById('cf-sp').value, "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked };
-  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
-  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   window.closeAll();
 };
 
