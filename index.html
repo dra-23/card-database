@@ -78,16 +78,14 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .icon-btn { background: var(--md-surface-2); border: none; color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: #fff; border: none; background: transparent; cursor: pointer; }
 
-/* Player Gallery Tiles */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-/* FIX: Sport Icons floating on image */
 .sport-badge-row { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 6px; z-index: 10; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); }
 
-/* Card List Row Fixes */
+/* Card List Row */
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); cursor: pointer; transition: background 0.2s; position: relative; }
 .card-item:hover { background: var(--md-surface-2); }
 .card-item.selected { border: 2px solid var(--md-primary); background: var(--md-surface-2); }
@@ -95,13 +93,11 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; flex-shrink: 0; }
 .card-info { flex: 1; }
 
-/* FIX: Badge at far left (between image and text) */
-.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+/* FIX: Badge at FAR RIGHT */
+.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin-left: auto; }
 
-/* Search Bar */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; padding: 18px 24px 18px 56px; color: var(--md-on-surface); font-size: 16px; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.search-icon-svg { position: absolute; left: 32px; top: 26px; color: var(--md-on-surface-variant); pointer-events: none; }
 
 .filter-bar { display: flex; gap: 16px; padding: 4px 16px 16px; border-bottom: 1px solid var(--md-surface-2); margin-bottom: 12px; }
 .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--md-on-surface-variant); font-weight: 500; }
@@ -113,7 +109,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 input:checked + .slider { background-color: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Buttons & Sheets */
 .expressive-btn { width: 100%; background: var(--md-surface-2); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 16px; border-radius: 28px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
 .ebay-btn { background: #0064D2 !important; color: white !important; border: none !important; }
@@ -274,14 +269,14 @@ function renderDetail(player) {
     const isOwned = (c.Owned === true || c.Owned === "true");
     const company = c["Grading Company"] || "";
     const numericGrade = c.Grade || "";
+    // Combined "Company Grade" Logic
     const fullGrade = (company && numericGrade && company !== "Raw") ? `${company} ${numericGrade}` : (company !== "Raw" ? (company || numericGrade) : numericGrade);
     const badgeHtml = fullGrade ? `<span class="badge-inline">${fullGrade}</span>` : '';
     
-    // FIX: Badge moved to far left (after image)
     return `<div class="card-item ${!isOwned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      ${badgeHtml}
       <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
+      ${badgeHtml}
     </div>`;
   }).join('');
 }
