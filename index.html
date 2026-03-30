@@ -18,7 +18,7 @@
     persistentLocalCache, 
     persistentMultipleTabManager,
     collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
-  } from "https://https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
@@ -69,23 +69,21 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 .icon-btn { background: var(--md-surface-2); border: none; color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-/* Player Gallery Tiles - UPDATED */
+/* Player Gallery Tiles */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 16px; }
-.player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; /* Made images longer (3:4 aspect ratio) */ cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-/* REPLACED: Moved icons inside text bar on far right */
-.sport-badge-row { display: flex; align-items: center; gap: 4px; z-index: 5; flex-shrink: 0; }
-.sport-icon { background: rgba(255,255,255,0.7); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-
-/* NEW: Glassmorphism Text Background for Gallery */
 .tile-text-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px 16px; background: rgba(255,255,255,0.1); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: space-between; }
 .tile-title { font-weight: 700; font-size: 16px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 .tile-subtitle { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; }
 
-/* detail page specific */
+.sport-badge-row { display: flex; align-items: center; gap: 4px; z-index: 5; flex-shrink: 0; }
+.sport-icon { background: rgba(255,255,255,0.7); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+
+/* Master/Detail Split */
 .master-col { flex: 1; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-2); }
-.detail-pane { flex: 1.5; background: var(--md-surface-2); display: none; flex-direction: column; overflow-y: auto; padding: 32px; }
+.detail-pane { flex: 1; background: var(--md-surface-2); display: none; flex-direction: column; overflow-y: auto; padding: 32px; }
 
 @media (min-width: 1024px) {
   .detail-pane { display: flex; }
@@ -94,45 +92,53 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 .back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); border-radius: 50%; margin: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-/* Card List Row */
+/* Card List */
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; transition: transform 0.1s; position: relative; }
 .card-item.selected { border: 2px solid var(--md-primary); background: #fff; }
-.card-item.not-owned { opacity: 0.6; border: 1px dashed var(--md-outline); }
 .card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .card-info { flex: 1; }
 
 .badge-inline { background: #fff; color: var(--md-on-surface); font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin-left: auto; border: 1px solid var(--md-surface-1); }
 
-.search-container { padding: 8px 16px 12px; position: relative; }
-.search-input { width: 100%; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 18px 24px 18px 56px; color: var(--md-on-surface); font-size: 16px; outline: none; }
+/* MATERIAL 3 EXPRESSIVE BUTTONS - UPDATED */
+.expressive-btn { 
+  width: 100%; background: #fff; color: var(--md-on-surface); border: 1.5px solid var(--md-surface-1); 
+  padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; 
+  margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+.expressive-btn:active { transform: scale(0.96); background: var(--md-surface-2); }
 
-.filter-bar { display: flex; gap: 16px; padding: 4px 16px 16px; border-bottom: 1px solid var(--md-surface-2); margin-bottom: 12px; }
+.primary-btn { 
+  width: 100%; background: var(--md-primary); color: #fff; border: none; 
+  padding: 20px; border-radius: 24px; font-weight: 700; font-size: 16px; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(232, 25, 44, 0.3); transition: all 0.2s;
+}
+.primary-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+.ebay-btn { background: #0064D2 !important; color: white !important; border: none !important; }
+.tcdb-btn { background: #FF8200 !important; color: white !important; border: none !important; }
+
+/* Floating Action Button (FAB) Expressive */
+.fab { 
+  position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; 
+  width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); 
+  color: #fff; border: none; display: flex; align-items: center; justify-content: center; 
+  z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer;
+}
+
+.search-input { width: 100%; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 18px 24px; color: var(--md-on-surface); font-size: 16px; outline: none; margin-bottom: 8px; }
+.filter-bar { display: flex; gap: 16px; padding: 8px 16px 16px; }
 .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--md-on-surface-variant); font-weight: 500; }
 
-.switch { position: relative; width: 36px; height: 18px; display: inline-block; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; inset: 0; background: #C4C7C5; border-radius: 20px; transition: .3s; cursor: pointer; }
-.slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-input:checked + .slider { background-color: var(--md-primary); }
-input:checked + .slider:before { transform: translateX(18px); }
-
-.expressive-btn { width: 100%; background: #fff; color: var(--md-on-surface); border: 1px solid var(--md-surface-1); padding: 16px; border-radius: 28px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
-.ebay-btn { background: #0064D2 !important; color: white !important; }
-.tcdb-btn { background: #FF8200 !important; color: white !important; }
-
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.sheet.open { transform: translateY(0); }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 998; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
-.sheet.open { transform: translateY(0); }
-.sheet-handle { width: 40px; height: 4px; background: #E1E2E4; border-radius: 2px; margin: 12px auto; }
-.sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 4px 12px rgba(232, 25, 44, 0.4); cursor: pointer; }
-
-.input-group { position: relative; margin-bottom: 20px; }
-.input-field, .select-field { width: 100%; background: #fdfdfd; border: 1.5px solid var(--md-surface-1); border-radius: 12px; padding: 16px; color: var(--md-on-surface); font-size: 16px; outline: none; }
-.input-label { position: absolute; left: 12px; top: -8px; background: #fff; padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
+.input-group { position: relative; margin-bottom: 24px; }
+.input-field, .select-field { width: 100%; background: #fdfdfd; border: 1.5px solid var(--md-surface-1); border-radius: 16px; padding: 18px; color: var(--md-on-surface); font-size: 16px; outline: none; }
+.input-label { position: absolute; left: 16px; top: -10px; background: #fff; padding: 0 6px; font-size: 12px; font-weight: 700; color: var(--md-on-surface-variant); }
 </style>
 </head>
 <body>
@@ -149,18 +155,18 @@ input:checked + .slider:before { transform: translateX(18px); }
 <div class="view" id="detail-view">
   <div class="master-col">
     <div style="height: 25vh; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
-      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover; opacity: 0.8;">
+      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover; opacity: 1;">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
       <button class="back-btn" onclick="window.closeDetail()">
-        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
       </button>
     </div>
     <div id="playerHeaderUI" style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-      <img id="playerThumb" style="width:85px; height:115px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+      <img id="playerThumb" style="width:85px; height:115px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
       <div style="padding-bottom:5px;">
-        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display'; color: var(--md-on-surface);"></h2>
+        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
         <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant); font-weight:700;"></div>
-        <button id="editPlayerBtn" style="background:var(--md-surface-2); border:none; color:var(--md-on-surface); padding:5px 12px; border-radius:50px; font-size:11px; margin-top:8px; cursor:pointer; font-weight: 600;">Edit Profile</button>
+        <button id="editPlayerBtn" style="background:var(--md-surface-2); border:none; color:var(--md-on-surface); padding:8px 16px; border-radius:50px; font-size:12px; margin-top:10px; cursor:pointer; font-weight:700;">Edit Profile</button>
       </div>
     </div>
     <div class="search-container">
@@ -175,7 +181,7 @@ input:checked + .slider:before { transform: translateX(18px); }
   </div>
   <div class="detail-pane" id="desktopDetailPane">
     <div id="panePlaceholder" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3;">
-       <p>Select a card</p>
+       <p style="font-weight:700;">Select a card to preview</p>
     </div>
     <div id="paneContent" style="display:none;"></div>
   </div>
@@ -225,36 +231,42 @@ function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    
-    // UPDATED: Icons shift to right, text background re-added
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
-    
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
-      <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(255,255,255,0.4));"></div>
       <div class="tile-text-bar">
-        <div>
-          <div class="tile-title">${p.Player || p.id}</div>
-          <div class="tile-subtitle">${o} owned</div>
-        </div>
+        <div><div class="tile-title">${p.Player || p.id}</div><div class="tile-subtitle">${o} owned</div></div>
         <div class="sport-badge-row">${icons}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-// other detail views logic remain unchanged...
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   if (!window.selectedPlayer) return;
-  document.getElementById('editPlayerBtn').style.display = 'block';
-  history.pushState({v:'detail'}, '');
+  document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
+  document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
+  document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
+  cardSearchQuery = "";
+  document.getElementById('cardSearchInput').value = "";
+  document.getElementById('panePlaceholder').style.display = 'flex';
+  document.getElementById('paneContent').style.display = 'none';
+  renderDetail(window.selectedPlayer);
+  document.getElementById('editPlayerBtn').onclick = () => window.openPlayerForm(window.selectedPlayer.id);
+  document.getElementById('addCardFab').onclick = () => window.openCardForm();
+  const dv = document.getElementById('detail-view');
+  dv.style.display = 'flex';
+  setTimeout(() => dv.classList.add('active'), 10);
   history.pushState({v:'detail'}, '');
 };
 
 window.closeDetail = () => {
+  const dv = document.getElementById('detail-view');
+  dv.classList.remove('active');
+  setTimeout(() => { dv.style.display = 'none'; }, 300);
   window.selectedPlayer = null;
-  history.back();
+  if(history.state?.v === 'detail') history.back();
 };
 
 function renderDetail(player) {
@@ -267,9 +279,6 @@ function renderDetail(player) {
   if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
-  document.getElementById('playerName').innerText = player.Player || player.id;
-  document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
-  document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
 
   document.getElementById('cardList').innerHTML = cards.map(c => {
@@ -278,10 +287,10 @@ function renderDetail(player) {
     const numericGrade = c.Grade || "";
     const fullGrade = (company && numericGrade && company !== "Raw") ? `${company} ${numericGrade}` : (company !== "Raw" ? (company || numericGrade) : numericGrade);
     const badgeHtml = fullGrade ? `<span class="badge-inline">${fullGrade}</span>` : '';
-    
     return `<div class="card-item ${!isOwned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${badgeHtml}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
+      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
+      ${badgeHtml}
     </div>`;
   }).join('');
 }
