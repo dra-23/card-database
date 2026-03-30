@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A0A0A">
 <title>sleevd</title>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+SansDisplay:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -76,7 +76,19 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); border: 1px dashed #444; }
 .card-thumb { width: 55px !important; height: 75px !important; border-radius: 6px; object-fit: cover; background: #222; flex-shrink: 0; }
 
-.badge-inline { background: var(--md-primary); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
+/* FIX: Updated Graded Badge Design (White background, Black text) */
+.badge-inline { 
+  background: #FFFFFF; /* High contrast White */
+  color: #000000; /* Deep Black text */
+  font-size: 10px; 
+  font-weight: 700; 
+  padding: 3px 8px; /* Slightly more padding for the new style */
+  border-radius: 4px; 
+  margin-left: 8px; 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Added subtle shadow for depth on dark surface */
+}
 
 .filter-bar { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; margin-bottom: 8px; border-bottom: 1px solid var(--md-surface-2); }
 .filter-row { display: flex; align-items: center; justify-content: space-between; }
@@ -242,6 +254,8 @@ function renderDetail(player) {
 
   document.getElementById('cardList').innerHTML = filterHtml + displayCards.map(c => {
     const isOwned = c.Owned === true || c.Owned === "true";
+    
+    // logic to render the badge text
     const gradeBadge = (c.Grade && c.Grade.trim() !== "") ? `<span class="badge-inline">${c.Grade}</span>` : '';
     
     return `
@@ -287,7 +301,7 @@ window.openCardForm = (id = null) => {
   document.getElementById('cBody').innerHTML = `
     <h2 style="margin-bottom:24px; font-family:'Google Sans Display';">${id ? 'Edit' : 'Add'} Card</h2>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y','Year',c.Year)}${window.input('cf-n','Number',c.Number)}</div>
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">${window.input('cf-s','Set',c.Set)}${window.input('cf-g','Grade',c.Grade)}</div>
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">${window.input('cf-s','Set',c.Set)}${window.input('cf-g','Grade (e.g., BGS 8)',c.Grade)}</div>
     ${window.input('cf-sp','Sport',c.Sport)}${window.input('cf-i','Image URL',c['App Image'])}
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>I own this card</label></div>
     <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
