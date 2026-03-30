@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#c2caf0">
 <title>sleevd</title>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -49,6 +49,8 @@
   --md-on-surface: #1A1C1E;
   --md-on-surface-variant: #44474E;
   --md-outline: #74777F;
+  --soft-green: #4CAF50;
+  --soft-red: #EF5350;
 }
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
@@ -85,8 +87,9 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-badge-overlay { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 10; }
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
-.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
+.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; transition: opacity 0.2s; }
 .card-item.selected { border-color: var(--md-primary); background: #fff; }
+.card-item.not-owned { opacity: 0.5; filter: grayscale(0.5); }
 .card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .badge-inline { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: auto; border: 1.5px solid var(--md-surface-1); }
 
@@ -111,6 +114,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
 .input-field, .select-field { width: 100%; background: #fdfdfd; border: 1.5px solid var(--md-surface-1); border-radius: 16px; padding: 18px; color: var(--md-on-surface); font-size: 16px; outline: none; margin-bottom: 20px; }
+
+.status-tag { font-weight: 800; font-family: 'Google Sans Display'; font-size: 20px; }
+.status-tag.sleevd { color: var(--soft-green); }
+.status-tag.unsleevd { color: var(--soft-red); }
 </style>
 </head>
 <body>
@@ -266,7 +273,7 @@ function renderDetail(player) {
     const co = c["Grading Company"] || "";
     const gr = c.Grade || "";
     const badge = (co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : '';
-    return `<div class="card-item ${!isOwned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
+    return `<div class="card-item ${!isOwned ? 'not-owned' : ''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number || 'N/A'}</div></div>
       ${badge}
@@ -277,12 +284,16 @@ function renderDetail(player) {
 window.handleCardTap = (id) => {
   const c = ALL_CARDS.find(x => x.id === id);
   const co = c["Grading Company"] || "";
+  const isOwned = (c.Owned === true || c.Owned === "true");
   const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year + ' ' + c.Set + ' ' + window.selectedPlayer.Player + ' #' + c.Number + ' sold')}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
   
   const contentHtml = `
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
-    <h1 style="font-family:'Google Sans Display'; font-size:28px; margin-bottom:8px;">${c.Year} ${c.Set}</h1>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+      <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
+      <div class="status-tag ${isOwned ? 'sleevd' : 'unsleevd'}">${isOwned ? 'sleevd' : 'unsleevd'}</div>
+    </div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number || 'N/A'}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(co && co !== "Raw") ? co + ' ' + c.Grade : "Raw"}</div></div>
@@ -293,6 +304,7 @@ window.handleCardTap = (id) => {
       <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold Value</button></a>
       <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
       <button class="expressive-btn" style="background:var(--md-surface-1);" onclick="window.openCardForm('${c.id}')">Edit Card</button>
+      <button class="expressive-btn" style="background:var(--md-surface); border: 2px solid var(--md-surface-1);" onclick="window.toggleOwnership('${c.id}')">${isOwned ? 'Move to Wishlist' : 'Add to Collection'}</button>
     </div>`;
 
   if (window.innerWidth >= 1024) {
@@ -307,6 +319,14 @@ window.handleCardTap = (id) => {
     document.getElementById('globalScrim').style.display = 'block';
     history.pushState({v:'card'}, '');
   }
+};
+
+window.toggleOwnership = async (id) => {
+  const c = ALL_CARDS.find(x => x.id === id);
+  const newOwnedStatus = !(c.Owned === true || c.Owned === "true");
+  await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: newOwnedStatus }, { merge: true });
+  if (window.innerWidth < 1024) window.closeAll();
+  else window.handleCardTap(id);
 };
 
 window.closeAll = () => { document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); document.getElementById('globalScrim').style.display = 'none'; };
