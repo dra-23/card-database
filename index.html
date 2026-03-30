@@ -51,19 +51,22 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: Absolute layering. The views are hidden physically to prevent intercepting clicks. */
-.view { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+/* FIX: PHYSICAL ISOLATION
+   Gallery is base layer. Detail is display:none + pointer-events:none until active.
+*/
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
 
-#gallery-view { z-index: 10; visibility: visible; pointer-events: auto; }
+#gallery-view { z-index: 10; pointer-events: auto; }
+
 #detail-view { 
-  z-index: 20; 
+  z-index: 100; 
   transform: translateX(100%); 
-  visibility: hidden; 
+  display: none; /* PHYSICALLY REMOVED FROM CLICK ENGINE */
   pointer-events: none; 
 }
 #detail-view.active { 
+  display: flex; 
   transform: translateX(0); 
-  visibility: visible; 
   pointer-events: auto; 
 }
 
@@ -75,21 +78,21 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
 .icon-btn { background: var(--md-surface-2); border: 1px solid var(--md-outline); color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: #fff; border: none; background: transparent; cursor: pointer; }
+.back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 110; color: #fff; border: none; background: transparent; cursor: pointer; }
 
 /* Grid */
-.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; position: relative; z-index: 15; }
+.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 2px; }
 
-/* Badges */
+/* List */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* MATERIAL EXPRESSIVE SEARCH BAR */
+/* Material Expressive Search */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
   width: 100%; 
@@ -115,18 +118,19 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 input:checked + .slider { background-color: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Sheets & Forms */
-.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: -1; transition: opacity 0.3s; z-index: -1; }
-.scrim.open { opacity: 1; pointer-events: auto; z-index: 999; }
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; visibility: hidden; }
-.sheet.open { transform: translateY(0); visibility: visible; }
+/* Material Expressive Edit Button */
+.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; }
+
+/* Overlays */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: -1; }
+.scrim.open { opacity: 1; pointer-events: auto; z-index: 998; }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; pointer-events: none; }
+.sheet.open { transform: translateY(0); pointer-events: auto; }
 .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
-.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; }
-
 .input-group { position: relative; margin-bottom: 20px; }
 .input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
@@ -204,7 +208,7 @@ function renderGallery() {
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <div style="position:absolute; top:10px; right:10px; display:flex; gap:4px; z-index:5;">${icons}</div>
+      <div style="position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:2px; z-index:5;">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;"><div style="font-weight:700;">${p.Player || p.id}</div><div style="font-size:11px; opacity:0.8;">${o} owned</div></div>
@@ -215,12 +219,16 @@ function renderGallery() {
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   renderDetail(window.selectedPlayer);
-  document.getElementById('detail-view').classList.add('active');
+  const dv = document.getElementById('detail-view');
+  dv.style.display = 'flex'; // PHYSICALLY TURN ON
+  setTimeout(() => dv.classList.add('active'), 10);
   history.pushState({v:'detail'}, '');
 };
 
 window.closeDetail = () => {
-  document.getElementById('detail-view').classList.remove('active');
+  const dv = document.getElementById('detail-view');
+  dv.classList.remove('active');
+  setTimeout(() => { dv.style.display = 'none'; }, 400); // PHYSICALLY TURN OFF
   window.selectedPlayer = null;
   if(history.state?.v === 'detail') history.back();
 };
@@ -262,20 +270,30 @@ function renderDetail(player) {
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 window.toggleFilter = (t) => { if(t==='graded') showGradedOnly=!showGradedOnly; else showWishlistOnly=!showWishlistOnly; renderDetail(window.selectedPlayer); };
 
-window.closeAll = () => { document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open')); if (history.state?.v === 'modal' || history.state?.v === 'card') history.back(); };
+window.closeAll = () => {
+  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
+  if (history.state?.v === 'modal' || history.state?.v === 'card') history.back();
+};
 
 window.handleCardTap = (id) => {
   if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  document.getElementById('cardDetailBody').innerHTML = `<img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;"><h2>${c.Year} ${c.Set}</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;"><div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div><div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade || 'Raw'}</div></div></div><button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card Information</button>`;
-  document.getElementById('cardDetailSheet').classList.add('open');
+  document.getElementById('cardDetailBody').innerHTML = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
+    <h2>${c.Year} ${c.Set}</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade || 'Raw'}</div></div>
+    </div>
+    <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card</button>`;
+  document.getElementById('cardDetailSheet').classList.add('add', 'open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'card'}, '');
 };
 
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2>${window.input('pf-n', 'Player Name', p.Player || p.id)}${window.input('pf-m', 'Thumb URL', p['Main Image'])}${window.input('pf-b', 'Banner URL', p['Banner_Image'])}<button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
+  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2>${window.input('pf-n', 'Name', p.Player || p.id)}${window.input('pf-m', 'Thumb', p['Main Image'])}${window.input('pf-b', 'Banner', p['Banner_Image'])}<button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'modal'}, '');
