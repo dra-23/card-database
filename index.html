@@ -6,7 +6,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="logo.png">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#c2caf0">
 <title>sleevd</title>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
@@ -42,78 +42,114 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
-  --md-primary: #E8192C;
+  --md-primary: #c2caf0;
+  --md-accent: #dfe4fb;
   --md-surface: #FFFFFF;
   --md-surface-1: #c2caf0;
   --md-surface-2: #dfe4fb;
   --md-on-surface: #1A1C1E;
-  --md-on-surface-variant: #44474E;
-  --md-outline: #74777F;
 }
 
-html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+html, body { 
+  height: 100%; 
+  width: 100vw; 
+  overflow: hidden; 
+  background: var(--md-surface); 
+  color: var(--md-on-surface); 
+  font-family: 'Google Sans', sans-serif; 
+}
 
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); }
+.view { 
+  position: fixed; 
+  inset: 0; 
+  display: flex; 
+  flex-direction: column; 
+  background: var(--md-surface); 
+  transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); 
+  padding-bottom: env(safe-area-inset-bottom); 
+}
+
 #gallery-view { z-index: 5; display: flex; }
 #detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } 
 #detail-view.active { display: flex; transform: translateX(0); }
 
-.scroll-body { flex: 1; overflow-y: auto; padding-bottom: 100px; }
-.scroll-body::-webkit-scrollbar { display: none; }
-
-.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-1); }
-.detail-pane { width: 50%; background: var(--md-surface-2); display: none; flex-direction: column; overflow-y: auto; padding: 40px; }
-
-@media (min-width: 1024px) {
-  .master-col { width: 50%; }
-  .detail-pane { display: flex; }
+.top-bar { 
+  display: flex; 
+  align-items: center; 
+  padding: env(safe-area-inset-top) 16px 0; 
+  height: calc(75px + env(safe-area-inset-top)); 
+  flex-shrink: 0; 
+  background: var(--md-surface); 
 }
 
-.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
-.brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
+.scroll-body { flex: 1; overflow-y: auto; }
+.scroll-body::-webkit-scrollbar { display: none; }
 
-.total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
-.icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.brand { font-family: 'Google Sans Display'; font-size: 24px; font-weight: 700; flex: 1; }
+
+/* Slimmer Player Header */
+.player-hero { height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-2); }
+.hero-img { width:100%; height:100%; object-fit:cover; }
+.hero-scrim { position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface)); }
+.player-meta-row { margin-top:-40px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:12px; z-index:15; margin-bottom: 12px; }
+.player-thumb { width:80px; height:100px; border-radius:16px; border:3px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.tile-img { width: 100%; height: 100%; object-fit: cover; }
-.tile-text-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 14px 14px; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; color: #fff; }
-.tile-title { font-weight: 700; font-size: 14px; }
-.tile-subtitle { font-size: 10px; opacity: 0.8; }
-.sport-badge-row { display: flex; align-items: center; gap: 4px; }
-.sport-icon { background: rgba(255,255,255,0.2); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; }
+.tile-text-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 14px 14px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; color: var(--md-on-surface); }
 
-.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
-.card-item.selected { border-color: var(--md-primary); background: #fff; }
-.card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
-.card-info { flex: 1; min-width: 0; }
-.badge-inline { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: auto; border: 1.5px solid var(--md-surface-1); }
+.search-input { width: calc(100% - 32px); margin: 8px 16px; background: var(--md-surface-2); border: none; border-radius: 24px; padding: 16px 20px; font-size: 16px; outline: none; }
 
-.back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.6); backdrop-filter: blur(8px); border-radius: 14px; cursor: pointer; }
+/* Owned vs Wishlist Card Styling */
+.card-item { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  padding: 12px; 
+  border-radius: 20px; 
+  margin-bottom: 8px; 
+  background: #fff; 
+  cursor: pointer; 
+  border: 1.5px solid var(--md-accent);
+  transition: all 0.2s ease;
+}
+.card-item.not-owned { 
+  background: rgba(223, 228, 251, 0.3); 
+  border: 1.5px dashed var(--md-primary); 
+}
+.card-item.not-owned .card-thumb { filter: grayscale(1); opacity: 0.5; }
+.card-item.not-owned .card-info { opacity: 0.5; }
 
-.expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.expressive-btn:active { transform: scale(0.97); }
-.ebay-btn { background: #0064D2; color: white; }
-.tcdb-btn { background: #FF8200; color: white; }
-.edit-btn { background: var(--md-surface-1); color: var(--md-on-surface); }
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 20px; border-radius: 24px; font-weight: 700; font-size: 16px; cursor: pointer; }
+/* Sheet & Gestures */
+.sheet { 
+  position: fixed; 
+  bottom: 0; left: 0; right: 0; 
+  background: #fff; 
+  border-radius: 32px 32px 0 0; 
+  z-index: 1000; 
+  transform: translateY(100%); 
+  max-height: 92vh; 
+  display: flex; 
+  flex-direction: column; 
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
+  will-change: transform;
+}
+.sheet.open { transform: translateY(0); transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
+.sheet.dragging { transition: none; }
+.sheet-handle-container { padding: 16px 0; cursor: ns-resize; flex-shrink: 0; }
+.sheet-handle { width: 36px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto; }
 
-.filter-bar { display: flex; gap: 8px; padding: 12px 16px; }
-.filter-chip { border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--md-surface-1); background: #fff; transition: 0.2s; }
-.filter-chip.active { background: var(--md-surface-1); }
+.icon-btn { background: var(--md-accent); border: none; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.fab { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: #E8192C; color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 4px 16px rgba(232, 25, 44, 0.3); }
 
-.fab { position: absolute; bottom: 24px; right: 20px; width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer; }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 900; display: none; opacity: 0; transition: opacity 0.3s; }
+.scrim.open { display: block; opacity: 1; }
 
-.search-input { width: calc(100% - 32px); margin: 8px 16px; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 18px 24px; color: var(--md-on-surface); font-size: 16px; outline: none; }
+.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); border-right: 1px solid var(--md-accent); position: relative; }
+.detail-pane { width: 50%; background: #fcfcff; display: none; padding: 40px; overflow-y: auto; }
+@media (min-width: 1024px) { .master-col { width: 50%; } .detail-pane { display: flex; } }
 
-/* SHEET GESTURE STYLES */
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -8px 24px rgba(0,0,0,0.1); }
-.sheet.open { transform: translateY(0); }
-.sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; cursor: ns-resize; }
-.sheet-body { padding: 0 24px 24px; overflow-y: auto; touch-action: pan-y; }
-
-.input-field, .select-field { width: 100%; background: #fdfdfd; border: 1.5px solid var(--md-surface-1); border-radius: 16px; padding: 18px; color: var(--md-on-surface); font-size: 16px; outline: none; margin-bottom: 20px; }
+.badge-inline { background: var(--md-surface-2); color: var(--md-on-surface); font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; margin-left: auto; }
 </style>
 </head>
 <body>
@@ -121,78 +157,84 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 <div class="view" id="gallery-view">
   <div class="top-bar">
     <span class="brand">sleevd</span>
-    <div class="total-count-pill" id="totalOwnedCounter">0</div>
-    <button class="icon-btn" onclick="window.openPlayerForm()">
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </button>
+    <div id="totalOwnedCounter" style="background:var(--md-surface-2); padding:6px 12px; border-radius:50px; font-weight:800; font-size:13px; margin-right:8px;">0</div>
+    <button class="icon-btn" onclick="window.openPlayerForm()"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
   </div>
   <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
 </div>
 
 <div class="view" id="detail-view">
   <div class="master-col">
-    <div style="height: 220px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
-      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
-      <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-      <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+    <div class="top-bar" style="background:transparent; position:absolute; z-index:20; width:100%;">
+        <button class="icon-btn" onclick="window.closeDetail()" style="background:rgba(255,255,255,0.8);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <div style="flex:1"></div>
+        <button id="editPlayerBtn" class="icon-btn" style="background:rgba(255,255,255,0.8);"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
     </div>
-    <div style="margin-top:-60px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-      <img id="playerThumb" style="width:100px; height:130px; border-radius:20px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-      <div style="padding-bottom:10px;">
-        <h2 id="playerName" style="font-size:28px; font-family:'Google Sans Display';"></h2>
-        <div id="playerDetailCount" style="font-size:14px; font-weight:700; opacity:0.7;"></div>
-        <button id="editPlayerBtn" style="background:var(--md-surface-2); border:none; padding:8px 16px; border-radius:50px; font-size:12px; margin-top:10px; cursor:pointer; font-weight:700;">Edit Profile</button>
+    <div class="player-hero">
+      <img id="playerBanner" class="hero-img">
+      <div class="hero-scrim"></div>
+    </div>
+    <div class="player-meta-row">
+      <img id="playerThumb" class="player-thumb">
+      <div style="padding-bottom:4px;">
+        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
+        <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.6;"></div>
       </div>
     </div>
     <input type="text" id="cardSearchInput" class="search-input" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-    <div class="filter-bar">
-      <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-      <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
-    </div>
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
-    <button class="fab" id="addCardFab"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+    <button class="fab" id="addCardFab"><svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
   </div>
   <div class="detail-pane" id="desktopDetailPane">
-    <div id="panePlaceholder" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3;">
-       <p style="font-weight:700;">Select a card to view details</p>
-    </div>
+    <div id="panePlaceholder" style="flex:1; display:flex; align-items:center; justify-content:center; opacity:0.3; font-weight:700;">Select a card</div>
     <div id="paneContent" style="display:none;"></div>
   </div>
 </div>
 
 <div class="scrim" id="globalScrim" onclick="window.closeAll()"></div>
-
 <div class="sheet" id="cardDetailSheet">
-  <div class="sheet-handle" id="swipeHandle"></div>
+  <div class="sheet-handle-container" id="swipeHandle"><div class="sheet-handle"></div></div>
   <div class="sheet-body" id="cardDetailBody"></div>
 </div>
-
-<div class="sheet" id="modalSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-body" id="modalBody"></div>
-</div>
+<div class="sheet" id="modalSheet"><div class="sheet-handle-container"><div class="sheet-handle"></div></div><div class="sheet-body" id="modalBody"></div></div>
 
 <script>
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
-let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
-const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
+let cardSearchQuery = "";
+let currentY = 0, startY = 0, isDragging = false;
 
-// GESTURE LOGIC
-let touchStartY = 0;
-const cardSheet = document.getElementById('cardDetailSheet');
-cardSheet.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, {passive: true});
-cardSheet.addEventListener('touchend', e => {
-  const touchEndY = e.changedTouches[0].clientY;
-  if (touchEndY - touchStartY > 100) { window.closeAll(); }
+const sheet = document.getElementById('cardDetailSheet');
+const handle = document.getElementById('swipeHandle');
+
+// Flick to Dismiss logic
+handle.addEventListener('touchstart', e => {
+  startY = e.touches[0].clientY;
+  isDragging = true;
+  sheet.classList.add('dragging');
 }, {passive: true});
 
+window.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  let delta = e.touches[0].clientY - startY;
+  if (delta < 0) delta *= 0.2; // Resist top pull
+  currentY = delta;
+  sheet.style.transform = `translateY(${currentY}px)`;
+}, {passive: false});
+
+window.addEventListener('touchend', e => {
+  if (!isDragging) return;
+  isDragging = false;
+  sheet.classList.remove('dragging');
+  if (currentY > 150) { window.closeAll(); } 
+  else { sheet.style.transform = ''; }
+  currentY = 0;
+});
+
 function getCleanImg(url) {
-  if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
+  if (!url) return 'https://placehold.co/400x600/dfe4fb/999?text=No+Image';
   let cleanUrl = url.toString().trim();
   if (cleanUrl.includes('drive.google.com')) {
-    let id = "";
-    if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
-    else if (cleanUrl.includes('file/d/')) { id = cleanUrl.split('file/d/')[1].split('/')[0]; }
+    let id = cleanUrl.includes('id=') ? cleanUrl.split('id=')[1].split('&')[0] : cleanUrl.split('file/d/')[1].split('/')[0];
     return `https://drive.google.com/thumbnail?id=${id}&sz=1000`;
   }
   return cleanUrl;
@@ -203,7 +245,7 @@ window.startApp = function() {
   onSnapshot(collection(window.db, "Players"), snap => { ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderGallery(); });
   onSnapshot(collection(window.db, "Cards"), snap => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
+    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
     renderGallery();
     if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
@@ -211,20 +253,12 @@ window.startApp = function() {
 
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
-  const sorted = [...ALL_PLAYERS].sort((a,b) => {
-    const aC = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
-    const bC = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
-    return bC - aC || a.id.localeCompare(b.id);
-  });
-  grid.innerHTML = sorted.map(p => {
-    const pC = ALL_CARDS.filter(c => c.Player === p.id);
-    const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
+  grid.innerHTML = ALL_PLAYERS.map(p => {
+    const o = ALL_CARDS.filter(c => c.Player === p.id && (c.Owned === true || c.Owned === "true")).length;
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div class="tile-text-bar">
         <div><div class="tile-title">${p.Player || p.id}</div><div class="tile-subtitle">${o} owned</div></div>
-        <div class="sport-badge-row">${icons}</div>
       </div>
     </div>`;
   }).join('');
@@ -233,55 +267,39 @@ function renderGallery() {
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   if (!window.selectedPlayer) return;
-  document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
+  document.getElementById('playerName').innerText = window.selectedPlayer.Player;
   document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
-  cardSearchQuery = "";
-  document.getElementById('cardSearchInput').value = "";
-  document.getElementById('panePlaceholder').style.display = 'flex';
-  document.getElementById('paneContent').style.display = 'none';
   renderDetail(window.selectedPlayer);
   document.getElementById('editPlayerBtn').onclick = () => window.openPlayerForm(window.selectedPlayer.id);
   document.getElementById('addCardFab').onclick = () => window.openCardForm();
   document.getElementById('detail-view').style.display = 'flex';
   setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
-  history.pushState({v:'detail'}, '');
 };
 
 window.closeDetail = () => {
   document.getElementById('detail-view').classList.remove('active');
-  setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
-  window.selectedPlayer = null;
-  if(history.state?.v === 'detail') history.back();
+  setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 350);
 };
 
-window.toggleFilterChip = (type) => {
-  if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); }
-  else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
-  renderDetail(window.selectedPlayer);
-};
+window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
-  cards.sort((a,b) => (a.Year || "").toString().localeCompare((b.Year || "").toString()));
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
     cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
   }
-  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
-  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
-
-  document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
-
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c => c.Owned === true || c.Owned === "true").length} Owned`;
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
     const co = c["Grading Company"] || "";
     const gr = c.Grade || "";
     const badge = (co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : '';
-    
-    return `<div class="card-item ${!isOwned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
-      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number || 'N/A'}</div></div>
+    return `
+    <div class="card-item ${!isOwned ? 'not-owned' : ''}" onclick="window.handleCardTap('${c.id}')">
+      <img class="card-thumb" src="${getCleanImg(c['App Image'])}" style="width:50px; height:70px; border-radius:8px; object-fit:cover;">
+      <div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set}</div><div style="font-size:12px; opacity:0.6;">#${c.Number}</div></div>
       ${badge}
     </div>`;
   }).join('');
@@ -289,70 +307,54 @@ function renderDetail(player) {
 
 window.handleCardTap = (id) => {
   const c = ALL_CARDS.find(x => x.id === id);
-  const co = c["Grading Company"] || "";
-  const gr = c.Grade || "";
-  const fullGrade = (co && co !== "Raw") ? `${co} ${gr}` : "Raw";
-  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year + ' ' + c.Set + ' ' + window.selectedPlayer.Player + ' #' + c.Number + ' sold')}&LH_Sold=1&LH_Complete=1`;
-  const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
-
-  const contentHtml = `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-    <h1 style="font-family:'Google Sans Display'; font-size:32px; margin-bottom:8px;">${c.Year} ${c.Set}</h1>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin:24px 0; background:var(--md-surface); padding:24px; border-radius:20px; border: 1.5px solid var(--md-surface-1);">
-      <div><div style="font-size:12px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700; font-size:18px;">#${c.Number || 'N/A'}</div></div>
-      <div><div style="font-size:12px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700; font-size:18px;">${fullGrade}</div></div>
-      <div><div style="font-size:12px; font-weight:700; opacity:0.6;">Sport</div><div style="font-weight:700; font-size:18px;">${c.Sport || 'Other'}</div></div>
-      <div><div style="font-size:12px; font-weight:700; opacity:0.6;">Status</div><div style="font-weight:700; font-size:18px; color:${(c.Owned===true||c.Owned==="true")?'#2E7D32':'var(--md-primary)'};">${(c.Owned===true||c.Owned==="true")?'Owned':'Wishlist'}</div></div>
+  const isOwned = (c.Owned === true || c.Owned === "true");
+  const content = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:20px; ${!isOwned ? 'filter:grayscale(1); opacity:0.7;' : ''}">
+    <h2 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h2>
+    <div style="display:flex; gap:12px; margin: 16px 0;">
+       <div style="background:var(--md-surface-2); padding:12px; border-radius:12px; flex:1; text-align:center;">
+          <div style="font-size:10px; font-weight:700; opacity:0.5;">STATUS</div>
+          <div style="font-weight:700; color:${isOwned ? '#4A90E2' : '#E8192C'}">${isOwned ? 'OWNED' : 'WISHLIST'}</div>
+       </div>
+       <div style="background:var(--md-surface-2); padding:12px; border-radius:12px; flex:1; text-align:center;">
+          <div style="font-size:10px; font-weight:700; opacity:0.5;">NUMBER</div>
+          <div style="font-weight:700;">#${c.Number || 'N/A'}</div>
+       </div>
     </div>
-    <div style="display:flex; flex-direction:column; gap:12px;">
-      <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn ebay-btn">Check eBay Sold Value</button></a>
-      <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn tcdb-btn">View on TCDB.com</button></a>
-      <button class="expressive-btn edit-btn" onclick="window.openCardForm('${c.id}')">Edit Card Information</button>
-    </div>`;
-
+    <button class="primary-btn" style="width:100%; padding:18px; border-radius:16px; background:var(--md-primary); border:none; font-weight:700; color:var(--md-on-surface);" onclick="window.openCardForm('${c.id}')">Edit Card Information</button>
+  `;
+  
   if (window.innerWidth >= 1024) {
-    document.querySelectorAll('.card-item').forEach(el => el.classList.remove('selected'));
-    document.getElementById(`card-item-${c.id}`).classList.add('selected');
     document.getElementById('panePlaceholder').style.display = 'none';
-    const pc = document.getElementById('paneContent');
-    pc.innerHTML = contentHtml;
-    pc.style.display = 'block';
+    document.getElementById('paneContent').innerHTML = content;
+    document.getElementById('paneContent').style.display = 'block';
   } else {
-    document.getElementById('cardDetailBody').innerHTML = contentHtml;
-    document.getElementById('cardDetailSheet').classList.add('open');
+    document.getElementById('cardDetailBody').innerHTML = content;
+    sheet.classList.add('open');
     document.getElementById('globalScrim').classList.add('open');
-    history.pushState({v:'card'}, '');
   }
 };
 
-window.closeAll = () => { document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open')); };
-window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
+window.closeAll = () => { 
+  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open')); 
+  sheet.style.transform = '';
+};
 
 window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
-  const cos = ["PSA", "BGS", "SGC", "CGC"];
-  const grades = []; for(let i=10; i>=1; i-=0.5) grades.push(i % 1 === 0 ? i.toString() : i.toFixed(1));
   document.getElementById('modalBody').innerHTML = `
-    <h2 style="margin-bottom:24px;">Edit Card</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-      <input id="cf-y" class="input-field" placeholder="Year" value="${c.Year||''}">
-      <input id="cf-n" class="input-field" placeholder="Number" value="${c.Number||''}">
-    </div>
-    <input id="cf-s" class="input-field" placeholder="Set" value="${c.Set||''}">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-      <select id="cf-co" class="select-field"><option value="">Raw</option>${cos.map(o=>`<option value="${o}" ${c["Grading Company"]===o?'selected':''}>${o}</option>`).join('')}</select>
-      <select id="cf-gr" class="select-field"><option value="">N/A</option>${grades.map(g=>`<option value="${g}" ${(c.Grade||"").toString()===g?'selected':''}>${g}</option>`).join('')}</select>
-    </div>
-    <select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select>
-    <input id="cf-i" class="input-field" placeholder="Image URL" value="${c['App Image']||''}">
-    <input id="cf-t" class="input-field" placeholder="TCDB Link" value="${c['Card Information']||''}">
-    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
+    <h2 style="margin-bottom:20px;">Card Editor</h2>
+    <input id="cf-y" class="search-input" style="width:100%; margin:0 0 12px 0;" placeholder="Year" value="${c.Year||''}">
+    <input id="cf-s" class="search-input" style="width:100%; margin:0 0 12px 0;" placeholder="Set" value="${c.Set||''}">
+    <input id="cf-n" class="search-input" style="width:100%; margin:0 0 12px 0;" placeholder="Number" value="${c.Number||''}">
+    <button class="primary-btn" style="width:100%; padding:18px; border-radius:16px; background:#1A1C1E; color:#fff; border:none; font-weight:700;" onclick="window.saveCard('${id||''}')">Save Card</button>
+  `;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
 };
 
 window.saveCard = async (id) => {
-  const data = { Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, "Grading Company": document.getElementById('cf-co').value, Grade: document.getElementById('cf-gr').value, Sport: document.getElementById('cf-sp').value, "App Image": document.getElementById('cf-i').value, "Card Information": document.getElementById('cf-t').value, Owned: true };
+  const data = { Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, Owned: true };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   window.closeAll();
@@ -360,7 +362,13 @@ window.saveCard = async (id) => {
 
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2><input id="pf-n" class="input-field" value="${p.Player||p.id||''}"> <input id="pf-m" class="input-field" value="${p['Main Image']||''}"> <input id="pf-b" class="input-field" value="${p['Banner_Image']||''}"> <button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
+  document.getElementById('modalBody').innerHTML = `
+    <h2 style="margin-bottom:20px;">Player Editor</h2>
+    <input id="pf-n" class="search-input" style="width:100%; margin:0 0 12px 0;" placeholder="Name" value="${p.Player||''}">
+    <input id="pf-m" class="search-input" style="width:100%; margin:0 0 12px 0;" placeholder="Main Image URL" value="${p['Main Image']||''}">
+    <input id="pf-b" class="search-input" style="width:100%; margin:0 0 12px 0;" placeholder="Banner URL" value="${p['Banner_Image']||''}">
+    <button class="primary-btn" style="width:100%; padding:18px; border-radius:16px; background:#1A1C1E; color:#fff; border:none; font-weight:700;" onclick="window.savePlayer()">Save Player</button>
+  `;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
 };
@@ -370,8 +378,6 @@ window.savePlayer = async () => {
   await window.fs.setDoc(window.fs.doc(window.db, "Players", data.Player), data, {merge:true});
   window.closeAll();
 };
-
-window.onpopstate = (e) => { document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open')); if (e.state?.v !== 'detail') { window.closeDetail(); } };
 </script>
 </body>
 </html>
