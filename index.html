@@ -51,11 +51,25 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: Z-Index and Display:none to resolve Ghosting/Unclickable players */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); padding-top: var(--safe-top); z-index: 10; display: none; }
-#gallery-view { z-index: 5; display: flex; }
-#detail-view { z-index: 20; transform: translateX(100%); }
-#detail-view.active { transform: translateX(0); display: flex; }
+/* FIX: ULTIMATE GHOSTING SOLUTION
+  Detail view is hidden via visibility AND pointer-events AND display:none 
+  when not active to ensure MJ and others are clickable.
+*/
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); padding-top: var(--safe-top); z-index: 10; }
+#gallery-view { z-index: 5; display: flex; visibility: visible; pointer-events: auto; }
+#detail-view { 
+  z-index: 20; 
+  transform: translateX(100%); 
+  display: none; 
+  visibility: hidden; 
+  pointer-events: none; 
+}
+#detail-view.active { 
+  display: flex; 
+  transform: translateX(0); 
+  visibility: visible; 
+  pointer-events: auto; 
+}
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -196,12 +210,18 @@ function renderGallery() {
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   renderDetail(window.selectedPlayer);
-  document.getElementById('detail-view').classList.add('active');
+  document.getElementById('detail-view').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('detail-view').classList.add('active');
+  }, 10);
   history.pushState({v:'detail'}, '');
 };
 
 window.closeDetail = () => {
   document.getElementById('detail-view').classList.remove('active');
+  setTimeout(() => {
+    document.getElementById('detail-view').style.display = 'none';
+  }, 400);
   window.selectedPlayer = null;
   if(history.state?.v === 'detail') history.back();
 };
