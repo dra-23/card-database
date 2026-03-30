@@ -51,10 +51,9 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: Z-Index Management to prevent click-blocking */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); padding-top: var(--safe-top); z-index: 10; }
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); padding-top: var(--safe-top); z-index: 10; pointer-events: auto; }
 #gallery-view { z-index: 5; }
-#detail-view { z-index: 20; transform: translateX(100%); visibility: hidden; } /* visibility:hidden kills all click interaction */
+#detail-view { z-index: 20; transform: translateX(100%); visibility: hidden; }
 #detail-view.active { transform: translateX(0); visibility: visible; }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
@@ -67,22 +66,23 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .icon-btn { background: var(--md-surface-2); border: 1px solid var(--md-outline); color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 .back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: #fff; border: none; background: transparent; }
 
-/* Grid */
+/* Grid & Icons */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; transform: translateZ(0); }
+.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* List */
+/* List & Cards */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; }
-.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* Search/Filter */
-.search-container { padding: 0 16px 12px; position: relative; }
-.search-input { width: 100%; background: var(--md-surface-2); border: 1px solid var(--md-outline); border-radius: 16px; padding: 12px 16px 12px 44px; color: #fff; outline: none; }
+/* Filter UI */
+.search-container { padding: 0 16px 12px; }
+.search-input { width: 100%; background: var(--md-surface-2); border: 1px solid var(--md-outline); border-radius: 16px; padding: 12px 16px; color: #fff; outline: none; }
 .filter-bar { display: flex; gap: 16px; padding: 8px 16px 16px; border-bottom: 1px solid var(--md-surface-2); margin-bottom: 12px; }
-.toggle-text { font-size: 13px; font-weight: 600; color: var(--md-on-surface-variant); }
+.toggle-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--md-on-surface-variant); }
 
 /* Switch */
 .switch { position: relative; width: 36px; height: 18px; display: inline-block; }
@@ -92,7 +92,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 input:checked + .slider { background: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Sheets & Scrims */
+/* Sheets */
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; visibility: hidden; }
@@ -100,7 +100,9 @@ input:checked + .slider:before { transform: translateX(18px); }
 .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 50; }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+/* Form Elements */
 .input-group { position: relative; margin-bottom: 20px; }
 .input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
@@ -146,6 +148,8 @@ let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false, lpTim
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
+window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
+
 function getCleanImg(url) {
   if (!url) return '';
   if (url.includes('tcdb.com')) return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(url)}`;
@@ -165,9 +169,22 @@ window.startApp = function() {
 
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
-  grid.innerHTML = ALL_PLAYERS.map(p => {
-    const o = ALL_CARDS.filter(c => c.Player === p.id && (c.Owned === true || c.Owned === "true")).length;
+  // SORTING: Most owned to least owned
+  const sorted = [...ALL_PLAYERS].sort((a,b) => {
+    const aCount = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
+    const bCount = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
+    return bCount - aCount;
+  });
+
+  grid.innerHTML = sorted.map(p => {
+    const pC = ALL_CARDS.filter(c => c.Player === p.id);
+    const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
+    
+    // RESTORE SPORT ICONS (Multi-sport logic)
+    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
+
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
+      <div style="position:absolute; top:10px; right:10px; display:flex; gap:4px; z-index:5;">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;"><div style="font-weight:700;">${p.Player || p.id}</div><div style="font-size:11px; opacity:0.8;">${o} owned</div></div>
@@ -175,7 +192,6 @@ function renderGallery() {
   }).join('');
 }
 
-// FIX: Robust Open/Close logic for Detail View
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   renderDetail(window.selectedPlayer);
@@ -201,7 +217,7 @@ function renderDetail(player) {
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
   const searchHtml = `<div class="search-container"><input type="text" class="search-input" placeholder="Search..." oninput="window.updateCardSearch(this.value)"></div>`;
-  const filterHtml = `<div class="filter-bar"><div class="filter-item"><span class="toggle-text">Wishlist</span><label class="switch"><input type="checkbox" ${showWishlistOnly?'checked':''} onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div><div class="filter-item"><span class="toggle-text">Graded</span><label class="switch"><input type="checkbox" ${showGradedOnly?'checked':''} onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div></div>`;
+  const filterHtml = `<div class="filter-bar"><div class="toggle-item"><span>Wishlist</span><label class="switch"><input type="checkbox" ${showWishlistOnly?'checked':''} onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div><div class="toggle-item"><span>Graded</span><label class="switch"><input type="checkbox" ${showGradedOnly?'checked':''} onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div></div>`;
 
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
@@ -209,8 +225,8 @@ function renderDetail(player) {
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c => c.Owned === true || c.Owned === "true").length} Owned`;
 
   document.getElementById('cardList').innerHTML = searchHtml + filterHtml + cards.map(c => {
-    const isOwned = c.Owned === true || c.Owned === "true";
-    const gradeBadge = c.Grade ? `<span class="badge-inline">${c.Grade}</span>` : '';
+    const isOwned = (c.Owned === true || c.Owned === "true");
+    const gradeBadge = (c.Grade && c.Grade.trim() !== "") ? `<span class="badge-inline">${c.Grade}</span>` : '';
     return `<div class="card-item ${!isOwned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')" onmousedown="window.startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${gradeBadge}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
@@ -229,29 +245,99 @@ window.closeAll = () => {
 window.handleCardTap = (id) => {
   if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  document.getElementById('cardDetailBody').innerHTML = `<img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;"><h2>${c.Year} ${c.Set}</h2><p>Grade: ${c.Grade || 'Raw'}</p>`;
+  // RESTORE CARD DETAIL INFORMATION
+  document.getElementById('cardDetailBody').innerHTML = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
+    <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade || 'Raw'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Sport</div><div>${c.Sport || 'Other'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Status</div><div>${(c.Owned===true||c.Owned==="true")?'Owned':'Wishlist'}</div></div>
+    </div>
+    <button class="primary-btn" onclick="window.openCardForm('${c.id}')" style="background:#333; margin-top:12px;">Edit Card</button>
+  `;
   document.getElementById('cardDetailSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'card'}, '');
 };
 
-window.startLP = (id) => { window.isLP = false; window.lpTimer = setTimeout(() => { window.isLP = true; window.openCardForm(id); }, 600); };
+/* REBUILD FORMS */
+window.openPlayerForm = (id = null) => {
+  const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
+  document.getElementById('modalBody').innerHTML = `
+    <h2 style="margin-bottom:24px;">${id ? 'Edit' : 'Add'} Player</h2>
+    ${window.input('pf-n', 'Player Name', p.Player || p.id)}
+    ${window.input('pf-m', 'Thumb URL', p['Main Image'])}
+    ${window.input('pf-b', 'Banner URL', p['Banner_Image'])}
+    <button class="primary-btn" onclick="window.savePlayer()">Save Player</button>
+  `;
+  document.getElementById('modalSheet').classList.add('open');
+  document.getElementById('globalScrim').classList.add('open');
+  history.pushState({v:'modal'}, '');
+};
 
-window.onpopstate = (e) => {
-  const state = e.state || {};
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (state.v !== 'detail') {
-    document.getElementById('detail-view').classList.remove('active');
-    window.selectedPlayer = null;
-  }
+window.savePlayer = async () => {
+  const name = document.getElementById('pf-n').value;
+  const data = { Player: name, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value };
+  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
+  window.closeAll();
 };
 
 window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `<h2>Card</h2><button class="primary-btn" onclick="window.saveCard('${id||''}')">Save</button>`;
+  const isO = (c.Owned === true || c.Owned === "true");
+  let co = "", gr = ""; if (c.Grade) { const p = c.Grade.split(' '); co = p[0]; gr = p.slice(1).join(' '); }
+
+  document.getElementById('modalBody').innerHTML = `
+    <h2 style="margin-bottom:24px;">${id ? 'Edit' : 'Add'} Card</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      ${window.input('cf-y', 'Year', c.Year)}
+      ${window.input('cf-n', 'Number', c.Number)}
+    </div>
+    ${window.input('cf-s', 'Set', c.Set)}
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      ${window.input('cf-co', 'Co (PSA)', co)}
+      ${window.input('cf-gr', 'Grade', gr)}
+    </div>
+    <div class="input-group">
+      <div class="input-label">Sport</div>
+      <select id="cf-sp" class="select-field">
+        <option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option>
+        <option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option>
+        <option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option>
+      </select>
+    </div>
+    ${window.input('cf-i', 'Image URL', c['App Image'])}
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+      <input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label>
+    </div>
+    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>
+  `;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'modal'}, '');
+};
+
+window.saveCard = async (id) => {
+  const co = document.getElementById('cf-co').value.toUpperCase();
+  const gr = document.getElementById('cf-gr').value;
+  const data = { 
+    Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, 
+    Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value,
+    Grade: co ? `${co} ${gr}` : gr, Sport: document.getElementById('cf-sp').value,
+    "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked
+  };
+  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
+  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
+  window.closeAll();
+};
+
+window.startLP = (id) => { window.isLP = false; window.lpTimer = setTimeout(() => { window.isLP = true; window.openCardForm(id); }, 600); };
+window.onpopstate = (e) => {
+  const state = e.state || {};
+  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
+  if (state.v !== 'detail') { document.getElementById('detail-view').classList.remove('active'); window.selectedPlayer = null; }
 };
 </script>
 </body>
