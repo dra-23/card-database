@@ -28,7 +28,6 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    // Persistence helps with the quota issue by reading from local cache
     enableIndexedDbPersistence(db).catch(() => {});
     window.db = db;
     window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
@@ -52,22 +51,18 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: ULTIMATE CLICKABILITY SOLUTION
-  We use display: none on the detail view until it is needed.
-  This ensures the Gallery (Z-index 10) is the ONLY thing the browser sees for touches.
+/* FIX: To prevent ghosting, we only render the detail view when it is active.
+  We use z-index and explicit display toggling.
 */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1); }
 
-#gallery-view { z-index: 10; display: flex; }
+#gallery-view { z-index: 5; }
 #detail-view { 
   z-index: 50; 
   transform: translateX(100%); 
-  display: none; /* Physically gone from the touch engine */
+  display: none; 
 }
-#detail-view.active { 
-  display: flex; 
-  transform: translateX(0); 
-}
+#detail-view.active { display: flex; transform: translateX(0); }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -81,17 +76,37 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 /* Grid & Icons */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; isolation: isolate; }
+.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* List & Badges */
+/* Card List */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; }
-.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* Toggle Switch */
+/* MATERIAL EXPRESSIVE SEARCH BAR */
+.search-container { padding: 8px 16px 12px; position: relative; }
+.search-input { 
+  width: 100%; 
+  background: var(--md-surface-2); 
+  border: none; 
+  border-radius: 28px; 
+  padding: 16px 20px 16px 48px; 
+  color: #fff; 
+  font-size: 16px; 
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--md-outline);
+  transition: box-shadow 0.2s;
+}
+.search-input:focus { box-shadow: inset 0 0 0 2px var(--md-primary); }
+.search-icon-svg { position: absolute; left: 32px; top: 24px; color: var(--md-on-surface-variant); pointer-events: none; }
+
+.filter-bar { display: flex; gap: 16px; padding: 4px 16px 16px; border-bottom: 1px solid var(--md-surface-2); margin-bottom: 12px; }
+.toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--md-on-surface-variant); }
+
+/* Switch */
 .switch { position: relative; width: 36px; height: 18px; display: inline-block; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; inset: 0; background: #333; border-radius: 20px; transition: .3s; cursor: pointer; }
@@ -99,24 +114,29 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 input:checked + .slider { background: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Material Expressive Edit Button */
-.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-/* Sheets */
+/* Scrims & Sheets */
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; visibility: hidden; }
 .sheet.open { transform: translateY(0); visibility: visible; }
 .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
-.input-group { position: relative; margin-bottom: 20px; }
-.input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
-.input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
+.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; }
 </style>
 </head>
 <body>
+
+<div class="view" id="gallery-view">
+  <div class="top-bar">
+    <span class="brand">sleevd</span>
+    <div class="total-count-pill" id="totalOwnedCounter">0</div>
+    <button class="icon-btn" onclick="window.openPlayerForm()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
+  </div>
+  <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
+</div>
 
 <div class="view" id="detail-view">
   <div style="height: 25vh; position: relative; flex-shrink: 0; background: #000;">
@@ -138,15 +158,6 @@ input:checked + .slider:before { transform: translateX(18px); }
   <button class="fab" onclick="window.openCardForm()"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
 </div>
 
-<div class="view" id="gallery-view">
-  <div class="top-bar">
-    <span class="brand">sleevd</span>
-    <div class="total-count-pill" id="totalOwnedCounter">0</div>
-    <button class="icon-btn" onclick="window.openPlayerForm()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
-  </div>
-  <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
-</div>
-
 <div class="scrim" id="globalScrim" onclick="window.closeAll()"></div>
 <div class="sheet" id="cardDetailSheet"><div class="sheet-handle"></div><div class="sheet-body" id="cardDetailBody"></div></div>
 <div class="sheet" id="modalSheet"><div class="sheet-handle"></div><div class="sheet-body" id="modalBody"></div></div>
@@ -156,7 +167,7 @@ let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false, lpTim
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
-window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
+window.input = (id, label, val) => `<div class="input-group" style="position:relative; margin-bottom:20px;"><div class="input-label" style="position:absolute; left:12px; top:-8px; background:var(--md-surface-2); padding:0 4px; font-size:12px; color:var(--md-on-surface-variant);">${label}</div><input id="${id}" class="input-field" style="width:100%; background:transparent; border:1.5px solid var(--md-outline); border-radius:12px; padding:16px; color:#fff; font-size:16px; outline:none;" value="${val || ''}"></div>`;
 
 function getCleanImg(url) {
   if (!url) return '';
@@ -200,7 +211,7 @@ window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   renderDetail(window.selectedPlayer);
   const dv = document.getElementById('detail-view');
-  dv.style.display = 'flex'; // PHYSICAL TURN ON
+  dv.style.display = 'flex';
   setTimeout(() => dv.classList.add('active'), 10);
   history.pushState({v:'detail'}, '');
 };
@@ -208,9 +219,7 @@ window.openDetail = (id) => {
 window.closeDetail = () => {
   const dv = document.getElementById('detail-view');
   dv.classList.remove('active');
-  setTimeout(() => {
-    dv.style.display = 'none'; // PHYSICAL TURN OFF
-  }, 400);
+  setTimeout(() => dv.style.display = 'none', 400);
   window.selectedPlayer = null;
   if(history.state?.v === 'detail') history.back();
 };
@@ -226,8 +235,17 @@ function renderDetail(player) {
   if (showGradedOnly) cards = cards.filter(c => c.Grade && c.Grade.trim() !== "");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
-  const searchHtml = `<div class="search-container"><input type="text" class="search-input" placeholder="Search..." oninput="window.updateCardSearch(this.value)"></div>`;
-  const filterHtml = `<div class="filter-bar"><div class="toggle-item"><span>Wishlist</span><label class="switch"><input type="checkbox" ${showWishlistOnly?'checked':''} onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div><div class="toggle-item"><span>Graded</span><label class="switch"><input type="checkbox" ${showGradedOnly?'checked':''} onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div></div>`;
+  const searchHtml = `
+    <div class="search-container">
+      <svg class="search-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" class="search-input" placeholder="Search cards..." value="${cardSearchQuery}" oninput="window.updateCardSearch(this.value)">
+    </div>`;
+
+  const filterHtml = `
+    <div class="filter-bar">
+      <div class="toggle-item"><span>Wishlist</span><label class="switch"><input type="checkbox" ${showWishlistOnly?'checked':''} onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div>
+      <div class="toggle-item"><span>Graded</span><label class="switch"><input type="checkbox" ${showGradedOnly?'checked':''} onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div>
+    </div>`;
 
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
@@ -247,25 +265,21 @@ function renderDetail(player) {
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 window.toggleFilter = (t) => { if(t==='graded') showGradedOnly=!showGradedOnly; else showWishlistOnly=!showWishlistOnly; renderDetail(window.selectedPlayer); };
 
-window.closeAll = () => {
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (history.state?.v === 'modal' || history.state?.v === 'card') history.back();
-};
+window.closeAll = () => { document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open')); if (history.state?.v === 'modal' || history.state?.v === 'card') history.back(); };
 
 window.handleCardTap = (id) => {
   if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
   document.getElementById('cardDetailBody').innerHTML = `
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
-    <h2>${c.Year} ${c.Set}</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px; margin-top:16px;">
+    <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div>
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade || 'Raw'}</div></div>
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Sport</div><div>${c.Sport || 'Other'}</div></div>
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Status</div><div>${(c.Owned===true||c.Owned==="true")?'Owned':'Wishlist'}</div></div>
     </div>
-    <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card</button>
-  `;
+    <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card</button>`;
   document.getElementById('cardDetailSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'card'}, '');
@@ -290,7 +304,15 @@ window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
   const isO = (c.Owned === true || c.Owned === "true");
   let co = "", gr = ""; if (c.Grade) { const p = c.Grade.split(' '); co = p[0]; gr = p.slice(1).join(' '); }
-  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Card</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>${window.input('cf-s', 'Set', c.Set)}<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-co', 'Co (PSA)', co)}${window.input('cf-gr', 'Grade', gr)}</div><div class="input-group"><div class="input-label">Sport</div><select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>${window.input('cf-i', 'Image URL', c['App Image'])}<div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div><button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
+  document.getElementById('modalBody').innerHTML = `
+    <h2 style="margin-bottom:24px;">Card</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>
+    ${window.input('cf-s', 'Set', c.Set)}
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-co', 'Co (PSA)', co)}${window.input('cf-gr', 'Grade', gr)}</div>
+    <div class="input-group" style="position:relative; margin-bottom:20px;"><div class="input-label" style="position:absolute; left:12px; top:-8px; background:var(--md-surface-2); padding:0 4px; font-size:12px; color:var(--md-on-surface-variant);">Sport</div><select id="cf-sp" class="select-field" style="width:100%; background:transparent; border:1.5px solid var(--md-outline); border-radius:12px; padding:16px; color:#fff; font-size:16px; outline:none;"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>
+    ${window.input('cf-i', 'Image URL', c['App Image'])}
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div>
+    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'modal'}, '');
