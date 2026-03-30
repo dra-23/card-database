@@ -43,76 +43,33 @@
   --md-on-surface: #F0F0F0;
   --md-on-surface-variant: #999999;
 }
-html, body { 
-    height: 100vh; 
-    width: 100vw;
-    overflow: hidden; 
-    background: var(--md-surface); 
-    color: var(--md-on-surface); 
-    font-family: 'Google Sans', sans-serif;
-}
+html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* IMMERSIVE FIXED VIEWS */
-.view { 
-    position: fixed; 
-    top: 0; left: 0; right: 0; bottom: 0;
-    display: flex; 
-    flex-direction: column; 
-    background: var(--md-surface); 
-    transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; 
-    z-index: 10;
-}
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; padding-bottom: var(--safe-bottom); }
 .view.offscreen-right { transform: translateX(100%); }
 .view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
 
-.scroll-body { 
-    flex: 1; 
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; 
-    padding-bottom: calc(100px + var(--safe-bottom)); /* Ensure FAB doesn't block last items */
-}
+.scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-/* TOP BAR (BLEEDS INTO STATUS BAR) */
-.top-bar { 
-    display: flex; 
-    align-items: center; 
-    padding: var(--safe-top) 16px 0; 
-    height: calc(80px + var(--safe-top)); 
-    flex-shrink: 0; 
-}
+.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; }
 .brand { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; letter-spacing: -1.5px; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
-/* TILES */
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
 .tile-count { font-size: 11px; opacity: 0.7; font-weight: 400; }
 
-/* CARD LIST */
 .card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.5; border: 1px dashed #444; }
 .want-indicator { color: #FFA500; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
 .card-thumb { width: 60px; height: 84px; border-radius: 8px; object-fit: cover; background: #222; }
 
-/* FAB */
-.fab { 
-    position: absolute; 
-    bottom: calc(24px + var(--safe-bottom)); 
-    right: 20px; 
-    width: 64px; 
-    height: 64px; 
-    border-radius: 20px; 
-    background: var(--md-primary); 
-    color: #fff; 
-    border: none; 
-    z-index: 50; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
-}
+.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
+.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; }
+
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); }
 .sheet.open { transform: translateY(0); }
@@ -156,6 +113,15 @@ html, body {
   </div>
 
   <div class="scroll-body" style="padding:0 16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <span style="font-size:11px; font-weight:700; color:var(--md-on-surface-variant); text-transform:uppercase;">Collection</span>
+      <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:var(--md-surface-2); color:#fff; border:none; padding:4px 8px; border-radius:8px; font-size:12px;">
+        <option value="Year">Year</option>
+        <option value="Set">Set Name</option>
+        <option value="Graded">Graded First</option>
+        <option value="Ownership">Owned First</option>
+      </select>
+    </div>
     <div id="cardList"></div>
   </div>
 
@@ -194,23 +160,16 @@ function getCleanImg(url) {
   return url;
 }
 
-// SMART NAVIGATION
 window.onpopstate = (event) => {
   const state = event.state || {};
-  
-  // Close all sheets/scrims
   document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-
   if (state.v === 'card') {
-    // We are at card detail, keep player detail open
     document.getElementById('card-detail-view').classList.add('offscreen-right');
   } else if (state.v === 'detail') {
-    // We are at player detail
     document.getElementById('card-detail-view').classList.add('offscreen-right');
     document.getElementById('detail-view').classList.remove('offscreen-right');
     document.getElementById('gallery-view').classList.add('offscreen-left');
   } else {
-    // Back to home
     document.getElementById('detail-view').classList.add('offscreen-right');
     document.getElementById('gallery-view').classList.remove('offscreen-left');
     selectedPlayer = null;
@@ -228,141 +187,11 @@ function init() {
 
   onSnapshot(collection(window.db, "Cards"), (snap) => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const totalOwned = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
-    document.getElementById('totalOwnedCounter').innerText = totalOwned;
+    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
     renderGallery();
     if(selectedPlayer) renderDetail(selectedPlayer);
   });
 }
 
 function renderGallery() {
-  const grid = document.getElementById('playerGrid');
-  grid.innerHTML = ALL_PLAYERS.map(p => {
-    const pCards = ALL_CARDS.filter(c => c.Player === (p.Player || p.id));
-    return `
-    <div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
-      <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
-      <div style="position:absolute; bottom:12px; left:12px;">
-        <div style="font-weight:700; font-size:14px;">${p.Player || p.id}</div>
-        <div class="tile-count">${pCards.length} cards</div>
-      </div>
-    </div>
-  `}).join('');
-}
-
-function openDetail(id) {
-  selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
-  history.pushState({v:'detail'}, '');
-  renderDetail(selectedPlayer);
-  document.getElementById('detail-view').classList.remove('offscreen-right');
-  document.getElementById('gallery-view').classList.add('offscreen-left');
-}
-
-function renderDetail(player) {
-  let cards = ALL_CARDS.filter(c => c.Player === (player.Player || player.id));
-  cards.sort((a,b) => (a.Year || "").localeCompare(b.Year || ""));
-
-  document.getElementById('playerName').innerText = player.Player || player.id;
-  document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
-  document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
-  document.getElementById('playerDetailCount').innerText = `${cards.length} Total Cards`;
-  document.getElementById('editPlayerBtn').onclick = (e) => { e.stopPropagation(); openPlayerForm(player.id); };
-
-  document.getElementById('cardList').innerHTML = cards.map(c => {
-    const isOwned = c.Owned === true || c.Owned === "true";
-    return `
-    <div class="card-item ${!isOwned ? 'not-owned' : ''}" 
-         onclick="handleCardTap('${c.id}')" 
-         onmousedown="startPress('${c.id}')" onmouseup="endPress()" 
-         ontouchstart="startPress('${c.id}')" ontouchend="endPress()">
-      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info">
-        <div style="font-weight:600;">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
-        <div style="font-size:12px; color:var(--md-on-surface-variant);">#${c.Number || 'N/A'}</div>
-        ${!isOwned ? '<div class="want-indicator">Not Owned / Wishlist</div>' : ''}
-        ${c.Grade ? `<div class="grade-badge" style="background:#fff; color:#000; font-size:10px; padding:2px 4px; border-radius:4px; margin-top:4px; display:inline-block;">${c['Grading Company']} ${c.Grade}</div>` : ''}
-      </div>
-    </div>
-  `}).join('');
-}
-
-window.handleCardTap = (id) => {
-  if (window.isLongPress) return;
-  const c = ALL_CARDS.find(x => x.id === id);
-  document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
-  document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
-  document.getElementById('d-cardSubtitle').innerText = `Card #${c.Number || 'N/A'}`;
-  const isOwned = c.Owned === true || c.Owned === "true";
-  document.getElementById('d-ownedStatus').innerHTML = isOwned ? '✅ Owned' : '⏳ On Wishlist';
-  
-  history.pushState({v:'card'}, '');
-  document.getElementById('card-detail-view').classList.remove('offscreen-right');
-};
-
-window.startPress = (id) => {
-  window.isLongPress = false;
-  longPressTimer = setTimeout(() => { window.isLongPress = true; openCardForm(id); }, 600);
-};
-window.endPress = () => clearTimeout(longPressTimer);
-
-window.openCardForm = (id = null) => {
-  history.pushState({v:'form'}, '');
-  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
-  const isOwned = c.Owned === true || c.Owned === "true";
-  
-  document.getElementById('cBody').innerHTML = `
-    <h2 class="sheet-title">${id ? 'Edit' : 'Add'} Card</h2>
-    <input id="cf-year" class="input-field" value="${c.Year || ''}" placeholder="Year">
-    <input id="cf-set" class="input-field" value="${c.Set || c.Manufacturer || ''}" placeholder="Set">
-    <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
-    <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-        <input type="checkbox" id="cf-owned" ${isOwned ? 'checked' : ''} style="width:20px; height:20px;">
-        <label for="cf-owned">I own this card</label>
-    </div>
-    <button class="primary-btn" onclick="saveCard('${id||''}')">Save Card</button>
-  `;
-  document.getElementById('cSheet').classList.add('open');
-  document.getElementById('modalScrim').classList.add('open');
-};
-
-window.saveCard = async (id) => {
-  const data = {
-    Player: selectedPlayer.id,
-    Year: document.getElementById('cf-year').value,
-    Set: document.getElementById('cf-set').value,
-    Number: document.getElementById('cf-num').value,
-    "App Image": document.getElementById('cf-img').value,
-    Owned: document.getElementById('cf-owned').checked
-  };
-  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
-  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
-  history.back();
-};
-
-window.openPlayerForm = (id = null) => {
-    history.pushState({v:'pform'}, '');
-    const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-    document.getElementById('pBody').innerHTML = `
-        <h2 class="sheet-title">Player Profile</h2>
-        <input id="pf-name" class="input-field" value="${p.Player || p.id || ''}" placeholder="Name">
-        <input id="pf-main" class="input-field" value="${p['Main Image'] || ''}" placeholder="Main URL">
-        <input id="pf-banner" class="input-field" value="${p['Banner_Image'] || ''}" placeholder="Banner URL">
-        <button class="primary-btn" onclick="savePlayer('${id||''}')">Save</button>
-    `;
-    document.getElementById('pSheet').classList.add('open');
-    document.getElementById('modalScrim').classList.add('open');
-};
-
-window.savePlayer = async () => {
-    const name = document.getElementById('pf-name').value;
-    const data = { Player: name, "Main Image": document.getElementById('pf-main').value, "Banner_Image": document.getElementById('pf-banner').value };
-    await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
-    history.back();
-};
-
-init();
-</script>
-</body>
-</html>
+  const grid = document.getElementById('playerGrid
