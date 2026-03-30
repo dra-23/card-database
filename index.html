@@ -7,14 +7,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0A0A0A">
-<title>Card Collection HQ</title>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<title>sleevd</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // !!! PASTE YOUR CONFIG FROM FIREBASE CONSOLE HERE !!!
   const firebaseConfig = {
   apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
   authDomain: "sleevd-7214c.firebaseapp.com",
@@ -27,7 +26,6 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
   window.db = db;
   window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
 </script>
@@ -35,181 +33,137 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
-  --status-bar: env(safe-area-inset-top, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --md-primary: #E8192C;
-  --md-on-primary: #fff;
-  --md-primary-container: #7A0E1A;
-  --md-on-primary-container: #FFD9DC;
-  --md-secondary-container: #2A2A2A;
-  --md-on-secondary-container: #E0E0E0;
   --md-surface: #0A0A0A;
   --md-surface-1: #111111;
   --md-surface-2: #191919;
-  --md-surface-3: #232323;
   --md-on-surface: #F0F0F0;
   --md-on-surface-variant: #999999;
-  --md-outline: #505050;
-  --md-outline-variant: #303030;
-  --font: 'Google Sans', 'Roboto', sans-serif;
-  --font-display: 'Google Sans Display', 'Google Sans', sans-serif;
+  --font-display: 'Google+Sans+Display', 'Google Sans', sans-serif;
 }
-html, body { height: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: var(--font); }
+html, body { height: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; will-change: transform; z-index: 10; }
-.view.offscreen-right { transform: translateX(100%); opacity: 0; pointer-events: none; }
-.view.offscreen-left { transform: translateX(-12%) scale(0.97); opacity: 0.5; pointer-events: none; }
-.scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+/* IMMERSIVE VIEWS */
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; padding-bottom: var(--safe-bottom); }
+.view.offscreen-right { transform: translateX(100%); opacity: 0; }
+.view.offscreen-left { transform: translateX(-15%) scale(0.95); opacity: 0; }
+
+.scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-.top-bar { display: flex; align-items: center; padding: var(--status-bar) 16px 0; height: calc(64px + var(--status-bar)); flex-shrink: 0; }
-.top-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: -0.5px; flex: 1; }
-.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+/* TOP BAR */
+.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(70px + var(--safe-top)); flex-shrink: 0; }
+.brand { font-family: var(--font-display); font-size: 32px; font-weight: 700; letter-spacing: -1.5px; color: #fff; flex: 1; }
+.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; }
 
-.search-wrap { padding: 8px 16px 10px; }
-.search-bar { display: flex; align-items: center; gap: 8px; background: var(--md-surface-3); border-radius: 50px; padding: 0 16px; height: 50px; }
-.search-input { flex: 1; background: none; border: none; outline: none; color: var(--md-on-surface); font-size: 16px; }
-
-.chip-row { display: flex; gap: 8px; padding: 0 16px 14px; overflow-x: auto; scrollbar-width: none; }
-.chip { height: 32px; padding: 0 14px; border-radius: 50px; border: 1px solid var(--md-outline-variant); background: none; color: var(--md-on-surface-variant); white-space: nowrap; cursor: pointer; }
-.chip.active { background: var(--md-secondary-container); color: var(--md-on-secondary-container); border-color: transparent; }
-
-.player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 4px 12px 90px; }
-@media (min-width: 600px) { .player-grid { grid-template-columns: repeat(3, 1fr); } }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 0.72; transition: transform 0.2s; }
-.player-tile:active { transform: scale(0.96); }
+/* TILES */
+.player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px 100px; }
+.player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
-.tile-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
-.tile-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; }
-.tile-name { font-size: 16px; font-weight: 700; color: #fff; }
 
-.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-family: var(--font); font-size: 16px; }
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 28px 28px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); max-height: 90vh; overflow-y: auto; }
+/* CARD LIST */
+.card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; }
+.card-thumb { width: 60px; height: 84px; border-radius: 8px; object-fit: cover; background: #222; }
+.card-num { font-size: 13px; color: var(--md-on-surface-variant); margin-top: 2px; }
+.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; text-transform: uppercase; }
+
+/* FAB */
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 16px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; box-shadow: 0 8px 24px rgba(232, 25, 44, 0.3); z-index: 50; display: flex; align-items: center; justify-content: center; }
+
+/* FORMS & SHEETS */
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); }
 .sheet.open { transform: translateY(0); }
-.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.7); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-.sheet-body { padding: 24px; }
-.sheet-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; margin-bottom: 20px; }
-
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; font-family: var(--font); cursor: pointer; }
-.delete-btn { width: 100%; background: none; border: 1px solid #555; color: #ff4444; padding: 12px; border-radius: 50px; margin-top: 12px; font-weight: 500; cursor: pointer; }
-
-.detail-header { height: 200px; position: relative; background: var(--md-surface-2); }
-.detail-header-img { width: 100%; height: 100%; object-fit: cover; }
-.profile-anchor { position: relative; height: 60px; }
-.profile-thumb { position: absolute; top: -60px; left: 16px; width: 90px; height: 120px; border-radius: 12px; border: 3px solid var(--md-surface); object-fit: cover; background: var(--md-surface-3); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-.profile-meta { margin-left: 120px; padding-top: 8px; }
-.edit-player-btn { background: var(--md-secondary-container); color: var(--md-on-secondary-container); border: none; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 500; margin-top: 8px; cursor: pointer; }
-
-.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; margin-bottom: 8px; background: var(--md-surface-1); }
-.card-thumb { width: 50px; height: 70px; border-radius: 6px; object-fit: cover; background: var(--md-surface-3); }
 </style>
 </head>
 <body>
 
 <div class="view" id="gallery-view">
   <div class="top-bar">
-    <span class="top-title">Collection</span>
-    <button class="icon-btn" onclick="openPlayerForm()" title="Add Player">
+    <span class="brand">sleevd</span>
+    <button class="icon-btn" onclick="openPlayerForm()">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
     </button>
-    <button class="icon-btn" onclick="openCardForm()" title="Add Card">
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-    </button>
   </div>
-
-  <div class="search-wrap">
-    <div class="search-bar">
-      <input class="search-input" id="gallerySearch" placeholder="Search Players..." oninput="renderGallery()">
-    </div>
-  </div>
-
-  <div class="chip-row">
-    <button class="chip active" onclick="filterSport('All', this)">All</button>
-    <button class="chip" onclick="filterSport('Basketball', this)">🏀 Basketball</button>
-    <button class="chip" onclick="filterSport('Football', this)">🏈 Football</button>
-    <button class="chip" onclick="filterSport('Baseball', this)">⚾ Baseball</button>
-  </div>
-
   <div class="scroll-body">
     <div class="player-grid" id="playerGrid"></div>
   </div>
 </div>
 
 <div class="view offscreen-right" id="detail-view">
-  <div class="detail-header">
-    <img id="playerBanner" class="detail-header-img" src="">
-    <div class="top-bar" style="position:absolute; top:0; left:0; width:100%;">
-      <button class="icon-btn" onclick="history.back()" style="background:rgba(0,0,0,0.5)">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-      </button>
+  <div class="detail-header" style="height: 300px; position: relative;">
+    <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
+    <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
+    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:16px; background:rgba(0,0,0,0.4); backdrop-filter:blur(10px);">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </button>
+  </div>
+  
+  <div style="margin-top:-60px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px;">
+    <img id="playerThumb" style="width:100px; height:130px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
+    <div style="padding-bottom:10px;">
+      <h2 id="playerName" style="font-size:28px; font-family:var(--font-display);"></h2>
+      <button onclick="openPlayerForm(selectedPlayer.id)" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:6px 12px; border-radius:50px; font-size:12px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
-  <div class="profile-anchor">
-    <img id="playerThumb" class="profile-thumb" src="">
-    <div class="profile-meta">
-      <h2 id="playerName" style="font-size:20px;">Player Name</h2>
-      <button class="edit-player-btn" id="editProfileBtn">Edit Profile</button>
+
+  <div class="scroll-body" style="padding:0 16px 100px;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+       <span id="cardCount" style="font-size:12px; color:var(--md-on-surface-variant); text-transform:uppercase; letter-spacing:1px;"></span>
+       <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:none; border:none; color:var(--md-primary); font-family:inherit;">
+         <option value="Year">Sort by Year</option>
+         <option value="Set">Sort by Name</option>
+         <option value="Graded">Sort by Graded</option>
+       </select>
     </div>
-  </div>
-  <div class="scroll-body" style="padding: 16px;">
     <div id="cardList"></div>
   </div>
+
+  <button class="fab" onclick="openCardForm()">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+  </button>
 </div>
 
-<div class="scrim" id="pScrim" onclick="history.back()"></div>
-<div class="sheet" id="pSheet">
-  <div class="sheet-body">
-    <h2 class="sheet-title" id="pTitle">Add Player</h2>
-    <input type="text" id="p-name" class="input-field" placeholder="Full Player Name">
-    <input type="text" id="p-sport" class="input-field" placeholder="Sport">
-    <input type="text" id="p-main" class="input-field" placeholder="Main Image URL (Thumb)">
-    <input type="text" id="p-banner" class="input-field" placeholder="Banner_Image URL (Hero)">
-    <button class="primary-btn" onclick="savePlayer()">Save Profile</button>
-    <button id="pDelBtn" class="delete-btn" style="display:none" onclick="deletePlayer()">Delete Player</button>
+<div class="view offscreen-right" id="card-detail-view" style="z-index:100;">
+  <div class="top-bar">
+    <button class="icon-btn" onclick="history.back()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+    <span class="brand" style="font-size:18px; text-align:center;">Card Details</span>
+    <div style="width:48px;"></div>
+  </div>
+  <div class="scroll-body" style="padding:20px;">
+    <img id="d-cardImg" style="width:100%; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+    <div style="margin-top:24px;">
+      <h2 id="d-cardTitle" style="font-size:24px; margin-bottom:4px;"></h2>
+      <p id="d-cardSubtitle" style="color:var(--md-on-surface-variant);"></p>
+      <div id="d-gradeArea" style="margin-top:16px;"></div>
+    </div>
   </div>
 </div>
 
-<div class="scrim" id="cScrim" onclick="history.back()"></div>
-<div class="sheet" id="cSheet">
-  <div class="sheet-body">
-    <h2 class="sheet-title" id="cTitle">Add Card</h2>
-    <input type="text" id="c-player" class="input-field" placeholder="Player Name">
-    <input type="text" id="c-year" class="input-field" placeholder="Year">
-    <input type="text" id="c-set" class="input-field" placeholder="Set / Brand">
-    <input type="number" id="c-price" class="input-field" placeholder="Price Paid ($)">
-    <input type="text" id="c-img" class="input-field" placeholder="App Image URL">
-    <button class="primary-btn" onclick="saveCard()">Save Card</button>
-    <button id="cDelBtn" class="delete-btn" style="display:none" onclick="deleteCard()">Delete Card</button>
-  </div>
-</div>
+<div class="scrim" id="modalScrim" onclick="history.back()"></div>
+<div class="sheet" id="pSheet"><div class="sheet-body" id="pBody"></div></div>
+<div class="sheet" id="cSheet"><div class="sheet-body" id="cBody"></div></div>
 
 <script>
-let ALL_PLAYERS = [], ALL_CARDS = [], currentSport = 'All', selectedPlayer = null, editingPlayerId = null, editingCardId = null;
-const ICONS = {Basketball:'🏀',Football:'🏈',Baseball:'⚾',Golf:'⛳','':'🃏'};
-const ic = s => ICONS[s] || '🃏';
-
-// BACK GESTURE SUPPORT
-// This listens for the browser/android "Back" action
-window.onpopstate = function(event) {
-  // If we have a form open, close it
-  closePlayerForm(true); 
-  closeCardForm(true);
-  // If we have a detail view open, close it
-  closeDetail(true);
-};
-
-function pushState() {
-  history.pushState({view: 'open'}, '');
-}
+let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, longPressTimer;
 
 function getCleanImg(url) {
   if (!url) return '';
   if (url.includes('drive.google.com')) {
     const id = url.split('id=')[1] || url.split('/d/')[1].split('/')[0];
-    return `https://lh3.googleusercontent.com/d/${id}=w600-h800-p-k-no-iv1`;
+    return `https://lh3.googleusercontent.com/u/0/d/${id}=w1000`;
   }
   return url;
 }
+
+window.onpopstate = () => {
+  document.querySelectorAll('.view').forEach(v => v.id !== 'gallery-view' && v.classList.add('offscreen-right'));
+  document.getElementById('gallery-view').classList.remove('offscreen-left');
+  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
+};
 
 function init() {
   const { onSnapshot, collection } = window.fs;
@@ -225,135 +179,109 @@ function init() {
 }
 
 function renderGallery() {
-  const q = document.getElementById('gallerySearch').value.toLowerCase();
   const grid = document.getElementById('playerGrid');
-  const filtered = ALL_PLAYERS.filter(p => (currentSport === 'All' || p.Sport === currentSport) && (p.Player || p.id || "").toLowerCase().includes(q));
-
-  grid.innerHTML = filtered.map(p => {
-    const cardCount = ALL_CARDS.filter(c => c.Player === (p.Player || p.id)).length;
-    const banner = getCleanImg(p['Banner_Image'] || p['Banner Image']);
-    
-    return `<div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <img class="tile-img" src="${banner}" onerror="this.onerror=null;this.src='placeholder.png'">
-      <div class="tile-scrim"></div>
-      <div class="tile-info">
-        <div class="tile-name">${p.Player || p.id}</div>
-        <div style="font-size:11px; opacity:0.8;">${cardCount} Cards</div>
-      </div>
-    </div>`;
-  }).join('');
+  grid.innerHTML = ALL_PLAYERS.map(p => `
+    <div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
+      <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
+      <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.8));"></div>
+      <div style="position:absolute; bottom:12px; left:12px; font-weight:700; font-size:14px;">${p.Player || p.id}</div>
+    </div>
+  `).join('');
 }
 
-function openDetail(playerId) {
-  pushState(); // Add to history
-  selectedPlayer = ALL_PLAYERS.find(p => p.id === playerId);
+function openDetail(id) {
+  history.pushState({v:'detail'}, '');
+  selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   renderDetail(selectedPlayer);
   document.getElementById('detail-view').classList.remove('offscreen-right');
   document.getElementById('gallery-view').classList.add('offscreen-left');
 }
 
 function renderDetail(player) {
-  const cards = ALL_CARDS.filter(c => c.Player === (player.Player || player.id));
+  const sort = document.getElementById('sortSelect').value;
+  let cards = ALL_CARDS.filter(c => c.Player === (player.Player || player.id));
+  
+  cards.sort((a,b) => {
+    if(sort === 'Year') return (a.Year || "").localeCompare(b.Year || "");
+    if(sort === 'Set') return (a.Set || "").localeCompare(b.Set || "");
+    if(sort === 'Graded') return (b.Grade ? 1 : 0) - (a.Grade ? 1 : 0);
+  });
+
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
-  document.getElementById('editProfileBtn').onclick = () => openPlayerForm(player.id);
+  document.getElementById('cardCount').innerText = `${cards.length} Cards`;
 
   document.getElementById('cardList').innerHTML = cards.map(c => `
-    <div class="card-item" onclick="openCardForm('${c.id}')">
-      <img class="card-thumb" src="${getCleanImg(c['App Image'])}" onerror="this.onerror=null;this.src='placeholder.png'">
+    <div class="card-item" 
+         onclick="handleCardTap('${c.id}')" 
+         onmousedown="startPress('${c.id}')" 
+         onmouseup="endPress()" 
+         ontouchstart="startPress('${c.id}')" 
+         ontouchend="endPress()">
+      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info">
-        <div style="font-weight:500;">${c.Year || ''} ${c.Set || c.Manufacturer || ''}</div>
-        <div style="font-size:12px; color:#aaa;">Purchased: ${c.Year || 'N/A'}</div>
+        <div style="font-weight:600; font-size:15px;">${c.Year} ${c.Set || c.Manufacturer}</div>
+        <div class="card-num">#${c.Number || 'N/A'}</div>
+        ${c.Grade ? `<div class="grade-badge">${c['Grading Company'] || ''} ${c.Grade}</div>` : ''}
       </div>
-    </div>`).join('');
+    </div>
+  `).join('');
 }
 
-function openPlayerForm(id = null) {
-  pushState();
-  editingPlayerId = id;
-  if (id) {
-    const p = ALL_PLAYERS.find(x => x.id === id);
-    document.getElementById('pTitle').innerText = "Edit Player";
-    document.getElementById('p-name').value = p.Player || p.id;
-    document.getElementById('p-sport').value = p.Sport || "";
-    document.getElementById('p-main').value = p['Main Image'] || "";
-    document.getElementById('p-banner').value = p['Banner_Image'] || "";
-    document.getElementById('pDelBtn').style.display = "block";
-  } else {
-    document.getElementById('pTitle').innerText = "Add Player";
-    ["p-name", "p-sport", "p-main", "p-banner"].forEach(f => document.getElementById(f).value = "");
-    document.getElementById('pDelBtn').style.display = "none";
-  }
-  document.getElementById('pSheet').classList.add('open');
-  document.getElementById('pScrim').classList.add('open');
-}
+/* INTERACTION LOGIC: TAP VS LONG PRESS */
+window.handleCardTap = (id) => {
+  if (window.isLongPress) return;
+  const c = ALL_CARDS.find(x => x.id === id);
+  document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
+  document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
+  document.getElementById('d-cardSubtitle').innerText = `Card #${c.Number || 'N/A'}`;
+  document.getElementById('d-gradeArea').innerHTML = c.Grade ? `<div class="grade-badge" style="font-size:16px; padding:8px 16px;">${c['Grading Company']} ${c.Grade}</div>` : '<p style="color:#666;">Raw Condition</p>';
+  
+  history.pushState({v:'card'}, '');
+  document.getElementById('card-detail-view').classList.remove('offscreen-right');
+};
 
-async function savePlayer() {
-  const name = document.getElementById('p-name').value;
-  const data = { Player: name, Sport: document.getElementById('p-sport').value, "Main Image": document.getElementById('p-main').value, "Banner_Image": document.getElementById('p-banner').value };
-  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, { merge: true });
-  history.back(); // Closes the form and manages state
-}
+window.startPress = (id) => {
+  window.isLongPress = false;
+  longPressTimer = setTimeout(() => {
+    window.isLongPress = true;
+    openCardForm(id);
+  }, 600);
+};
 
-function openCardForm(id = null) {
-  pushState();
-  editingCardId = id;
-  if (id) {
-    const c = ALL_CARDS.find(x => x.id === id);
-    document.getElementById('cTitle').innerText = "Edit Card";
-    document.getElementById('c-player').value = c.Player || "";
-    document.getElementById('c-year').value = c.Year || "";
-    document.getElementById('c-set').value = c.Set || c.Manufacturer || "";
-    document.getElementById('c-price').value = c["Purchase Price (USD)"] || "";
-    document.getElementById('c-img').value = c["App Image"] || "";
-    document.getElementById('cDelBtn').style.display = "block";
-  } else {
-    document.getElementById('cTitle').innerText = "Add Card";
-    ["c-player", "c-year", "c-set", "c-price", "c-img"].forEach(f => document.getElementById(f).value = "");
-    if(selectedPlayer) document.getElementById('c-player').value = selectedPlayer.Player || selectedPlayer.id;
-    document.getElementById('cDelBtn').style.display = "none";
-  }
+window.endPress = () => clearTimeout(longPressTimer);
+
+/* FORM LOGIC */
+window.openCardForm = (id = null) => {
+  history.pushState({v:'form'}, '');
+  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
+  document.getElementById('cBody').innerHTML = `
+    <h2 class="sheet-title">${id ? 'Edit' : 'Add'} Card</h2>
+    <input id="cf-year" class="input-field" value="${c.Year || ''}" placeholder="Year">
+    <input id="cf-set" class="input-field" value="${c.Set || c.Manufacturer || ''}" placeholder="Set">
+    <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
+    <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
+    <button class="primary-btn" onclick="saveCard('${id||''}')">Save Card</button>
+  `;
   document.getElementById('cSheet').classList.add('open');
-  document.getElementById('cScrim').classList.add('open');
-}
+  document.getElementById('modalScrim').classList.add('open');
+};
 
-async function saveCard() {
-  const data = { 
-    Player: document.getElementById('c-player').value, 
-    Year: document.getElementById('c-year').value, 
-    Set: document.getElementById('c-set').value, 
-    "Purchase Price (USD)": parseFloat(document.getElementById('c-price').value) || 0, 
-    "App Image": document.getElementById('c-img').value 
+window.saveCard = async (id) => {
+  const data = {
+    Player: selectedPlayer.Player || selectedPlayer.id,
+    Year: document.getElementById('cf-year').value,
+    Set: document.getElementById('cf-set').value,
+    Number: document.getElementById('cf-num').value,
+    "App Image": document.getElementById('cf-img').value
   };
-  if (editingCardId) await window.fs.setDoc(window.fs.doc(window.db, "Cards", editingCardId), data, { merge: true });
+  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   history.back();
-}
+};
 
-// Logic to actually hide the UI elements
-function closeDetail(fromPopState = false) { 
-  document.getElementById('detail-view').classList.add('offscreen-right'); 
-  document.getElementById('gallery-view').classList.remove('offscreen-left'); 
-  selectedPlayer = null;
-}
-function closePlayerForm(fromPopState = false) { 
-  document.getElementById('pSheet').classList.remove('open'); 
-  document.getElementById('pScrim').classList.remove('open'); 
-}
-function closeCardForm(fromPopState = false) { 
-  document.getElementById('cSheet').classList.remove('open'); 
-  document.getElementById('cScrim').classList.remove('open'); 
-}
-
-function filterSport(sport, btn) {
-  currentSport = sport;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  renderGallery();
-}
-
-window.addEventListener('load', init);
+init();
 </script>
 </body>
 </html>
