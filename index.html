@@ -25,17 +25,10 @@
   measurementId: "G-67S1G9KPJM"
   };
 
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db;
-    window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
-    console.log("Firebase Ready");
-    // Trigger the init after Firebase is definitely available
-    if(window.startApp) window.startApp();
-  } catch (e) {
-    console.error("Firebase Error:", e);
-  }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db;
+  window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
 </script>
 
 <style>
@@ -50,7 +43,7 @@
   --md-on-surface: #F0F0F0;
   --md-on-surface-variant: #999999;
 }
-html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
@@ -59,28 +52,35 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-s
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
-.brand { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; letter-spacing: -1.5px; flex: 1; }
-.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
+.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(70px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
+.brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; letter-spacing: -1.2px; flex: 1; }
+.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
-.player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
+.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
 
-.detail-search-bar { background: var(--md-surface-2); border-radius: 12px; display: flex; align-items: center; padding: 0 12px; height: 44px; margin-bottom: 16px; }
-.detail-search-input { background: none; border: none; outline: none; color: #fff; flex: 1; font-size: 14px; }
-.card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); }
-.card-item.not-owned { opacity: 0.5; border: 1px dashed #444; }
+.detail-search-bar { background: var(--md-surface-2); border-radius: 50px; display: flex; align-items: center; padding: 0 16px; height: 48px; margin-bottom: 20px; border: 1px solid var(--md-outline-variant); }
+.detail-search-input { background: none; border: none; outline: none; color: #fff; flex: 1; font-size: 15px; }
 
-.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
-.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.card-item { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; margin-bottom: 10px; background: var(--md-surface-1); transition: background 0.2s; }
+.card-item:active { background: #222; }
+.card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); }
+.card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; flex-shrink: 0; }
+.card-info { flex: 1; min-width: 0; }
+.card-title { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta { font-size: 12px; color: var(--md-on-surface-variant); margin-top: 2px; }
 
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); }
+.info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; }
+.info-label { font-size: 12px; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px; }
+.info-value { font-size: 15px; font-weight: 500; color: #fff; }
+
+.fab { position: absolute; bottom: calc(20px + var(--safe-bottom)); right: 20px; width: 60px; height: 60px; border-radius: 18px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(232, 25, 44, 0.4); }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); max-height: 90vh; overflow-y: auto; }
 .sheet.open { transform: translateY(0); }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; }
+.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; font-family: inherit; }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
@@ -90,34 +90,30 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-s
   <div class="top-bar">
     <span class="brand">sleevd</span>
     <div class="total-count-pill" id="totalOwnedCounter">0</div>
-    <button class="icon-btn" onclick="openPlayerForm()">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </button>
+    <button class="icon-btn" onclick="openPlayerForm()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
   </div>
-  <div class="scroll-body">
-    <div class="player-grid" id="playerGrid"></div>
-  </div>
+  <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
 </div>
 
 <div class="view offscreen-right" id="detail-view">
-  <div style="height: 350px; position: relative; flex-shrink: 0;">
-    <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
+  <div style="height: 25vh; position: relative; flex-shrink: 0; background: #000;">
+    <img id="playerBanner" style="width:100%; height:100%; object-fit:cover; opacity: 0.6;">
     <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:16px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 30;">
+    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:12px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 30;">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
     </button>
   </div>
-  <div style="margin-top:-80px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-    <img id="playerThumb" style="width:100px; height:130px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
-    <div style="padding-bottom:10px;">
-      <h2 id="playerName" style="font-size:26px; font-family:'Google Sans Display';"></h2>
+  <div style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+    <img id="playerThumb" style="width:85px; height:115px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+    <div style="padding-bottom:5px;">
+      <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
       <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant);"></div>
-      <button id="editPlayerBtn" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:6px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
+      <button id="editPlayerBtn" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:5px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
   <div class="scroll-body" style="padding:0 16px;">
     <div class="detail-search-bar">
-       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="renderDetail(selectedPlayer)">
+       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Find in collection..." oninput="renderDetail(selectedPlayer)">
        <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
          <option value="Year">Year</option>
          <option value="Set">Set</option>
@@ -127,9 +123,7 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-s
     </div>
     <div id="cardList"></div>
   </div>
-  <button class="fab" onclick="openCardForm()">
-    <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-  </button>
+  <button class="fab" onclick="openCardForm()"><svg viewBox="0 0 24 24" width="30" height="30" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
 </div>
 
 <div class="view offscreen-right" id="card-detail-view" style="z-index:100;">
@@ -138,11 +132,10 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-s
       <span class="brand" style="font-size:18px; text-align:center;">Card View</span>
       <div style="width:48px;"></div>
     </div>
-    <div class="scroll-body" style="padding:20px;">
-      <img id="d-cardImg" style="width:100%; border-radius:24px;">
-      <h2 id="d-cardTitle" style="margin-top:24px;"></h2>
-      <p id="d-cardSubtitle" style="color:var(--md-on-surface-variant);"></p>
-      <div id="d-ownedStatus" style="margin-top:12px; font-weight:700;"></div>
+    <div class="scroll-body" style="padding:16px;">
+      <img id="d-cardImg" style="width:100%; border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h2 id="d-cardTitle" style="margin-top:24px; font-size:22px;"></h2>
+      <div id="d-infoList" style="margin-top:20px;"></div>
     </div>
 </div>
 
@@ -181,12 +174,10 @@ window.onpopstate = (event) => {
 
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
-
   onSnapshot(collection(window.db, "Players"), (snap) => {
     ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderGallery();
   });
-
   onSnapshot(collection(window.db, "Cards"), (snap) => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
@@ -210,7 +201,7 @@ function renderGallery() {
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;">
-        <div style="font-weight:700; font-size:14px;">${p.Player || p.id}</div>
+        <div style="font-weight:700; font-size:14px; line-height:1.2;">${p.Player || p.id}</div>
         <div class="tile-count">${o} owned · ${pC.length} total</div>
       </div>
     </div>`;
@@ -229,7 +220,7 @@ function renderDetail(player) {
   const sort = document.getElementById('sortSelect').value;
   const q = (document.getElementById('detailSearchInput').value || "").toLowerCase();
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
-  if (q) cards = cards.filter(c => (c.Set || "").toLowerCase().includes(q) || (c.Year || "").toLowerCase().includes(q));
+  if (q) cards = cards.filter(c => (c.Set || "").toLowerCase().includes(q) || (c.Year || "").toLowerCase().includes(q) || (c.Number || "").toString().includes(q));
 
   cards.sort((a,b) => {
     if(sort === 'Year') return (a.Year || "").localeCompare(b.Year || "");
@@ -255,9 +246,8 @@ function renderDetail(player) {
          ontouchstart="startPress('${c.id}')" ontouchend="endPress()">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info">
-        <div style="font-weight:600;">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
-        <div style="font-size:12px; color:var(--md-on-surface-variant);">#${c.Number || 'N/A'}</div>
-        ${!isO ? '<div style="color:#FFA500; font-size:10px; font-weight:700; margin-top:4px;">Wishlist</div>' : ''}
+        <div class="card-title">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
+        <div class="card-meta">#${c.Number || 'N/A'} ${!isO ? '· Wishlist' : ''}</div>
         ${c.Grade ? `<div class="grade-badge">${c['Grading Company'] || ''} ${c.Grade}</div>` : ''}
       </div>
     </div>`}).join('');
@@ -268,8 +258,22 @@ window.handleCardTap = (id) => {
   const c = ALL_CARDS.find(x => x.id === id);
   document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
   document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
-  document.getElementById('d-cardSubtitle').innerText = `Card #${c.Number || 'N/A'}`;
-  document.getElementById('d-ownedStatus').innerText = (c.Owned === true || c.Owned === "true") ? '✅ Owned' : '⏳ Wishlist';
+  
+  const fields = [
+    {l: 'Card Number', v: c.Number},
+    {l: 'Grade', v: c.Grade},
+    {l: 'Company', v: c['Grading Company']},
+    {l: 'Status', v: (c.Owned === true || c.Owned === "true") ? '✅ Owned' : '⏳ Wishlist'},
+    {l: 'Notes', v: c.Notes}
+  ];
+  
+  document.getElementById('d-infoList').innerHTML = fields.filter(f => f.v).map(f => `
+    <div class="info-row">
+      <div class="info-label">${f.l}</div>
+      <div class="info-value">${f.v}</div>
+    </div>
+  `).join('');
+
   history.pushState({v:'card'}, '');
   document.getElementById('card-detail-view').classList.remove('offscreen-right');
 };
@@ -290,7 +294,7 @@ window.openCardForm = (id = null) => {
     <input id="cf-set" class="input-field" value="${c.Set || ''}" placeholder="Set">
     <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
     <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''}><label>I own this card</label></div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''} style="width:20px;height:20px;"><label>I own this card</label></div>
     <button class="primary-btn" onclick="saveCard('${id||''}')">Save</button>
   `;
   document.getElementById('cSheet').classList.add('open');
@@ -325,7 +329,6 @@ window.savePlayer = async () => {
     history.back();
 };
 
-// Check if app was already running or wait for Firebase
 if(window.fs) window.startApp();
 </script>
 </body>
