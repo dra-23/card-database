@@ -77,13 +77,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* List */
+/* Cards */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; white-space: nowrap; }
 
-/* Material Expressive Search Bar */
+/* Search Bar */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
   width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; 
@@ -113,12 +113,11 @@ input:checked + .slider:before { transform: translateX(18px); }
 .scrim.open { opacity: 1; pointer-events: auto; }
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
 .sheet.open { transform: translateY(0); }
-.sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; }
+.sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
 .fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 8px 24px rgba(0,0,0,0.4); cursor: pointer; }
 
-/* FIX: Dropdown Text Color */
 .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .select-field option { color: #000 !important; background: #FFF !important; }
 
@@ -146,7 +145,7 @@ input:checked + .slider:before { transform: translateX(18px); }
       <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
     </button>
   </div>
-  <div style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+  <div id="playerHeaderUI" style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
     <img id="playerThumb" style="width:85px; height:115px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
     <div style="padding-bottom:5px;">
       <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
@@ -180,10 +179,19 @@ const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Gol
 
 window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
 
+// FIX: Robust image cleaning for Google Drive and TCDB
 function getCleanImg(url) {
-  if (!url) return '';
-  if (url.includes('tcdb.com')) return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(url)}`;
-  return url;
+  if (!url) return 'https://placehold.co/400x600/111/333?text=No+Image';
+  let cleanUrl = url.toString().trim();
+  // Handle Google Drive "uc" URLs correctly
+  if (cleanUrl.includes('drive.google.com')) {
+    return cleanUrl.replace('view?id=', 'uc?export=view&id=').replace('file/d/', 'uc?export=view&id=').split('/view')[0];
+  }
+  // Handle TCDB proxy
+  if (cleanUrl.includes('tcdb.com')) {
+    return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(cleanUrl)}`;
+  }
+  return cleanUrl;
 }
 
 window.startApp = function() {
@@ -258,7 +266,6 @@ function renderDetail(player) {
 
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
-    // FIX: Combined Grade Logic
     const company = c["Grading Company"] || "";
     const numericGrade = c.Grade || "";
     const fullGrade = (company && numericGrade) ? `${company} ${numericGrade}` : (company || numericGrade);
@@ -284,6 +291,7 @@ window.handleCardTap = (id) => {
   const fullGrade = (company && numericGrade) ? `${company} ${numericGrade}` : (company || numericGrade || "Raw");
   const q = encodeURIComponent(`${c.Year} ${c.Set} ${window.selectedPlayer.Player || window.selectedPlayer.id} #${c.Number} sold`);
   const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`;
+  // FIX: Mapping to "Card Information" field
   const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
 
   document.getElementById('cardDetailBody').innerHTML = `
