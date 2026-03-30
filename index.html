@@ -79,7 +79,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* Search Bar */
+/* Material Expressive Search Bar */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
   width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; 
@@ -117,6 +117,9 @@ input:checked + .slider:before { transform: translateX(18px); }
 .input-group { position: relative; margin-bottom: 20px; }
 .input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
+
+/* FIX: Forces dropdown text to be readable (Black) */
+.select-field option { color: #000; background: #FFF; }
 </style>
 </head>
 <body>
@@ -170,8 +173,6 @@ let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 let playersLoaded = false, cardsLoaded = false;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
-window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
-
 function getCleanImg(url) {
   if (!url) return '';
   if (url.includes('tcdb.com')) return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(url)}`;
@@ -221,7 +222,7 @@ window.openDetail = (id) => {
   document.getElementById('cardSearchInput').value = "";
   renderDetail(window.selectedPlayer);
   
-  // Connect Detail buttons
+  // Re-connect Detail buttons
   document.getElementById('editPlayerBtn').onclick = () => window.openPlayerForm(window.selectedPlayer.id);
   document.getElementById('addCardFab').onclick = () => window.openCardForm();
 
@@ -257,11 +258,19 @@ function renderDetail(player) {
 
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
-    const gradeStr = c.Grade ? c.Grade.toString().trim() : "";
-    const gradeBadge = gradeStr !== "" ? `<span class="badge-inline">${gradeStr}</span>` : '';
+    
+    // FIX: Combined Badge logic (e.g. "PSA 10")
+    let badgeText = "";
+    if (c.Owned === "wishlist") {
+        badgeText = "Wishlist";
+    } else if (c.Grade && c.Grade.toString().trim() !== "" && c.Grade.toString().trim() !== "Raw") {
+        badgeText = c.Grade.toString().trim();
+    }
+    const badgeHtml = badgeText !== "" ? `<span class="badge-inline">${badgeText}</span>` : '';
+    
     return `<div class="card-item ${!isOwned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')" onmousedown="window.startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${gradeBadge}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
+      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${badgeHtml}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
     </div>`;
   }).join('');
 }
@@ -281,6 +290,7 @@ window.handleCardTap = (id) => {
   const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c.TCDB_Link || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
 
+  // RESTORED: Material Expressive layout witheBay/TCDB buttons
   document.getElementById('cardDetailBody').innerHTML = `
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
     <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
@@ -320,11 +330,11 @@ window.openCardForm = (id = null) => {
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>
     ${window.input('cf-s', 'Set', c.Set)}
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-      <div class="input-group"><div class="input-label">Co</div><select id="cf-co" class="select-field"><option value="">Raw</option>${cos.map(o=>`<option value="${o}" ${existingCo===o?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div class="input-group"><div class="input-label">Company</div><select id="cf-co" class="select-field"><option value="">Raw</option>${cos.map(o=>`<option value="${o}" ${existingCo===o?'selected':''}>${o}</option>`).join('')}</select></div>
       <div class="input-group"><div class="input-label">Grade</div><select id="cf-gr" class="select-field"><option value="">N/A</option>${grades.map(g=>`<option value="${g}" ${existingGr===g?'selected':''}>${g}</option>`).join('')}</select></div>
     </div>
     <div class="input-group"><div class="input-label">Sport</div><select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>
-    ${window.input('cf-i', 'Image URL', c['App Image'])}
+    ${window.input('cf-i', 'App Image URL', c['App Image'])}
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div>
     <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
   document.getElementById('modalSheet').classList.add('open');
