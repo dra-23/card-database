@@ -25,24 +25,17 @@
   measurementId: "G-67S1G9KPJM"
   };
 
-  // INITIALIZATION WITH ERROR TRAPPING
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
     window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
-    console.log("Firebase initialized successfully");
-    
-    // Check if DOM is ready before starting data sync
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => window.startApp());
     } else {
       window.startApp();
     }
-  } catch (error) {
-    console.error("Firebase Initialization Error:", error);
-    alert("Database connection failed. Please check your config.");
-  }
+  } catch (e) { console.error("Firebase Error", e); }
 </script>
 
 <style>
@@ -56,56 +49,54 @@
   --md-surface-2: #191919;
   --md-on-surface: #F0F0F0;
   --md-on-surface-variant: #999999;
+  --md-outline: #444;
 }
 html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-.view { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
-.view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
+.view.offscreen-left { transform: translateX(-20%); opacity: 0.5; }
 
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(120px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
+/* TOP BAR */
 .top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; letter-spacing: -1.2px; flex: 1; }
-.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
+.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
+/* TILES */
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
-.tile-count { font-size: 12px; font-weight: 700; color: #fff; }
-
 .sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; z-index: 5; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid rgba(255,255,255,0.1); }
 
-.detail-controls { background: var(--md-surface-2); border-radius: 16px; padding: 12px; margin-bottom: 20px; border: 1px solid var(--md-outline-variant); }
-.detail-search-input { background: var(--md-surface-3); border: none; outline: none; color: #fff; width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 15px; margin-bottom: 12px; }
-.control-row { display: flex; justify-content: space-between; align-items: center; }
-
-.switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
-.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--md-primary); }
-input:checked + .slider:before { transform: translateX(20px); }
-
+/* CARD LIST */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; margin-bottom: 10px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; flex-shrink: 0; }
-.card-info { flex: 1; min-width: 0; }
-.card-title { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-meta { font-size: 12px; color: var(--md-on-surface-variant); margin-top: 2px; }
-.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
 
-.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+/* DETAILS */
+.detail-item { margin-bottom: 16px; }
+.detail-label { font-size: 12px; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.detail-value { font-size: 15px; color: #fff; font-weight: 500; }
 
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); max-height: 90vh; overflow-y: auto; }
+/* FORMS */
+.input-group { position: relative; margin-bottom: 16px; }
+.input-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
+.input-field:focus { border-color: var(--md-primary); }
+.input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
+
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); max-height: 95vh; display: flex; flex-direction: column; }
 .sheet.open { transform: translateY(0); }
+.sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; flex-shrink: 0; }
+.sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; }
+
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; font-family: inherit; }
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; cursor: pointer; }
+.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 </style>
 </head>
 <body>
@@ -123,12 +114,10 @@ input:checked + .slider:before { transform: translateX(20px); }
   <div style="height: 25vh; position: relative; flex-shrink: 0; background: #000;">
     <img id="playerBanner" style="width:100%; height:100%; object-fit:cover; opacity: 0.6;">
     <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:12px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 30;">
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-    </button>
+    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:12px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 30;"><svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
   </div>
   <div style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-    <img id="playerThumb" style="width:85px; height:115px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+    <img id="playerThumb" style="width:85px; height:115px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
     <div style="padding-bottom:5px;">
       <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
       <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant); font-weight:700;"></div>
@@ -136,47 +125,24 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
   </div>
   <div class="scroll-body" style="padding:0 16px;">
-    <div class="detail-controls">
-       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="window.triggerRenderDetail()">
-       <div class="control-row">
-         <div style="display:flex; align-items:center; gap:8px;">
-           <label class="switch"><input type="checkbox" id="wishlistToggle" onchange="window.triggerRenderDetail()"><span class="slider"></span></label>
-           <span style="font-size:12px; font-weight:600;">Wishlist Only</span>
-         </div>
-         <select id="sortSelect" onchange="window.triggerRenderDetail()" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
-           <option value="Year">Sort: Year</option>
-           <option value="Set">Sort: Set</option>
-           <option value="Graded">Sort: Graded</option>
-         </select>
-       </div>
-    </div>
     <div id="cardList"></div>
   </div>
-  <button class="fab" onclick="openCardForm()"><svg viewBox="0 0 24 24" width="30" height="30" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+  <button class="fab" onclick="openCardForm()"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
 </div>
 
-<div class="view offscreen-right" id="card-detail-view" style="z-index:100;">
-    <div class="top-bar">
-      <button class="icon-btn" onclick="history.back()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
-      <span class="brand" style="font-size:18px; text-align:center;">Card View</span>
-      <div style="width:48px;"></div>
-    </div>
-    <div class="scroll-body" style="padding:16px;">
-      <img id="d-cardImg" style="width:100%; border-radius:20px;">
-      <h2 id="d-cardTitle" style="margin-top:24px; font-size:22px;"></h2>
-      <div id="d-infoList" style="margin-top:20px;"></div>
-    </div>
+<div class="scrim" id="detailScrim" onclick="history.back()"></div>
+<div class="sheet" id="cardDetailSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-body" id="cardDetailBody"></div>
 </div>
 
 <div class="scrim" id="modalScrim" onclick="history.back()"></div>
-<div class="sheet" id="pSheet"><div class="sheet-body" id="pBody"></div></div>
-<div class="sheet" id="cSheet"><div class="sheet-body" id="cBody"></div></div>
+<div class="sheet" id="pSheet"><div class="sheet-handle"></div><div class="sheet-body" id="pBody"></div></div>
+<div class="sheet" id="cSheet"><div class="sheet-handle"></div><div class="sheet-body" id="cBody"></div></div>
 
 <script>
-// GLOBALS
-let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
-let lpTimer, lpStartPos = {x:0, y:0}, isLP = false;
-const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳', Hockey: '🏒', Soccer: '⚽' };
+let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false;
+const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
 function getCleanImg(url) {
   if (!url) return '';
@@ -188,15 +154,12 @@ function getCleanImg(url) {
 }
 
 window.startApp = function() {
-  if (!window.fs) return;
   const { onSnapshot, collection } = window.fs;
-
-  onSnapshot(collection(window.db, "Players"), (snap) => {
+  onSnapshot(collection(window.db, "Players"), snap => {
     ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderGallery();
   });
-
-  onSnapshot(collection(window.db, "Cards"), (snap) => {
+  onSnapshot(collection(window.db, "Cards"), snap => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
     renderGallery();
@@ -211,21 +174,19 @@ function renderGallery() {
     const bO = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
     return bO - aO;
   });
-
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => c.Owned === true || c.Owned === "true").length;
-    const uniqueSports = [...new Set(pC.map(c => c.Sport).filter(Boolean))];
-    const sportIcons = uniqueSports.map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
-
+    const uS = [...new Set(pC.map(c => c.Sport).filter(Boolean))];
+    const icons = uS.map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
     return `
     <div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <div class="sport-badge-row">${sportIcons}</div>
+      <div class="sport-badge-row">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;">
-        <div style="font-weight:700; font-size:14px; line-height:1.1;">${p.Player || p.id}</div>
-        <div class="tile-count">${o} owned</div>
+        <div style="font-weight:700; font-size:14px;">${p.Player || p.id}</div>
+        <div style="font-size:11px; opacity:0.8;">${o} owned</div>
       </div>
     </div>`;
   }).join('');
@@ -236,121 +197,100 @@ function openDetail(id) {
   history.pushState({v:'detail'}, '');
   renderDetail(selectedPlayer);
   document.getElementById('detail-view').classList.remove('offscreen-right');
-  document.getElementById('gallery-view').classList.add('offscreen-left');
 }
 
-window.triggerRenderDetail = () => renderDetail(selectedPlayer);
-
 function renderDetail(player) {
-  if(!player) return;
-  const sort = document.getElementById('sortSelect').value;
-  const q = (document.getElementById('detailSearchInput').value || "").toLowerCase();
-  const wishlistOnly = document.getElementById('wishlistToggle').checked;
-  
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
-  if (wishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
-  if (q) cards = cards.filter(c => (c.Set || "").toLowerCase().includes(q) || (c.Year || "").toLowerCase().includes(q) || (c.Number || "").toString().includes(q));
-
-  cards.sort((a,b) => {
-    if(sort === 'Year') return (a.Year || "").localeCompare(b.Year || "");
-    if(sort === 'Set') return (a.Set || "").localeCompare(b.Set || "");
-    if(sort === 'Graded') return (b.Grade ? 1 : 0) - (a.Grade ? 1 : 0);
-    return 0;
-  });
-
+  cards.sort((a,b) => (a.Year || "").localeCompare(b.Year || ""));
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
-  const oCount = ALL_CARDS.filter(c => c.Player === player.id && (c.Owned === true || c.Owned === "true")).length;
-  document.getElementById('playerDetailCount').innerText = `${oCount} Owned`;
-  document.getElementById('editPlayerBtn').onclick = (e) => { e.stopPropagation(); openPlayerForm(player.id); };
-
-  document.getElementById('cardList').innerHTML = cards.map(c => {
-    const isO = c.Owned === true || c.Owned === "true";
-    return `
-    <div class="card-item ${!isO ? 'not-owned' : ''}" 
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c => c.Owned === true || c.Owned === "true").length} Owned`;
+  document.getElementById('cardList').innerHTML = cards.map(c => `
+    <div class="card-item ${!(c.Owned === true || c.Owned === "true") ? 'not-owned' : ''}" 
          onclick="handleCardTap('${c.id}')" 
-         onmousedown="startLP(event, '${c.id}')" onmousemove="checkLP(event)" onmouseup="cancelLP()"
-         ontouchstart="startLP(event, '${c.id}')" ontouchmove="checkLP(event)" ontouchend="cancelLP()">
+         onmousedown="startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)"
+         ontouchstart="startLP('${c.id}')" ontouchend="clearTimeout(window.lpTimer)">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info">
-        <div class="card-title">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
-        <div class="card-meta">#${c.Number || 'N/A'} ${!isO ? '· Wishlist' : ''}</div>
-        ${c.Grade ? `<div class="grade-badge">${c['Grading Company'] || ''} ${c.Grade}</div>` : ''}
-      </div>
-    </div>`}).join('');
+      <div class="card-info"><div class="card-title">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
+    </div>`).join('');
 }
+
+window.startLP = (id) => { isLP = false; window.lpTimer = setTimeout(() => { isLP = true; openCardForm(id); }, 600); };
 
 window.handleCardTap = (id) => {
   if (isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
-  document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
-  const fields = [{l:'Number',v:c.Number},{l:'Sport',v:c.Sport},{l:'Grade',v:c.Grade},{l:'Company',v:c['Grading Company']},{l:'Status',v:(c.Owned===true||c.Owned==="true")?'✅ Owned':'⏳ Wishlist'},{l:'Notes',v:c.Notes}];
-  document.getElementById('d-infoList').innerHTML = fields.filter(f => f.v).map(f => `<div class="info-row"><div class="info-label">${f.l}</div><div class="info-value">${f.v}</div></div>`).join('');
+  const q = encodeURIComponent(`${c.Year} ${c.Set} ${selectedPlayer.Player || selectedPlayer.id} #${c.Number} sold`);
+  const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`;
+  const tcdbUrl = c['Card Information'] || c['Card_Information'] || '';
+  const price = parseFloat(c['Purchase Price (USD)'] || c.Price || 0);
+
+  const fields = [
+      {l:'Sport',v:c.Sport},{l:'Set',v:c.Set},{l:'Year',v:c.Year},{l:'Manufacturer',v:c.Manufacturer},
+      {l:'Number',v:c.Number},{l:'Team',v:c.Team},{l:'Notes',v:c.Notes}
+  ];
+
+  document.getElementById('cardDetailBody').innerHTML = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
+    <h2 style="margin-bottom:8px; font-family:'Google Sans Display'; font-size:26px;">${c.Year} ${c.Set}</h2>
+    <p style="color:var(--md-on-surface-variant); margin-bottom:24px;">#${c.Number || 'N/A'}</p>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:24px;">
+        <div style="background:var(--md-surface-1); padding:12px; border-radius:16px;">
+            <div class="detail-label">Cost</div><div style="font-weight:700; color:#4CAF50;">${price>0?'$'+price.toFixed(2):'--'}</div>
+        </div>
+        <div style="background:var(--md-surface-1); padding:12px; border-radius:16px;">
+            <div class="detail-label">Grade</div><div style="font-weight:700;">${c.Grade?(c['Grading Company']||'')+' '+c.Grade:'Raw'}</div>
+        </div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:32px;">
+        ${fields.filter(f => f.v).map(f => `<div class="detail-item"><div class="detail-label">${f.l}</div><div class="detail-value">${f.v}</div></div>`).join('')}
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        <a href="${ebayUrl}" target="_blank" style="text-decoration:none;"><button class="primary-btn" style="background:#0064D2;">Check eBay Market Value</button></a>
+        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="primary-btn" style="background:#222; border:1px solid #444;">TCDB Checklist</button></a>` : ''}
+    </div>
+  `;
+  document.getElementById('cardDetailSheet').classList.add('open');
+  document.getElementById('detailScrim').classList.add('open');
   history.pushState({v:'card'}, '');
-  document.getElementById('card-detail-view').classList.remove('offscreen-right');
 };
 
-window.onpopstate = (event) => {
-  const state = event.state || {};
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (state.v === 'card') {
-    document.getElementById('card-detail-view').classList.remove('offscreen-right');
-  } else if (state.v === 'detail') {
-    document.getElementById('card-detail-view').classList.add('offscreen-right');
-    document.getElementById('detail-view').classList.remove('offscreen-right');
-    document.getElementById('gallery-view').classList.add('offscreen-left');
-  } else {
-    document.getElementById('card-detail-view').classList.add('offscreen-right');
-    document.getElementById('detail-view').classList.add('offscreen-right');
-    document.getElementById('gallery-view').classList.remove('offscreen-left');
-    selectedPlayer = null;
-  }
-};
-
-window.startLP = (e, id) => { isLP = false; const touch = e.touches ? e.touches[0] : e; lpStartPos = { x: touch.clientX, y: touch.clientY }; lpTimer = setTimeout(() => { isLP = true; openCardForm(id); }, 600); };
-window.checkLP = (e) => { const touch = e.touches ? e.touches[0] : e; const dist = Math.hypot(touch.clientX - lpStartPos.x, touch.clientY - lpStartPos.y); if (dist > 10) clearTimeout(lpTimer); };
-window.cancelLP = () => clearTimeout(lpTimer);
+const input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
 
 window.openCardForm = (id = null) => {
-  history.pushState({v:'form'}, '');
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
   const isO = c.Owned === true || c.Owned === "true";
   document.getElementById('cBody').innerHTML = `
-    <h2 class="sheet-title">${id ? 'Edit' : 'Add'} Card</h2>
-    <input id="cf-year" class="input-field" value="${c.Year || ''}" placeholder="Year">
-    <input id="cf-set" class="input-field" value="${c.Set || ''}" placeholder="Set">
-    <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
-    <input id="cf-sport" class="input-field" value="${c.Sport || ''}" placeholder="Sport (e.g. Baseball)">
-    <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
-    <textarea id="cf-notes" class="input-field" placeholder="Notes" style="height:80px;">${c.Notes || ''}</textarea>
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''} style="width:20px;height:20px;"><label>I own this card</label></div>
-    <button class="primary-btn" onclick="saveCard('${id||''}')">Save</button>
+    <h2 class="sheet-title" style="margin-bottom:24px;">${id ? 'Edit' : 'Add'} Card</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${input('cf-year','Year',c.Year)}${input('cf-num','Number',c.Number)}</div>
+    ${input('cf-set','Set/Brand',c.Set)}
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${input('cf-company','Grading Co',c['Grading Company'])}${input('cf-grade','Grade',c.Grade)}</div>
+    ${input('cf-price','Price Paid',c['Purchase Price (USD)']||c.Price)}
+    ${input('cf-img','Image URL',c['App Image'])}
+    ${input('cf-tcdb','TCDB URL',c['Card Information']||c['Card_Information'])}
+    ${input('cf-notes','Notes',c.Notes)}
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''} style="width:24px;height:24px;"><label style="font-weight:700;">Add to Collection</label></div>
+    <button class="primary-btn" onclick="saveCard('${id||''}')">Update Database</button>
   `;
   document.getElementById('cSheet').classList.add('open');
   document.getElementById('modalScrim').classList.add('open');
+  history.pushState({v:'form'}, '');
 };
 
 window.saveCard = async (id) => {
-  const data = { Player: selectedPlayer.id, Year: document.getElementById('cf-year').value, Set: document.getElementById('cf-set').value, Number: document.getElementById('cf-num').value, Sport: document.getElementById('cf-sport').value, "App Image": document.getElementById('cf-img').value, Owned: document.getElementById('cf-owned').checked, Notes: document.getElementById('cf-notes').value };
+  const data = { Player: selectedPlayer.id, Year: document.getElementById('cf-year').value, Set: document.getElementById('cf-set').value, Number: document.getElementById('cf-num').value, "Grading Company": document.getElementById('cf-company').value, Grade: document.getElementById('cf-grade').value, "Purchase Price (USD)": document.getElementById('cf-price').value, "App Image": document.getElementById('cf-img').value, "Card Information": document.getElementById('cf-tcdb').value, Owned: document.getElementById('cf-owned').checked, Notes: document.getElementById('cf-notes').value };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   history.back();
 };
 
 window.openPlayerForm = (id = null) => {
-    history.pushState({v:'pform'}, '');
     const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-    document.getElementById('pBody').innerHTML = `
-        <h2 class="sheet-title">Player Profile</h2>
-        <input id="pf-name" class="input-field" value="${p.Player || p.id || ''}" placeholder="Name">
-        <input id="pf-main" class="input-field" value="${p['Main Image'] || ''}" placeholder="Main URL">
-        <input id="pf-banner" class="input-field" value="${p['Banner_Image'] || ''}" placeholder="Banner URL">
-        <button class="primary-btn" onclick="savePlayer()">Save</button>
-    `;
+    document.getElementById('pBody').innerHTML = `<h2 class="sheet-title">Player Profile</h2>${input('pf-name','Name',p.Player||p.id)}${input('pf-main','Main Image URL',p['Main Image'])}${input('pf-banner','Banner URL',p['Banner_Image'])}<button class="primary-btn" onclick="savePlayer()">Save Profile</button>`;
     document.getElementById('pSheet').classList.add('open');
     document.getElementById('modalScrim').classList.add('open');
+    history.pushState({v:'pform'}, '');
 };
 
 window.savePlayer = async () => {
@@ -358,6 +298,28 @@ window.savePlayer = async () => {
     const data = { Player: name, "Main Image": document.getElementById('pf-main').value, "Banner_Image": document.getElementById('pf-banner').value };
     await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
     history.back();
+};
+
+// SWIPE TO DISMISS
+let touchStartY = 0;
+const setupSwipe = (el) => {
+    el.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
+    el.addEventListener('touchmove', e => {
+        const deltaY = e.touches[0].clientY - touchStartY;
+        if (deltaY > 0) el.style.transform = `translateY(${deltaY}px)`;
+    });
+    el.addEventListener('touchend', e => {
+        const deltaY = e.changedTouches[0].clientY - touchStartY;
+        if (deltaY > 150) history.back();
+        else el.style.transform = '';
+    });
+};
+setupSwipe(document.getElementById('cardDetailSheet'));
+
+window.onpopstate = () => {
+  document.querySelectorAll('.view').forEach(v => v.id !== 'gallery-view' && v.classList.add('offscreen-right'));
+  document.getElementById('gallery-view').classList.remove('offscreen-left');
+  document.querySelectorAll('.sheet, .scrim').forEach(el => { el.classList.remove('open'); el.style.transform = ''; });
 };
 </script>
 </body>
