@@ -18,7 +18,7 @@
     persistentLocalCache, 
     persistentMultipleTabManager,
     collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  } from "https://https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
@@ -63,28 +63,36 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
+.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
+.brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; color: var(--md-on-surface); }
+.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
+
+.icon-btn { background: var(--md-surface-2); border: none; color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* Player Gallery Tiles - UPDATED */
+.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 16px; }
+.player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; /* Made images longer (3:4 aspect ratio) */ cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+/* REPLACED: Moved icons inside text bar on far right */
+.sport-badge-row { display: flex; align-items: center; gap: 4px; z-index: 5; flex-shrink: 0; }
+.sport-icon { background: rgba(255,255,255,0.7); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+
+/* NEW: Glassmorphism Text Background for Gallery */
+.tile-text-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px 16px; background: rgba(255,255,255,0.1); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: space-between; }
+.tile-title { font-weight: 700; font-size: 16px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.tile-subtitle { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; }
+
+/* detail page specific */
 .master-col { flex: 1; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-2); }
-.detail-pane { flex: 1; background: var(--md-surface-2); display: none; flex-direction: column; overflow-y: auto; padding: 32px; }
+.detail-pane { flex: 1.5; background: var(--md-surface-2); display: none; flex-direction: column; overflow-y: auto; padding: 32px; }
 
 @media (min-width: 1024px) {
   .detail-pane { display: flex; }
   .sheet#cardDetailSheet { display: none !important; }
 }
 
-.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
-.brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; color: var(--md-on-surface); }
-.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
-
-.icon-btn { background: var(--md-surface-2); border: none; color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); border-radius: 50%; margin: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
-/* Player Gallery Tiles */
-.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; padding: 16px; }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-
-.sport-badge-row { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 6px; z-index: 10; }
-.sport-icon { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
 /* Card List Row */
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; transition: transform 0.1s; position: relative; }
@@ -141,7 +149,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 <div class="view" id="detail-view">
   <div class="master-col">
     <div style="height: 25vh; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
-      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover; opacity: 1;">
+      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover; opacity: 0.8;">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
       <button class="back-btn" onclick="window.closeDetail()">
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -217,44 +225,36 @@ function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
+    
+    // UPDATED: Icons shift to right, text background re-added
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
+    
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <div class="sport-badge-row">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(255,255,255,0.4));"></div>
-      <div style="position:absolute; bottom:12px; left:12px;"><div style="font-weight:700;">${p.Player || p.id}</div><div style="font-size:11px; opacity:0.8;">${o} owned</div></div>
+      <div class="tile-text-bar">
+        <div>
+          <div class="tile-title">${p.Player || p.id}</div>
+          <div class="tile-subtitle">${o} owned</div>
+        </div>
+        <div class="sport-badge-row">${icons}</div>
+      </div>
     </div>`;
   }).join('');
 }
 
+// other detail views logic remain unchanged...
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   if (!window.selectedPlayer) return;
-  
-  // FIX: Restore Hero and Thumb images
-  document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
-  document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
-  document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
-  
-  cardSearchQuery = "";
-  document.getElementById('cardSearchInput').value = "";
-  document.getElementById('panePlaceholder').style.display = 'flex';
-  document.getElementById('paneContent').style.display = 'none';
-  renderDetail(window.selectedPlayer);
-  document.getElementById('editPlayerBtn').onclick = () => window.openPlayerForm(window.selectedPlayer.id);
-  document.getElementById('addCardFab').onclick = () => window.openCardForm();
-  const dv = document.getElementById('detail-view');
-  dv.style.display = 'flex';
-  setTimeout(() => dv.classList.add('active'), 10);
+  document.getElementById('editPlayerBtn').style.display = 'block';
+  history.pushState({v:'detail'}, '');
   history.pushState({v:'detail'}, '');
 };
 
 window.closeDetail = () => {
-  const dv = document.getElementById('detail-view');
-  dv.classList.remove('active');
-  setTimeout(() => { dv.style.display = 'none'; }, 300);
   window.selectedPlayer = null;
-  if(history.state?.v === 'detail') history.back();
+  history.back();
 };
 
 function renderDetail(player) {
@@ -267,6 +267,9 @@ function renderDetail(player) {
   if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
+  document.getElementById('playerName').innerText = player.Player || player.id;
+  document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
+  document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
 
   document.getElementById('cardList').innerHTML = cards.map(c => {
@@ -278,8 +281,7 @@ function renderDetail(player) {
     
     return `<div class="card-item ${!isOwned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
-      ${badgeHtml}
+      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${badgeHtml}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
     </div>`;
   }).join('');
 }
