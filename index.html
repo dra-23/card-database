@@ -51,10 +51,11 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); padding-top: var(--safe-top); z-index: 10; pointer-events: auto; }
-#gallery-view { z-index: 5; }
-#detail-view { z-index: 20; transform: translateX(100%); visibility: hidden; }
-#detail-view.active { transform: translateX(0); visibility: visible; }
+/* FIX: Z-Index and Display:none to resolve Ghosting/Unclickable players */
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); padding-top: var(--safe-top); z-index: 10; display: none; }
+#gallery-view { z-index: 5; display: flex; }
+#detail-view { z-index: 20; transform: translateX(100%); }
+#detail-view.active { transform: translateX(0); display: flex; }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -102,7 +103,11 @@ input:checked + .slider:before { transform: translateX(18px); }
 
 .fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
-/* Form Elements */
+/* Material Expressive Button */
+.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; }
+.expressive-btn:active { transform: scale(0.97); background: var(--md-surface-2); }
+
+.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
 .input-group { position: relative; margin-bottom: 20px; }
 .input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
@@ -169,7 +174,6 @@ window.startApp = function() {
 
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
-  // SORTING: Most owned to least owned
   const sorted = [...ALL_PLAYERS].sort((a,b) => {
     const aCount = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
     const bCount = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
@@ -179,10 +183,7 @@ function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    
-    // RESTORE SPORT ICONS (Multi-sport logic)
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
-
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
       <div style="position:absolute; top:10px; right:10px; display:flex; gap:4px; z-index:5;">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
@@ -245,7 +246,6 @@ window.closeAll = () => {
 window.handleCardTap = (id) => {
   if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  // RESTORE CARD DETAIL INFORMATION
   document.getElementById('cardDetailBody').innerHTML = `
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
     <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
@@ -255,23 +255,19 @@ window.handleCardTap = (id) => {
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Sport</div><div>${c.Sport || 'Other'}</div></div>
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Status</div><div>${(c.Owned===true||c.Owned==="true")?'Owned':'Wishlist'}</div></div>
     </div>
-    <button class="primary-btn" onclick="window.openCardForm('${c.id}')" style="background:#333; margin-top:12px;">Edit Card</button>
+    <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      Edit Card
+    </button>
   `;
   document.getElementById('cardDetailSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'card'}, '');
 };
 
-/* REBUILD FORMS */
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `
-    <h2 style="margin-bottom:24px;">${id ? 'Edit' : 'Add'} Player</h2>
-    ${window.input('pf-n', 'Player Name', p.Player || p.id)}
-    ${window.input('pf-m', 'Thumb URL', p['Main Image'])}
-    ${window.input('pf-b', 'Banner URL', p['Banner_Image'])}
-    <button class="primary-btn" onclick="window.savePlayer()">Save Player</button>
-  `;
+  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2>${window.input('pf-n', 'Player Name', p.Player || p.id)}${window.input('pf-m', 'Thumb URL', p['Main Image'])}${window.input('pf-b', 'Banner URL', p['Banner_Image'])}<button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'modal'}, '');
@@ -288,32 +284,7 @@ window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
   const isO = (c.Owned === true || c.Owned === "true");
   let co = "", gr = ""; if (c.Grade) { const p = c.Grade.split(' '); co = p[0]; gr = p.slice(1).join(' '); }
-
-  document.getElementById('modalBody').innerHTML = `
-    <h2 style="margin-bottom:24px;">${id ? 'Edit' : 'Add'} Card</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-      ${window.input('cf-y', 'Year', c.Year)}
-      ${window.input('cf-n', 'Number', c.Number)}
-    </div>
-    ${window.input('cf-s', 'Set', c.Set)}
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-      ${window.input('cf-co', 'Co (PSA)', co)}
-      ${window.input('cf-gr', 'Grade', gr)}
-    </div>
-    <div class="input-group">
-      <div class="input-label">Sport</div>
-      <select id="cf-sp" class="select-field">
-        <option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option>
-        <option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option>
-        <option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option>
-      </select>
-    </div>
-    ${window.input('cf-i', 'Image URL', c['App Image'])}
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
-      <input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label>
-    </div>
-    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>
-  `;
+  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Card</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>${window.input('cf-s', 'Set', c.Set)}<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-co', 'Co (PSA)', co)}${window.input('cf-gr', 'Grade', gr)}</div><div class="input-group"><div class="input-label">Sport</div><select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>${window.input('cf-i', 'Image URL', c['App Image'])}<div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div><button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'modal'}, '');
@@ -322,12 +293,7 @@ window.openCardForm = (id = null) => {
 window.saveCard = async (id) => {
   const co = document.getElementById('cf-co').value.toUpperCase();
   const gr = document.getElementById('cf-gr').value;
-  const data = { 
-    Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, 
-    Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value,
-    Grade: co ? `${co} ${gr}` : gr, Sport: document.getElementById('cf-sp').value,
-    "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked
-  };
+  const data = { Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, Grade: co ? `${co} ${gr}` : gr, Sport: document.getElementById('cf-sp').value, "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   window.closeAll();
