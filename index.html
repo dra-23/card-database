@@ -74,13 +74,11 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
-.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* List */
-.card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; }
+/* List Item Styles */
+.card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
-.card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
+.card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; flex-shrink: 0; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; white-space: nowrap; }
 
 /* Search Bar */
@@ -177,10 +175,10 @@ let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 let playersLoaded = false, cardsLoaded = false;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
+// FIX: Direct reference to Firebase field 'App Image'
 function getCleanImg(url) {
   if (!url) return 'https://placehold.co/400x600/111/333?text=No+Image';
   let cleanUrl = url.toString().trim();
-  // RESTORED: Standard conversion for Google Drive user content
   if (cleanUrl.includes('drive.google.com')) {
     let id = "";
     if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
@@ -212,10 +210,8 @@ function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <div class="sport-badge-row">${icons}</div>
-      <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
+      <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy" crossorigin="anonymous" referrerpolicy="no-referrer">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;"><div style="font-weight:700;">${p.Player || p.id}</div><div style="font-size:11px; opacity:0.8;">${o} owned</div></div>
     </div>`;
@@ -252,7 +248,7 @@ function renderDetail(player) {
     const q = cardSearchQuery.toLowerCase();
     cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
   }
-  if (showGradedOnly) cards = cards.filter(c => c.Grade && c.Grade.toString().trim() !== "");
+  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"].toString().trim() !== "");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
   document.getElementById('playerName').innerText = player.Player || player.id;
@@ -268,7 +264,7 @@ function renderDetail(player) {
     const badgeHtml = fullGrade ? `<span class="badge-inline">${fullGrade}</span>` : '';
     
     return `<div class="card-item ${!isOwned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')" onmousedown="window.startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)">
-      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
+      <img class="card-thumb" src="${getCleanImg(c['App Image'])}" crossorigin="anonymous" referrerpolicy="no-referrer">
       <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${badgeHtml}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
     </div>`;
   }).join('');
@@ -290,7 +286,7 @@ window.handleCardTap = (id) => {
   const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
 
   document.getElementById('cardDetailBody').innerHTML = `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;" crossorigin="anonymous" referrerpolicy="no-referrer">
     <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;">
       <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div>
