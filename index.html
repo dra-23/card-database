@@ -79,7 +79,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* Material Expressive Search */
+/* Material Expressive Search Bar */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
   width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; 
@@ -167,9 +167,8 @@ input:checked + .slider:before { transform: translateX(18px); }
 <script>
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false, lpTimer;
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
+let playersLoaded = false, cardsLoaded = false; // GATEKEEPERS
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
-
-window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
 
 function getCleanImg(url) {
   if (!url) return '';
@@ -179,14 +178,24 @@ function getCleanImg(url) {
 
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
-  onSnapshot(collection(window.db, "Players"), snap => { ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderGallery(); });
+  onSnapshot(collection(window.db, "Players"), snap => { 
+    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
+    playersLoaded = true;
+    checkAndRender(); 
+  });
   onSnapshot(collection(window.db, "Cards"), snap => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    renderGallery();
+    cardsLoaded = true;
+    checkAndRender();
     if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
 };
+
+function checkAndRender() {
+  // ONLY render the gallery once BOTH collections have data
+  if (playersLoaded && cardsLoaded) renderGallery();
+}
 
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
@@ -304,7 +313,7 @@ window.openCardForm = (id = null) => {
       <div class="input-group"><div class="input-label">Grade</div><select id="cf-gr" class="select-field"><option value="">N/A</option>${grades.map(g=>`<option value="${g}" ${existingGr===g?'selected':''}>${g}</option>`).join('')}</select></div>
     </div>
     <div class="input-group"><div class="input-label">Sport</div><select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>
-    ${window.input('cf-i', 'Image URL', c['App Image'])}
+    ${window.input('cf-i', 'App Image URL', c['App Image'])}
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div>
     <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
   document.getElementById('modalSheet').classList.add('open');
