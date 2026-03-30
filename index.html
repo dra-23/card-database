@@ -25,10 +25,17 @@
   measurementId: "G-67S1G9KPJM"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window.db = db;
-  window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+    console.log("Firebase Ready");
+    // Trigger the init after Firebase is definitely available
+    if(window.startApp) window.startApp();
+  } catch (e) {
+    console.error("Firebase Error:", e);
+  }
 </script>
 
 <style>
@@ -43,9 +50,8 @@
   --md-on-surface: #F0F0F0;
   --md-on-surface-variant: #999999;
 }
-html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* IMMERSIVE FIXED VIEWS */
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
 .view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
@@ -53,25 +59,20 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-/* TOP BAR */
 .top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; letter-spacing: -1.5px; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
-/* TILES */
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
-.tile-count { font-size: 11px; opacity: 0.7; }
 
-/* CARD LIST & SEARCH */
 .detail-search-bar { background: var(--md-surface-2); border-radius: 12px; display: flex; align-items: center; padding: 0 12px; height: 44px; margin-bottom: 16px; }
 .detail-search-input { background: none; border: none; outline: none; color: #fff; flex: 1; font-size: 14px; }
 .card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.5; border: 1px dashed #444; }
-.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
 
-/* UI ELEMENTS */
+.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
 .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
@@ -79,7 +80,7 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 .sheet.open { transform: translateY(0); }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; font-family: inherit; }
+.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
@@ -106,7 +107,6 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
       <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
     </button>
   </div>
-  
   <div style="margin-top:-80px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
     <img id="playerThumb" style="width:100px; height:130px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
     <div style="padding-bottom:10px;">
@@ -115,7 +115,6 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
       <button id="editPlayerBtn" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:6px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
-
   <div class="scroll-body" style="padding:0 16px;">
     <div class="detail-search-bar">
        <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="renderDetail(selectedPlayer)">
@@ -126,4 +125,208 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
          <option value="Owned">Owned</option>
        </select>
     </div>
-    <div
+    <div id="cardList"></div>
+  </div>
+  <button class="fab" onclick="openCardForm()">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+  </button>
+</div>
+
+<div class="view offscreen-right" id="card-detail-view" style="z-index:100;">
+    <div class="top-bar">
+      <button class="icon-btn" onclick="history.back()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span class="brand" style="font-size:18px; text-align:center;">Card View</span>
+      <div style="width:48px;"></div>
+    </div>
+    <div class="scroll-body" style="padding:20px;">
+      <img id="d-cardImg" style="width:100%; border-radius:24px;">
+      <h2 id="d-cardTitle" style="margin-top:24px;"></h2>
+      <p id="d-cardSubtitle" style="color:var(--md-on-surface-variant);"></p>
+      <div id="d-ownedStatus" style="margin-top:12px; font-weight:700;"></div>
+    </div>
+</div>
+
+<div class="scrim" id="modalScrim" onclick="history.back()"></div>
+<div class="sheet" id="pSheet"><div class="sheet-body" id="pBody"></div></div>
+<div class="sheet" id="cSheet"><div class="sheet-body" id="cBody"></div></div>
+
+<script>
+let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, longPressTimer, isLongPress = false;
+
+function getCleanImg(url) {
+  if (!url) return '';
+  if (url.includes('drive.google.com')) {
+    const id = url.split('id=')[1] || url.split('/d/')[1].split('/')[0];
+    return `https://lh3.googleusercontent.com/u/0/d/${id}=w1000`;
+  }
+  return url;
+}
+
+window.onpopstate = (event) => {
+  const state = event.state || {};
+  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
+  if (state.v === 'card') {
+    document.getElementById('card-detail-view').classList.remove('offscreen-right');
+  } else if (state.v === 'detail') {
+    document.getElementById('card-detail-view').classList.add('offscreen-right');
+    document.getElementById('detail-view').classList.remove('offscreen-right');
+    document.getElementById('gallery-view').classList.add('offscreen-left');
+  } else {
+    document.getElementById('card-detail-view').classList.add('offscreen-right');
+    document.getElementById('detail-view').classList.add('offscreen-right');
+    document.getElementById('gallery-view').classList.remove('offscreen-left');
+    selectedPlayer = null;
+  }
+};
+
+window.startApp = function() {
+  const { onSnapshot, collection } = window.fs;
+
+  onSnapshot(collection(window.db, "Players"), (snap) => {
+    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderGallery();
+  });
+
+  onSnapshot(collection(window.db, "Cards"), (snap) => {
+    ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
+    renderGallery();
+    if(selectedPlayer) renderDetail(selectedPlayer);
+  });
+};
+
+function renderGallery() {
+  const grid = document.getElementById('playerGrid');
+  const sorted = [...ALL_PLAYERS].sort((a,b) => {
+    const aO = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
+    const bO = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
+    return bO - aO;
+  });
+  grid.innerHTML = sorted.map(p => {
+    const pC = ALL_CARDS.filter(c => c.Player === p.id);
+    const o = pC.filter(c => c.Owned === true || c.Owned === "true").length;
+    return `
+    <div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
+      <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
+      <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
+      <div style="position:absolute; bottom:12px; left:12px;">
+        <div style="font-weight:700; font-size:14px;">${p.Player || p.id}</div>
+        <div class="tile-count">${o} owned · ${pC.length} total</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDetail(id) {
+  selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
+  history.pushState({v:'detail'}, '');
+  renderDetail(selectedPlayer);
+  document.getElementById('detail-view').classList.remove('offscreen-right');
+  document.getElementById('gallery-view').classList.add('offscreen-left');
+}
+
+function renderDetail(player) {
+  const sort = document.getElementById('sortSelect').value;
+  const q = (document.getElementById('detailSearchInput').value || "").toLowerCase();
+  let cards = ALL_CARDS.filter(c => c.Player === player.id);
+  if (q) cards = cards.filter(c => (c.Set || "").toLowerCase().includes(q) || (c.Year || "").toLowerCase().includes(q));
+
+  cards.sort((a,b) => {
+    if(sort === 'Year') return (a.Year || "").localeCompare(b.Year || "");
+    if(sort === 'Set') return (a.Set || "").localeCompare(b.Set || "");
+    if(sort === 'Graded') return (b.Grade ? 1 : 0) - (a.Grade ? 1 : 0);
+    if(sort === 'Owned') return (b.Owned === true ? 1 : 0) - (a.Owned === true ? 1 : 0);
+    return 0;
+  });
+
+  document.getElementById('playerName').innerText = player.Player || player.id;
+  document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
+  document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
+  const ownedTotal = ALL_CARDS.filter(c => c.Player === player.id && (c.Owned === true || c.Owned === "true")).length;
+  document.getElementById('playerDetailCount').innerText = `${ownedTotal} Owned · ${ALL_CARDS.filter(c => c.Player === player.id).length} Total`;
+  document.getElementById('editPlayerBtn').onclick = (e) => { e.stopPropagation(); openPlayerForm(player.id); };
+
+  document.getElementById('cardList').innerHTML = cards.map(c => {
+    const isO = c.Owned === true || c.Owned === "true";
+    return `
+    <div class="card-item ${!isO ? 'not-owned' : ''}" 
+         onclick="handleCardTap('${c.id}')" 
+         onmousedown="startPress('${c.id}')" onmouseup="endPress()" 
+         ontouchstart="startPress('${c.id}')" ontouchend="endPress()">
+      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
+      <div class="card-info">
+        <div style="font-weight:600;">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
+        <div style="font-size:12px; color:var(--md-on-surface-variant);">#${c.Number || 'N/A'}</div>
+        ${!isO ? '<div style="color:#FFA500; font-size:10px; font-weight:700; margin-top:4px;">Wishlist</div>' : ''}
+        ${c.Grade ? `<div class="grade-badge">${c['Grading Company'] || ''} ${c.Grade}</div>` : ''}
+      </div>
+    </div>`}).join('');
+}
+
+window.handleCardTap = (id) => {
+  if (isLongPress) return;
+  const c = ALL_CARDS.find(x => x.id === id);
+  document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
+  document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
+  document.getElementById('d-cardSubtitle').innerText = `Card #${c.Number || 'N/A'}`;
+  document.getElementById('d-ownedStatus').innerText = (c.Owned === true || c.Owned === "true") ? '✅ Owned' : '⏳ Wishlist';
+  history.pushState({v:'card'}, '');
+  document.getElementById('card-detail-view').classList.remove('offscreen-right');
+};
+
+window.startPress = (id) => {
+  isLongPress = false;
+  longPressTimer = setTimeout(() => { isLongPress = true; openCardForm(id); }, 600);
+};
+window.endPress = () => clearTimeout(longPressTimer);
+
+window.openCardForm = (id = null) => {
+  history.pushState({v:'form'}, '');
+  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
+  const isO = c.Owned === true || c.Owned === "true";
+  document.getElementById('cBody').innerHTML = `
+    <h2 class="sheet-title">${id ? 'Edit' : 'Add'} Card</h2>
+    <input id="cf-year" class="input-field" value="${c.Year || ''}" placeholder="Year">
+    <input id="cf-set" class="input-field" value="${c.Set || ''}" placeholder="Set">
+    <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
+    <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''}><label>I own this card</label></div>
+    <button class="primary-btn" onclick="saveCard('${id||''}')">Save</button>
+  `;
+  document.getElementById('cSheet').classList.add('open');
+  document.getElementById('modalScrim').classList.add('open');
+};
+
+window.saveCard = async (id) => {
+  const data = { Player: selectedPlayer.id, Year: document.getElementById('cf-year').value, Set: document.getElementById('cf-set').value, Number: document.getElementById('cf-num').value, "App Image": document.getElementById('cf-img').value, Owned: document.getElementById('cf-owned').checked };
+  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
+  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
+  history.back();
+};
+
+window.openPlayerForm = (id = null) => {
+    history.pushState({v:'pform'}, '');
+    const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
+    document.getElementById('pBody').innerHTML = `
+        <h2 class="sheet-title">Player Profile</h2>
+        <input id="pf-name" class="input-field" value="${p.Player || p.id || ''}" placeholder="Name">
+        <input id="pf-main" class="input-field" value="${p['Main Image'] || ''}" placeholder="Main URL">
+        <input id="pf-banner" class="input-field" value="${p['Banner_Image'] || ''}" placeholder="Banner URL">
+        <button class="primary-btn" onclick="savePlayer()">Save</button>
+    `;
+    document.getElementById('pSheet').classList.add('open');
+    document.getElementById('modalScrim').classList.add('open');
+};
+
+window.savePlayer = async () => {
+    const name = document.getElementById('pf-name').value;
+    const data = { Player: name, "Main Image": document.getElementById('pf-main').value, "Banner_Image": document.getElementById('pf-banner').value };
+    await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
+    history.back();
+};
+
+// Check if app was already running or wait for Firebase
+if(window.fs) window.startApp();
+</script>
+</body>
+</html>
