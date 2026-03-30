@@ -25,10 +25,18 @@
   measurementId: "G-67S1G9KPJM"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window.db = db;
-  window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+    console.log("Firebase initialized");
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => window.startApp());
+    } else {
+      window.startApp();
+    }
+  } catch (e) { console.error("Firebase Initialization Error:", e); }
 </script>
 
 <style>
@@ -46,7 +54,6 @@
 }
 html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* VIEW STACKING */
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1,0.9,0.2,1); z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
 .view.offscreen-left { transform: translateX(-20%); opacity: 0.5; }
@@ -54,12 +61,10 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-/* TOP BAR */
 .top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(75px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; letter-spacing: -1.2px; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
-/* TILES & CARD LIST */
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
@@ -68,43 +73,16 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 .card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); border: 1px dashed #444; }
 .card-thumb { width: 55px !important; height: 75px !important; border-radius: 6px; object-fit: cover; background: #222; flex-shrink: 0; }
 
-/* MATERIAL EXPRESSIVE INPUTS */
 .input-group { position: relative; margin-bottom: 20px; }
-.input-field { 
-    width: 100%; 
-    background: transparent; 
-    border: 1.5px solid var(--md-outline); 
-    border-radius: 12px; 
-    padding: 16px; 
-    color: #fff; 
-    font-size: 16px; 
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s;
-}
+.input-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.2s; }
 .input-field:focus { border-color: var(--md-primary); }
-.input-label {
-    position: absolute;
-    left: 12px;
-    top: -8px;
-    background: var(--md-surface-2);
-    padding: 0 4px;
-    font-size: 12px;
-    color: var(--md-on-surface-variant);
-}
+.input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
 
-/* DETAILS & SHEETS */
 .detail-item { margin-bottom: 16px; }
 .detail-label { font-size: 12px; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
 .detail-value { font-size: 15px; color: #fff; font-weight: 500; }
 
-.sheet { 
-    position: fixed; bottom: 0; left: 0; right: 0; 
-    background: var(--md-surface-2); border-radius: 32px 32px 0 0; 
-    z-index: 1000; transform: translateY(100%); 
-    transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); 
-    padding-bottom: var(--safe-bottom); max-height: 95vh; display: flex; flex-direction: column;
-}
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 95vh; display: flex; flex-direction: column; }
 .sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; }
@@ -115,7 +93,7 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
 .sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; z-index: 5; }
 .sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-.fab { position: absolute; bottom: calc(20px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 </style>
 </head>
 <body>
@@ -124,7 +102,7 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
   <div class="top-bar">
     <span class="brand">sleevd</span>
     <div class="total-count-pill" id="totalOwnedCounter">0</div>
-    <button class="icon-btn" onclick="openPlayerForm()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
+    <button class="icon-btn" onclick="window.openPlayerForm()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
   </div>
   <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
 </div>
@@ -140,25 +118,30 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
     <div style="padding-bottom:5px;">
       <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
       <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant); font-weight:700;"></div>
-      <button onclick="openPlayerForm(selectedPlayer.id)" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:5px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
+      <button onclick="window.openPlayerForm(window.selectedPlayer.id)" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:5px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
   <div class="scroll-body" style="padding:0 16px;"><div id="cardList"></div></div>
-  <button class="fab" onclick="openCardForm()"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+  <button class="fab" onclick="window.openCardForm()"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
 </div>
 
 <div class="scrim" id="detailScrim" onclick="history.back()"></div>
-<div class="sheet" id="cardDetailSheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-body" id="cardDetailBody"></div>
-</div>
+<div class="sheet" id="cardDetailSheet"><div class="sheet-handle"></div><div class="sheet-body" id="cardDetailBody"></div></div>
 
 <div class="scrim" id="modalScrim" onclick="history.back()"></div>
 <div class="sheet" id="pSheet"><div class="sheet-handle"></div><div class="sheet-body" id="pBody"></div></div>
 <div class="sheet" id="cSheet"><div class="sheet-handle"></div><div class="sheet-body" id="cBody"></div></div>
 
 <script>
-let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false;
+// HOISTED HELPER FUNCTIONS
+window.input = (id, label, val) => `
+    <div class="input-group">
+        <div class="input-label">${label}</div>
+        <input id="${id}" class="input-field" value="${val || ''}">
+    </div>
+`;
+
+let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false, lpTimer;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
 function getCleanImg(url) {
@@ -173,23 +156,8 @@ function getCleanImg(url) {
   return url;
 }
 
-window.onpopstate = (event) => {
-  const state = event.state || {};
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (state.v === 'card') {
-    document.getElementById('cardDetailSheet').classList.add('open');
-    document.getElementById('detailScrim').classList.add('open');
-  } else if (state.v === 'detail') {
-    document.getElementById('detail-view').classList.remove('offscreen-right');
-    document.getElementById('gallery-view').classList.add('offscreen-left');
-  } else {
-    document.getElementById('detail-view').classList.add('offscreen-right');
-    document.getElementById('gallery-view').classList.remove('offscreen-left');
-    selectedPlayer = null;
-  }
-};
-
 window.startApp = function() {
+  if (!window.fs) return;
   const { onSnapshot, collection } = window.fs;
   onSnapshot(collection(window.db, "Players"), snap => {
     ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -199,7 +167,7 @@ window.startApp = function() {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
     renderGallery();
-    if(selectedPlayer) renderDetail(selectedPlayer);
+    if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
 };
 
@@ -214,7 +182,7 @@ function renderGallery() {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => c.Owned === true || c.Owned === "true").length;
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
-    return `<div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
+    return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
       <div class="sport-badge-row">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
@@ -223,12 +191,12 @@ function renderGallery() {
   }).join('');
 }
 
-function openDetail(id) {
-  selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
+window.openDetail = (id) => {
+  window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   history.pushState({v:'detail'}, '');
-  renderDetail(selectedPlayer);
+  renderDetail(window.selectedPlayer);
   document.getElementById('detail-view').classList.remove('offscreen-right');
-}
+};
 
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
@@ -238,17 +206,19 @@ function renderDetail(player) {
   document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c => c.Owned === true || c.Owned === "true").length} Owned`;
   document.getElementById('cardList').innerHTML = cards.map(c => `
-    <div class="card-item ${!(c.Owned===true||c.Owned==="true")?'not-owned':''}" onclick="handleCardTap('${c.id}')" 
-         onmousedown="startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)" ontouchstart="startLP('${c.id}')" ontouchend="clearTimeout(window.lpTimer)">
+    <div class="card-item ${!(c.Owned===true||c.Owned==="true")?'not-owned':''}" onclick="window.handleCardTap('${c.id}')" 
+         onmousedown="window.startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)" ontouchstart="window.startLP('${c.id}')" ontouchend="clearTimeout(window.lpTimer)">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
     </div>`).join('');
 }
 
+window.startLP = (id) => { window.isLP = false; window.lpTimer = setTimeout(() => { window.isLP = true; window.openCardForm(id); }, 600); };
+
 window.handleCardTap = (id) => {
-  if (isLP) return;
+  if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  const q = encodeURIComponent(`${c.Year} ${c.Set} ${selectedPlayer.Player || selectedPlayer.id} #${c.Number} sold`);
+  const q = encodeURIComponent(`${c.Year} ${c.Set} ${window.selectedPlayer.Player || window.selectedPlayer.id} #${c.Number} sold`);
   const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`;
   const info = [{l:'Sport',v:c.Sport},{l:'Set',v:c.Set},{l:'Year',v:c.Year},{l:'Number',v:c.Number},{l:'Team',v:c.Team},{l:'Notes',v:c.Notes}];
 
@@ -267,24 +237,22 @@ window.handleCardTap = (id) => {
   history.pushState({v:'card'}, '');
 };
 
-const input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
-
 window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
   const isO = c.Owned === true || c.Owned === "true";
   document.getElementById('cBody').innerHTML = `
     <h2 style="margin-bottom:24px; font-family:'Google Sans Display';">${id ? 'Edit' : 'Add'} Card</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${input('cf-y','Year',c.Year)}${input('cf-n','Number',c.Number)}</div>
-    ${input('cf-s','Set',c.Set)}${input('cf-sp','Sport',c.Sport)}${input('cf-i','Image URL',c['App Image'])}
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${(c.Owned===true||c.Owned==="true")?'checked':''} style="width:24px;height:24px;"><label>I own this card</label></div>
-    <button class="primary-btn" onclick="saveCard('${id||''}')">Save Card</button>`;
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y','Year',c.Year)}${window.input('cf-n','Number',c.Number)}</div>
+    ${window.input('cf-s','Set',c.Set)}${window.input('cf-sp','Sport',c.Sport)}${window.input('cf-i','Image URL',c['App Image'])}
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>I own this card</label></div>
+    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
   document.getElementById('cSheet').classList.add('open');
   document.getElementById('modalScrim').classList.add('open');
   history.pushState({v:'form'}, '');
 };
 
 window.saveCard = async (id) => {
-  const data = { Player: selectedPlayer.id, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, Sport: document.getElementById('cf-sp').value, "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked };
+  const data = { Player: window.selectedPlayer.id, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, Number: document.getElementById('cf-n').value, Sport: document.getElementById('cf-sp').value, "App Image": document.getElementById('cf-i').value, Owned: document.getElementById('cf-o').checked };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   history.back();
@@ -292,7 +260,7 @@ window.saveCard = async (id) => {
 
 window.openPlayerForm = (id = null) => {
     const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-    document.getElementById('pBody').innerHTML = `<h2 style="margin-bottom:24px; font-family:'Google Sans Display';">Player</h2>${input('pf-n','Name',p.Player||p.id)}${input('pf-m','Main URL',p['Main Image'])}${input('pf-b','Banner URL',p['Banner_Image'])}<button class="primary-btn" onclick="savePlayer()">Save</button>`;
+    document.getElementById('pBody').innerHTML = `<h2 style="margin-bottom:24px; font-family:'Google Sans Display';">Player</h2>${window.input('pf-n','Name',p.Player||p.id)}${window.input('pf-m','Main URL',p['Main Image'])}${window.input('pf-b','Banner URL',p['Banner_Image'])}<button class="primary-btn" onclick="window.savePlayer()">Save</button>`;
     document.getElementById('pSheet').classList.add('open');
     document.getElementById('modalScrim').classList.add('open');
     history.pushState({v:'pform'}, '');
@@ -305,24 +273,33 @@ window.savePlayer = async () => {
     history.back();
 };
 
-// IMPROVED FLICK LOGIC
+window.onpopstate = (event) => {
+  const state = event.state || {};
+  document.querySelectorAll('.sheet, .scrim').forEach(el => { el.classList.remove('open'); el.style.transform = ''; });
+  if (state.v === 'card') {
+    document.getElementById('cardDetailSheet').classList.add('open');
+    document.getElementById('detailScrim').classList.add('open');
+  } else if (state.v === 'detail') {
+    document.getElementById('detail-view').classList.remove('offscreen-right');
+    document.getElementById('gallery-view').classList.add('offscreen-left');
+  } else {
+    document.getElementById('detail-view').classList.add('offscreen-right');
+    document.getElementById('gallery-view').classList.remove('offscreen-left');
+    window.selectedPlayer = null;
+  }
+};
+
 let touchStartY = 0;
 const sheet = document.getElementById('cardDetailSheet');
 sheet.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
 sheet.addEventListener('touchmove', e => {
-    const delta = e.touches[0].clientY - touchStartY;
-    if (delta > 0) sheet.style.transform = `translateY(${delta}px)`;
+    const d = e.touches[0].clientY - touchStartY;
+    if (d > 0) sheet.style.transform = `translateY(${d}px)`;
 });
 sheet.addEventListener('touchend', e => {
-    if (e.changedTouches[0].clientY - touchStartY > 150) {
-        history.back(); 
-        sheet.style.transform = '';
-    } else {
-        sheet.style.transform = '';
-    }
+    if (e.changedTouches[0].clientY - touchStartY > 150) history.back();
+    else sheet.style.transform = '';
 });
-
-window.startLP = (id) => { isLP = false; window.lpTimer = setTimeout(() => { isLP = true; openCardForm(id); }, 600); };
 </script>
 </body>
 </html>
