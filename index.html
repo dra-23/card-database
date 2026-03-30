@@ -25,10 +25,24 @@
   measurementId: "G-67S1G9KPJM"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window.db = db;
-  window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+  // INITIALIZATION WITH ERROR TRAPPING
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+    console.log("Firebase initialized successfully");
+    
+    // Check if DOM is ready before starting data sync
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => window.startApp());
+    } else {
+      window.startApp();
+    }
+  } catch (error) {
+    console.error("Firebase Initialization Error:", error);
+    alert("Database connection failed. Please check your config.");
+  }
 </script>
 
 <style>
@@ -45,14 +59,14 @@
 }
 html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
+.view { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
 .view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
 
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(120px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(70px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
+.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; letter-spacing: -1.2px; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
@@ -61,9 +75,8 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-s
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
 .tile-count { font-size: 12px; font-weight: 700; color: #fff; }
 
-/* SPORT BADGES */
-.sport-badge-row { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 5; }
-.sport-icon { background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); }
+.sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; z-index: 5; }
+.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid rgba(255,255,255,0.1); }
 
 .detail-controls { background: var(--md-surface-2); border-radius: 16px; padding: 12px; margin-bottom: 20px; border: 1px solid var(--md-outline-variant); }
 .detail-search-input { background: var(--md-surface-3); border: none; outline: none; color: #fff; width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 15px; margin-bottom: 12px; }
@@ -124,13 +137,13 @@ input:checked + .slider:before { transform: translateX(20px); }
   </div>
   <div class="scroll-body" style="padding:0 16px;">
     <div class="detail-controls">
-       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="renderDetail(selectedPlayer)">
+       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="window.triggerRenderDetail()">
        <div class="control-row">
          <div style="display:flex; align-items:center; gap:8px;">
-           <label class="switch"><input type="checkbox" id="wishlistToggle" onchange="renderDetail(selectedPlayer)"><span class="slider"></span></label>
+           <label class="switch"><input type="checkbox" id="wishlistToggle" onchange="window.triggerRenderDetail()"><span class="slider"></span></label>
            <span style="font-size:12px; font-weight:600;">Wishlist Only</span>
          </div>
-         <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
+         <select id="sortSelect" onchange="window.triggerRenderDetail()" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
            <option value="Year">Sort: Year</option>
            <option value="Set">Sort: Set</option>
            <option value="Graded">Sort: Graded</option>
@@ -160,43 +173,29 @@ input:checked + .slider:before { transform: translateX(20px); }
 <div class="sheet" id="cSheet"><div class="sheet-body" id="cBody"></div></div>
 
 <script>
+// GLOBALS
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
 let lpTimer, lpStartPos = {x:0, y:0}, isLP = false;
-
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳', Hockey: '🏒', Soccer: '⚽' };
 
 function getCleanImg(url) {
   if (!url) return '';
   if (url.includes('drive.google.com')) {
     const id = url.split('id=')[1] || url.split('/d/')[1].split('/')[0];
-    return `https://lh3.googleusercontent.com/u/0/d/${id}=w1000`;
+    return `https://lh3.googleusercontent.com/u/0/d/${id}=w800`;
   }
   return url;
 }
 
-window.onpopstate = (event) => {
-  const state = event.state || {};
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (state.v === 'card') {
-    document.getElementById('card-detail-view').classList.remove('offscreen-right');
-  } else if (state.v === 'detail') {
-    document.getElementById('card-detail-view').classList.add('offscreen-right');
-    document.getElementById('detail-view').classList.remove('offscreen-right');
-    document.getElementById('gallery-view').classList.add('offscreen-left');
-  } else {
-    document.getElementById('card-detail-view').classList.add('offscreen-right');
-    document.getElementById('detail-view').classList.add('offscreen-right');
-    document.getElementById('gallery-view').classList.remove('offscreen-left');
-    selectedPlayer = null;
-  }
-};
-
 window.startApp = function() {
+  if (!window.fs) return;
   const { onSnapshot, collection } = window.fs;
+
   onSnapshot(collection(window.db, "Players"), (snap) => {
     ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderGallery();
   });
+
   onSnapshot(collection(window.db, "Cards"), (snap) => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
@@ -214,11 +213,9 @@ function renderGallery() {
   });
 
   grid.innerHTML = sorted.map(p => {
-    const pCards = ALL_CARDS.filter(c => c.Player === p.id);
-    const ownedCount = pCards.filter(c => c.Owned === true || c.Owned === "true").length;
-    
-    // Find unique sports for this player's cards
-    const uniqueSports = [...new Set(pCards.map(c => c.Sport).filter(Boolean))];
+    const pC = ALL_CARDS.filter(c => c.Player === p.id);
+    const o = pC.filter(c => c.Owned === true || c.Owned === "true").length;
+    const uniqueSports = [...new Set(pC.map(c => c.Sport).filter(Boolean))];
     const sportIcons = uniqueSports.map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
 
     return `
@@ -228,7 +225,7 @@ function renderGallery() {
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;">
         <div style="font-weight:700; font-size:14px; line-height:1.1;">${p.Player || p.id}</div>
-        <div class="tile-count">${ownedCount} owned</div>
+        <div class="tile-count">${o} owned</div>
       </div>
     </div>`;
   }).join('');
@@ -242,13 +239,15 @@ function openDetail(id) {
   document.getElementById('gallery-view').classList.add('offscreen-left');
 }
 
+window.triggerRenderDetail = () => renderDetail(selectedPlayer);
+
 function renderDetail(player) {
+  if(!player) return;
   const sort = document.getElementById('sortSelect').value;
   const q = (document.getElementById('detailSearchInput').value || "").toLowerCase();
   const wishlistOnly = document.getElementById('wishlistToggle').checked;
   
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
-  
   if (wishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
   if (q) cards = cards.filter(c => (c.Set || "").toLowerCase().includes(q) || (c.Year || "").toLowerCase().includes(q) || (c.Number || "").toString().includes(q));
 
@@ -262,8 +261,8 @@ function renderDetail(player) {
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
-  const ownedCount = ALL_CARDS.filter(c => c.Player === player.id && (c.Owned === true || c.Owned === "true")).length;
-  document.getElementById('playerDetailCount').innerText = `${ownedCount} Owned`;
+  const oCount = ALL_CARDS.filter(c => c.Player === player.id && (c.Owned === true || c.Owned === "true")).length;
+  document.getElementById('playerDetailCount').innerText = `${oCount} Owned`;
   document.getElementById('editPlayerBtn').onclick = (e) => { e.stopPropagation(); openPlayerForm(player.id); };
 
   document.getElementById('cardList').innerHTML = cards.map(c => {
@@ -282,21 +281,6 @@ function renderDetail(player) {
     </div>`}).join('');
 }
 
-window.startLP = (e, id) => {
-  isLP = false;
-  const touch = e.touches ? e.touches[0] : e;
-  lpStartPos = { x: touch.clientX, y: touch.clientY };
-  lpTimer = setTimeout(() => { isLP = true; openCardForm(id); }, 600);
-};
-
-window.checkLP = (e) => {
-  const touch = e.touches ? e.touches[0] : e;
-  const dist = Math.hypot(touch.clientX - lpStartPos.x, touch.clientY - lpStartPos.y);
-  if (dist > 10) clearTimeout(lpTimer);
-};
-
-window.cancelLP = () => clearTimeout(lpTimer);
-
 window.handleCardTap = (id) => {
   if (isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
@@ -307,6 +291,27 @@ window.handleCardTap = (id) => {
   history.pushState({v:'card'}, '');
   document.getElementById('card-detail-view').classList.remove('offscreen-right');
 };
+
+window.onpopstate = (event) => {
+  const state = event.state || {};
+  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
+  if (state.v === 'card') {
+    document.getElementById('card-detail-view').classList.remove('offscreen-right');
+  } else if (state.v === 'detail') {
+    document.getElementById('card-detail-view').classList.add('offscreen-right');
+    document.getElementById('detail-view').classList.remove('offscreen-right');
+    document.getElementById('gallery-view').classList.add('offscreen-left');
+  } else {
+    document.getElementById('card-detail-view').classList.add('offscreen-right');
+    document.getElementById('detail-view').classList.add('offscreen-right');
+    document.getElementById('gallery-view').classList.remove('offscreen-left');
+    selectedPlayer = null;
+  }
+};
+
+window.startLP = (e, id) => { isLP = false; const touch = e.touches ? e.touches[0] : e; lpStartPos = { x: touch.clientX, y: touch.clientY }; lpTimer = setTimeout(() => { isLP = true; openCardForm(id); }, 600); };
+window.checkLP = (e) => { const touch = e.touches ? e.touches[0] : e; const dist = Math.hypot(touch.clientX - lpStartPos.x, touch.clientY - lpStartPos.y); if (dist > 10) clearTimeout(lpTimer); };
+window.cancelLP = () => clearTimeout(lpTimer);
 
 window.openCardForm = (id = null) => {
   history.pushState({v:'form'}, '');
@@ -354,8 +359,6 @@ window.savePlayer = async () => {
     await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
     history.back();
 };
-
-window.startApp();
 </script>
 </body>
 </html>
