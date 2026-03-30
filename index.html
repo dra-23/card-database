@@ -43,32 +43,24 @@
   --md-primary: #E8192C;
   --md-surface: #0A0A0A;
   --md-surface-1: #111111;
-  --md-surface-2: #191919;
-  --md-on-surface: #F0F0F0;
-  --md-on-surface-variant: #999999;
-  --md-outline: #444;
+  --md-surface-2: #1D1B20; /* Material 3 Surface Container */
+  --md-on-surface: #E6E1E5;
+  --md-on-surface-variant: #CAC4D0;
+  --md-outline: #938F99;
 }
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: PHYSICAL ISOLATION
-   Gallery is base layer. Detail is display:none + pointer-events:none until active.
-*/
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
+/* FIX: Absolute layering + display:none to kill the ghosting issue for good */
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); }
 
-#gallery-view { z-index: 10; pointer-events: auto; }
-
+#gallery-view { z-index: 5; display: flex; }
 #detail-view { 
-  z-index: 100; 
+  z-index: 50; 
+  display: none; 
   transform: translateX(100%); 
-  display: none; /* PHYSICALLY REMOVED FROM CLICK ENGINE */
-  pointer-events: none; 
 }
-#detail-view.active { 
-  display: flex; 
-  transform: translateX(0); 
-  pointer-events: auto; 
-}
+#detail-view.active { display: flex; transform: translateX(0); }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -77,60 +69,57 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
-.icon-btn { background: var(--md-surface-2); border: 1px solid var(--md-outline); color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 110; color: #fff; border: none; background: transparent; cursor: pointer; }
+.icon-btn { background: var(--md-surface-2); border: none; color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: #fff; border: none; background: transparent; cursor: pointer; }
 
 /* Grid */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 2px; }
+.sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
+.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* List */
-.card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); }
+/* Card List */
+.card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
-.card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; }
+.card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* Material Expressive Search */
+/* MATERIAL EXPRESSIVE SEARCH BAR */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
-  width: 100%; 
-  background: var(--md-surface-2); 
-  border: 1.5px solid var(--md-outline); 
-  border-radius: 28px; 
-  padding: 16px 20px 16px 48px; 
-  color: #fff; 
-  font-size: 16px; 
-  outline: none;
+  width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; 
+  padding: 18px 24px 18px 56px; color: var(--md-on-surface); font-size: 16px; outline: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-.search-input:focus { border-color: var(--md-primary); }
-.search-icon-svg { position: absolute; left: 32px; top: 25px; color: var(--md-on-surface-variant); pointer-events: none; }
+.search-icon-svg { position: absolute; left: 32px; top: 26px; color: var(--md-on-surface-variant); pointer-events: none; }
 
 .filter-bar { display: flex; gap: 16px; padding: 4px 16px 16px; border-bottom: 1px solid var(--md-surface-2); margin-bottom: 12px; }
-.toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--md-on-surface-variant); }
+.toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--md-on-surface-variant); font-weight: 500; }
 
 /* Switch */
 .switch { position: relative; width: 36px; height: 18px; display: inline-block; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; inset: 0; background: #333; border-radius: 20px; transition: .3s; cursor: pointer; }
+.slider { position: absolute; inset: 0; background: #49454F; border-radius: 20px; transition: .3s; cursor: pointer; }
 .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
 input:checked + .slider { background-color: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Material Expressive Edit Button */
-.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; }
+/* Edit / Add Buttons */
+.expressive-btn { width: 100%; background: var(--md-surface-2); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 16px; border-radius: 28px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.expressive-btn:active { background: #333; }
+.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
 
-/* Overlays */
-.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: -1; }
-.scrim.open { opacity: 1; pointer-events: auto; z-index: 998; }
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; pointer-events: none; }
-.sheet.open { transform: translateY(0); pointer-events: auto; }
+/* Sheets */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 998; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; }
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
 .input-group { position: relative; margin-bottom: 20px; }
 .input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
@@ -163,7 +152,7 @@ input:checked + .slider:before { transform: translateX(18px); }
       <button onclick="window.openPlayerForm(window.selectedPlayer.id)" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:5px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
-  <div class="scroll-body" style="padding:0 16px;"><div id="cardList"></div></div>
+  <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
   <button class="fab" onclick="window.openCardForm()"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
 </div>
 
@@ -200,7 +189,7 @@ function renderGallery() {
   const sorted = [...ALL_PLAYERS].sort((a,b) => {
     const aC = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
     const bC = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
-    return bC - aC;
+    return bC - aC || a.id.localeCompare(b.id);
   });
 
   grid.innerHTML = sorted.map(p => {
@@ -208,7 +197,7 @@ function renderGallery() {
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <div style="position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:2px; z-index:5;">${icons}</div>
+      <div class="sport-badge-row">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;"><div style="font-weight:700;">${p.Player || p.id}</div><div style="font-size:11px; opacity:0.8;">${o} owned</div></div>
@@ -218,9 +207,10 @@ function renderGallery() {
 
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
+  if (!window.selectedPlayer) return;
   renderDetail(window.selectedPlayer);
   const dv = document.getElementById('detail-view');
-  dv.style.display = 'flex'; // PHYSICALLY TURN ON
+  dv.style.display = 'flex';
   setTimeout(() => dv.classList.add('active'), 10);
   history.pushState({v:'detail'}, '');
 };
@@ -228,20 +218,20 @@ window.openDetail = (id) => {
 window.closeDetail = () => {
   const dv = document.getElementById('detail-view');
   dv.classList.remove('active');
-  setTimeout(() => { dv.style.display = 'none'; }, 400); // PHYSICALLY TURN OFF
+  setTimeout(() => { dv.style.display = 'none'; }, 300);
   window.selectedPlayer = null;
   if(history.state?.v === 'detail') history.back();
 };
 
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
-  cards.sort((a,b) => (a.Year || "").localeCompare(b.Year || ""));
+  cards.sort((a,b) => (a.Year || "").toString().localeCompare((b.Year || "").toString()));
 
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
-    cards = cards.filter(c => (c.Year||"").toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q) || (c.Grade||"").toLowerCase().includes(q));
+    cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q) || (c.Grade||"").toString().toLowerCase().includes(q));
   }
-  if (showGradedOnly) cards = cards.filter(c => c.Grade && c.Grade.trim() !== "");
+  if (showGradedOnly) cards = cards.filter(c => c.Grade && c.Grade.toString().trim() !== "");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
   const searchHtml = `
@@ -259,7 +249,11 @@ function renderDetail(player) {
 
   document.getElementById('cardList').innerHTML = searchHtml + filterHtml + cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
-    const gradeBadge = (c.Grade && c.Grade.trim() !== "") ? `<span class="badge-inline">${c.Grade}</span>` : '';
+    
+    // FIX: Safe conversion to string before calling .trim()
+    const gradeStr = c.Grade ? c.Grade.toString().trim() : "";
+    const gradeBadge = gradeStr !== "" ? `<span class="badge-inline">${gradeStr}</span>` : '';
+    
     return `<div class="card-item ${!isOwned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')" onmousedown="window.startLP('${c.id}')" onmouseup="clearTimeout(window.lpTimer)">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${gradeBadge}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
@@ -270,23 +264,13 @@ function renderDetail(player) {
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 window.toggleFilter = (t) => { if(t==='graded') showGradedOnly=!showGradedOnly; else showWishlistOnly=!showWishlistOnly; renderDetail(window.selectedPlayer); };
 
-window.closeAll = () => {
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (history.state?.v === 'modal' || history.state?.v === 'card') history.back();
-};
+window.closeAll = () => { document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open')); if (history.state?.v === 'modal' || history.state?.v === 'card') history.back(); };
 
 window.handleCardTap = (id) => {
   if (window.isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
-  document.getElementById('cardDetailBody').innerHTML = `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;">
-    <h2>${c.Year} ${c.Set}</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
-      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number || 'N/A'}</div></div>
-      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade || 'Raw'}</div></div>
-    </div>
-    <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card</button>`;
-  document.getElementById('cardDetailSheet').classList.add('add', 'open');
+  document.getElementById('cardDetailBody').innerHTML = `<img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px;"><h2>${c.Year} ${c.Set}</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;"><div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div>#${c.Number||'N/A'}</div></div><div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div>${c.Grade||'Raw'}</div></div></div><button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card</button>`;
+  document.getElementById('cardDetailSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
   history.pushState({v:'card'}, '');
 };
@@ -309,7 +293,7 @@ window.savePlayer = async () => {
 window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
   const isO = (c.Owned === true || c.Owned === "true");
-  let co = "", gr = ""; if (c.Grade) { const p = c.Grade.split(' '); co = p[0]; gr = p.slice(1).join(' '); }
+  let co = "", gr = ""; if (c.Grade) { const p = c.Grade.toString().split(' '); co = p[0]; gr = p.slice(1).join(' '); }
   document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Card</h2><div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>${window.input('cf-s', 'Set', c.Set)}<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-co', 'Co (PSA)', co)}${window.input('cf-gr', 'Grade', gr)}</div><div class="input-group" style="position:relative; margin-bottom:20px;"><div class="input-label" style="position:absolute; left:12px; top:-8px; background:var(--md-surface-2); padding:0 4px; font-size:12px; color:var(--md-on-surface-variant);">Sport</div><select id="cf-sp" class="select-field" style="width:100%; background:transparent; border:1.5px solid var(--md-outline); border-radius:12px; padding:16px; color:#fff; font-size:16px; outline:none;"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>${window.input('cf-i', 'Image URL', c['App Image'])}<div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div><button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
