@@ -51,18 +51,25 @@
 
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* FIX: To prevent ghosting, we only render the detail view when it is active.
-  We use z-index and explicit display toggling.
+/* FIX: THE "NO GHOSTS" SYSTEM
+  By using pointer-events: none on the detail-view by default, 
+  it physically cannot block Michael Jordan or anyone else.
 */
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1); }
 
-#gallery-view { z-index: 5; }
+#gallery-view { z-index: 100; pointer-events: auto; }
 #detail-view { 
   z-index: 50; 
   transform: translateX(100%); 
-  display: none; 
+  pointer-events: none; 
+  visibility: hidden;
 }
-#detail-view.active { display: flex; transform: translateX(0); }
+#detail-view.active { 
+  z-index: 200;
+  transform: translateX(0); 
+  pointer-events: auto;
+  visibility: visible;
+}
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -72,21 +79,21 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
 .icon-btn { background: var(--md-surface-2); border: 1px solid var(--md-outline); color: var(--md-on-surface); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: #fff; border: none; background: transparent; cursor: pointer; }
+.back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 300; color: #fff; border: none; background: transparent; cursor: pointer; }
 
 /* Grid & Icons */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
+.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; isolation: isolate; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 2px; }
 
-/* Card List */
+/* List */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; }
 .badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; }
 
-/* MATERIAL EXPRESSIVE SEARCH BAR */
+/* EXPRESSIVE SEARCH BAR */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { 
   width: 100%; 
@@ -97,8 +104,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   color: #fff; 
   font-size: 16px; 
   outline: none;
-  box-shadow: inset 0 0 0 1px var(--md-outline);
-  transition: box-shadow 0.2s;
+  box-shadow: inset 0 0 0 1.5px var(--md-outline);
 }
 .search-input:focus { box-shadow: inset 0 0 0 2px var(--md-primary); }
 .search-icon-svg { position: absolute; left: 32px; top: 24px; color: var(--md-on-surface-variant); pointer-events: none; }
@@ -114,7 +120,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 input:checked + .slider { background: var(--md-primary); }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* Scrims & Sheets */
+/* Buttons & Sheets */
+.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1); padding-bottom: var(--safe-bottom); max-height: 90vh; display: flex; flex-direction: column; visibility: hidden; }
@@ -122,9 +129,11 @@ input:checked + .slider:before { transform: translateX(18px); }
 .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 12px auto; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 18px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; }
-.expressive-btn { width: 100%; background: var(--md-surface-1); color: var(--md-on-surface); border: 1px solid var(--md-outline); padding: 14px; border-radius: 24px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 16px; }
+.input-group { position: relative; margin-bottom: 20px; }
+.input-field, .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
+.input-label { position: absolute; left: 12px; top: -8px; background: var(--md-surface-2); padding: 0 4px; font-size: 12px; color: var(--md-on-surface-variant); }
 </style>
 </head>
 <body>
@@ -167,7 +176,7 @@ let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, isLP = false, lpTim
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
-window.input = (id, label, val) => `<div class="input-group" style="position:relative; margin-bottom:20px;"><div class="input-label" style="position:absolute; left:12px; top:-8px; background:var(--md-surface-2); padding:0 4px; font-size:12px; color:var(--md-on-surface-variant);">${label}</div><input id="${id}" class="input-field" style="width:100%; background:transparent; border:1.5px solid var(--md-outline); border-radius:12px; padding:16px; color:#fff; font-size:16px; outline:none;" value="${val || ''}"></div>`;
+window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
 
 function getCleanImg(url) {
   if (!url) return '';
@@ -199,7 +208,7 @@ function renderGallery() {
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
-      <div style="position:absolute; top:10px; right:10px; display:flex; gap:4px; z-index:5;">${icons}</div>
+      <div style="position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:2px; z-index:5;">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;"><div style="font-weight:700;">${p.Player || p.id}</div><div style="font-size:11px; opacity:0.8;">${o} owned</div></div>
@@ -212,14 +221,14 @@ window.openDetail = (id) => {
   renderDetail(window.selectedPlayer);
   const dv = document.getElementById('detail-view');
   dv.style.display = 'flex';
-  setTimeout(() => dv.classList.add('active'), 10);
+  setTimeout(() => { dv.classList.add('active'); }, 10);
   history.pushState({v:'detail'}, '');
 };
 
 window.closeDetail = () => {
   const dv = document.getElementById('detail-view');
   dv.classList.remove('active');
-  setTimeout(() => dv.style.display = 'none', 400);
+  setTimeout(() => { dv.style.display = 'none'; }, 400);
   window.selectedPlayer = null;
   if(history.state?.v === 'detail') history.back();
 };
