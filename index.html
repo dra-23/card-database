@@ -45,38 +45,42 @@
 }
 html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; padding-bottom: var(--safe-bottom); }
+/* IMMERSIVE FIXED VIEWS */
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
 .view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
 
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; }
+/* TOP BAR */
+.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; letter-spacing: -1.5px; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
+/* TILES */
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
-.tile-count { font-size: 11px; opacity: 0.7; font-weight: 400; }
+.tile-count { font-size: 11px; opacity: 0.7; }
 
+/* CARD LIST & SEARCH */
+.detail-search-bar { background: var(--md-surface-2); border-radius: 12px; display: flex; align-items: center; padding: 0 12px; height: 44px; margin-bottom: 16px; }
+.detail-search-input { background: none; border: none; outline: none; color: #fff; flex: 1; font-size: 14px; }
 .card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.5; border: 1px dashed #444; }
-.want-indicator { color: #FFA500; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
-.card-thumb { width: 60px; height: 84px; border-radius: 8px; object-fit: cover; background: #222; }
-
 .grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
-.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; }
 
+/* UI ELEMENTS */
+.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); }
 .sheet.open { transform: translateY(0); }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
 .scrim.open { opacity: 1; pointer-events: auto; }
-.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; }
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; }
+.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; font-family: inherit; }
+.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -98,7 +102,7 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
   <div style="height: 350px; position: relative; flex-shrink: 0;">
     <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
     <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:16px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 20;">
+    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:16px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 30;">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
     </button>
   </div>
@@ -107,91 +111,19 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
     <img id="playerThumb" style="width:100px; height:130px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
     <div style="padding-bottom:10px;">
       <h2 id="playerName" style="font-size:26px; font-family:'Google Sans Display';"></h2>
-      <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant); margin-top:2px;"></div>
+      <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant);"></div>
       <button id="editPlayerBtn" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:6px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
 
   <div class="scroll-body" style="padding:0 16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <span style="font-size:11px; font-weight:700; color:var(--md-on-surface-variant); text-transform:uppercase;">Collection</span>
-      <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:var(--md-surface-2); color:#fff; border:none; padding:4px 8px; border-radius:8px; font-size:12px;">
-        <option value="Year">Year</option>
-        <option value="Set">Set Name</option>
-        <option value="Graded">Graded First</option>
-        <option value="Ownership">Owned First</option>
-      </select>
+    <div class="detail-search-bar">
+       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="renderDetail(selectedPlayer)">
+       <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
+         <option value="Year">Year</option>
+         <option value="Set">Set</option>
+         <option value="Graded">Graded</option>
+         <option value="Owned">Owned</option>
+       </select>
     </div>
-    <div id="cardList"></div>
-  </div>
-
-  <button class="fab" onclick="openCardForm()">
-    <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-  </button>
-</div>
-
-<div class="view offscreen-right" id="card-detail-view" style="z-index:100;">
-    <div class="top-bar">
-      <button class="icon-btn" onclick="history.back()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
-      <span class="brand" style="font-size:18px; text-align:center;">Card View</span>
-      <div style="width:48px;"></div>
-    </div>
-    <div class="scroll-body" style="padding:20px;">
-      <img id="d-cardImg" style="width:100%; border-radius:24px;">
-      <h2 id="d-cardTitle" style="margin-top:24px;"></h2>
-      <p id="d-cardSubtitle" style="color:var(--md-on-surface-variant);"></p>
-      <div id="d-ownedStatus" style="margin-top:12px;"></div>
-    </div>
-</div>
-
-<div class="scrim" id="modalScrim" onclick="history.back()"></div>
-<div class="sheet" id="pSheet"><div class="sheet-body" id="pBody"></div></div>
-<div class="sheet" id="cSheet"><div class="sheet-body" id="cBody"></div></div>
-
-<script>
-let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, longPressTimer;
-
-function getCleanImg(url) {
-  if (!url) return '';
-  if (url.includes('drive.google.com')) {
-    const id = url.split('id=')[1] || url.split('/d/')[1].split('/')[0];
-    return `https://lh3.googleusercontent.com/u/0/d/${id}=w1000`;
-  }
-  return url;
-}
-
-window.onpopstate = (event) => {
-  const state = event.state || {};
-  document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
-  if (state.v === 'card') {
-    document.getElementById('card-detail-view').classList.add('offscreen-right');
-  } else if (state.v === 'detail') {
-    document.getElementById('card-detail-view').classList.add('offscreen-right');
-    document.getElementById('detail-view').classList.remove('offscreen-right');
-    document.getElementById('gallery-view').classList.add('offscreen-left');
-  } else {
-    document.getElementById('detail-view').classList.add('offscreen-right');
-    document.getElementById('gallery-view').classList.remove('offscreen-left');
-    selectedPlayer = null;
-  }
-};
-
-function init() {
-  if (!window.fs) { setTimeout(init, 100); return; }
-  const { onSnapshot, collection } = window.fs;
-
-  onSnapshot(collection(window.db, "Players"), (snap) => {
-    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderGallery();
-  });
-
-  onSnapshot(collection(window.db, "Cards"), (snap) => {
-    ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
-    renderGallery();
-    if(selectedPlayer) renderDetail(selectedPlayer);
-  });
-}
-
-function renderGallery() {
-  const grid = document.getElementById('playerGrid
+    <div
