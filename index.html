@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="logo.png">
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0A0A0A">
-    
-    <title>sleevd</title>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="logo.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0A0A">
+<title>sleevd</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-      const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
   authDomain: "sleevd-7214c.firebaseapp.com",
   projectId: "sleevd-7214c",
@@ -25,68 +23,111 @@
   messagingSenderId: "176444568903",
   appId: "1:176444568903:web:0acce08ab1f18b8fe30862",
   measurementId: "G-67S1G9KPJM"
-      };
+  };
 
-      try {
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db;
-        window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
-        console.log("Firebase initialized");
-      } catch (e) {
-        console.error("Firebase failed to load:", e);
-      }
-    </script>
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db;
+  window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+</script>
 
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        :root {
-          --safe-top: env(safe-area-inset-top, 0px);
-          --safe-bottom: env(safe-area-inset-bottom, 0px);
-          --md-primary: #E8192C;
-          --md-surface: #0A0A0A;
-          --md-surface-1: #111111;
-          --md-surface-2: #191919;
-          --md-on-surface: #F0F0F0;
-          --md-on-surface-variant: #999999;
-          --font-display: 'Google Sans Display', 'Google Sans', sans-serif;
-        }
-        html, body { height: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --md-primary: #E8192C;
+  --md-surface: #0A0A0A;
+  --md-surface-1: #111111;
+  --md-surface-2: #191919;
+  --md-on-surface: #F0F0F0;
+  --md-on-surface-variant: #999999;
+}
+html, body { 
+    height: 100vh; 
+    width: 100vw;
+    overflow: hidden; 
+    background: var(--md-surface); 
+    color: var(--md-on-surface); 
+    font-family: 'Google Sans', sans-serif;
+}
 
-        .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; padding-bottom: var(--safe-bottom); }
-        .view.offscreen-right { transform: translateX(100%); opacity: 0; }
-        .view.offscreen-left { transform: translateX(-15%) scale(0.95); opacity: 0; }
-        .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .scroll-body::-webkit-scrollbar { display: none; }
+/* IMMERSIVE FIXED VIEWS */
+.view { 
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; 
+    flex-direction: column; 
+    background: var(--md-surface); 
+    transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; 
+    z-index: 10;
+}
+.view.offscreen-right { transform: translateX(100%); }
+.view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
 
-        .top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(70px + var(--safe-top)); flex-shrink: 0; }
-        .brand { font-family: var(--font-display); font-size: 32px; font-weight: 700; letter-spacing: -1.5px; color: #fff; flex: 1; }
-        .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; }
+.scroll-body { 
+    flex: 1; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+    padding-bottom: calc(100px + var(--safe-bottom)); /* Ensure FAB doesn't block last items */
+}
+.scroll-body::-webkit-scrollbar { display: none; }
 
-        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px 100px; }
-        .player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
-        .tile-img { width: 100%; height: 100%; object-fit: cover; }
+/* TOP BAR (BLEEDS INTO STATUS BAR) */
+.top-bar { 
+    display: flex; 
+    align-items: center; 
+    padding: var(--safe-top) 16px 0; 
+    height: calc(80px + var(--safe-top)); 
+    flex-shrink: 0; 
+}
+.brand { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; letter-spacing: -1.5px; flex: 1; }
+.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
-        .card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; }
-        .card-thumb { width: 60px; height: 84px; border-radius: 8px; object-fit: cover; background: #222; }
-        .card-num { font-size: 13px; color: var(--md-on-surface-variant); margin-top: 2px; }
-        .grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
+/* TILES */
+.player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+.player-tile { border-radius: 28px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
+.tile-img { width: 100%; height: 100%; object-fit: cover; }
+.tile-count { font-size: 11px; opacity: 0.7; font-weight: 400; }
 
-        .fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 16px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+/* CARD LIST */
+.card-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-1); }
+.card-item.not-owned { opacity: 0.5; border: 1px dashed #444; }
+.want-indicator { color: #FFA500; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
+.card-thumb { width: 60px; height: 84px; border-radius: 8px; object-fit: cover; background: #222; }
 
-        .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); }
-        .sheet.open { transform: translateY(0); }
-        .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
-        .scrim.open { opacity: 1; pointer-events: auto; }
-        .input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; }
-        .primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; }
-    </style>
+/* FAB */
+.fab { 
+    position: absolute; 
+    bottom: calc(24px + var(--safe-bottom)); 
+    right: 20px; 
+    width: 64px; 
+    height: 64px; 
+    border-radius: 20px; 
+    background: var(--md-primary); 
+    color: #fff; 
+    border: none; 
+    z-index: 50; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
+}
+
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); }
+.sheet.open { transform: translateY(0); }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.input-field { width: 100%; background: var(--md-surface-3); border: 1px solid var(--md-outline); border-radius: 12px; padding: 14px; color: #fff; margin-bottom: 12px; font-size: 16px; }
+.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 16px; border-radius: 50px; font-weight: 700; }
+</style>
 </head>
 <body>
 
 <div class="view" id="gallery-view">
   <div class="top-bar">
     <span class="brand">sleevd</span>
+    <div class="total-count-pill" id="totalOwnedCounter">0</div>
     <button class="icon-btn" onclick="openPlayerForm()">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
     </button>
@@ -97,23 +138,24 @@
 </div>
 
 <div class="view offscreen-right" id="detail-view">
-  <div style="height: 300px; position: relative;">
+  <div style="height: 350px; position: relative; flex-shrink: 0;">
     <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
     <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:16px; background:rgba(0,0,0,0.4); border-radius:50%;">
+    <button class="icon-btn" onclick="history.back()" style="position:absolute; top:var(--safe-top); left:16px; background:rgba(0,0,0,0.4); border-radius:50%; z-index: 20;">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
     </button>
   </div>
   
-  <div style="margin-top:-60px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px;">
+  <div style="margin-top:-80px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
     <img id="playerThumb" style="width:100px; height:130px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
     <div style="padding-bottom:10px;">
-      <h2 id="playerName" style="font-size:24px;"></h2>
-      <button id="editPlayerBtn" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:6px 12px; border-radius:50px; font-size:12px; margin-top:8px;">Edit Profile</button>
+      <h2 id="playerName" style="font-size:26px; font-family:'Google Sans Display';"></h2>
+      <div id="playerDetailCount" style="font-size:12px; color:var(--md-on-surface-variant); margin-top:2px;"></div>
+      <button id="editPlayerBtn" style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:6px 12px; border-radius:50px; font-size:11px; margin-top:8px;">Edit Profile</button>
     </div>
   </div>
 
-  <div class="scroll-body" style="padding:0 16px 100px;">
+  <div class="scroll-body" style="padding:0 16px;">
     <div id="cardList"></div>
   </div>
 
@@ -125,13 +167,14 @@
 <div class="view offscreen-right" id="card-detail-view" style="z-index:100;">
     <div class="top-bar">
       <button class="icon-btn" onclick="history.back()"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
-      <span class="brand" style="font-size:18px; text-align:center;">Details</span>
+      <span class="brand" style="font-size:18px; text-align:center;">Card View</span>
       <div style="width:48px;"></div>
     </div>
     <div class="scroll-body" style="padding:20px;">
       <img id="d-cardImg" style="width:100%; border-radius:24px;">
-      <h2 id="d-cardTitle" style="margin-top:20px;"></h2>
+      <h2 id="d-cardTitle" style="margin-top:24px;"></h2>
       <p id="d-cardSubtitle" style="color:var(--md-on-surface-variant);"></p>
+      <div id="d-ownedStatus" style="margin-top:12px;"></div>
     </div>
 </div>
 
@@ -151,10 +194,27 @@ function getCleanImg(url) {
   return url;
 }
 
-window.onpopstate = () => {
-  document.querySelectorAll('.view').forEach(v => v.id !== 'gallery-view' && v.classList.add('offscreen-right'));
-  document.getElementById('gallery-view').classList.remove('offscreen-left');
+// SMART NAVIGATION
+window.onpopstate = (event) => {
+  const state = event.state || {};
+  
+  // Close all sheets/scrims
   document.querySelectorAll('.sheet, .scrim').forEach(el => el.classList.remove('open'));
+
+  if (state.v === 'card') {
+    // We are at card detail, keep player detail open
+    document.getElementById('card-detail-view').classList.add('offscreen-right');
+  } else if (state.v === 'detail') {
+    // We are at player detail
+    document.getElementById('card-detail-view').classList.add('offscreen-right');
+    document.getElementById('detail-view').classList.remove('offscreen-right');
+    document.getElementById('gallery-view').classList.add('offscreen-left');
+  } else {
+    // Back to home
+    document.getElementById('detail-view').classList.add('offscreen-right');
+    document.getElementById('gallery-view').classList.remove('offscreen-left');
+    selectedPlayer = null;
+  }
 };
 
 function init() {
@@ -168,6 +228,8 @@ function init() {
 
   onSnapshot(collection(window.db, "Cards"), (snap) => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const totalOwned = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
+    document.getElementById('totalOwnedCounter').innerText = totalOwned;
     renderGallery();
     if(selectedPlayer) renderDetail(selectedPlayer);
   });
@@ -175,18 +237,23 @@ function init() {
 
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
-  grid.innerHTML = ALL_PLAYERS.map(p => `
+  grid.innerHTML = ALL_PLAYERS.map(p => {
+    const pCards = ALL_CARDS.filter(c => c.Player === (p.Player || p.id));
+    return `
     <div class="player-tile" onclick="openDetail('${p.id.replace(/'/g, "\\'")}')">
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
-      <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.8));"></div>
-      <div style="position:absolute; bottom:12px; left:12px; font-weight:700; font-size:14px;">${p.Player || p.id}</div>
+      <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
+      <div style="position:absolute; bottom:12px; left:12px;">
+        <div style="font-weight:700; font-size:14px;">${p.Player || p.id}</div>
+        <div class="tile-count">${pCards.length} cards</div>
+      </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function openDetail(id) {
-  history.pushState({v:'detail'}, '');
   selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
+  history.pushState({v:'detail'}, '');
   renderDetail(selectedPlayer);
   document.getElementById('detail-view').classList.remove('offscreen-right');
   document.getElementById('gallery-view').classList.add('offscreen-left');
@@ -199,21 +266,25 @@ function renderDetail(player) {
   document.getElementById('playerName').innerText = player.Player || player.id;
   document.getElementById('playerBanner').src = getCleanImg(player['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(player['Main Image']);
+  document.getElementById('playerDetailCount').innerText = `${cards.length} Total Cards`;
   document.getElementById('editPlayerBtn').onclick = (e) => { e.stopPropagation(); openPlayerForm(player.id); };
 
-  document.getElementById('cardList').innerHTML = cards.map(c => `
-    <div class="card-item" 
+  document.getElementById('cardList').innerHTML = cards.map(c => {
+    const isOwned = c.Owned === true || c.Owned === "true";
+    return `
+    <div class="card-item ${!isOwned ? 'not-owned' : ''}" 
          onclick="handleCardTap('${c.id}')" 
          onmousedown="startPress('${c.id}')" onmouseup="endPress()" 
          ontouchstart="startPress('${c.id}')" ontouchend="endPress()">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info">
         <div style="font-weight:600;">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
-        <div class="card-num">#${c.Number || 'N/A'}</div>
-        ${c.Grade ? `<div class="grade-badge">${c['Grading Company'] || ''} ${c.Grade}</div>` : ''}
+        <div style="font-size:12px; color:var(--md-on-surface-variant);">#${c.Number || 'N/A'}</div>
+        ${!isOwned ? '<div class="want-indicator">Not Owned / Wishlist</div>' : ''}
+        ${c.Grade ? `<div class="grade-badge" style="background:#fff; color:#000; font-size:10px; padding:2px 4px; border-radius:4px; margin-top:4px; display:inline-block;">${c['Grading Company']} ${c.Grade}</div>` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 window.handleCardTap = (id) => {
@@ -222,6 +293,9 @@ window.handleCardTap = (id) => {
   document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
   document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
   document.getElementById('d-cardSubtitle').innerText = `Card #${c.Number || 'N/A'}`;
+  const isOwned = c.Owned === true || c.Owned === "true";
+  document.getElementById('d-ownedStatus').innerHTML = isOwned ? '✅ Owned' : '⏳ On Wishlist';
+  
   history.pushState({v:'card'}, '');
   document.getElementById('card-detail-view').classList.remove('offscreen-right');
 };
@@ -232,37 +306,22 @@ window.startPress = (id) => {
 };
 window.endPress = () => clearTimeout(longPressTimer);
 
-window.openPlayerForm = (id = null) => {
-    history.pushState({v:'pform'}, '');
-    const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-    document.getElementById('pBody').innerHTML = `
-        <h2 class="sheet-title">${id ? 'Edit' : 'Add'} Player</h2>
-        <input id="pf-name" class="input-field" value="${p.Player || p.id || ''}" placeholder="Name">
-        <input id="pf-main" class="input-field" value="${p['Main Image'] || ''}" placeholder="Main URL">
-        <input id="pf-banner" class="input-field" value="${p['Banner_Image'] || ''}" placeholder="Banner URL">
-        <button class="primary-btn" onclick="savePlayer('${id||''}')">Save</button>
-    `;
-    document.getElementById('pSheet').classList.add('open');
-    document.getElementById('modalScrim').classList.add('open');
-};
-
-window.savePlayer = async (oldId) => {
-    const name = document.getElementById('pf-name').value;
-    const data = { Player: name, "Main Image": document.getElementById('pf-main').value, "Banner_Image": document.getElementById('pf-banner').value };
-    await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
-    history.back();
-};
-
 window.openCardForm = (id = null) => {
-  history.pushState({v:'cform'}, '');
+  history.pushState({v:'form'}, '');
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
+  const isOwned = c.Owned === true || c.Owned === "true";
+  
   document.getElementById('cBody').innerHTML = `
     <h2 class="sheet-title">${id ? 'Edit' : 'Add'} Card</h2>
     <input id="cf-year" class="input-field" value="${c.Year || ''}" placeholder="Year">
     <input id="cf-set" class="input-field" value="${c.Set || c.Manufacturer || ''}" placeholder="Set">
     <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
     <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
-    <button class="primary-btn" onclick="saveCard('${id||''}')">Save</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <input type="checkbox" id="cf-owned" ${isOwned ? 'checked' : ''} style="width:20px; height:20px;">
+        <label for="cf-owned">I own this card</label>
+    </div>
+    <button class="primary-btn" onclick="saveCard('${id||''}')">Save Card</button>
   `;
   document.getElementById('cSheet').classList.add('open');
   document.getElementById('modalScrim').classList.add('open');
@@ -274,11 +333,33 @@ window.saveCard = async (id) => {
     Year: document.getElementById('cf-year').value,
     Set: document.getElementById('cf-set').value,
     Number: document.getElementById('cf-num').value,
-    "App Image": document.getElementById('cf-img').value
+    "App Image": document.getElementById('cf-img').value,
+    Owned: document.getElementById('cf-owned').checked
   };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   history.back();
+};
+
+window.openPlayerForm = (id = null) => {
+    history.pushState({v:'pform'}, '');
+    const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
+    document.getElementById('pBody').innerHTML = `
+        <h2 class="sheet-title">Player Profile</h2>
+        <input id="pf-name" class="input-field" value="${p.Player || p.id || ''}" placeholder="Name">
+        <input id="pf-main" class="input-field" value="${p['Main Image'] || ''}" placeholder="Main URL">
+        <input id="pf-banner" class="input-field" value="${p['Banner_Image'] || ''}" placeholder="Banner URL">
+        <button class="primary-btn" onclick="savePlayer('${id||''}')">Save</button>
+    `;
+    document.getElementById('pSheet').classList.add('open');
+    document.getElementById('modalScrim').classList.add('open');
+};
+
+window.savePlayer = async () => {
+    const name = document.getElementById('pf-name').value;
+    const data = { Player: name, "Main Image": document.getElementById('pf-main').value, "Banner_Image": document.getElementById('pf-banner').value };
+    await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
+    history.back();
 };
 
 init();
