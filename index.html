@@ -43,38 +43,52 @@
   --md-on-surface: #F0F0F0;
   --md-on-surface-variant: #999999;
 }
-html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
+/* IMMERSIVE FIXED VIEWS */
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.38s cubic-bezier(0.2,0,0,1), opacity 0.3s ease; z-index: 10; }
 .view.offscreen-right { transform: translateX(100%); }
 .view.offscreen-left { transform: translateX(-15%); opacity: 0.5; }
 
-.scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(100px + var(--safe-bottom)); }
+.scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(120px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
-.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(70px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
+/* TOP BAR */
+.top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(80px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; letter-spacing: -1.2px; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
+/* TILES */
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
 
-.detail-search-bar { background: var(--md-surface-2); border-radius: 50px; display: flex; align-items: center; padding: 0 16px; height: 48px; margin-bottom: 20px; border: 1px solid var(--md-outline-variant); }
-.detail-search-input { background: none; border: none; outline: none; color: #fff; flex: 1; font-size: 15px; }
+/* SEARCH & TOGGLES */
+.detail-controls { background: var(--md-surface-2); border-radius: 16px; padding: 12px; margin-bottom: 20px; border: 1px solid var(--md-outline-variant); }
+.detail-search-input { background: var(--md-surface-3); border: none; outline: none; color: #fff; width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 15px; margin-bottom: 12px; }
+.control-row { display: flex; justify-content: space-between; align-items: center; }
 
+/* TOGGLE SWITCH */
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--md-primary); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* CARD LIST */
 .card-item { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; margin-bottom: 10px; background: var(--md-surface-1); }
-.card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); }
+.card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); border: 1px dashed #444; }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; flex-shrink: 0; }
 .card-info { flex: 1; min-width: 0; }
 .card-title { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-meta { font-size: 12px; color: var(--md-on-surface-variant); margin-top: 2px; }
+.grade-badge { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
 
-.info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; }
-.info-label { font-size: 12px; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px; }
-.info-value { font-size: 15px; font-weight: 500; color: #fff; }
+/* UI ELEMENTS */
+.icon-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: none; color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 60px; height: 60px; border-radius: 18px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
-.fab { position: absolute; bottom: calc(20px + var(--safe-bottom)); right: 20px; width: 60px; height: 60px; border-radius: 18px; background: var(--md-primary); color: #fff; border: none; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(232, 25, 44, 0.4); }
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--md-surface-2); border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0,0,1); padding-bottom: var(--safe-bottom); max-height: 90vh; overflow-y: auto; }
 .sheet.open { transform: translateY(0); }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
@@ -111,14 +125,19 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
     </div>
   </div>
   <div class="scroll-body" style="padding:0 16px;">
-    <div class="detail-search-bar">
-       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Find in collection..." oninput="renderDetail(selectedPlayer)">
-       <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
-         <option value="Year">Year</option>
-         <option value="Set">Set</option>
-         <option value="Graded">Graded</option>
-         <option value="Owned">Owned</option>
-       </select>
+    <div class="detail-controls">
+       <input type="text" id="detailSearchInput" class="detail-search-input" placeholder="Search cards..." oninput="renderDetail(selectedPlayer)">
+       <div class="control-row">
+         <div style="display:flex; align-items:center; gap:8px;">
+           <label class="switch"><input type="checkbox" id="wishlistToggle" onchange="renderDetail(selectedPlayer)"><span class="slider"></span></label>
+           <span style="font-size:12px; font-weight:600;">Wishlist Only</span>
+         </div>
+         <select id="sortSelect" onchange="renderDetail(selectedPlayer)" style="background:none; border:none; color:var(--md-primary); font-size:12px; font-weight:700;">
+           <option value="Year">Sort: Year</option>
+           <option value="Set">Sort: Set</option>
+           <option value="Graded">Sort: Graded</option>
+         </select>
+       </div>
     </div>
     <div id="cardList"></div>
   </div>
@@ -201,7 +220,7 @@ function renderGallery() {
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, rgba(0,0,0,0.9));"></div>
       <div style="position:absolute; bottom:12px; left:12px;">
-        <div style="font-weight:700; font-size:14px; line-height:1.2;">${p.Player || p.id}</div>
+        <div style="font-weight:700; font-size:14px; line-height:1.1;">${p.Player || p.id}</div>
         <div class="tile-count">${o} owned · ${pC.length} total</div>
       </div>
     </div>`;
@@ -219,14 +238,17 @@ function openDetail(id) {
 function renderDetail(player) {
   const sort = document.getElementById('sortSelect').value;
   const q = (document.getElementById('detailSearchInput').value || "").toLowerCase();
+  const wishlistOnly = document.getElementById('wishlistToggle').checked;
+  
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
+  
+  if (wishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
   if (q) cards = cards.filter(c => (c.Set || "").toLowerCase().includes(q) || (c.Year || "").toLowerCase().includes(q) || (c.Number || "").toString().includes(q));
 
   cards.sort((a,b) => {
     if(sort === 'Year') return (a.Year || "").localeCompare(b.Year || "");
     if(sort === 'Set') return (a.Set || "").localeCompare(b.Set || "");
     if(sort === 'Graded') return (b.Grade ? 1 : 0) - (a.Grade ? 1 : 0);
-    if(sort === 'Owned') return (b.Owned === true ? 1 : 0) - (a.Owned === true ? 1 : 0);
     return 0;
   });
 
@@ -253,21 +275,17 @@ function renderDetail(player) {
     </div>`}).join('');
 }
 
-/* SMART LONG PRESS LOGIC */
 window.startLP = (e, id) => {
   isLP = false;
   const touch = e.touches ? e.touches[0] : e;
   lpStartPos = { x: touch.clientX, y: touch.clientY };
-  lpTimer = setTimeout(() => {
-    isLP = true;
-    openCardForm(id);
-  }, 600);
+  lpTimer = setTimeout(() => { isLP = true; openCardForm(id); }, 600);
 };
 
 window.checkLP = (e) => {
   const touch = e.touches ? e.touches[0] : e;
   const dist = Math.hypot(touch.clientX - lpStartPos.x, touch.clientY - lpStartPos.y);
-  if (dist > 10) cancelLP(); // If finger moves > 10px, cancel the timer (likely scrolling)
+  if (dist > 10) clearTimeout(lpTimer);
 };
 
 window.cancelLP = () => clearTimeout(lpTimer);
@@ -277,7 +295,6 @@ window.handleCardTap = (id) => {
   const c = ALL_CARDS.find(x => x.id === id);
   document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
   document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
-  
   const fields = [
     {l: 'Card Number', v: c.Number},
     {l: 'Grade', v: c.Grade},
@@ -285,14 +302,9 @@ window.handleCardTap = (id) => {
     {l: 'Status', v: (c.Owned === true || c.Owned === "true") ? '✅ Owned' : '⏳ Wishlist'},
     {l: 'Notes', v: c.Notes}
   ];
-  
   document.getElementById('d-infoList').innerHTML = fields.filter(f => f.v).map(f => `
-    <div class="info-row">
-      <div class="info-label">${f.l}</div>
-      <div class="info-value">${f.v}</div>
-    </div>
+    <div class="info-row"><div class="info-label">${f.l}</div><div class="info-value">${f.v}</div></div>
   `).join('');
-
   history.pushState({v:'card'}, '');
   document.getElementById('card-detail-view').classList.remove('offscreen-right');
 };
@@ -307,7 +319,7 @@ window.openCardForm = (id = null) => {
     <input id="cf-set" class="input-field" value="${c.Set || ''}" placeholder="Set">
     <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
     <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
-    <textarea id="cf-notes" class="input-field" placeholder="Notes (Condition, Price details, etc.)" style="height:80px;">${c.Notes || ''}</textarea>
+    <textarea id="cf-notes" class="input-field" placeholder="Notes" style="height:80px;">${c.Notes || ''}</textarea>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''} style="width:20px;height:20px;"><label>I own this card</label></div>
     <button class="primary-btn" onclick="saveCard('${id||''}')">Save</button>
   `;
@@ -316,15 +328,7 @@ window.openCardForm = (id = null) => {
 };
 
 window.saveCard = async (id) => {
-  const data = { 
-    Player: selectedPlayer.id, 
-    Year: document.getElementById('cf-year').value, 
-    Set: document.getElementById('cf-set').value, 
-    Number: document.getElementById('cf-num').value, 
-    "App Image": document.getElementById('cf-img').value, 
-    Owned: document.getElementById('cf-owned').checked,
-    Notes: document.getElementById('cf-notes').value
-  };
+  const data = { Player: selectedPlayer.id, Year: document.getElementById('cf-year').value, Set: document.getElementById('cf-set').value, Number: document.getElementById('cf-num').value, "App Image": document.getElementById('cf-img').value, Owned: document.getElementById('cf-owned').checked, Notes: document.getElementById('cf-notes').value };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   history.back();
@@ -351,7 +355,7 @@ window.savePlayer = async () => {
     history.back();
 };
 
-if(window.fs) window.startApp();
+window.startApp();
 </script>
 </body>
 </html>
