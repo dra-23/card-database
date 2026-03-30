@@ -54,7 +54,7 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 
 .top-bar { display: flex; align-items: center; padding: var(--safe-top) 16px 0; height: calc(70px + var(--safe-top)); flex-shrink: 0; z-index: 20; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; letter-spacing: -1.2px; flex: 1; }
-.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
+.total-count-pill { background: var(--md-surface-2); padding: 6px 14px; border-radius: 50px; font-size: 14px; font-weight: 700; color: var(--md-primary); margin-right: 8px; }
 
 .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; }
@@ -63,8 +63,7 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 .detail-search-bar { background: var(--md-surface-2); border-radius: 50px; display: flex; align-items: center; padding: 0 16px; height: 48px; margin-bottom: 20px; border: 1px solid var(--md-outline-variant); }
 .detail-search-input { background: none; border: none; outline: none; color: #fff; flex: 1; font-size: 15px; }
 
-.card-item { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; margin-bottom: 10px; background: var(--md-surface-1); transition: background 0.2s; }
-.card-item:active { background: #222; }
+.card-item { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; margin-bottom: 10px; background: var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.45; filter: grayscale(0.5); }
 .card-thumb { width: 55px; height: 75px; border-radius: 6px; object-fit: cover; background: #222; flex-shrink: 0; }
 .card-info { flex: 1; min-width: 0; }
@@ -144,7 +143,8 @@ html, body { height: 100vh; width: 100vw; overflow: hidden; background: var(--md
 <div class="sheet" id="cSheet"><div class="sheet-body" id="cBody"></div></div>
 
 <script>
-let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null, longPressTimer, isLongPress = false;
+let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
+let lpTimer, lpStartPos = {x:0, y:0}, isLP = false;
 
 function getCleanImg(url) {
   if (!url) return '';
@@ -242,8 +242,8 @@ function renderDetail(player) {
     return `
     <div class="card-item ${!isO ? 'not-owned' : ''}" 
          onclick="handleCardTap('${c.id}')" 
-         onmousedown="startPress('${c.id}')" onmouseup="endPress()" 
-         ontouchstart="startPress('${c.id}')" ontouchend="endPress()">
+         onmousedown="startLP(event, '${c.id}')" onmousemove="checkLP(event)" onmouseup="cancelLP()"
+         ontouchstart="startLP(event, '${c.id}')" ontouchmove="checkLP(event)" ontouchend="cancelLP()">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info">
         <div class="card-title">${c.Year} ${c.Set || c.Manufacturer || ''}</div>
@@ -253,8 +253,27 @@ function renderDetail(player) {
     </div>`}).join('');
 }
 
+/* SMART LONG PRESS LOGIC */
+window.startLP = (e, id) => {
+  isLP = false;
+  const touch = e.touches ? e.touches[0] : e;
+  lpStartPos = { x: touch.clientX, y: touch.clientY };
+  lpTimer = setTimeout(() => {
+    isLP = true;
+    openCardForm(id);
+  }, 600);
+};
+
+window.checkLP = (e) => {
+  const touch = e.touches ? e.touches[0] : e;
+  const dist = Math.hypot(touch.clientX - lpStartPos.x, touch.clientY - lpStartPos.y);
+  if (dist > 10) cancelLP(); // If finger moves > 10px, cancel the timer (likely scrolling)
+};
+
+window.cancelLP = () => clearTimeout(lpTimer);
+
 window.handleCardTap = (id) => {
-  if (isLongPress) return;
+  if (isLP) return;
   const c = ALL_CARDS.find(x => x.id === id);
   document.getElementById('d-cardImg').src = getCleanImg(c['App Image']);
   document.getElementById('d-cardTitle').innerText = `${c.Year} ${c.Set || c.Manufacturer}`;
@@ -278,12 +297,6 @@ window.handleCardTap = (id) => {
   document.getElementById('card-detail-view').classList.remove('offscreen-right');
 };
 
-window.startPress = (id) => {
-  isLongPress = false;
-  longPressTimer = setTimeout(() => { isLongPress = true; openCardForm(id); }, 600);
-};
-window.endPress = () => clearTimeout(longPressTimer);
-
 window.openCardForm = (id = null) => {
   history.pushState({v:'form'}, '');
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
@@ -294,6 +307,7 @@ window.openCardForm = (id = null) => {
     <input id="cf-set" class="input-field" value="${c.Set || ''}" placeholder="Set">
     <input id="cf-num" class="input-field" value="${c.Number || ''}" placeholder="Card #">
     <input id="cf-img" class="input-field" value="${c['App Image'] || ''}" placeholder="Image URL">
+    <textarea id="cf-notes" class="input-field" placeholder="Notes (Condition, Price details, etc.)" style="height:80px;">${c.Notes || ''}</textarea>
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><input type="checkbox" id="cf-owned" ${isO?'checked':''} style="width:20px;height:20px;"><label>I own this card</label></div>
     <button class="primary-btn" onclick="saveCard('${id||''}')">Save</button>
   `;
@@ -302,7 +316,15 @@ window.openCardForm = (id = null) => {
 };
 
 window.saveCard = async (id) => {
-  const data = { Player: selectedPlayer.id, Year: document.getElementById('cf-year').value, Set: document.getElementById('cf-set').value, Number: document.getElementById('cf-num').value, "App Image": document.getElementById('cf-img').value, Owned: document.getElementById('cf-owned').checked };
+  const data = { 
+    Player: selectedPlayer.id, 
+    Year: document.getElementById('cf-year').value, 
+    Set: document.getElementById('cf-set').value, 
+    Number: document.getElementById('cf-num').value, 
+    "App Image": document.getElementById('cf-img').value, 
+    Owned: document.getElementById('cf-owned').checked,
+    Notes: document.getElementById('cf-notes').value
+  };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   history.back();
