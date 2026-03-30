@@ -57,18 +57,18 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); padding-top: var(--safe-top); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); }
 #gallery-view { z-index: 5; display: flex; }
-#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; }
+#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } /* Row for split screen */
 #detail-view.active { display: flex; transform: translateX(0); }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + var(--safe-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
 /* MASTER COLUMN (List View) */
-.master-col { flex: 1; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-2); max-width: 100%; }
+.master-col { flex: 1; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-2); }
 
-/* DETAIL COLUMN (Pane View) */
+/* DETAIL COLUMN (Right side preview) */
 .detail-pane { 
-  flex: 1.5; 
+  flex: 1; /* Match list column for 50/50 split */
   background: var(--md-surface-1); 
   display: none; /* Hidden on mobile by default */
   flex-direction: column;
@@ -80,7 +80,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 @media (min-width: 1024px) {
   .detail-pane { display: flex; }
   .sheet#cardDetailSheet { display: none !important; } /* Disable bottom sheet on desktop */
-  .master-col { max-width: 400px; } /* Constrain list width on widescreen */
 }
 
 .top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; }
@@ -91,24 +90,19 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .back-btn { position: absolute; top: var(--safe-top); left: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; z-index: 100; color: #fff; border: none; background: transparent; cursor: pointer; }
 
 /* Grid */
-.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 16px; }
+.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 0 16px; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 1; cursor: pointer; }
 .tile-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.sport-badge-row { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
-.sport-icon { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-/* Cards - Modified for Far-Right Badge */
-.card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); position: relative; cursor: pointer; transition: background 0.2s; }
+/* Cards */
+.card-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; margin-bottom: 8px; background: var(--md-surface-1); cursor: pointer; transition: background 0.2s; }
 .card-item:hover { background: var(--md-surface-2); }
 .card-item.selected { border: 2px solid var(--md-primary); background: var(--md-surface-2); }
 .card-item.not-owned { opacity: 0.45; border: 1px dashed #444; }
-.card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; }
-.card-info { flex: 1; } /* Take up remaining space */
+.card-thumb { width: 55px; height: 75px; border-radius: 8px; object-fit: cover; background: #222; flex-shrink: 0; }
+.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 4px; margin-left: 8px; text-transform: uppercase; white-space: nowrap; }
 
-/* FIX: Forces badge to far right */
-.badge-inline { background: #FFF; color: #000; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; margin-left: auto; }
-
-/* Search Bar */
+/* Search & Filters */
 .search-container { padding: 8px 16px 12px; position: relative; }
 .search-input { width: 100%; background: var(--md-surface-2); border: none; border-radius: 28px; padding: 18px 24px 18px 56px; color: var(--md-on-surface); font-size: 16px; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .search-icon-svg { position: absolute; left: 32px; top: 26px; color: var(--md-on-surface-variant); pointer-events: none; }
@@ -138,7 +132,6 @@ input:checked + .slider:before { transform: translateX(18px); }
 
 .fab { position: absolute; bottom: calc(24px + var(--safe-bottom)); right: 20px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 8px 24px rgba(0,0,0,0.4); cursor: pointer; }
 
-/* FIX: Dropdown Text Color */
 .select-field { width: 100%; background: transparent; border: 1.5px solid var(--md-outline); border-radius: 12px; padding: 16px; color: #fff; font-size: 16px; outline: none; }
 .select-field option { color: #000 !important; background: #FFF !important; }
 
@@ -167,7 +160,7 @@ input:checked + .slider:before { transform: translateX(18px); }
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
       </button>
     </div>
-    <div style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+    <div id="playerHeaderUI" style="margin-top:-50px; padding: 0 16px 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
       <img id="playerThumb" style="width:85px; height:115px; border-radius:12px; border:3px solid var(--md-surface); object-fit:cover; background:#222;">
       <div style="padding-bottom:5px;">
         <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
@@ -184,7 +177,6 @@ input:checked + .slider:before { transform: translateX(18px); }
       <div class="toggle-item"><span>Wishlist</span><label class="switch"><input type="checkbox" id="wishToggle" onchange="window.toggleFilter('wishlist')"><span class="slider"></span></label></div>
       <div class="toggle-item"><span>Graded</span><label class="switch"><input type="checkbox" id="gradToggle" onchange="window.toggleFilter('graded')"><span class="slider"></span></label></div>
     </div>
-
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
     <button class="fab" id="addCardFab"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
   </div>
@@ -242,9 +234,7 @@ function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    // RESTORED: Sport icons logic
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
-    
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
       <div class="sport-badge-row">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
@@ -282,11 +272,14 @@ window.closeDetail = () => {
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
   cards.sort((a,b) => (a.Year || "").toString().localeCompare((b.Year || "").toString()));
+
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
     cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
   }
-  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"].toString().trim() !== "");
+  
+  // FIX: Type error if Grade is undefined. Safe Optional Chaining for trim().
+  if (showGradedOnly) cards = cards.filter(c => c.Grade?.trim?.() !== "");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
 
   document.getElementById('playerName').innerText = player.Player || player.id;
@@ -296,17 +289,19 @@ function renderDetail(player) {
 
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
-    const company = c["Grading Company"] || "";
-    const numericGrade = c.Grade || "";
-    const fullGrade = (company && numericGrade) ? `${company} ${numericGrade}` : (company || numericGrade);
     
-    // FIX: Badge logic for far right position
-    const badgeHtml = fullGrade ? `<span class="badge-inline">${fullGrade}</span>` : '';
+    // FIX: Combined Grade Badge Logic
+    let badgeText = "";
+    if (c.Owned === "wishlist") {
+        badgeText = "Wishlist";
+    } else if (c.Grade && c.Grade.toString().trim() !== "" && c.Grade.toString().trim() !== "Raw") {
+        badgeText = c.Grade.toString().trim();
+    }
+    const badgeHtml = badgeText !== "" ? `<span class="badge-inline">${badgeText}</span>` : '';
     
     return `<div class="card-item ${!isOwned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
-      ${badgeHtml}
+      <div class="card-info"><div style="font-weight:600;">${c.Year} ${c.Set || ''} ${badgeHtml}</div><div style="font-size:12px; opacity:0.7;">#${c.Number || 'N/A'}</div></div>
     </div>`;
   }).join('');
 }
@@ -322,18 +317,17 @@ window.handleCardTap = (id) => {
 
   // FIX: Modern Material Expressive style for Card Details
   const contentHtml = `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:500px; object-fit:contain; background:#222;">
-    <h1 style="font-family:'Google Sans Display'; font-size:32px; margin-bottom:4px;">${c.Year} ${c.Set}</h1>
-    <div style="font-size:14px; color:var(--md-on-surface-variant); margin-bottom:24px; font-weight:500;">Card Number: #${c.Number || 'N/A'}</div>
-
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain;">
+    <h2 style="margin-bottom:8px;">${c.Year} ${c.Set}</h2>
+    
     <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:16px; margin-top:20px; background:var(--md-surface-2); padding:20px; border-radius:16px;">
-      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Condition / Grade</div><div style="font-weight:700; font-size:18px;">${fullGrade}</div></div>
-      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Sport Category</div><div style="font-weight:700; font-size:18px;">${c.Sport || 'Other'}</div></div>
-      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Manufacturer</div><div style="font-weight:700; font-size:18px;">${c.Manufacturer || 'Unknown'}</div></div>
-      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Owned Status</div><div style="font-weight:700; font-size:18px; color:${(c.Owned===true||c.Owned==="true")?'#4CAF50':'var(--md-primary)'};">${(c.Owned===true||c.Owned==="true")?'In Collection':'On Wishlist'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Number</div><div style="font-weight:700; font-size:18px;">#${c.Number || 'N/A'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Grade</div><div style="font-weight:700; font-size:18px;">${fullGrade}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Sport</div><div style="font-weight:700; font-size:18px;">${c.Sport || 'Other'}</div></div>
+      <div><div style="font-size:12px; color:var(--md-on-surface-variant)">Status</div><div style="font-weight:700; font-size:18px; color:${(c.Owned===true||c.Owned==="true")?'#4CAF50':'var(--md-primary)'};">${(c.Owned===true||c.Owned==="true")?'Owned':'Wishlist'}</div></div>
     </div>
     
-    <div style="display:flex; flex-direction:column; gap:12px; margin-top:32px;">
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:24px;">
       <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn ebay-btn">Check eBay Sold Value</button></a>
       <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn tcdb-btn">View on TCDB.com</button></a>
       <button class="expressive-btn" onclick="window.openCardForm('${c.id}')">Edit Card Information</button>
