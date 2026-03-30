@@ -177,29 +177,16 @@ let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 let playersLoaded = false, cardsLoaded = false;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
-window.input = (id, label, val) => `<div class="input-group"><div class="input-label">${label}</div><input id="${id}" class="input-field" value="${val || ''}"></div>`;
-
-// FIX: Aggressive Google Drive Image Parser
 function getCleanImg(url) {
   if (!url) return 'https://placehold.co/400x600/111/333?text=No+Image';
   let cleanUrl = url.toString().trim();
-
-  // If it's a Google Drive URL, extract the ID and force the 'uc' stream format
+  // RESTORED: Standard conversion for Google Drive user content
   if (cleanUrl.includes('drive.google.com')) {
     let id = "";
-    if (cleanUrl.includes('id=')) {
-      id = cleanUrl.split('id=')[1].split('&')[0];
-    } else if (cleanUrl.includes('file/d/')) {
-      id = cleanUrl.split('file/d/')[1].split('/')[0];
-    }
+    if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
+    else if (cleanUrl.includes('file/d/')) { id = cleanUrl.split('file/d/')[1].split('/')[0]; }
     return `https://drive.google.com/uc?export=view&id=${id}`;
   }
-
-  // Handle TCDB proxy
-  if (cleanUrl.includes('tcdb.com')) {
-    return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(cleanUrl)}`;
-  }
-
   return cleanUrl;
 }
 
@@ -330,15 +317,15 @@ window.openCardForm = (id = null) => {
 
   document.getElementById('modalBody').innerHTML = `
     <h2 style="margin-bottom:24px;">${id?'Edit':'Add'} Card</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">${window.input('cf-y', 'Year', c.Year)}${window.input('cf-n', 'Number', c.Number)}</div>
-    ${window.input('cf-s', 'Set', c.Set)}
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;"><div class="input-group"><div class="input-label">Year</div><input id="cf-y" class="input-field" value="${c.Year||''}"></div><div class="input-group"><div class="input-label">Number</div><input id="cf-n" class="input-field" value="${c.Number||''}"></div></div>
+    <div class="input-group"><div class="input-label">Set</div><input id="cf-s" class="input-field" value="${c.Set||''}"></div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
       <div class="input-group"><div class="input-label">Company</div><select id="cf-co" class="select-field"><option value="">Raw</option>${cos.map(o=>`<option value="${o}" ${c["Grading Company"]===o?'selected':''}>${o}</option>`).join('')}</select></div>
       <div class="input-group"><div class="input-label">Grade</div><select id="cf-gr" class="select-field"><option value="">N/A</option>${grades.map(g=>`<option value="${g}" ${(c.Grade||"").toString()===g?'selected':''}>${g}</option>`).join('')}</select></div>
     </div>
     <div class="input-group"><div class="input-label">Sport</div><select id="cf-sp" class="select-field"><option value="Basketball" ${c.Sport==='Basketball'?'selected':''}>Basketball</option><option value="Baseball" ${c.Sport==='Baseball'?'selected':''}>Baseball</option><option value="Football" ${c.Sport==='Football'?'selected':''}>Football</option></select></div>
-    ${window.input('cf-i', 'App Image URL', c['App Image'])}
-    ${window.input('cf-t', 'TCDB Link', c['Card Information'])}
+    <div class="input-group"><div class="input-label">App Image URL</div><input id="cf-i" class="input-field" value="${c['App Image']||''}"></div>
+    <div class="input-group"><div class="input-label">TCDB Link</div><input id="cf-t" class="input-field" value="${c['Card Information']||''}"></div>
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;"><input type="checkbox" id="cf-o" ${isO?'checked':''} style="width:24px;height:24px;"><label>Owned</label></div>
     <button class="primary-btn" id="saveCardBtn">Save Card</button>`;
   document.getElementById('saveCardBtn').onclick = () => window.saveCard(id);
@@ -362,7 +349,7 @@ window.saveCard = async (id) => {
 
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2>${window.input('pf-n', 'Name', p.Player || p.id)}${window.input('pf-m', 'Thumb URL', p['Main Image'])}${window.input('pf-b', 'Banner URL', p['Banner_Image'])}<button class="primary-btn" id="savePlayerBtn">Save Player</button>`;
+  document.getElementById('modalBody').innerHTML = `<h2 style="margin-bottom:24px;">Player</h2><div class="input-group"><div class="input-label">Name</div><input id="pf-n" class="input-field" value="${p.Player||p.id||''}"></div><div class="input-group"><div class="input-label">Thumb URL</div><input id="pf-m" class="input-field" value="${p['Main Image']||''}"></div><div class="input-group"><div class="input-label">Banner URL</div><input id="pf-b" class="input-field" value="${p['Banner_Image']||''}"></div><button class="primary-btn" id="savePlayerBtn">Save Player</button>`;
   document.getElementById('savePlayerBtn').onclick = () => window.savePlayer();
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').classList.add('open');
