@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#c2caf0">
@@ -115,7 +116,24 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.input-field, .select-field { width: 100%; background: #fdfdfd; border: 1.5px solid var(--md-surface-1); border-radius: 16px; padding: 18px; color: var(--md-on-surface); font-size: 16px; outline: none; margin-bottom: 20px; }
+/* Material 3 Expressive Forms Style */
+.form-sheet .sheet-body { display: flex; flex-direction: column; gap: 20px; padding: 0 24px calc(24px + env(safe-area-inset-bottom)); }
+.form-header { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; padding: 16px 0; z-index: 10; border-bottom: 1px solid #f0f0f0; }
+.form-title { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; color: #1f1f1f; }
+.form-action-btn { background: none; border: none; font-size: 16px; font-weight: 500; color: var(--md-primary); cursor: pointer; padding: 8px 16px; border-radius: 20px; transition: background 0.2s; }
+.form-action-btn:active { background-color: rgba(232, 25, 44, 0.1); }
+.form-action-btn.cancel { color: #5f6368; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label { font-size: 14px; font-weight: 500; color: #5f6368; padding-left: 4px; }
+.form-input, .form-select { width: 100%; font-size: 16px; color: #1f1f1f; padding: 20px 24px; border-radius: 16px; border: 2px solid #e0e0e0; background: #fdfdfd; transition: border-color 0.2s, box-shadow 0.2s; outline: none; -webkit-appearance: none; appearance: none; }
+.form-input:focus, .form-select:focus { border-color: var(--md-primary); box-shadow: 0 0 0 3px rgba(232, 25, 44, 0.1); }
+.form-input::placeholder { color: #aaa; }
+.form-input:disabled { background-color: #f0f0f0; border-color: #d0d0d0; color: #888; cursor: not-allowed; }
+
+.form-select { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 24px center; background-size: 24px; padding-right: 60px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .status-tag { font-weight: 800; font-family: 'Google Sans Display'; font-size: 20px; }
 .status-tag.sleevd { color: var(--soft-green); }
@@ -175,7 +193,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   <div class="sheet-body" id="cardDetailBody"></div>
 </div>
 
-<div class="sheet" id="modalSheet">
+<div class="sheet form-sheet" id="modalSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body" id="modalBody"></div>
 </div>
@@ -349,21 +367,108 @@ window.toggleOwnership = async (id) => {
 window.closeAll = () => { document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); document.getElementById('globalScrim').style.display = 'none'; };
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 
+// Material 3 Expressive forms helper
+function renderFormHeader(title, actionLabel, actionFn, cancelFn = "window.closeAll()") {
+  return `
+    <div class="form-header">
+      <button class="form-action-btn cancel" onclick="${cancelFn}">Cancel</button>
+      <div class="form-title">${title}</div>
+      <button class="form-action-btn" onclick="${actionFn}">${actionLabel}</button>
+    </div>
+  `;
+}
+
+function renderFormInput(id, label, placeholder, value = "", type = "text", disabled = false) {
+  return `
+    <div class="form-group">
+      <label class="form-label" for="${id}">${label}</label>
+      <input type="${type}" id="${id}" class="form-input" placeholder="${placeholder}" value="${value}" ${disabled ? 'disabled' : ''}>
+    </div>
+  `;
+}
+
+function renderFormSelect(id, label, options, selectedValue = "") {
+  return `
+    <div class="form-group">
+      <label class="form-label" for="${id}">${label}</label>
+      <select id="${id}" class="form-select">
+        ${options.map(opt => `<option value="${opt.value}" ${opt.value === selectedValue ? 'selected' : ''}>${opt.label}</option>`).join('')}
+      </select>
+    </div>
+  `;
+}
+
 window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
-  const cos = ["PSA", "BGS", "SGC", "CGC"];
-  document.getElementById('modalBody').innerHTML = `
-    <h2 style="margin-bottom:20px;">Edit Card</h2>
-    <input id="cf-y" class="input-field" placeholder="Year" value="${c.Year||''}">
-    <input id="cf-s" class="input-field" placeholder="Set" value="${c.Set||''}">
-    <input id="cf-m" class="input-field" placeholder="Manufacturer" value="${c.Manufacturer||''}">
-    <input id="cf-n" class="input-field" placeholder="Number" value="${c.Number||''}">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-      <select id="cf-co" class="select-field"><option value="">Raw</option>${cos.map(o=>`<option value="${o}" ${c["Grading Company"]===o?'selected':''}>${o}</option>`).join('')}</select>
-      <input id="cf-gr" class="input-field" placeholder="Grade" value="${c.Grade||''}">
+  const isEditing = !!id;
+
+  const gradCos = [
+    { value: "", label: "Raw" },
+    { value: "PSA", label: "PSA" },
+    { value: "BGS", label: "BGS" },
+    { value: "SGC", label: "SGC" },
+    { value: "CGC", label: "CGC" }
+  ];
+
+  const grades = [{ value: "", label: "N/A" }];
+  for(let i=10; i>=1; i-=0.5) {
+    const gLabel = i % 1 === 0 ? i.toString() : i.toFixed(1);
+    grades.push({ value: gLabel, label: gLabel });
+  }
+
+  // Sports dropdown
+  const sports = [
+    { value: "", label: "Select Sport" },
+    { value: "Basketball", label: "Basketball" },
+    { value: "Football", label: "Football" },
+    { value: "Baseball", label: "Baseball" },
+    { value: "Golf", label: "Golf" },
+    { value: "Soccer", label: "Soccer" },
+    { value: "Other", label: "Other" }
+  ];
+
+  // Teams dropdown based on existing cards for that player
+  let existingTeams = [];
+  if (window.selectedPlayer) {
+    existingTeams = [...new Set(ALL_CARDS
+      .filter(card => card.Player === window.selectedPlayer.id && card.Team)
+      .map(card => card.Team))].sort();
+  }
+  
+  const teams = [
+    { value: "", label: "Select Team" },
+    ...existingTeams.map(team => ({ value: team, label: team }))
+  ];
+
+  const formBodyHtml = `
+    ${renderFormHeader(isEditing ? "Edit Card" : "Add Card", "Done", `window.saveCard('${id||''}')`)}
+    <div style="padding-top:10px; display:flex; flex-direction:column; gap:20px;">
+      ${renderFormInput("cf-pname", "Player", "Player Name", window.selectedPlayer?.Player || "", "text", true)}
+      
+      <div class="form-grid">
+        ${renderFormInput("cf-y", "Year", "e.g. 1986", c.Year||"")}
+        ${renderFormInput("cf-n", "Number", "e.g. #57", c.Number||"")}
+      </div>
+
+      ${renderFormInput("cf-s", "Set", "e.g. Fleer", c.Set||"")}
+      ${renderFormInput("cf-m", "Manufacturer", "e.g. Topps", c.Manufacturer||"")}
+      
+      ${renderFormSelect("cf-sp", "Sport", sports, c.Sport||"")}
+      ${renderFormSelect("cf-team", "Team", teams, c.Team||"")}
+      
+      <div class="form-grid">
+        ${renderFormSelect("cf-co", "Grading Company", gradCos, c["Grading Company"]||"")}
+        ${renderFormSelect("cf-gr", "Grade", grades, (c.Grade||"").toString())}
+      </div>
+
+      ${renderFormInput("cf-p", "Purchase Price", "e.g. 100", c.Price||"", "number")}
+      
+      ${renderFormInput("cf-i", "App Image (URL)", "Direct Image Link", c["App Image"]||"")}
+      ${renderFormInput("cf-t", "Card Information (tcdb.com URL)", "Link to TCDB", c["Card Information"]||"")}
     </div>
-    <input id="cf-p" class="input-field" placeholder="Purchase Price" value="${c.Price||''}">
-    <button class="primary-btn" onclick="window.saveCard('${id||''}')">Save Card</button>`;
+  `;
+
+  document.getElementById('modalBody').innerHTML = formBodyHtml;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').style.display = 'block';
 };
@@ -375,11 +480,22 @@ window.saveCard = async (id) => {
     Set: document.getElementById('cf-s').value, 
     Manufacturer: document.getElementById('cf-m').value,
     Number: document.getElementById('cf-n').value, 
+    Sport: document.getElementById('cf-sp').value,
+    Team: document.getElementById('cf-team').value,
     "Grading Company": document.getElementById('cf-co').value, 
     Grade: document.getElementById('cf-gr').value, 
     Price: document.getElementById('cf-p').value,
-    Owned: true 
+    "App Image": document.getElementById('cf-i').value,
+    "Card Information": document.getElementById('cf-t').value,
+    Owned: true // Default to owned when adding/editing via form
   };
+
+  // Basic validation
+  if (!data.Year || !data.Set) {
+    alert("Year and Set are required.");
+    return;
+  }
+
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
   window.closeAll();
@@ -387,18 +503,35 @@ window.saveCard = async (id) => {
 
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  document.getElementById('modalBody').innerHTML = `
-    <h2 style="margin-bottom:20px;">Player</h2>
-    <input id="pf-n" class="input-field" value="${p.Player||p.id||''}" placeholder="Name"> 
-    <input id="pf-m" class="input-field" value="${p['Main Image']||''}" placeholder="Main Img URL"> 
-    <input id="pf-b" class="input-field" value="${p['Banner_Image']||''}" placeholder="Banner Img URL">
-    <button class="primary-btn" onclick="window.savePlayer()">Save Player</button>`;
+  const isEditing = !!id;
+
+  const formBodyHtml = `
+    ${renderFormHeader(isEditing ? "Edit Profile" : "Add Player", "Done", "window.savePlayer()")}
+    <div style="padding-top:10px; display:flex; flex-direction:column; gap:20px;">
+      ${renderFormInput("pf-n", "Player Name", "e.g. Michael Jordan", p.Player||p.id||"", "text", isEditing)} 
+      ${renderFormInput("pf-m", "Main Image (URL)", "Portrait URL", p['Main Image']||"")} 
+      ${renderFormInput("pf-b", "Banner Image (URL)", "Background URL", p['Banner_Image']||"")}
+    </div>
+  `;
+
+  document.getElementById('modalBody').innerHTML = formBodyHtml;
   document.getElementById('modalSheet').classList.add('open');
   document.getElementById('globalScrim').style.display = 'block';
 };
 
 window.savePlayer = async () => {
-  const data = { Player: document.getElementById('pf-n').value, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value };
+  const nameInput = document.getElementById('pf-n');
+  const data = { 
+    Player: nameInput.value, 
+    "Main Image": document.getElementById('pf-m').value, 
+    "Banner_Image": document.getElementById('pf-b').value 
+  };
+  
+  if (!data.Player) {
+    alert("Player name is required.");
+    return;
+  }
+
   await window.fs.setDoc(window.fs.doc(window.db, "Players", data.Player), data, {merge:true});
   window.closeAll();
 };
