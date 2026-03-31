@@ -20,6 +20,10 @@
     persistentMultipleTabManager,
     collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  // Added Firebase Storage imports
+  import { 
+    getStorage, ref, uploadBytes, getDownloadURL 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
@@ -34,8 +38,12 @@
   try {
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    const storage = getStorage(app); // Initialize Storage
+
     window.db = db;
+    window.storage = storage;
     window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+    window.st = { ref, uploadBytes, getDownloadURL }; // Expose storage methods
     window.startApp();
   } catch (e) { console.error(e); }
 </script>
@@ -101,7 +109,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .edit-profile-fab { right: 12px; }
 
 .expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.primary-btn { width: 100%; background: var(--md-primary); color: #fff; border: none; padding: 20px; border-radius: 24px; font-weight: 700; font-size: 16px; cursor: pointer; }
 
 .filter-bar { display: flex; gap: 8px; padding: 12px 16px; }
 .filter-chip { border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--md-surface-1); background: #fff; transition: 0.2s; }
@@ -116,7 +123,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-/* Material 3 Expressive Forms Style */
 .form-sheet .sheet-body { display: flex; flex-direction: column; gap: 20px; padding: 0 24px calc(24px + env(safe-area-inset-bottom)); }
 .form-header { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; padding: 16px 0; z-index: 10; border-bottom: 1px solid #f0f0f0; }
 .form-title { font-family: 'Google Sans Display'; font-size: 32px; font-weight: 700; color: #1f1f1f; }
@@ -128,8 +134,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .form-label { font-size: 14px; font-weight: 500; color: #5f6368; padding-left: 4px; }
 .form-input, .form-select { width: 100%; font-size: 16px; color: #1f1f1f; padding: 20px 24px; border-radius: 16px; border: 2px solid #e0e0e0; background: #fdfdfd; transition: border-color 0.2s, box-shadow 0.2s; outline: none; -webkit-appearance: none; appearance: none; }
 .form-input:focus, .form-select:focus { border-color: var(--md-primary); box-shadow: 0 0 0 3px rgba(232, 25, 44, 0.1); }
-.form-input::placeholder { color: #aaa; }
-.form-input:disabled { background-color: #f0f0f0; border-color: #d0d0d0; color: #888; cursor: not-allowed; }
 
 .form-select { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 24px center; background-size: 24px; padding-right: 60px; }
 
@@ -207,6 +211,7 @@ const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Gol
 function getCleanImg(url) {
   if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
   let cleanUrl = url.toString().trim();
+  // Handles legacy Google Drive images
   if (cleanUrl.includes('drive.google.com')) {
     let id = "";
     if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
@@ -251,7 +256,7 @@ function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
     const o = pC.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🃏'}</div>`).join('');
+    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('');
     
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
       <div class="sport-badge-overlay">${icons}</div>
@@ -367,7 +372,6 @@ window.toggleOwnership = async (id) => {
 window.closeAll = () => { document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); document.getElementById('globalScrim').style.display = 'none'; };
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 
-// Material 3 Expressive forms helper
 function renderFormHeader(title, actionLabel, actionFn, cancelFn = "window.closeAll()") {
   return `
     <div class="form-header">
@@ -402,43 +406,21 @@ window.openCardForm = (id = null) => {
   const c = id ? ALL_CARDS.find(x => x.id === id) : {};
   const isEditing = !!id;
 
-  const gradCos = [
-    { value: "", label: "Raw" },
-    { value: "PSA", label: "PSA" },
-    { value: "BGS", label: "BGS" },
-    { value: "SGC", label: "SGC" },
-    { value: "CGC", label: "CGC" }
-  ];
-
+  const gradCos = [{ value: "", label: "Raw" }, { value: "PSA", label: "PSA" }, { value: "BGS", label: "BGS" }, { value: "SGC", label: "SGC" }, { value: "CGC", label: "CGC" }];
   const grades = [{ value: "", label: "N/A" }];
   for(let i=10; i>=1; i-=0.5) {
     const gLabel = i % 1 === 0 ? i.toString() : i.toFixed(1);
     grades.push({ value: gLabel, label: gLabel });
   }
 
-  // Sports dropdown
-  const sports = [
-    { value: "", label: "Select Sport" },
-    { value: "Basketball", label: "Basketball" },
-    { value: "Football", label: "Football" },
-    { value: "Baseball", label: "Baseball" },
-    { value: "Golf", label: "Golf" },
-    { value: "Soccer", label: "Soccer" },
-    { value: "Other", label: "Other" }
-  ];
+  const sports = [{ value: "", label: "Select Sport" }, { value: "Basketball", label: "Basketball" }, { value: "Football", label: "Football" }, { value: "Baseball", label: "Baseball" }, { value: "Golf", label: "Golf" }, { value: "Soccer", label: "Soccer" }, { value: "Other", label: "Other" }];
 
-  // Teams dropdown based on existing cards for that player
   let existingTeams = [];
   if (window.selectedPlayer) {
-    existingTeams = [...new Set(ALL_CARDS
-      .filter(card => card.Player === window.selectedPlayer.id && card.Team)
-      .map(card => card.Team))].sort();
+    existingTeams = [...new Set(ALL_CARDS.filter(card => card.Player === window.selectedPlayer.id && card.Team).map(card => card.Team))].sort();
   }
   
-  const teams = [
-    { value: "", label: "Select Team" },
-    ...existingTeams.map(team => ({ value: team, label: team }))
-  ];
+  const teams = [{ value: "", label: "Select Team" }, ...existingTeams.map(team => ({ value: team, label: team }))];
 
   const formBodyHtml = `
     ${renderFormHeader(isEditing ? "Edit Card" : "Add Card", "Done", `window.saveCard('${id||''}')`)}
@@ -461,9 +443,13 @@ window.openCardForm = (id = null) => {
         ${renderFormSelect("cf-gr", "Grade", grades, (c.Grade||"").toString())}
       </div>
 
-      ${renderFormInput("cf-p", "Purchase Price", "e.g. 100", c.Price||"", "number")}
-      
+      <div class="form-group">
+        <label class="form-label">Upload Card Image</label>
+        <input type="file" id="cf-upload" class="form-input" accept="image/*" style="padding: 12px 24px;">
+      </div>
       ${renderFormInput("cf-i", "App Image (URL)", "Direct Image Link", c["App Image"]||"")}
+
+      ${renderFormInput("cf-p", "Purchase Price", "e.g. 100", c.Price||"", "number")}
       ${renderFormInput("cf-t", "Card Information (tcdb.com URL)", "Link to TCDB", c["Card Information"]||"")}
     </div>
   `;
@@ -474,6 +460,25 @@ window.openCardForm = (id = null) => {
 };
 
 window.saveCard = async (id) => {
+  const uploadInput = document.getElementById('cf-upload');
+  let imageUrl = document.getElementById('cf-i').value;
+
+  // Handle image upload to Firebase Storage if a file is selected
+  if (uploadInput.files && uploadInput.files[0]) {
+    const file = uploadInput.files[0];
+    const fileName = `card-images/${Date.now()}_${file.name}`;
+    const storageRef = window.st.ref(window.storage, fileName);
+    
+    try {
+      const snapshot = await window.st.uploadBytes(storageRef, file);
+      imageUrl = await window.st.getDownloadURL(snapshot.ref); // Get permanent URL
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Image upload failed. Ensure Storage rules allow public read/write.");
+      return;
+    }
+  }
+
   const data = { 
     Player: window.selectedPlayer.id, 
     Year: document.getElementById('cf-y').value, 
@@ -485,16 +490,12 @@ window.saveCard = async (id) => {
     "Grading Company": document.getElementById('cf-co').value, 
     Grade: document.getElementById('cf-gr').value, 
     Price: document.getElementById('cf-p').value,
-    "App Image": document.getElementById('cf-i').value,
+    "App Image": imageUrl,
     "Card Information": document.getElementById('cf-t').value,
-    Owned: true // Default to owned when adding/editing via form
+    Owned: true 
   };
 
-  // Basic validation
-  if (!data.Year || !data.Set) {
-    alert("Year and Set are required.");
-    return;
-  }
+  if (!data.Year || !data.Set) { alert("Year and Set are required."); return; }
 
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
@@ -527,10 +528,7 @@ window.savePlayer = async () => {
     "Banner_Image": document.getElementById('pf-b').value 
   };
   
-  if (!data.Player) {
-    alert("Player name is required.");
-    return;
-  }
+  if (!data.Player) { alert("Player name is required."); return; }
 
   await window.fs.setDoc(window.fs.doc(window.db, "Players", data.Player), data, {merge:true});
   window.closeAll();
