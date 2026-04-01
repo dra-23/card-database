@@ -288,6 +288,12 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   transform: translateX(0);
   content: '';
 }
+  #sheetPreview, #cardDetailSheet {
+    backface-visibility: hidden; 
+    box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); 
+    background: white !important; /* Forces solid white so you can't see through the cards */
+    border-radius: 24px; /* Optional: ensures the corners match your design */
+  }
 </style>
 </head>
 <body>
@@ -421,28 +427,29 @@ sheet.addEventListener('touchmove', (e) => {
       sheet.style.transform = `translateY(${diffY}px)`;
     } 
     else if (gestureType === 'horizontal') {
-      // Move main sheet
       sheet.style.transform = `translateX(${diffX}px)`;
 
-      // Handle the "Ghost" Preview Card
       let preview = document.getElementById('sheetPreview');
-      if (!preview && Math.abs(diffX) > 20) {
+      if (!preview && Math.abs(diffX) > 5) { // Start early for responsiveness
         preview = sheet.cloneNode(true);
         preview.id = 'sheetPreview';
-        preview.style.position = 'fixed'; // Ensure it's positioned correctly
+        preview.style.transform = 'none';
         preview.style.zIndex = '999';
         preview.classList.add('no-transition');
         sheet.parentNode.appendChild(preview);
+
+        // 🔥 THE MAGIC: Load the NEXT/PREV data into the ghost
+        const direction = diffX > 0 ? 'prev' : 'next';
+        const nextData = window.getNextCardData(direction);
+        window.updatePreviewContent(preview, nextData);
       }
 
       if (preview) {
-  // We add (or subtract) 40px to create a visible gap between the sheets
-  const gap = diffX > 0 ? -40 : 40; 
-  const previewOffset = diffX > 0 ? '-100%' : '100%';
-  
-  preview.style.transform = `translateX(calc(${previewOffset} + ${diffX + gap}px))`;
-  preview.style.opacity = '0.8'; // Making it slightly more solid looks better with a gap
-}
+        // Maintain the 40px gap for the carousel feel
+        const gap = diffX > 0 ? -40 : 40;
+        const previewOffset = diffX > 0 ? '-100%' : '100%';
+        preview.style.transform = `translateX(calc(${previewOffset} + ${diffX + gap}px))`;
+      }
     }
   }, { passive: true });
 
@@ -913,8 +920,13 @@ sheet.classList.add('no-transition');
   }, 50); 
 }
   // Add this helper function
+// --- Card Navigation Helpers ---
+
+// 1. The Data Finder (Your original function)
 function getNextCardData(direction) {
     const currentCard = ALL_CARDS.find(c => c.id === window.currentCardId);
+    if (!currentCard) return null;
+    
     const playerCardList = ALL_CARDS
         .filter(c => c.Player === currentCard.Player)
         .sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
@@ -927,6 +939,24 @@ function getNextCardData(direction) {
 
     return playerCardList[newIndex];
 }
+
+// 2. The Visual Renderer (Add this right here)
+window.updatePreviewContent = (previewElement, cardData) => {
+  if (!previewElement || !cardData) return;
+
+  // Update the Main Image
+  const img = previewElement.querySelector('img'); 
+  if (img) img.src = cardData.ImageURL || cardData.imageUrl;
+
+  // Update the Title (e.g. "1987-88 Fleer Stickers")
+  const title = previewElement.querySelector('h1') || previewElement.querySelector('h2');
+  if (title) title.innerText = `${cardData.Year} ${cardData.CardName}`;
+
+  // Force fully opaque for the carousel look
+  previewElement.style.opacity = '1';
+  previewElement.style.filter = 'none';
+  previewElement.style.backgroundColor = '#ffffff'; 
+};
 </script>
 </body>
 </html>
