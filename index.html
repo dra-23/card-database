@@ -371,26 +371,40 @@ window.initTouchEvents = () => {
 
   sheet.addEventListener('touchend', (e) => {
     sheet.classList.remove('dragging');
-    const diffX = currentX - startX, diffY = currentY - startY, preview = document.getElementById('sheetPreview');
-    if (gestureType === 'vertical' && diffY > 150) { 
+    const diffX = currentX - startX, preview = document.getElementById('sheetPreview');
+    
+    if (gestureType === 'vertical' && (currentY - startY) > 150) { 
         sheet.style.transform = ''; if (preview) preview.remove(); window.closeAll(); 
     } 
     else if (gestureType === 'horizontal') {
-      if (Math.abs(diffX) > 150) {
-        if (preview) { preview.classList.remove('no-transition'); preview.style.transform = 'translateX(0)'; }
-        sheet.classList.add('no-transition'); sheet.style.opacity = '0';
-        const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
-        window.handleCardTap(nextData.id, true); // True flag means "Don't open/push state"
+      if (Math.abs(diffX) > 130) {
+        if (preview) { 
+          preview.classList.remove('no-transition'); 
+          preview.style.transform = 'translateX(0)'; 
+        }
+        
+        const direction = diffX > 0 ? 'prev' : 'next';
+        const nextData = getNextCardData(direction);
+        
+        // Prepare main sheet for seamless entry
+        sheet.classList.add('no-transition');
+        sheet.style.opacity = '0';
+        sheet.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
+
+        window.handleCardTap(nextData.id, true);
+
         setTimeout(() => { 
           if (preview) preview.remove(); 
-          sheet.classList.remove('no-transition'); sheet.style.opacity = '1'; sheet.style.transform = 'translateX(0)';
-        }, 300); 
+          sheet.classList.remove('no-transition');
+          sheet.style.opacity = '1';
+          sheet.style.transform = 'translateX(0)';
+        }, 250); 
       } else {
         sheet.style.transform = 'translateX(0)';
         if (preview) { 
-            preview.classList.remove('no-transition'); 
-            preview.style.transform = diffX > 0 ? 'translateX(-100%)' : 'translateX(100%)';
-            setTimeout(() => preview.remove(), 300);
+          preview.classList.remove('no-transition'); 
+          preview.style.transform = diffX > 0 ? 'translateX(-100%)' : 'translateX(100%)';
+          setTimeout(() => preview.remove(), 250);
         }
       }
     } else { sheet.style.transform = ''; if (preview) preview.remove(); }
@@ -400,7 +414,11 @@ window.initTouchEvents = () => {
 
 function getNextCardData(dir) {
   const cCard = ALL_CARDS.find(c => c.id === window.currentCardId);
-  const list = ALL_CARDS.filter(c => c.Player === cCard.Player).sort((a,b) => parseInt(a.Year)-parseInt(b.Year));
+  const list = ALL_CARDS.filter(c => c.Player === cCard.Player).sort((a,b) => {
+    const yA = (a.Year||"").toString(), yB = (b.Year||"").toString();
+    if(yA !== yB) return yA.localeCompare(yB);
+    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
+  });
   const idx = list.findIndex(c => c.id === window.currentCardId);
   let nIdx = dir === 'next' ? idx + 1 : idx - 1;
   if (nIdx >= list.length) nIdx = 0; if (nIdx < 0) nIdx = list.length - 1;
@@ -442,13 +460,14 @@ window.openDetail = (id) => {
   cardSearchQuery = ""; document.getElementById('cardSearchInput').value = ""; renderDetail(window.selectedPlayer);
   document.getElementById('detail-view').style.display = 'flex';
   setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
-  history.pushState({v:'detail'}, '');
+  history.pushState({v:'detail', p:id}, '');
 };
 
 window.closeDetail = () => {
   document.getElementById('detail-view').classList.remove('active');
   setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
-  window.selectedPlayer = null; if(history.state?.v === 'detail') history.back();
+  window.selectedPlayer = null; 
+  if(history.state?.v === 'detail') history.back();
 };
 
 window.toggleFilterChip = (type) => {
@@ -512,13 +531,15 @@ window.handleCardTap = (id, isSwipe = false) => {
     </div>`;
 
   document.getElementById('cardDetailBody').innerHTML = html;
-  if (!document.getElementById('cardDetailSheet').classList.contains('open')) {
-    document.getElementById('cardDetailSheet').classList.add('open');
+  const sheet = document.getElementById('cardDetailSheet');
+  
+  if (!sheet.classList.contains('open')) {
+    sheet.classList.add('open');
     document.getElementById('globalScrim').style.display = 'block';
-    history.pushState({v:'card'}, '');
+    history.pushState({v:'card', c:id}, '');
   } else if (isSwipe) {
-    // If we swiped, we push a new state so back gesture works for EACH card swiped
-    history.pushState({v:'card'}, '');
+    // Unique ID ensures back gesture is tracked for EVERY swipe
+    history.replaceState({v:'card', c:id}, ''); 
   }
 };
 
@@ -529,10 +550,13 @@ window.closeAll = () => {
 };
 
 window.onpopstate = (e) => { 
-  if (document.getElementById('cardDetailSheet').classList.contains('open')) {
-    document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); 
-    document.getElementById('globalScrim').style.display = 'none'; 
-  } else if (e.state?.v !== 'detail') { window.closeDetail(); }
+  const cSheet = document.getElementById('cardDetailSheet');
+  if (cSheet.classList.contains('open')) {
+    cSheet.classList.remove('open');
+    document.getElementById('globalScrim').style.display = 'none';
+  } else if (e.state?.v !== 'detail' && window.selectedPlayer) {
+    window.closeDetail();
+  }
 };
 
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
