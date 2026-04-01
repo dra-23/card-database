@@ -418,19 +418,28 @@ window.initTouchEvents = () => {
   }, { passive: true });
 
   sheet.addEventListener('touchend', (e) => {
-    sheet.classList.remove('dragging');
     const diff = currentY - startY;
 
     // If you pulled down more than 150 pixels, close the card
     if (diff > 150) {
+      // Keep 'dragging' on so the final "slice" is instant and doesn't lag
+      sheet.classList.add('dragging'); 
+      
+      // Force the sheet to the bottom immediately
+      sheet.style.transform = 'translateY(100%)'; 
+      
+      // Trigger the app's internal close logic (scrim, state, etc.)
       window.closeAll(); 
-      // Clean up the style so it's ready for the next Michael Jordan card
+
+      // Clean up after the sheet is safely off-screen
       setTimeout(() => { 
+        sheet.classList.remove('dragging');
         sheet.style.transform = ''; 
         if (scrim) scrim.style.opacity = '1';
       }, 300);
     } else {
-      // If you didn't pull far enough, snap it back to the top
+      // If you didn't pull far enough, snap it back UP
+      sheet.classList.remove('dragging');
       sheet.style.transform = 'translateY(0)';
       if (scrim) scrim.style.opacity = '1';
     }
@@ -439,7 +448,6 @@ window.initTouchEvents = () => {
     startY = 0;
     currentY = 0;
   });
-};
 
 function checkReady() {
   if(playersLoaded && cardsLoaded) {
