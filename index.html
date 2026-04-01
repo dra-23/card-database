@@ -54,6 +54,7 @@
   --md-outline: #74777F;
   --soft-green: #4CAF50;
   --soft-red: #EF5350;
+  --sheet-radius: 32px;
 }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); }
@@ -97,8 +98,69 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
-#sheetPreview, #cardDetailSheet { backface-visibility: hidden; box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); background: white !important; border-radius: 24px; }
-</style>
+/* ─── SCRIM ───────────────────────────────────────────── */
+#globalScrim {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none; z-index: 900;
+  transition: opacity 0.25s;
+}
+#globalScrim.visible { display: block; }
+ 
+/* ─── CARD SHEET VIEWPORT ─────────────────────────────── *
+ * A clipping window — only this region is visible.        *
+ * The two panels (.sheet-a, .sheet-b) sit inside it.      */
+#sheetViewport {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  /* tallest the sheet ever gets */
+  max-height: 90vh;
+  z-index: 1000;
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  overflow: hidden;               /* clips the panels during swipe  */
+  transform: translateY(100%);    /* hidden off-screen by default   */
+  transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -4px 32px rgba(0,0,0,0.18);
+  will-change: transform;
+}
+#sheetViewport.open { transform: translateY(0); }
+/* no transition while dragging */
+#sheetViewport.dragging { transition: none !important; }
+ 
+/* ─── INNER TRACK ─────────────────────────────────────── *
+ * Two panels laid side-by-side inside the viewport.       *
+ * We slide this track left/right to switch cards.         */
+#sheetTrack {
+  display: flex;
+  width: 200%;            /* two panels, each = viewport width */
+  height: 100%;
+  will-change: transform;
+}
+#sheetTrack.animating {
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+ 
+/* ─── EACH PANEL ──────────────────────────────────────── */
+.sheet-panel {
+  width: 50%;             /* = one viewport width             */
+  flex-shrink: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+.sheet-handle {
+  width: 40px; height: 5px;
+  background: #e0e0e0; border-radius: 10px;
+  margin: 12px auto; flex-shrink: 0;
+}
+.sheet-panel-body {
+  padding: 0 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+}</style>
 </head>
 <body>
 <div class="view" id="gallery-view">
@@ -133,10 +195,24 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
   </div>
 </div>
-<div class="scrim" id="globalScrim" onclick="window.closeAll()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
-<div class="sheet" id="cardDetailSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-body" id="cardDetailBody"></div>
+</div>
+<!-- ── SCRIM ────────────────────────────────────────────── -->
+<div id="globalScrim" onclick="window.closeAll()"></div>
+ 
+<!-- ── CARD SHEET (swipeable) ──────────────────────────── -->
+<div id="sheetViewport">
+  <div id="sheetTrack">
+    <!-- Panel A: the "current" card  -->
+    <div class="sheet-panel" id="panelA">
+      <div class="sheet-handle"></div>
+      <div class="sheet-panel-body" id="panelABody"></div>
+    </div>
+    <!-- Panel B: the "incoming" card -->
+    <div class="sheet-panel" id="panelB">
+      <div class="sheet-handle"></div>
+      <div class="sheet-panel-body" id="panelBBody"></div>
+    </div>
+  </div>
 </div>
 <script>
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
