@@ -388,63 +388,83 @@ window.startApp = function() {
 
 // SECTION 2: Swipe Logic (Defined separately to avoid breaking Section 1)
 window.initTouchEvents = () => {
-  let startY = 0;
-  let currentY = 0;
+  let startX = 0, startY = 0;
+  let currentX = 0, currentY = 0;
+  let gestureType = null; // 'vertical' or 'horizontal'
+  
   const sheet = document.getElementById('cardDetailSheet');
-  const scrim = document.getElementById('globalScrim');
-
   if (!sheet) return;
 
   sheet.addEventListener('touchstart', (e) => {
-    // We grab the Vertical (Y) position of your thumb
+    startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
+    gestureType = null; // Reset on new touch
     sheet.classList.add('dragging'); 
   }, { passive: true });
 
   sheet.addEventListener('touchmove', (e) => {
+    currentX = e.touches[0].clientX;
     currentY = e.touches[0].clientY;
-    let diff = currentY - startY;
+    
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
 
-    // IMPORTANT: Only move if pulling DOWN (positive number)
-    if (diff > 0) {
-      // Use translateY here to slide it toward the bottom of your Fold
-      sheet.style.transform = `translateY(${diff}px)`;
-      
-      // Fade the background out as the card "slices" away
-      if (scrim) {
-        scrim.style.opacity = Math.max(0, 1 - (diff / 500));
-      }
+    // Determine gesture intent if not already locked
+    if (!gestureType) {
+      if (Math.abs(diffY) > Math.abs(diffX)) gestureType = 'vertical';
+      else if (Math.abs(diffX) > 10) gestureType = 'horizontal';
+    }
+
+    // Handle Vertical (Pull Down to Close)
+    if (gestureType === 'vertical' && diffY > 0) {
+      sheet.style.transform = `translateY(${diffY}px)`;
+    } 
+    // Handle Horizontal (Slide to Next/Prev)
+    else if (gestureType === 'horizontal') {
+      // We slide it slightly to give visual feedback that a swap is coming
+      sheet.style.transform = `translateX(${diffX * 0.4}px)`;
     }
   }, { passive: true });
 
   sheet.addEventListener('touchend', (e) => {
-    const diff = currentY - startY;
+    sheet.classList.remove('dragging');
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
 
-    // Threshold: If pulled down more than 150px
-    if (diff > 150) {
-      // 1. Turn the smooth CSS transition back ON
-      sheet.classList.remove('dragging'); 
-      
-      // 2. Clear our manual transform so the CSS can take over
+    // Logic for Closing (Vertical)
+    if (gestureType === 'vertical' && diffY > 150) {
       sheet.style.transform = ''; 
-      
-      // 3. Trigger the actual closing logic
       window.closeAll(); 
-
-      // 4. Reset the opacity for the next card
-      setTimeout(() => { 
-        if (scrim) scrim.style.opacity = '1';
-      }, 350);
-    } else {
-      // If you didn't pull far enough, snap it back UP smoothly
-      sheet.classList.remove('dragging');
-      sheet.style.transform = 'translateY(0)';
-      if (scrim) scrim.style.opacity = '1';
+    } 
+    // Logic for Next/Prev Card (Horizontal)
+    else if (gestureType === 'horizontal' && Math.abs(diffX) > 100) {
+      navigateCards(diffX > 0 ? 'prev' : 'next');
     }
     
-    // Reset trackers
-    startY = 0; currentY = 0;
+    // Reset position
+    sheet.style.transform = '';
+    startX = 0; startY = 0; currentX = 0; currentY = 0;
   });
+};
+
+// Helper function to find the next/prev card in the current player's list
+window.navigateCards = (direction) => {
+  if (!window.selectedPlayer) return;
+  
+  // Filter cards for the current player (e.g., Michael Jordan)
+  const playerCardList = ALL_CARDS.filter(c => c.Player === window.selectedPlayer)
+                                  .sort((a, b) => a.Year - b.Year); // Keep them in order
+  
+  // Find where we are currently
+  const currentIndex = playerCardList.findIndex(c => c.id === window.currentCardId);
+  let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+  // Loop around if we hit the end/start
+  if (newIndex >= playerCardList.length) newIndex = 0;
+  if (newIndex < 0) newIndex = playerCardList.length - 1;
+
+  const newCard = playerCardList[newIndex];
+  if (newCard) window.handleCardTap(newCard.id);
 };
 function checkReady() {
   if(playersLoaded && cardsLoaded) {
@@ -557,6 +577,7 @@ function renderDetail(player) {
 }
 
 window.handleCardTap = (id) => {
+  window.currentCardId = id;
   const c = ALL_CARDS.find(x => x.id === id);
   const co = c["Grading Company"] || "";
   const isOwned = (c.Owned === true || c.Owned === "true");
