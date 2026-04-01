@@ -325,8 +325,14 @@ window.closeDetail = () => {
 };
 
 window.toggleFilterChip = (type) => {
-  if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); }
-  else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
+  if(type === 'wishlist') { 
+    showWishlistOnly = !showWishlistOnly; 
+    document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); 
+  }
+  else { 
+    showGradedOnly = !showGradedOnly; 
+    document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); 
+  }
   renderDetail(window.selectedPlayer);
 };
 
