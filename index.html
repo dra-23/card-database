@@ -186,6 +186,8 @@ window.startApp = function() {
 window.initTouchEvents = () => {
   const sheet = document.getElementById('cardDetailSheet');
   const track = document.getElementById('sheetTrack');
+  const panelA = document.getElementById('panelA');
+  const panelB = document.getElementById('panelB');
   
   sheet.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
@@ -202,15 +204,13 @@ window.initTouchEvents = () => {
     const diffY = currentY - startY;
 
     if (!gestureType) {
-      if (Math.abs(diffX) > 8) {
+      if (Math.abs(diffX) > 10) {
         gestureType = 'horizontal';
-        // Pre-load the neighboring card into Panel B based on direction
         const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
         updatePanelContent('panelB', nextData.id);
-        // Move panel B to the correct side
-        document.getElementById('panelB').style.order = diffX > 0 ? "-1" : "1";
+        panelB.style.order = diffX > 0 ? "-1" : "1";
         track.style.transform = diffX > 0 ? `translateX(-50%)` : `translateX(0)`;
-      } else if (Math.abs(diffY) > 8) {
+      } else if (Math.abs(diffY) > 10) {
         gestureType = 'vertical';
       }
     }
@@ -218,7 +218,7 @@ window.initTouchEvents = () => {
     if (gestureType === 'vertical' && diffY > 0) {
       sheet.style.transform = `translateY(${diffY}px)`;
     } else if (gestureType === 'horizontal') {
-      const baseTranslate = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
+      const baseTranslate = panelB.style.order === "-1" ? -50 : 0;
       const percentMove = (diffX / window.innerWidth) * 50;
       track.style.transform = `translateX(${baseTranslate + percentMove}%)`;
     }
@@ -227,36 +227,49 @@ window.initTouchEvents = () => {
   sheet.addEventListener('touchend', () => {
     const diffX = currentX - startX;
     const diffY = currentY - startY;
+    
     track.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
     sheet.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
 
     if (gestureType === 'vertical') {
       if (diffY > 150) window.closeAll();
       else sheet.style.transform = 'translateY(0)';
-    } else if (gestureType === 'horizontal') {
+    } 
+    else if (gestureType === 'horizontal') {
       if (Math.abs(diffX) > 100) {
-        // Commit Swipe
+        // 1. Determine the new card
         const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
-        const finalTranslate = document.getElementById('panelB').style.order === "-1" ? 0 : -50;
+        
+        // 2. Animate the track to show Panel B fully
+        const finalTranslate = panelB.style.order === "-1" ? 0 : -50;
         track.style.transform = `translateX(${finalTranslate}%)`;
         
+        // 3. Post-animation cleanup (The "Invisible Swap")
         setTimeout(() => {
           window.currentCardId = nextData.id;
-          updatePanelContent('panelA', nextCardId);
+          
+          // Move the new card content into Panel A
+          updatePanelContent('panelA', nextData.id);
+          
+          // Instantly reset the track so Panel A is back in front
           track.style.transition = 'none';
           track.style.transform = 'translateX(0)';
-          document.getElementById('panelB').style.order = "1";
+          panelB.style.order = "1";
+          
+          // Update URL to match current card
           history.replaceState({v:'card', id: nextData.id}, '');
         }, 300);
       } else {
-        const resetTranslate = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
+        // Snap back to original card if swipe wasn't far enough
+        const resetTranslate = panelB.style.order === "-1" ? -50 : 0;
         track.style.transform = `translateX(${resetTranslate}%)`;
       }
     }
-    gestureType = null;
+    
+    // Reset interaction variables
+    startX = 0; startY = 0; currentX = 0; currentY = 0; gestureType = null;
   });
 };
-
 function getNextCardData(dir) {
   const cCard = ALL_CARDS.find(c => c.id === window.currentCardId);
   const list = ALL_CARDS.filter(c => c.Player === cCard.Player).sort((a,b) => {
