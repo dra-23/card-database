@@ -250,29 +250,22 @@ function getCleanImg(url) {
   return u;
 }
 
-// FIXED: Corrected filtering to use Player Name string and robust sorting
+// 🔥 CRITICAL FIX: Matches "Michael Jordan" string from your Firebase
 function getCardList() {
   if (!selectedPlayer) return [];
   
-  // Match by the 'Player' string in your Firebase (e.g., "Michael Jordan")
-  const pName = selectedPlayer.Player || selectedPlayer.id;
+  // Use the literal name string (e.g., "Michael Jordan") for the filter
+  const targetName = selectedPlayer.Player || selectedPlayer.id;
   
-  let cards = ALL_CARDS.filter(c => c.Player === pName).sort((a,b) => {
-    // 1. Sort by Year (String compare)
+  let cards = ALL_CARDS.filter(c => c.Player === targetName).sort((a,b) => {
     const yA = (a.Year||'').toString(), yB = (b.Year||'').toString();
     if (yA !== yB) return yA.localeCompare(yB);
-    
-    // 2. Sort by Set (String compare)
     const sA = (a.Set||'').toLowerCase(), sB = (b.Set||'').toLowerCase();
     if (sA !== sB) return sA.localeCompare(sB);
-    
-    // 3. Sort by Number (Numeric compare so #2 < #159)
-    const nA = parseInt(a.Number) || 0;
-    const nB = parseInt(b.Number) || 0;
-    return nA - nB;
+    // Use numeric sort for card numbers
+    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
   });
 
-  // Search Logic
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
     cards = cards.filter(c => 
@@ -281,15 +274,8 @@ function getCardList() {
       (c.Number||'').toString().includes(q)
     );
   }
-
-  // Filter Chips
-  if (showGradedOnly) {
-    cards = cards.filter(c => c['Grading Company'] && c['Grading Company'].trim() !== "" && c['Grading Company'] !== 'Raw');
-  }
-  if (showWishlistOnly) {
-    cards = cards.filter(c => c.Owned === false || c.Owned === "false");
-  }
-
+  if (showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw');
+  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === 'true'));
   return cards;
 }
 
@@ -304,7 +290,7 @@ function getAdjacentCard(dir) {
 }
 
 function buildCardHTML(c) {
-  if (!c) return '<p style="padding:24px">No card</p>';
+  if (!c) return '<p style="padding:24px">No card found</p>';
   const isOwned = (c.Owned === true || c.Owned === 'true');
   const ebUrl   = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((c.Year||'')+' '+(c.Set||'')+' '+(selectedPlayer?.Player||'')+' #'+(c.Number||'')+' sold')}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c['Card Information'] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent((c.Year||'')+' '+(c.Set||''))}`;
