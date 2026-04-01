@@ -11,15 +11,17 @@
 <meta name="theme-color" content="#c2caf0">
 <title>sleevd</title>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { 
-    initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+    initializeFirestore, 
+    persistentLocalCache, 
+    persistentMultipleTabManager,
     collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-
+  import { 
+    getStorage, ref, uploadBytes, getDownloadURL 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
   const firebaseConfig = {
     apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
     authDomain: "sleevd-7214c.firebaseapp.com",
@@ -29,306 +31,353 @@
     appId: "1:176444568903:web:0acce08ab1f18b8fe30862",
     measurementId: "G-67S1G9KPJM"
   };
-
   try {
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
-    window.db = db; window.storage = getStorage(app);
+    const storage = getStorage(app); 
+    window.db = db;
+    window.storage = storage;
     window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
-    window.st = { ref, uploadBytes, getDownloadURL };
+    window.st = { ref, uploadBytes, getDownloadURL }; 
     window.startApp();
   } catch (e) { console.error(e); }
 </script>
-
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
-  --md-primary: #E8192C; --md-surface: #FFFFFF; --md-surface-1: #c2caf0;
-  --md-surface-2: #dfe4fb; --md-on-surface: #1A1C1E; --sheet-radius: 32px;
+  --md-primary: #E8192C;
+  --md-surface: #FFFFFF;
+  --md-surface-1: #c2caf0;
+  --md-surface-2: #dfe4fb;
+  --md-on-surface: #1A1C1E;
+  --md-on-surface-variant: #44474E;
+  --md-outline: #74777F;
+  --soft-green: #4CAF50;
+  --soft-red: #EF5350;
 }
-html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); font-family: 'Google Sans', sans-serif; }
-
+html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 .view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); }
-#gallery-view { z-index: 5; }
-#detail-view { z-index: 50; display: none; transform: translateX(100%); }
+#gallery-view { z-index: 5; display: flex; }
+#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } 
 #detail-view.active { display: flex; transform: translateX(0); }
-
-.scroll-body { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+.scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
-
+.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-1); }
+.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
+.brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
+.total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
+.icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
 .player-grid.loaded { opacity: 1; }
-.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; }
+.player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .tile-img { width: 100%; height: 100%; object-fit: cover; }
-.tile-text-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff; }
-
-.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin: 0 16px 8px; background: var(--md-surface-2); cursor: pointer; }
-.card-item.not-owned { opacity: 0.5; }
-.card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; }
-
-/* ─── CAROUSEL SYSTEM ─── */
-#globalScrim { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 900; }
-#globalScrim.visible { display: block; }
-
-#sheetViewport {
-  position: fixed; bottom: 0; left: 0; right: 0; max-height: 90vh; z-index: 1000;
-  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0; overflow: hidden;
-  transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1);
-  background: #fff; box-shadow: 0 -4px 32px rgba(0,0,0,0.2);
-}
-#sheetViewport.open { transform: translateY(0); }
-#sheetViewport.dragging { transition: none !important; }
-
-#sheetTrack { display: flex; width: 200%; height: 100%; will-change: transform; }
-#sheetTrack.animating { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-
-.sheet-panel { width: 50%; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; max-height: 90vh; }
-.sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; }
-.sheet-panel-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; }
-
-.status-toggle-btn { position: relative; width: 48px; height: 28px; background: #74777F; border-radius: 20px; cursor: pointer; border: none; }
-.status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 4px; left: 4px; transition: 0.2s; }
+.tile-text-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 14px 14px; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); color: #fff; }
+.tile-title { font-weight: 700; font-size: 14px; }
+.tile-subtitle { font-size: 10px; opacity: 0.8; }
+.sport-badge-overlay { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 10; }
+.sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
+.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; transition: opacity 0.2s; }
+.card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.badge-inline { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: auto; border: 1.5px solid var(--md-surface-1); }
+.back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.button-row-split { display: flex; gap: 10px; margin-top: 10px; }
+.button-row-split a { flex: 1; text-decoration: none; }
+.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--md-surface); }
+.search-input-compact { flex: 1; min-width: 0; max-width: 60%; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 12px 16px; color: var(--md-on-surface); font-size: 14px; outline: none; }
+.filter-chip-compact { border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--md-surface-1); background: #fff; white-space: nowrap; transition: 0.2s; }
+.filter-chip-compact.active { background: var(--md-surface-1); }
+.fab { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); right: 20px; width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer; }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); touch-action: pan-x; will-change: transform; }
+.sheet.open { transform: translateY(0); }
+.sheet.dragging, .sheet.no-transition { transition: none !important; }
+.sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
+.sheet-body { padding: 0 24px 24px; overflow-y: auto; }
+.status-toggle-btn { position: relative; width: 48px; height: 28px; background: var(--md-outline); border-radius: 20px; cursor: pointer; border: none; transition: background 0.3s ease; display: flex; align-items: center; padding: 0 4px; }
+.status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
-
-.expressive-btn { width: 100%; border: none; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; }
-.button-row-split { display: flex; gap: 10px; margin-top: 10px; }
-.button-row-split a { flex: 1; }
+#sheetPreview, #cardDetailSheet { backface-visibility: hidden; box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); background: white !important; border-radius: 24px; }
 </style>
 </head>
 <body>
-
 <div class="view" id="gallery-view">
-  <div class="top-bar" style="display:flex; align-items:center; padding:0 16px; height:75px; background:var(--md-surface-1);">
-    <span class="brand" style="font-family:'Google Sans Display'; font-size:28px; font-weight:700; flex:1;">sleevd</span>
-    <div class="total-count-pill" id="totalOwnedCounter" style="background:var(--md-surface-2); padding:6px 16px; border-radius:50px; font-weight:800; margin-right:8px;">0</div>
+  <div class="top-bar">
+    <span class="brand">sleevd</span>
+    <div class="total-count-pill" id="totalOwnedCounter">0</div>
+    <button class="icon-btn" onclick="window.openPlayerForm()">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </button>
   </div>
   <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
 </div>
-
 <div class="view" id="detail-view">
   <div class="master-col">
-    <div style="height:160px; position:relative; background:var(--md-surface-1);">
+    <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
       <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
-      <button class="back-btn" onclick="window.closeDetail()" style="position:absolute; top:12px; left:12px; width:44px; height:44px; border-radius:14px; background:rgba(255,255,255,0.7); border:none;"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+      <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
+      <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
     </div>
-    <div style="margin-top:-50px; padding:0 20px; display:flex; align-items:flex-end; gap:16px;">
-      <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid #fff; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-      <div><h2 id="playerName"></h2><div id="playerDetailCount" style="font-weight:700; opacity:0.7;"></div></div>
+    <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+      <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <div style="padding-bottom:8px;">
+        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
+        <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+      </div>
     </div>
-    <div class="search-filter-row" style="padding:16px; display:flex; gap:8px;">
-      <input type="text" id="cardSearchInput" class="search-input-compact" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)" style="flex:1; padding:12px 16px; border-radius:28px; border:1px solid var(--md-surface-1); outline:none;">
+    <div class="search-filter-row">
+      <input type="text" id="cardSearchInput" class="search-input-compact" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+      <div id="chipWishlist" class="filter-chip-compact" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+      <div id="chipGraded" class="filter-chip-compact" onclick="window.toggleFilterChip('graded')">Graded</div>
     </div>
-    <div class="scroll-body" id="cardList"></div>
+    <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
   </div>
 </div>
-
-<div id="globalScrim" onclick="window.closeAll()"></div>
-
-<div id="sheetViewport">
-  <div id="sheetTrack">
-    <div class="sheet-panel" id="panelA"><div class="sheet-handle"></div><div class="sheet-panel-body" id="panelABody"></div></div>
-    <div class="sheet-panel" id="panelB"><div class="sheet-handle"></div><div class="sheet-panel-body" id="panelBBody"></div></div>
-  </div>
+<div class="scrim" id="globalScrim" onclick="window.closeAll()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+<div class="sheet" id="cardDetailSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" id="cardDetailBody"></div>
 </div>
-
 <script>
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
-let cardSearchQuery = '', activePanelId = 'A';
-
+let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
+let playersLoaded = false, cardsLoaded = false;
+const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 function getCleanImg(url) {
   if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
-  let u = url.toString().trim();
-  if (u.includes('drive.google.com')) {
-    let id = u.includes('id=') ? u.split('id=')[1].split('&')[0] : u.split('file/d/')[1].split('/')[0];
+  let cleanUrl = url.toString().trim();
+  if (cleanUrl.includes('drive.google.com')) {
+    let id = "";
+    if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
+    else if (cleanUrl.includes('file/d/')) { id = cleanUrl.split('file/d/')[1].split('/')[0]; }
     return `https://drive.google.com/thumbnail?id=${id}&sz=1000`;
   }
-  return u;
+  return cleanUrl;
 }
-
-// 🔥 FIXED: Robust match for string names like "Michael Jordan"
-function getFilteredCards() {
-  if (!selectedPlayer) return [];
-  const pName = selectedPlayer.Player || selectedPlayer.id;
-  let cards = ALL_CARDS.filter(c => String(c.Player) === String(pName));
-  
-  cards.sort((a,b) => {
-    if (a.Year !== b.Year) return String(a.Year).localeCompare(String(b.Year));
-    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
-  });
-
-  if (cardSearchQuery) {
-    const q = cardSearchQuery.toLowerCase();
-    cards = cards.filter(c => String(c.Year).toLowerCase().includes(q) || String(c.Set).toLowerCase().includes(q));
-  }
-  return cards;
-}
-
-function buildCardHTML(c) {
-  if (!c) return '<p style="padding:24px; text-align:center;">Card info missing</p>';
-  const isOwned = (c.Owned === true || c.Owned === 'true');
-  return `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-      <h1 style="font-size:24px;">${c.Year} ${c.Set||''}</h1>
-      <button class="status-toggle-btn ${isOwned?'sleevd':''}" onclick="window.toggleOwnership('${c.id}')"></button>
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${c.Grade || 'Raw'}</div></div>
-    </div>
-    <div class="button-row-split">
-      <a href="https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Player + ' ' + c.Year + ' ' + c.Set + ' sold')}" target="_blank"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
-    </div>`;
-}
-
-// ─────────────────────────────────────────────────────────
-//  CAROUSEL & TOUCH LOGIC
-// ─────────────────────────────────────────────────────────
-function sheetOpen(cardId) {
-  window.currentCardId = cardId;
-  activePanelId = 'A';
-  const track = document.getElementById('sheetTrack');
-  track.classList.remove('animating');
-  track.style.transform = 'translateX(0)';
-  document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === cardId));
-  preload('next');
-  document.getElementById('sheetViewport').classList.add('open');
-  document.getElementById('globalScrim').classList.add('visible');
-}
-
-function preload(dir) {
-  const list = getFilteredCards();
-  const idx = list.findIndex(c => c.id === window.currentCardId);
-  let ni = dir === 'next' ? idx + 1 : idx - 1;
-  if (ni >= list.length) ni = 0; if (ni < 0) ni = list.length - 1;
-  const card = list[ni];
-  const targetPanel = activePanelId === 'A' ? 'B' : 'A';
-  document.getElementById(`panel${targetPanel}Body`).innerHTML = buildCardHTML(card);
-  return card;
-}
-
-(function initSwipe() {
-  const vp = document.getElementById('sheetViewport'), tr = document.getElementById('sheetTrack');
-  let sX, sY, cX, cY, gesture, dragging;
-
-  vp.addEventListener('touchstart', e => {
-    sX = e.touches[0].clientX; sY = e.touches[0].clientY;
-    dragging = true; tr.classList.remove('animating');
-  }, { passive: true });
-
-  vp.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    cX = e.touches[0].clientX; cY = e.touches[0].clientY;
-    const dx = cX - sX, dy = cY - sY;
-    if (!gesture) {
-      if (Math.abs(dy) > Math.abs(dx) + 5) gesture = 'v';
-      else if (Math.abs(dx) > 10) gesture = 'h';
-      else return;
-    }
-    if (gesture === 'v') vp.style.transform = `translateY(${Math.max(0, dy)}px)`;
-    else tr.style.transform = `translateX(${(activePanelId === 'A' ? 0 : -vp.offsetWidth) + dx}px)`;
-  }, { passive: true });
-
-  vp.addEventListener('touchend', () => {
-    if (!dragging) return; dragging = false;
-    const dx = cX - sX, dy = cY - sY, vw = vp.offsetWidth;
-    if (gesture === 'v') { if (dy > 120) window.closeAll(); else vp.style.transform = ''; }
-    else if (gesture === 'h') {
-      if (Math.abs(dx) >= vw * 0.3) commit(dx > 0 ? 'prev' : 'next');
-      else { tr.classList.add('animating'); tr.style.transform = activePanelId === 'A' ? 'translateX(0)' : `translateX(-${vw}px)`; }
-    }
-    gesture = null;
-  });
-
-  function commit(dir) {
-    const vw = vp.offsetWidth;
-    const target = activePanelId === 'A' ? -vw : 0;
-    tr.classList.add('animating');
-    tr.style.transform = `translateX(${target}px)`;
-    tr.addEventListener('transitionend', () => {
-      tr.classList.remove('animating');
-      const nextCard = preload(dir); // Get the card that was in the hidden panel
-      window.currentCardId = nextCard.id;
-      // Sync visual state
-      document.getElementById('panelABody').innerHTML = buildCardHTML(nextCard);
-      tr.style.transform = 'translateX(0)';
-      activePanelId = 'A';
-      preload('next');
-      history.replaceState({ v: 'card', id: nextCard.id }, '');
-    }, { once: true });
-  }
-})();
-
-// ─────────────────────────────────────────────────────────
-//  FIREBASE & APP LOGIC
-// ─────────────────────────────────────────────────────────
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
-  onSnapshot(collection(window.db, "Players"), snap => {
-    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderGallery(); document.getElementById('playerGrid').classList.add('loaded');
+  onSnapshot(collection(window.db, "Players"), snap => { 
+    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
+    playersLoaded = true; checkReady();
   });
   onSnapshot(collection(window.db, "Cards"), snap => {
-    // 🔥 RESTORED doc.id mapping
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => c.Owned === true || c.Owned === 'true').length;
-    if(selectedPlayer) renderDetail();
+    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
+    cardsLoaded = true; checkReady();
+    if(window.selectedPlayer) renderDetail(window.selectedPlayer);
+  });
+  window.initTouchEvents(); 
+}; 
+window.initTouchEvents = () => {
+  let startX = 0, startY = 0, currentX = 0, currentY = 0, gestureType = null; 
+  const sheet = document.getElementById('cardDetailSheet');
+  if (!sheet) return;
+  sheet.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    gestureType = null; sheet.classList.add('dragging'); 
+  }, { passive: true });
+  sheet.addEventListener('touchmove', (e) => {
+    currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
+    const diffX = currentX - startX, diffY = currentY - startY;
+    if (!gestureType) {
+      if (Math.abs(diffY) > Math.abs(diffX)) gestureType = 'vertical';
+      else if (Math.abs(diffX) > 10) gestureType = 'horizontal';
+    }
+    if (gestureType === 'vertical' && diffY > 0) sheet.style.transform = `translateY(${diffY}px)`;
+    else if (gestureType === 'horizontal') {
+      sheet.style.transform = `translateX(${diffX}px)`;
+      let preview = document.getElementById('sheetPreview');
+      if (!preview && Math.abs(diffX) > 5) {
+        preview = sheet.cloneNode(true); preview.id = 'sheetPreview';
+        preview.style.transform = 'none'; preview.style.zIndex = '1100';
+        preview.classList.add('no-transition'); sheet.parentNode.appendChild(preview);
+        window.updatePreviewContent(preview, getNextCardData(diffX > 0 ? 'prev' : 'next'));
+      }
+      if (preview) {
+        const gap = diffX > 0 ? -40 : 40, offset = diffX > 0 ? '-100%' : '100%';
+        preview.style.transform = `translateX(calc(${offset} + ${diffX + gap}px))`;
+      }
+    }
+  }, { passive: true });
+  sheet.addEventListener('touchend', (e) => {
+    sheet.classList.remove('dragging');
+    const diffX = currentX - startX, preview = document.getElementById('sheetPreview');
+    
+    if (gestureType === 'vertical' && (currentY - startY) > 150) { 
+        sheet.style.transform = ''; if (preview) preview.remove(); window.closeAll(); 
+    } 
+    else if (gestureType === 'horizontal') {
+      if (Math.abs(diffX) > 130) {
+        if (preview) { 
+          preview.classList.remove('no-transition'); 
+          preview.style.transform = 'translateX(0)'; 
+        }
+        
+        const direction = diffX > 0 ? 'prev' : 'next';
+        const nextData = getNextCardData(direction);
+        
+        sheet.classList.add('no-transition');
+        sheet.style.opacity = '0';
+        sheet.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
+        window.handleCardTap(nextData.id, true);
+        setTimeout(() => { 
+          if (preview) preview.remove(); 
+          sheet.classList.remove('no-transition');
+          sheet.style.opacity = '1';
+          sheet.style.transform = 'translateX(0)';
+        }, 300); 
+      } else {
+        sheet.style.transform = 'translateX(0)';
+        if (preview) { 
+          preview.classList.remove('no-transition'); 
+          preview.style.transform = diffX > 0 ? 'translateX(-100%)' : 'translateX(100%)';
+          setTimeout(() => preview.remove(), 250);
+        }
+      }
+    } else { sheet.style.transform = ''; if (preview) preview.remove(); }
+    startX = 0; startY = 0; currentX = 0; currentY = 0; gestureType = null;
   });
 };
-
+function getNextCardData(dir) {
+  const cCard = ALL_CARDS.find(c => c.id === window.currentCardId);
+  const list = ALL_CARDS.filter(c => c.Player === cCard.Player).sort((a,b) => {
+    const yA = (a.Year||"").toString(), yB = (b.Year||"").toString();
+    if(yA !== yB) return yA.localeCompare(yB);
+    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
+  });
+  const idx = list.findIndex(c => c.id === window.currentCardId);
+  let nIdx = dir === 'next' ? idx + 1 : idx - 1;
+  if (nIdx >= list.length) nIdx = 0; if (nIdx < 0) nIdx = list.length - 1;
+  return list[nIdx];
+}
+window.updatePreviewContent = (el, data) => {
+  if (!el || !data) return;
+  const img = el.querySelector('img'); if (img) img.src = getCleanImg(data['App Image']);
+  const t = el.querySelector('h1') || el.querySelector('h2'); if (t) t.innerText = `${data.Year} ${data.Set}`;
+  el.style.opacity = '1'; el.style.background = '#fff'; 
+};
+function checkReady() { if(playersLoaded && cardsLoaded) { renderGallery(); document.getElementById('playerGrid').classList.add('loaded'); } }
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
-  grid.innerHTML = ALL_PLAYERS.map(p => `
-    <div class="player-tile" onclick="window.openDetail('${p.id}')">
-      <img class="tile-img" src="${getCleanImg(p['Main Image'])}">
-      <div class="tile-text-bar"><div style="font-weight:700;">${p.Player || p.id}</div></div>
-    </div>`).join('');
+  const sorted = [...ALL_PLAYERS].sort((a,b) => {
+    const aC = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
+    const bC = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
+    return bC - aC || a.id.localeCompare(b.id);
+  });
+  grid.innerHTML = sorted.map(p => {
+    const pC = ALL_CARDS.filter(c => c.Player === p.id);
+    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('');
+    return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
+      <div class="sport-badge-overlay">${icons}</div>
+      <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
+      <div class="tile-text-bar"><div class="tile-title">${p.Player || p.id}</div><div class="tile-subtitle">${pC.filter(c=>(c.Owned===true||c.Owned==="true")).length} owned</div></div>
+    </div>`;
+  }).join('');
 }
-
-window.openDetail = id => {
+window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
   document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
-  renderDetail();
+  cardSearchQuery = ""; document.getElementById('cardSearchInput').value = ""; renderDetail(window.selectedPlayer);
   document.getElementById('detail-view').style.display = 'flex';
   setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
-  history.pushState({ v:'detail', p:id }, '');
+  history.pushState({v:'detail', p:id}, '');
 };
-
-function renderDetail() {
-  const cards = getFilteredCards();
-  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>c.Owned===true||c.Owned==='true').length} Owned`;
-  document.getElementById('cardList').innerHTML = cards.map(c => `
-    <div class="card-item ${!(c.Owned===true||c.Owned==='true')?'not-owned':''}" onclick="window.handleCardTap('${c.id}')">
+window.closeDetail = () => {
+  document.getElementById('detail-view').classList.remove('active');
+  setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
+  window.selectedPlayer = null; 
+  if(history.state?.v === 'detail') history.back();
+};
+window.toggleFilterChip = (type) => {
+  if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); }
+  else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
+  renderDetail(window.selectedPlayer);
+};
+function renderDetail(player) {
+  let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => {
+    const yA = (a.Year||"").toString(), yB = (b.Year||"").toString();
+    if(yA !== yB) return yA.localeCompare(yB);
+    const sA = (a.Set||"").toLowerCase(), sB = (b.Set||"").toLowerCase();
+    if(sA !== sB) return sA.localeCompare(sB);
+    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
+  });
+  if (cardSearchQuery) {
+    const q = cardSearchQuery.toLowerCase();
+    cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
+  }
+  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
+  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>(c.Owned===true||c.Owned==="true")).length} Owned`;
+  document.getElementById('cardList').innerHTML = cards.map(c => {
+    const owned = (c.Owned === true || c.Owned === "true");
+    const co = c["Grading Company"] || "", gr = c.Grade || "";
+    const badge = (co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : '';
+    return `<div class="card-item ${!owned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div style="font-weight:700;">${c.Year} ${c.Set||''}</div>
-    </div>`).join('');
+      <div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set||''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number||'N/A'}</div></div>
+      ${badge}
+    </div>`;
+  }).join('');
 }
-
-window.handleCardTap = (id) => { sheetOpen(id); history.pushState({ v:'card', id }, ''); };
-window.closeAll = () => { document.getElementById('sheetViewport').classList.remove('open'); document.getElementById('globalScrim').classList.remove('visible'); if(history.state?.v === 'card') history.back(); };
-window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
-window.updateCardSearch = v => { cardSearchQuery = v; renderDetail(); };
-
-// ── Android Back Fix ──
-window.onpopstate = e => {
-  if (document.getElementById('sheetViewport').classList.contains('open')) {
-    document.getElementById('sheetViewport').classList.remove('open');
-    document.getElementById('globalScrim').classList.remove('visible');
-  } else if (window.selectedPlayer) {
-    document.getElementById('detail-view').classList.remove('active');
-    window.selectedPlayer = null;
+window.handleCardTap = (id, isSwipe = false) => {
+  window.currentCardId = id;
+  const c = ALL_CARDS.find(x => x.id === id);
+  const isOwned = (c.Owned === true || c.Owned === "true");
+  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year+' '+c.Set+' '+window.selectedPlayer.Player+' #'+c.Number+' sold')}&LH_Sold=1&LH_Complete=1`;
+  const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year+' '+c.Set)}`;
+  
+  const html = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+      <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size: 14px; font-weight: 700;">${isOwned ? 'sleevd' : 'unsleevd'}</span>
+        <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'Unknown'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Purchase Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
+    </div>
+    <div class="button-row-split">
+      <a href="${ebUrl}" target="_blank"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
+      <a href="${tcdbUrl}" target="_blank"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
+    </div>`;
+  document.getElementById('cardDetailBody').innerHTML = html;
+  const sheet = document.getElementById('cardDetailSheet');
+  
+  if (!sheet.classList.contains('open')) {
+    sheet.classList.add('open');
+    document.getElementById('globalScrim').style.display = 'block';
+    history.pushState({v:'card', id: id}, '');
+  } else if (isSwipe) {
+    history.replaceState({v:'card', id: id}, ''); 
   }
 };
-
-window.toggleOwnership = async id => {
-  const c = ALL_CARDS.find(x => x.id === id);
-  const owned = !(c.Owned === true || c.Owned === 'true');
-  if (confirm(owned ? 'Mark as sleevd?' : 'Mark as unsleevd?')) {
-    await window.fs.setDoc(window.fs.doc(window.db, 'Cards', id), { Owned: owned }, { merge: true });
-    document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === id));
+window.closeAll = () => { 
+  document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); 
+  document.getElementById('globalScrim').style.display = 'none'; 
+  if(history.state?.v === 'card') history.back();
+};
+window.onpopstate = (e) => { 
+  const cSheet = document.getElementById('cardDetailSheet');
+  if (cSheet.classList.contains('open')) {
+    cSheet.classList.remove('open');
+    document.getElementById('globalScrim').style.display = 'none';
+  } else if (e.state?.v !== 'detail' && window.selectedPlayer) {
+    window.closeDetail();
+  }
+};
+window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
+window.toggleOwnership = async (id) => {
+  const c = ALL_CARDS.find(x => x.id === id); const owned = (c.Owned === true || c.Owned === "true");
+  if (confirm(owned ? "Mark as unsleevd?" : "Mark as sleevd?")) {
+    await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: !owned }, { merge: true });
+    window.handleCardTap(id);
   }
 };
 </script>
