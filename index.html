@@ -364,6 +364,7 @@ function getCleanImg(url) {
   return cleanUrl;
 }
 
+// SECTION 1: Master App Logic
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
   
@@ -380,11 +381,19 @@ window.startApp = function() {
     checkReady();
     if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
-  window.initTouchEvents = () => {
+
+  // Just call the function here, don't define it here
+  window.initTouchEvents(); 
+}; 
+
+// SECTION 2: Swipe Logic (Defined separately to avoid breaking Section 1)
+window.initTouchEvents = () => {
   let startY = 0;
   let currentY = 0;
   const sheet = document.getElementById('cardDetailSheet');
   const scrim = document.getElementById('globalScrim');
+
+  if (!sheet) return; // Safety check
 
   sheet.addEventListener('touchstart', (e) => {
     startY = e.touches[0].clientY;
@@ -394,11 +403,8 @@ window.startApp = function() {
   sheet.addEventListener('touchmove', (e) => {
     currentY = e.touches[0].clientY;
     let diff = currentY - startY;
-
-    // Only allow pulling DOWN (positive Y)
     if (diff > 0) {
       sheet.style.transform = `translateY(${diff}px)`;
-      // Fade the background scrim as you pull down
       if (scrim) scrim.style.opacity = Math.max(0, 1 - (diff / 500));
     }
   }, { passive: true });
@@ -406,23 +412,18 @@ window.startApp = function() {
   sheet.addEventListener('touchend', (e) => {
     sheet.classList.remove('dragging');
     const diff = currentY - startY;
-
-    // Threshold: If pulled down more than 150px, close it
     if (diff > 150) {
       window.closeAll(); 
-      // Reset position for next time it opens
       setTimeout(() => { 
         sheet.style.transform = ''; 
         if (scrim) scrim.style.opacity = '1';
       }, 300);
     } else {
-      // Snap back up if you didn't pull far enough
       sheet.style.transform = 'translateY(0)';
       if (scrim) scrim.style.opacity = '1';
     }
     startY = 0; currentY = 0;
   });
-window.initTouchEvents(); 
 };
 
 function checkReady() {
