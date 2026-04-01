@@ -72,16 +72,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .scroll-body::-webkit-scrollbar { display: none; }
 
 .master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; border-right: 1px solid var(--md-surface-1); }
-.detail-pane { width: 50%; background: var(--md-surface-2); display: none; flex-direction: column; overflow-y: auto; padding: 40px; }
-
-@media (min-width: 1024px) {
-  .master-col { width: 50%; }
-  .detail-pane { display: flex; }
-}
-
 .top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
-
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 .icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
@@ -98,155 +90,34 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; transition: opacity 0.2s; }
-.card-item.selected { border-color: var(--md-primary); background: #fff; }
-.card-item.not-owned { opacity: 0.5; filter: grayscale(0.5); }
 .card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .badge-inline { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: auto; border: 1.5px solid var(--md-surface-1); }
 
-.back-btn, .edit-profile-fab { position: absolute; top: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.back-btn { left: 12px; }
-.edit-profile-fab { right: 12px; }
+.back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-.expressive-btn { 
-  width: 100%; 
-  border: none; 
-  padding: 18px; 
-  border-radius: 20px; 
-  font-weight: 700; 
-  font-size: 15px; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  transition: 0.2s; 
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-}
+.expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.button-row-split { display: flex; gap: 10px; margin-top: 10px; }
+.button-row-split a { flex: 1; text-decoration: none; }
 
-.button-row-split {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-.button-row-split a {
-  flex: 1;
-  text-decoration: none;
-}
-
-.edit-icon-inline {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(255,255,255,0.5);
-  border: none;
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--md-on-surface);
-  z-index: 5;
-}
-.search-filter-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--md-surface);
-}
-
-.search-input-compact {
-  flex: 1; 
-  min-width: 0; 
-  max-width: 60%; 
-  background: var(--md-surface-2);
-  border: 1px solid var(--md-surface-1);
-  border-radius: 28px;
-  padding: 12px 16px;
-  color: var(--md-on-surface);
-  font-size: 14px; 
-  outline: none;
-}
-
-.filter-chip-compact {
-  border-radius: 12px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  border: 1.5px solid var(--md-surface-1);
-  background: #fff;
-  white-space: nowrap;
-  transition: 0.2s;
-}
-.filter-chip-compact.active { 
-  background: var(--md-surface-1); 
-}
+.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--md-surface); }
+.search-input-compact { flex: 1; min-width: 0; max-width: 60%; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 12px 16px; color: var(--md-on-surface); font-size: 14px; outline: none; }
+.filter-chip-compact { border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--md-surface-1); background: #fff; white-space: nowrap; transition: 0.2s; }
+.filter-chip-compact.active { background: var(--md-surface-1); }
 
 .fab { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); right: 20px; width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer; }
 
-.sheet { 
-  position: fixed; 
-  bottom: 0; 
-  left: 0; 
-  right: 0; 
-  background: #fff; 
-  border-radius: 32px 32px 0 0; 
-  z-index: 1000; 
-  transform: translateY(100%); 
-  transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);
-  max-height: 90vh; 
-  display: flex; 
-  flex-direction: column; 
-  overflow: hidden; 
-  padding-bottom: env(safe-area-inset-bottom);
-  touch-action: pan-x; 
-  will-change: transform; 
-}
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); touch-action: pan-x; will-change: transform; }
 .sheet.open { transform: translateY(0); }
-.sheet.dragging, .sheet.no-transition {
-  transition: none !important;
-}
+.sheet.dragging, .sheet.no-transition { transition: none !important; }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
-.status-toggle-btn {
-  position: relative;
-  width: 48px;
-  height: 28px;
-  background: var(--md-outline); 
-  border-radius: 20px;
-  cursor: pointer;
-  border: none;
-  transition: background 0.3s ease;
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-}
+.status-toggle-btn { position: relative; width: 48px; height: 28px; background: var(--md-outline); border-radius: 20px; cursor: pointer; border: none; transition: background 0.3s ease; display: flex; align-items: center; padding: 0 4px; }
+.status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
+.status-toggle-btn.sleevd { background: var(--md-surface-1); }
+.status-toggle-btn.sleevd::after { transform: translateX(20px); }
 
-.status-toggle-btn::after {
-  content: '';
-  width: 20px;
-  height: 20px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.3s ease;
-}
-
-.status-toggle-btn.sleevd {
-  background: var(--md-surface-1); 
-}
-
-.status-toggle-btn.sleevd::after {
-  transform: translateX(20px);
-}
-
-#sheetPreview, #cardDetailSheet {
-  backface-visibility: hidden; 
-  box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); 
-  background: white !important; 
-  border-radius: 24px; 
-}
+#sheetPreview, #cardDetailSheet { backface-visibility: hidden; box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); background: white !important; border-radius: 24px; }
 </style>
 </head>
 <body>
@@ -268,9 +139,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
       <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
-      <button class="edit-profile-fab" id="editPlayerBtn">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-      </button>
     </div>
     <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
       <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
@@ -285,7 +153,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <div id="chipGraded" class="filter-chip-compact" onclick="window.toggleFilterChip('graded')">Graded</div>
     </div>
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
-    <button class="fab" id="addCardFab"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
   </div>
 </div>
 
@@ -294,11 +161,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 <div class="sheet" id="cardDetailSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body" id="cardDetailBody"></div>
-</div>
-
-<div class="sheet form-sheet" id="modalSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-body" id="modalBody"></div>
 </div>
 
 <script>
@@ -357,10 +219,9 @@ window.initTouchEvents = () => {
       let preview = document.getElementById('sheetPreview');
       if (!preview && Math.abs(diffX) > 5) {
         preview = sheet.cloneNode(true); preview.id = 'sheetPreview';
-        preview.style.transform = 'none'; preview.style.zIndex = '999';
+        preview.style.transform = 'none'; preview.style.zIndex = '1100';
         preview.classList.add('no-transition'); sheet.parentNode.appendChild(preview);
-        const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
-        window.updatePreviewContent(preview, nextData);
+        window.updatePreviewContent(preview, getNextCardData(diffX > 0 ? 'prev' : 'next'));
       }
       if (preview) {
         const gap = diffX > 0 ? -40 : 40, offset = diffX > 0 ? '-100%' : '100%';
@@ -386,7 +247,6 @@ window.initTouchEvents = () => {
         const direction = diffX > 0 ? 'prev' : 'next';
         const nextData = getNextCardData(direction);
         
-        // Prepare main sheet for seamless entry
         sheet.classList.add('no-transition');
         sheet.style.opacity = '0';
         sheet.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
@@ -398,7 +258,7 @@ window.initTouchEvents = () => {
           sheet.classList.remove('no-transition');
           sheet.style.opacity = '1';
           sheet.style.transform = 'translateX(0)';
-        }, 250); 
+        }, 300); 
       } else {
         sheet.style.transform = 'translateX(0)';
         if (preview) { 
@@ -536,10 +396,9 @@ window.handleCardTap = (id, isSwipe = false) => {
   if (!sheet.classList.contains('open')) {
     sheet.classList.add('open');
     document.getElementById('globalScrim').style.display = 'block';
-    history.pushState({v:'card', c:id}, '');
+    history.pushState({v:'card', id: id}, '');
   } else if (isSwipe) {
-    // Unique ID ensures back gesture is tracked for EVERY swipe
-    history.replaceState({v:'card', c:id}, ''); 
+    history.replaceState({v:'card', id: id}, ''); 
   }
 };
 
