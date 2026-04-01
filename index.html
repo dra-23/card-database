@@ -98,6 +98,16 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
+.card-item.not-owned {
+  opacity: 0.5;
+  background: var(--md-surface-1); /* Slightly different background to differentiate */
+  border-style: dashed; /* Optional: adds a "placeholder" feel */
+}
+
+/* Ensure the image inside also looks dimmed */
+.card-item.not-owned .card-thumb {
+  filter: grayscale(0.5);
+}
 #sheetPreview, #cardDetailSheet { backface-visibility: hidden; box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); background: white !important; border-radius: 24px; }
 </style>
 </head>
