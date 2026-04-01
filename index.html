@@ -216,6 +216,21 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .status-tag { font-weight: 800; font-family: 'Google Sans Display'; font-size: 20px; }
 .status-tag.sleevd { color: var(--soft-green); }
 .status-tag.unsleevd { color: var(--soft-red); }
+/* New button style for the sleevd/unsleevd toggle */
+.status-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  font-family: 'Google Sans Display', sans-serif;
+}
+
+/* Provides a visual "tap" effect on your Pixel 9 Pro Fold */
+.status-toggle-btn:active {
+  background: rgba(0, 0, 0, 0.1); 
+}
 </style>
 </head>
 <body>
@@ -434,7 +449,10 @@ window.handleCardTap = (id) => {
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
       <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
-      <div class="status-tag ${isOwned ? 'sleevd' : 'unsleevd'}">${isOwned ? 'sleevd' : 'unsleevd'}</div>
+      <button class="status-toggle-btn status-tag ${isOwned ? 'sleevd' : 'unsleevd'}" 
+        onclick="window.toggleOwnership('${c.id}')">
+  ${isOwned ? 'sleevd' : 'unsleevd'}
+</button>
     </div>
     
     <div style="position:relative; display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
@@ -468,10 +486,30 @@ window.handleCardTap = (id) => {
 
 window.toggleOwnership = async (id) => {
   const c = ALL_CARDS.find(x => x.id === id);
-  const newOwnedStatus = !(c.Owned === true || c.Owned === "true");
-  await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: newOwnedStatus }, { merge: true });
-  if (window.innerWidth < 1024) window.closeAll();
-  else window.handleCardTap(id);
+  const isCurrentlyOwned = (c.Owned === true || c.Owned === "true");
+  
+  // Confirmation message based on current status
+  const message = isCurrentlyOwned 
+    ? "Mark this card as unsleevd?" 
+    : "Mark this card sleevd?";
+
+  // Show confirmation screen
+  if (confirm(message)) {
+    const newOwnedStatus = !isCurrentlyOwned;
+    
+    try {
+      // Update Firestore
+      await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { 
+        Owned: newOwnedStatus 
+      }, { merge: true });
+      
+      // Refresh the view to show the new "sleevd/unsleevd" text immediately
+      window.handleCardTap(id);
+    } catch (e) {
+      console.error("Error updating status:", e);
+      alert("Failed to update status.");
+    }
+  }
 };
 
 window.closeAll = () => { document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); document.getElementById('globalScrim').style.display = 'none'; };
