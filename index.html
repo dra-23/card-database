@@ -300,13 +300,36 @@ window.toggleFilterChip = (type) => {
 
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id);
-  cards.sort((a,b) => (a.Year || "").toString().localeCompare((b.Year || "").toString()));
+
+  // Updated sorting: Year -> Set -> Number
+  cards.sort((a, b) => {
+    // 1. Sort by Year
+    const yearA = (a.Year || "").toString();
+    const yearB = (b.Year || "").toString();
+    if (yearA !== yearB) return yearA.localeCompare(yearB);
+
+    // 2. Sort by Set (Alphabetical)
+    const setA = (a.Set || "").toLowerCase();
+    const setB = (b.Set || "").toLowerCase();
+    if (setA !== setB) return setA.localeCompare(setB);
+
+    // 3. Sort by Number
+    // Uses numeric comparison if both are numbers, otherwise string comparison
+    const numA = parseInt(a.Number) || a.Number || "";
+    const numB = parseInt(b.Number) || b.Number || "";
+    if (typeof numA === 'number' && typeof numB === 'number') {
+      return numA - numB;
+    }
+    return numA.toString().localeCompare(numB.toString());
+  });
+
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
     cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
   }
   if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
+  
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const isOwned = (c.Owned === true || c.Owned === "true");
