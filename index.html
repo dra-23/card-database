@@ -222,22 +222,17 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 </div>
 
 <script>
-// ─────────────────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────────────────
+// 1. STATE & CONFIG
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = '';
 let playersLoaded = false, cardsLoaded = false;
-
 const SPORT_ICONS = { Basketball:'🏀', Football:'🏈', Baseball:'⚾', Golf:'⛳' };
 
 // Carousel State
 let activePanelId = 'A';
 let trackBaseX = 0; 
 
-// ─────────────────────────────────────────────────────────
-//  UTILS
-// ─────────────────────────────────────────────────────────
+// 2. DATA UTILS
 function getCleanImg(url) {
   if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
   let u = url.toString().trim();
@@ -250,19 +245,16 @@ function getCleanImg(url) {
   return u;
 }
 
-// 🔥 CRITICAL FIX: Matches "Michael Jordan" string from your Firebase
+// THE FIX: Uses the exact 'Michael Jordan' string match from your Firebase
 function getCardList() {
   if (!selectedPlayer) return [];
+  const pName = selectedPlayer.Player || selectedPlayer.id;
   
-  // Use the literal name string (e.g., "Michael Jordan") for the filter
-  const targetName = selectedPlayer.Player || selectedPlayer.id;
-  
-  let cards = ALL_CARDS.filter(c => c.Player === targetName).sort((a,b) => {
+  let cards = ALL_CARDS.filter(c => c.Player === pName).sort((a,b) => {
     const yA = (a.Year||'').toString(), yB = (b.Year||'').toString();
     if (yA !== yB) return yA.localeCompare(yB);
     const sA = (a.Set||'').toLowerCase(), sB = (b.Set||'').toLowerCase();
     if (sA !== sB) return sA.localeCompare(sB);
-    // Use numeric sort for card numbers
     return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
   });
 
@@ -274,14 +266,14 @@ function getCardList() {
       (c.Number||'').toString().includes(q)
     );
   }
-  if (showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw');
+  if (showGradedOnly) cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw');
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === 'true'));
   return cards;
 }
 
 function getAdjacentCard(dir) {
   const list = getCardList();
-  const idx  = list.findIndex(c => c.id === window.currentCardId);
+  const idx = list.findIndex(c => c.id === window.currentCardId);
   if (idx === -1) return null;
   let ni = dir === 'next' ? idx + 1 : idx - 1;
   if (ni >= list.length) ni = 0;
@@ -292,7 +284,7 @@ function getAdjacentCard(dir) {
 function buildCardHTML(c) {
   if (!c) return '<p style="padding:24px">No card found</p>';
   const isOwned = (c.Owned === true || c.Owned === 'true');
-  const ebUrl   = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((c.Year||'')+' '+(c.Set||'')+' '+(selectedPlayer?.Player||'')+' #'+(c.Number||'')+' sold')}&LH_Sold=1&LH_Complete=1`;
+  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((c.Year||'')+' '+(c.Set||'')+' '+(selectedPlayer?.Player||'')+' #'+(c.Number||'')+' sold')}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c['Card Information'] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent((c.Year||'')+' '+(c.Set||''))}`;
   const co = c['Grading Company'] || "";
   
@@ -320,139 +312,23 @@ function buildCardHTML(c) {
     </div>`;
 }
 
-// ─────────────────────────────────────────────────────────
-//  SHEET OPEN / CLOSE
-// ─────────────────────────────────────────────────────────
-function sheetOpen(cardId) {
-  window.currentCardId = cardId;
-  activePanelId = 'A';
-  trackBaseX = 0;
-  const track = document.getElementById('sheetTrack');
-  track.classList.remove('animating');
-  track.style.transform = 'translateX(0)';
-  document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === cardId));
-  preloadNeighbour('next');
-  document.getElementById('sheetViewport').classList.add('open');
-  document.getElementById('globalScrim').classList.add('visible');
-}
-
-function sheetClose() {
-  document.getElementById('sheetViewport').classList.remove('open');
-  document.getElementById('globalScrim').classList.remove('visible');
-}
-
-function preloadNeighbour(dir) {
-  const neighbour = getAdjacentCard(dir);
-  const inactiveId = activePanelId === 'A' ? 'B' : 'A';
-  document.getElementById(`panel${inactiveId}Body`).innerHTML = buildCardHTML(neighbour);
-}
-
-// ─────────────────────────────────────────────────────────
-//  SWIPE MECHANICS
-// ─────────────────────────────────────────────────────────
-(function initSwipe() {
-  const viewport = document.getElementById('sheetViewport');
-  const track    = document.getElementById('sheetTrack');
-  const VIEWPORT_W = () => viewport.offsetWidth || window.innerWidth;
-  let startX = 0, startY = 0, curX = 0, curY = 0, gestureType = null, dragging = false;
-
-  viewport.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) return;
-    startX  = e.touches[0].clientX; startY  = e.touches[0].clientY;
-    curX = startX; curY = startY; gestureType = null; dragging = true;
-    track.classList.remove('animating');
-  }, { passive: true });
-
-  viewport.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    curX = e.touches[0].clientX; curY = e.touches[0].clientY;
-    const dx = curX - startX, dy = curY - startY;
-    if (!gestureType) {
-      if (Math.abs(dy) > Math.abs(dx) + 4) gestureType = 'v';
-      else if (Math.abs(dx) > 8) gestureType = 'h';
-      else return;
-    }
-    if (gestureType === 'v') {
-      const clampedDy = Math.max(0, dy);
-      viewport.style.transform  = `translateY(${clampedDy}px)`;
-      viewport.classList.add('dragging');
-    } else {
-      const baseOffsetPx = activePanelId === 'A' ? 0 : -VIEWPORT_W();
-      track.style.transform = `translateX(${baseOffsetPx + dx}px)`;
-    }
-  }, { passive: true });
-
-  viewport.addEventListener('touchend', () => {
-    if (!dragging) return;
-    dragging = false;
-    viewport.classList.remove('dragging');
-    const dx = curX - startX, dy = curY - startY;
-
-    if (gestureType === 'v') {
-      if (dy > 120) { window.closeAll(); } 
-      else { viewport.style.transform = ''; }
-    } else if (gestureType === 'h') {
-      const threshold = VIEWPORT_W() * 0.3;
-      if (Math.abs(dx) >= threshold) commitSwipe(dx > 0 ? 'prev' : 'next');
-      else {
-        track.classList.add('animating');
-        track.style.transform = activePanelId === 'A' ? 'translateX(0)' : `translateX(-${VIEWPORT_W()}px)`;
-      }
-    }
-    gestureType = null;
-  });
-})();
-
-function commitSwipe(dir) {
-  const vw = document.getElementById('sheetViewport').offsetWidth || window.innerWidth;
-  const track = document.getElementById('sheetTrack');
-  const incomingId = activePanelId === 'A' ? 'B' : 'A';
-  const targetOffsetPx = incomingId === 'A' ? 0 : -vw;
-
-  track.classList.add('animating');
-  track.style.transform = `translateX(${targetOffsetPx}px)`;
-
-  track.addEventListener('transitionend', () => {
-    track.classList.remove('animating');
-    const incomingCard = getAdjacentCard(dir);
-    if (incomingCard) window.currentCardId = incomingCard.id;
-    activePanelId = incomingId;
-    
-    history.replaceState({ v: 'card', id: window.currentCardId }, '');
-    
-    if (activePanelId === 'B') {
-        document.getElementById('panelABody').innerHTML = document.getElementById('panelBBody').innerHTML;
-        track.style.transform = 'translateX(0)';
-        activePanelId = 'A';
-    }
-    preloadNeighbour('next');
-  }, { once: true });
-}
-
-// ─────────────────────────────────────────────────────────
-//  FIREBASE + APP LOGIC
-// ─────────────────────────────────────────────────────────
+// 3. MASTER APP LOGIC (Restored original ID mapping)
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
-  onSnapshot(collection(window.db, 'Players'), snap => {
-    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  onSnapshot(collection(window.db, "Players"), snap => { 
+    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
     playersLoaded = true; checkReady();
   });
-  onSnapshot(collection(window.db, 'Cards'), snap => {
+  onSnapshot(collection(window.db, "Cards"), snap => {
+    // RESTORED: This is the part that was missing doc IDs!
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('totalOwnedCounter').innerText =
-      ALL_CARDS.filter(c => c.Owned === true || c.Owned === 'true').length;
+    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
     cardsLoaded = true; checkReady();
-    if (window.selectedPlayer) renderDetail(window.selectedPlayer);
+    if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
 };
 
-function checkReady() {
-  if (playersLoaded && cardsLoaded) {
-    renderGallery();
-    document.getElementById('playerGrid').classList.add('loaded');
-  }
-}
+function checkReady() { if(playersLoaded && cardsLoaded) { renderGallery(); document.getElementById('playerGrid').classList.add('loaded'); } }
 
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
@@ -467,10 +343,7 @@ function renderGallery() {
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g,"\\'")}')">
       <div class="sport-badge-overlay">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
-      <div class="tile-text-bar">
-        <div class="tile-title">${p.Player||p.id}</div>
-        <div class="tile-subtitle">${pC.filter(c=>(c.Owned===true||c.Owned==='true')).length} owned</div>
-      </div>
+      <div class="tile-text-bar"><div class="tile-title">${p.Player||p.id}</div><div class="tile-subtitle">${pC.filter(c=>(c.Owned===true||c.Owned==='true')).length} owned</div></div>
     </div>`;
   }).join('');
 }
@@ -480,12 +353,55 @@ window.openDetail = id => {
   document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
   document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
   document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
-  cardSearchQuery = '';
-  document.getElementById('cardSearchInput').value = '';
+  cardSearchQuery = ''; document.getElementById('cardSearchInput').value = '';
   renderDetail(window.selectedPlayer);
   document.getElementById('detail-view').style.display = 'flex';
   setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
   history.pushState({ v:'detail', p:id }, '');
+};
+
+function renderDetail(player) {
+  const cards = getCardList();
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>(c.Owned===true||c.Owned==='true')).length} Owned`;
+  document.getElementById('cardList').innerHTML = cards.map(c => {
+    const owned = (c.Owned === true || c.Owned === 'true');
+    const co = c['Grading Company'] || '', gr = c.Grade || '';
+    const badge = (co && co !== 'Raw') ? `<span class="badge-inline">${co} ${gr}</span>` : '';
+    return `<div class="card-item ${!owned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')">
+      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
+      <div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set||''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number||'N/A'}</div></div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+// 4. SHEET LOGIC
+function sheetOpen(cardId) {
+  window.currentCardId = cardId;
+  activePanelId = 'A';
+  const track = document.getElementById('sheetTrack');
+  track.classList.remove('animating');
+  track.style.transform = 'translateX(0)';
+  document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === cardId));
+  preloadNeighbour('next');
+  document.getElementById('sheetViewport').classList.add('open');
+  document.getElementById('globalScrim').classList.add('visible');
+}
+
+function preloadNeighbour(dir) {
+  const neighbour = getAdjacentCard(dir);
+  const inactiveId = activePanelId === 'A' ? 'B' : 'A';
+  document.getElementById(`panel${inactiveId}Body`).innerHTML = buildCardHTML(neighbour);
+}
+
+window.handleCardTap = (id, fromSwipe = false) => {
+  if (!fromSwipe) { sheetOpen(id); history.pushState({ v:'card', id }, ''); }
+};
+
+window.closeAll = () => {
+  document.getElementById('sheetViewport').classList.remove('open');
+  document.getElementById('globalScrim').classList.remove('visible');
+  if (history.state?.v === 'card') history.back();
 };
 
 window.closeDetail = () => {
@@ -495,130 +411,83 @@ window.closeDetail = () => {
   if (history.state?.v === 'detail') history.back();
 };
 
-function renderDetail(player) {
-  const cards = getCardList();
-  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>(c.Owned===true||c.Owned==='true')).length} Owned`;
-  document.getElementById('cardList').innerHTML = cards.map(c => {
-    const owned = (c.Owned === true || c.Owned === 'true');
-    const co = c['Grading Company'] || '';
-    const gr = c.Grade || '';
-    const badge = (co && co !== 'Raw') ? `<span class="badge-inline">${co} ${gr}</span>` : '';
-    return `<div class="card-item ${!owned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')">
-      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info">
-        <div style="font-weight:700;">${c.Year} ${c.Set||''}</div>
-        <div style="font-size:12px; opacity:0.6;">#${c.Number||'N/A'}</div>
-      </div>
-      ${badge}
-    </div>`;
-  }).join('');
-}
+// 5. SWIPE GESTURES
+(function initSwipe() {
+  const viewport = document.getElementById('sheetViewport'), track = document.getElementById('sheetTrack');
+  let startX = 0, startY = 0, curX = 0, curY = 0, gestureType = null, dragging = false;
 
-window.handleCardTap = (id, fromSwipe = false) => {
-  if (!fromSwipe) {
-    sheetOpen(id);
-    history.pushState({ v:'card', id }, '');
+  viewport.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    curX = startX; curY = startY; gestureType = null; dragging = true;
+    track.classList.remove('animating');
+  }, { passive: true });
+
+  viewport.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    curX = e.touches[0].clientX; curY = e.touches[0].clientY;
+    const dx = curX - startX, dy = curY - startY;
+    if (!gestureType) {
+      if (Math.abs(dy) > Math.abs(dx) + 4) gestureType = 'v';
+      else if (Math.abs(dx) > 8) gestureType = 'h';
+      else return;
+    }
+    if (gestureType === 'v') viewport.style.transform = `translateY(${Math.max(0, dy)}px)`;
+    else track.style.transform = `translateX(${(activePanelId === 'A' ? 0 : -viewport.offsetWidth) + dx}px)`;
+  }, { passive: true });
+
+  viewport.addEventListener('touchend', () => {
+    if (!dragging) return; dragging = false;
+    const dx = curX - startX, dy = curY - startY, vw = viewport.offsetWidth;
+    if (gestureType === 'v') { if (dy > 120) window.closeAll(); else viewport.style.transform = ''; }
+    else if (gestureType === 'h') {
+      if (Math.abs(dx) >= vw * 0.3) commitSwipe(dx > 0 ? 'prev' : 'next');
+      else { track.classList.add('animating'); track.style.transform = activePanelId === 'A' ? 'translateX(0)' : `translateX(-${vw}px)`; }
+    }
+    gestureType = null;
+  });
+
+  function commitSwipe(dir) {
+    const vw = viewport.offsetWidth, incomingId = activePanelId === 'A' ? 'B' : 'A';
+    track.classList.add('animating');
+    track.style.transform = `translateX(${incomingId === 'A' ? 0 : -vw}px)`;
+    track.addEventListener('transitionend', () => {
+      track.classList.remove('animating');
+      const incomingCard = getAdjacentCard(dir);
+      if (incomingCard) window.currentCardId = incomingCard.id;
+      activePanelId = incomingId;
+      history.replaceState({ v: 'card', id: window.currentCardId }, '');
+      if (activePanelId === 'B') {
+        document.getElementById('panelABody').innerHTML = document.getElementById('panelBBody').innerHTML;
+        track.style.transform = 'translateX(0)'; activePanelId = 'A';
+      }
+      preloadNeighbour('next');
+    }, { once: true });
   }
-};
+})();
 
-window.closeAll = () => {
-  sheetClose();
-  if (history.state?.v === 'card') history.back();
-};
-
+// 6. ANDROID BACK
 window.onpopstate = e => {
-  const state = e.state || {};
   if (document.getElementById('sheetViewport').classList.contains('open')) {
-    sheetClose();
-  } else if (state.v !== 'detail' && window.selectedPlayer) {
-    window.closeDetail();
-  }
+    document.getElementById('sheetViewport').classList.remove('open');
+    document.getElementById('globalScrim').classList.remove('visible');
+  } else if (window.selectedPlayer) { window.closeDetail(); }
 };
 
+// 7. UI ACTIONS
 window.updateCardSearch = v => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 window.toggleFilterChip = type => {
-  if (type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); } 
-  else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
+  if (type === 'wishlist') showWishlistOnly = !showWishlistOnly;
+  else showGradedOnly = !showGradedOnly;
+  document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly);
+  document.getElementById('chipGraded').classList.toggle('active', showGradedOnly);
   renderDetail(window.selectedPlayer);
 };
-
 window.toggleOwnership = async id => {
-  const c = ALL_CARDS.find(x => x.id === id);
-  const owned = (c.Owned === true || c.Owned === 'true');
-  if (confirm(owned ? 'Mark as unsleevd?' : 'Mark as sleevd?')) {
-    await window.fs.setDoc(window.fs.doc(window.db, 'Cards', id), { Owned: !owned }, { merge: true });
+  const c = ALL_CARDS.find(x => x.id === id); const owned = !(c.Owned === true || c.Owned === 'true');
+  if (confirm(owned ? 'Mark as sleevd?' : 'Mark as unsleevd?')) {
+    await window.fs.setDoc(window.fs.doc(window.db, 'Cards', id), { Owned: owned }, { merge: true });
     if (window.currentCardId === id) document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === id));
-  }
-};
-
-// ── RESTORED FORMS ──────────────────────────────────────
-window.openPlayerForm = (id = null) => {
-  const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
-  const isEditing = !!id;
-  const html = `
-    <div class="form-header">
-      <button class="form-action-btn cancel" onclick="window.closeModal()">Cancel</button>
-      <div class="form-title">${isEditing ? "Edit Profile" : "Add Player"}</div>
-      <button class="form-action-btn" onclick="window.savePlayer()">Done</button>
-    </div>
-    <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-      <input type="text" id="pf-n" class="form-input" placeholder="Player Name" value="${p.Player||p.id||''}" ${isEditing?'disabled':''}>
-      <input type="text" id="pf-m" class="form-input" placeholder="Portrait URL" value="${p['Main Image']||''}">
-      <input type="text" id="pf-b" class="form-input" placeholder="Banner URL" value="${p['Banner_Image']||''}">
-    </div>`;
-  openModal(html);
-};
-
-window.savePlayer = async () => {
-  const name = document.getElementById('pf-n').value;
-  if (!name) return;
-  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), { 
-    Player: name, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value 
-  }, {merge:true});
-  window.closeModal();
-};
-
-window.openCardForm = (id = null) => {
-  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
-  const isEditing = !!id;
-  const html = `
-    <div class="form-header">
-      <button class="form-action-btn cancel" onclick="window.closeModal()">Cancel</button>
-      <div class="form-title">${isEditing ? "Edit Card" : "Add Card"}</div>
-      <button class="form-action-btn" onclick="window.saveCard('${id||''}')">Done</button>
-    </div>
-    <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
-      <input type="text" id="cf-y" class="form-input" placeholder="Year" value="${c.Year||''}">
-      <input type="text" id="cf-s" class="form-input" placeholder="Set" value="${c.Set||''}">
-      <input type="text" id="cf-n" class="form-input" placeholder="Number" value="${c.Number||''}">
-      <input type="text" id="cf-i" class="form-input" placeholder="Image URL" value="${c['App Image']||''}">
-    </div>`;
-  openModal(html);
-};
-
-window.saveCard = async (id) => {
-  const pName = selectedPlayer.Player || selectedPlayer.id;
-  const data = { 
-    Player: pName, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, 
-    Number: parseInt(document.getElementById('cf-n').value) || 0, "App Image": document.getElementById('cf-i').value, Owned: true 
-  };
-  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
-  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
-  window.closeModal();
-};
-
-function openModal(html) {
-  const m = document.createElement('div');
-  m.id = "tempModal"; m.className = "sheet form-sheet open"; m.style.zIndex = "2000";
-  m.innerHTML = `<div class="sheet-handle"></div><div class="sheet-body">${html}</div>`;
-  document.body.appendChild(m);
-  document.getElementById('globalScrim').classList.add('visible');
-}
-
-window.closeModal = () => {
-  document.getElementById('tempModal')?.remove();
-  if (!document.getElementById('sheetViewport').classList.contains('open')) {
-    document.getElementById('globalScrim').classList.remove('visible');
   }
 };
 </script>
