@@ -823,6 +823,35 @@ window.savePlayer = async () => {
 };
 
 window.onpopstate = (e) => { window.closeAll(); if (e.state?.v !== 'detail') { window.closeDetail(); } };
+window.navigateCards = (direction) => {
+  // Use the ID we saved in handleCardTap to find our current spot
+  if (!window.currentCardId) return;
+
+  // Find the current card to identify the player (e.g., Michael Jordan)
+  const currentCard = ALL_CARDS.find(c => c.id === window.currentCardId);
+  if (!currentCard) return;
+
+  // Filter ALL_CARDS for this player and sort by Year
+  const playerCardList = ALL_CARDS
+    .filter(c => c.Player === currentCard.Player)
+    .sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
+
+  // Find where we are in the list
+  const currentIndex = playerCardList.findIndex(c => c.id === window.currentCardId);
+  if (currentIndex === -1) return;
+
+  // Calculate the new index (infinite loop logic)
+  let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+  if (newIndex >= playerCardList.length) newIndex = 0;
+  if (newIndex < 0) newIndex = playerCardList.length - 1;
+
+  // Open the new card!
+  const newCard = playerCardList[newIndex];
+  if (newCard) {
+    window.handleCardTap(newCard.id);
+  }
+};
 </script>
 </body>
 </html>
