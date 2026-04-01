@@ -192,8 +192,30 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 .fab { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); right: 20px; width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer; }
 
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); }
+.sheet { 
+  position: fixed; 
+  bottom: 0; 
+  left: 0; 
+  right: 0; 
+  background: #fff; 
+  border-radius: 32px 32px 0 0; 
+  z-index: 1000; 
+  transform: translateY(100%); 
+  transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); 
+  max-height: 90vh; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+  padding-bottom: env(safe-area-inset-bottom);
+  /* NEW ADDITIONS FOR SWIPING */
+  touch-action: pan-y; 
+  will-change: transform; 
+}
 .sheet.open { transform: translateY(0); }
+/* Disables transition so the sheet follows your finger 1:1 */
+.sheet.dragging {
+  transition: none !important;
+}
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
@@ -255,8 +277,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 .status-toggle-btn.sleevd::after {
   transform: translateX(20px);
-  content: '✓'; 
-  color: var(--soft-green); /* Checkmark matches the brand blue */
+  color: var(--md-surface-1); /* No checkmark */
 }
 
 /* Styles for 'unsleevd' state */
@@ -359,6 +380,7 @@ window.startApp = function() {
     checkReady();
     if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
+  window.initTouchEvents();
 };
 
 function checkReady() {
@@ -717,6 +739,59 @@ window.savePlayer = async () => {
 };
 
 window.onpopstate = (e) => { window.closeAll(); if (e.state?.v !== 'detail') { window.closeDetail(); } };
+  window.initTouchEvents = () => {
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+  const sheet = document.getElementById('cardDetailSheet');
+  const scrim = document.getElementById('globalScrim');
+
+  sheet.addEventListener('touchstart', (e) => {
+    // Only start tracking if we are sliding from the left side of the sheet
+    startX = e.touches[0].clientX;
+    isDragging = true;
+    sheet.classList.add('dragging'); 
+  }, { passive: true });
+
+  sheet.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    
+    currentX = e.touches[0].clientX;
+    let diff = currentX - startX;
+
+    // Only allow sliding to the right (dismissal)
+    if (diff > 0) {
+      sheet.style.transform = `translateX(${diff}px)`;
+      // Optional: Fade out the background scrim as you "slice" it away
+      if (scrim) scrim.style.opacity = Math.max(0, 1 - (diff / 400));
+    }
+  }, { passive: true });
+
+  sheet.addEventListener('touchend', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.classList.remove('dragging');
+    
+    const diff = currentX - startX;
+
+    // Threshold: If you've slid more than 120px, close it. 
+    // Otherwise, snap it back to the center.
+    if (diff > 120) {
+      window.closeAll(); 
+      // Reset the transform after the closing animation finishes
+      setTimeout(() => { 
+        sheet.style.transform = ''; 
+        if (scrim) scrim.style.opacity = '1';
+      }, 350);
+    } else {
+      sheet.style.transform = 'translateX(0)';
+      if (scrim) scrim.style.opacity = '1';
+    }
+    
+    startX = 0;
+    currentX = 0;
+  });
+};
 </script>
 </body>
 </html>
