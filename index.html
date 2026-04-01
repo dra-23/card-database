@@ -250,26 +250,46 @@ function getCleanImg(url) {
   return u;
 }
 
-// FIXED: Corrected the filtering to match your data structure
+// FIXED: Corrected filtering to use Player Name string and robust sorting
 function getCardList() {
   if (!selectedPlayer) return [];
-  // Use .id or .Player depending on how your state is saved
-  const pId = selectedPlayer.id || selectedPlayer.Player;
   
-  let cards = ALL_CARDS.filter(c => c.Player === pId).sort((a,b) => {
+  // Match by the 'Player' string in your Firebase (e.g., "Michael Jordan")
+  const pName = selectedPlayer.Player || selectedPlayer.id;
+  
+  let cards = ALL_CARDS.filter(c => c.Player === pName).sort((a,b) => {
+    // 1. Sort by Year (String compare)
     const yA = (a.Year||'').toString(), yB = (b.Year||'').toString();
     if (yA !== yB) return yA.localeCompare(yB);
+    
+    // 2. Sort by Set (String compare)
     const sA = (a.Set||'').toLowerCase(), sB = (b.Set||'').toLowerCase();
     if (sA !== sB) return sA.localeCompare(sB);
-    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
+    
+    // 3. Sort by Number (Numeric compare so #2 < #159)
+    const nA = parseInt(a.Number) || 0;
+    const nB = parseInt(b.Number) || 0;
+    return nA - nB;
   });
 
+  // Search Logic
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
-    cards = cards.filter(c => (c.Year||'').toString().toLowerCase().includes(q) || (c.Set||'').toLowerCase().includes(q));
+    cards = cards.filter(c => 
+      (c.Year||'').toString().toLowerCase().includes(q) || 
+      (c.Set||'').toLowerCase().includes(q) ||
+      (c.Number||'').toString().includes(q)
+    );
   }
-  if (showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw');
-  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === 'true'));
+
+  // Filter Chips
+  if (showGradedOnly) {
+    cards = cards.filter(c => c['Grading Company'] && c['Grading Company'].trim() !== "" && c['Grading Company'] !== 'Raw');
+  }
+  if (showWishlistOnly) {
+    cards = cards.filter(c => c.Owned === false || c.Owned === "false");
+  }
+
   return cards;
 }
 
@@ -412,12 +432,9 @@ function commitSwipe(dir) {
     if (incomingCard) window.currentCardId = incomingCard.id;
     activePanelId = incomingId;
     
-    // History Management
     history.replaceState({ v: 'card', id: window.currentCardId }, '');
     
-    // Setup for next swipe
     if (activePanelId === 'B') {
-        // Reset B to A position visually
         document.getElementById('panelABody').innerHTML = document.getElementById('panelBBody').innerHTML;
         track.style.transform = 'translateX(0)';
         activePanelId = 'A';
@@ -548,7 +565,7 @@ window.toggleOwnership = async id => {
   }
 };
 
-// ── RESTORED FORM LOGIC ──────────────────────────────────
+// ── RESTORED FORMS ──────────────────────────────────────
 window.openPlayerForm = (id = null) => {
   const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
   const isEditing = !!id;
@@ -560,17 +577,18 @@ window.openPlayerForm = (id = null) => {
     </div>
     <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
       <input type="text" id="pf-n" class="form-input" placeholder="Player Name" value="${p.Player||p.id||''}" ${isEditing?'disabled':''}>
-      <input type="text" id="pf-m" class="form-input" placeholder="Portrait Image URL" value="${p['Main Image']||''}">
-      <input type="text" id="pf-b" class="form-input" placeholder="Banner Image URL" value="${p['Banner_Image']||''}">
+      <input type="text" id="pf-m" class="form-input" placeholder="Portrait URL" value="${p['Main Image']||''}">
+      <input type="text" id="pf-b" class="form-input" placeholder="Banner URL" value="${p['Banner_Image']||''}">
     </div>`;
   openModal(html);
 };
 
 window.savePlayer = async () => {
   const name = document.getElementById('pf-n').value;
-  if (!name) return alert("Name required");
-  const data = { Player: name, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value };
-  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
+  if (!name) return;
+  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), { 
+    Player: name, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value 
+  }, {merge:true});
   window.closeModal();
 };
 
@@ -593,13 +611,10 @@ window.openCardForm = (id = null) => {
 };
 
 window.saveCard = async (id) => {
+  const pName = selectedPlayer.Player || selectedPlayer.id;
   const data = { 
-    Player: selectedPlayer.id, 
-    Year: document.getElementById('cf-y').value, 
-    Set: document.getElementById('cf-s').value, 
-    Number: document.getElementById('cf-n').value, 
-    "App Image": document.getElementById('cf-i').value,
-    Owned: true 
+    Player: pName, Year: document.getElementById('cf-y').value, Set: document.getElementById('cf-s').value, 
+    Number: parseInt(document.getElementById('cf-n').value) || 0, "App Image": document.getElementById('cf-i').value, Owned: true 
   };
   if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
   else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
@@ -608,9 +623,7 @@ window.saveCard = async (id) => {
 
 function openModal(html) {
   const m = document.createElement('div');
-  m.id = "tempModal";
-  m.className = "sheet form-sheet open";
-  m.style.zIndex = "2000";
+  m.id = "tempModal"; m.className = "sheet form-sheet open"; m.style.zIndex = "2000";
   m.innerHTML = `<div class="sheet-handle"></div><div class="sheet-body">${html}</div>`;
   document.body.appendChild(m);
   document.getElementById('globalScrim').classList.add('visible');
