@@ -98,69 +98,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
-/* ─── SCRIM ───────────────────────────────────────────── */
-#globalScrim {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none; z-index: 900;
-  transition: opacity 0.25s;
-}
-#globalScrim.visible { display: block; }
- 
-/* ─── CARD SHEET VIEWPORT ─────────────────────────────── *
- * A clipping window — only this region is visible.        *
- * The two panels (.sheet-a, .sheet-b) sit inside it.      */
-#sheetViewport {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  /* tallest the sheet ever gets */
-  max-height: 90vh;
-  z-index: 1000;
-  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
-  overflow: hidden;               /* clips the panels during swipe  */
-  transform: translateY(100%);    /* hidden off-screen by default   */
-  transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1);
-  padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -4px 32px rgba(0,0,0,0.18);
-  will-change: transform;
-}
-#sheetViewport.open { transform: translateY(0); }
-/* no transition while dragging */
-#sheetViewport.dragging { transition: none !important; }
- 
-/* ─── INNER TRACK ─────────────────────────────────────── *
- * Two panels laid side-by-side inside the viewport.       *
- * We slide this track left/right to switch cards.         */
-#sheetTrack {
-  display: flex;
-  width: 200%;            /* two panels, each = viewport width */
-  height: 100%;
-  will-change: transform;
-}
-#sheetTrack.animating {
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
- 
-/* ─── EACH PANEL ──────────────────────────────────────── */
-.sheet-panel {
-  width: 50%;             /* = one viewport width             */
-  flex-shrink: 0;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-  overflow: hidden;
-}
-.sheet-handle {
-  width: 40px; height: 5px;
-  background: #e0e0e0; border-radius: 10px;
-  margin: 12px auto; flex-shrink: 0;
-}
-.sheet-panel-body {
-  padding: 0 24px 24px;
-  overflow-y: auto;
-  flex: 1;
-}</style>
+#sheetPreview, #cardDetailSheet { backface-visibility: hidden; box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); background: white !important; border-radius: 24px; }
+</style>
 </head>
 <body>
 <div class="view" id="gallery-view">
@@ -195,30 +134,27 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
   </div>
 </div>
-</div>
-<!-- ── SCRIM ────────────────────────────────────────────── -->
-<div id="globalScrim" onclick="window.closeAll()"></div>
- 
-<!-- ── CARD SHEET (swipeable) ──────────────────────────── -->
-<div id="sheetViewport">
-  <div id="sheetTrack">
-    <!-- Panel A: the "current" card  -->
-    <div class="sheet-panel" id="panelA">
-      <div class="sheet-handle"></div>
-      <div class="sheet-panel-body" id="panelABody"></div>
-    </div>
-    <!-- Panel B: the "incoming" card -->
-    <div class="sheet-panel" id="panelB">
-      <div class="sheet-handle"></div>
-      <div class="sheet-panel-body" id="panelBBody"></div>
+<div class="scrim" id="globalScrim" onclick="window.closeAll()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+<div class="sheet" id="cardDetailSheet">
+  <div class="sheet-handle"></div>
+  <div id="sheetViewport" style="flex: 1; overflow: hidden; position: relative; width: 100%;">
+    <div id="sheetTrack" style="display: flex; width: 200%; height: 100%; transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);">
+      <div id="panelA" class="sheet-body" style="width: 50%; flex-shrink: 0;"></div>
+      <div id="panelB" class="sheet-body" style="width: 50%; flex-shrink: 0;"></div>
     </div>
   </div>
 </div>
+
 <script>
 let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 let playersLoaded = false, cardsLoaded = false;
+let currentCardId = null;
+
+// GESTURE STATE
+let startX = 0, startY = 0, currentX = 0, currentY = 0, gestureType = null;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
+
 function getCleanImg(url) {
   if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
   let cleanUrl = url.toString().trim();
@@ -230,6 +166,7 @@ function getCleanImg(url) {
   }
   return cleanUrl;
 }
+
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
   onSnapshot(collection(window.db, "Players"), snap => { 
@@ -241,79 +178,85 @@ window.startApp = function() {
     document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
     cardsLoaded = true; checkReady();
     if(window.selectedPlayer) renderDetail(window.selectedPlayer);
+    if(window.currentCardId) updatePanelContent('panelA', window.currentCardId);
   });
   window.initTouchEvents(); 
 }; 
+
 window.initTouchEvents = () => {
-  let startX = 0, startY = 0, currentX = 0, currentY = 0, gestureType = null; 
   const sheet = document.getElementById('cardDetailSheet');
-  if (!sheet) return;
+  const track = document.getElementById('sheetTrack');
+  
   sheet.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-    gestureType = null; sheet.classList.add('dragging'); 
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    gestureType = null;
+    track.style.transition = 'none';
+    sheet.style.transition = 'none';
   }, { passive: true });
+
   sheet.addEventListener('touchmove', (e) => {
-    currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
-    const diffX = currentX - startX, diffY = currentY - startY;
+    currentX = e.touches[0].clientX;
+    currentY = e.touches[0].clientY;
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
+
     if (!gestureType) {
-      if (Math.abs(diffY) > Math.abs(diffX)) gestureType = 'vertical';
-      else if (Math.abs(diffX) > 10) gestureType = 'horizontal';
+      if (Math.abs(diffX) > 8) {
+        gestureType = 'horizontal';
+        // Pre-load the neighboring card into Panel B based on direction
+        const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
+        updatePanelContent('panelB', nextData.id);
+        // Move panel B to the correct side
+        document.getElementById('panelB').style.order = diffX > 0 ? "-1" : "1";
+        track.style.transform = diffX > 0 ? `translateX(-50%)` : `translateX(0)`;
+      } else if (Math.abs(diffY) > 8) {
+        gestureType = 'vertical';
+      }
     }
-    if (gestureType === 'vertical' && diffY > 0) sheet.style.transform = `translateY(${diffY}px)`;
-    else if (gestureType === 'horizontal') {
-      sheet.style.transform = `translateX(${diffX}px)`;
-      let preview = document.getElementById('sheetPreview');
-      if (!preview && Math.abs(diffX) > 5) {
-        preview = sheet.cloneNode(true); preview.id = 'sheetPreview';
-        preview.style.transform = 'none'; preview.style.zIndex = '1100';
-        preview.classList.add('no-transition'); sheet.parentNode.appendChild(preview);
-        window.updatePreviewContent(preview, getNextCardData(diffX > 0 ? 'prev' : 'next'));
-      }
-      if (preview) {
-        const gap = diffX > 0 ? -40 : 40, offset = diffX > 0 ? '-100%' : '100%';
-        preview.style.transform = `translateX(calc(${offset} + ${diffX + gap}px))`;
-      }
+
+    if (gestureType === 'vertical' && diffY > 0) {
+      sheet.style.transform = `translateY(${diffY}px)`;
+    } else if (gestureType === 'horizontal') {
+      const baseTranslate = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
+      const percentMove = (diffX / window.innerWidth) * 50;
+      track.style.transform = `translateX(${baseTranslate + percentMove}%)`;
     }
   }, { passive: true });
-  sheet.addEventListener('touchend', (e) => {
-    sheet.classList.remove('dragging');
-    const diffX = currentX - startX, preview = document.getElementById('sheetPreview');
-    
-    if (gestureType === 'vertical' && (currentY - startY) > 150) { 
-        sheet.style.transform = ''; if (preview) preview.remove(); window.closeAll(); 
-    } 
-    else if (gestureType === 'horizontal') {
-      if (Math.abs(diffX) > 130) {
-        if (preview) { 
-          preview.classList.remove('no-transition'); 
-          preview.style.transform = 'translateX(0)'; 
-        }
+
+  sheet.addEventListener('touchend', () => {
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
+    track.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
+
+    if (gestureType === 'vertical') {
+      if (diffY > 150) window.closeAll();
+      else sheet.style.transform = 'translateY(0)';
+    } else if (gestureType === 'horizontal') {
+      if (Math.abs(diffX) > 100) {
+        // Commit Swipe
+        const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
+        const finalTranslate = document.getElementById('panelB').style.order === "-1" ? 0 : -50;
+        track.style.transform = `translateX(${finalTranslate}%)`;
         
-        const direction = diffX > 0 ? 'prev' : 'next';
-        const nextData = getNextCardData(direction);
-        
-        sheet.classList.add('no-transition');
-        sheet.style.opacity = '0';
-        sheet.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
-        window.handleCardTap(nextData.id, true);
-        setTimeout(() => { 
-          if (preview) preview.remove(); 
-          sheet.classList.remove('no-transition');
-          sheet.style.opacity = '1';
-          sheet.style.transform = 'translateX(0)';
-        }, 300); 
+        setTimeout(() => {
+          window.currentCardId = nextData.id;
+          updatePanelContent('panelA', nextCardId);
+          track.style.transition = 'none';
+          track.style.transform = 'translateX(0)';
+          document.getElementById('panelB').style.order = "1";
+          history.replaceState({v:'card', id: nextData.id}, '');
+        }, 300);
       } else {
-        sheet.style.transform = 'translateX(0)';
-        if (preview) { 
-          preview.classList.remove('no-transition'); 
-          preview.style.transform = diffX > 0 ? 'translateX(-100%)' : 'translateX(100%)';
-          setTimeout(() => preview.remove(), 250);
-        }
+        const resetTranslate = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
+        track.style.transform = `translateX(${resetTranslate}%)`;
       }
-    } else { sheet.style.transform = ''; if (preview) preview.remove(); }
-    startX = 0; startY = 0; currentX = 0; currentY = 0; gestureType = null;
+    }
+    gestureType = null;
   });
 };
+
 function getNextCardData(dir) {
   const cCard = ALL_CARDS.find(c => c.id === window.currentCardId);
   const list = ALL_CARDS.filter(c => c.Player === cCard.Player).sort((a,b) => {
@@ -326,13 +269,37 @@ function getNextCardData(dir) {
   if (nIdx >= list.length) nIdx = 0; if (nIdx < 0) nIdx = list.length - 1;
   return list[nIdx];
 }
-window.updatePreviewContent = (el, data) => {
-  if (!el || !data) return;
-  const img = el.querySelector('img'); if (img) img.src = getCleanImg(data['App Image']);
-  const t = el.querySelector('h1') || el.querySelector('h2'); if (t) t.innerText = `${data.Year} ${data.Set}`;
-  el.style.opacity = '1'; el.style.background = '#fff'; 
-};
+
+function updatePanelContent(panelId, cardId) {
+  const c = ALL_CARDS.find(x => x.id === cardId);
+  if(!c) return;
+  const isOwned = (c.Owned === true || c.Owned === "true");
+  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year+' '+c.Set+' '+window.selectedPlayer.Player+' #'+c.Number+' sold')}&LH_Sold=1&LH_Complete=1`;
+  const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year+' '+c.Set)}`;
+
+  document.getElementById(panelId).innerHTML = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+      <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size: 14px; font-weight: 700;">${isOwned ? 'sleevd' : 'unsleevd'}</span>
+        <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'Unknown'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Purchase Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
+    </div>
+    <div class="button-row-split">
+      <a href="${ebUrl}" target="_blank"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
+      <a href="${tcdbUrl}" target="_blank"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
+    </div>`;
+}
+
 function checkReady() { if(playersLoaded && cardsLoaded) { renderGallery(); document.getElementById('playerGrid').classList.add('loaded'); } }
+
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
   const sorted = [...ALL_PLAYERS].sort((a,b) => {
@@ -350,6 +317,7 @@ function renderGallery() {
     </div>`;
   }).join('');
 }
+
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
@@ -360,17 +328,20 @@ window.openDetail = (id) => {
   setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
   history.pushState({v:'detail', p:id}, '');
 };
+
 window.closeDetail = () => {
   document.getElementById('detail-view').classList.remove('active');
   setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
   window.selectedPlayer = null; 
   if(history.state?.v === 'detail') history.back();
 };
+
 window.toggleFilterChip = (type) => {
   if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); }
   else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
   renderDetail(window.selectedPlayer);
 };
+
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => {
     const yA = (a.Year||"").toString(), yB = (b.Year||"").toString();
@@ -397,63 +368,42 @@ function renderDetail(player) {
     </div>`;
   }).join('');
 }
-window.handleCardTap = (id, isSwipe = false) => {
+
+window.handleCardTap = (id) => {
   window.currentCardId = id;
-  const c = ALL_CARDS.find(x => x.id === id);
-  const isOwned = (c.Owned === true || c.Owned === "true");
-  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year+' '+c.Set+' '+window.selectedPlayer.Player+' #'+c.Number+' sold')}&LH_Sold=1&LH_Complete=1`;
-  const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year+' '+c.Set)}`;
-  
-  const html = `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-      <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size: 14px; font-weight: 700;">${isOwned ? 'sleevd' : 'unsleevd'}</span>
-        <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
-      </div>
-    </div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'Unknown'}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Purchase Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
-    </div>
-    <div class="button-row-split">
-      <a href="${ebUrl}" target="_blank"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
-      <a href="${tcdbUrl}" target="_blank"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
-    </div>`;
-  document.getElementById('cardDetailBody').innerHTML = html;
+  updatePanelContent('panelA', id);
   const sheet = document.getElementById('cardDetailSheet');
-  
-  if (!sheet.classList.contains('open')) {
-    sheet.classList.add('open');
-    document.getElementById('globalScrim').style.display = 'block';
-    history.pushState({v:'card', id: id}, '');
-  } else if (isSwipe) {
-    history.replaceState({v:'card', id: id}, ''); 
-  }
+  sheet.classList.add('open');
+  sheet.style.transform = 'translateY(0)';
+  document.getElementById('globalScrim').style.display = 'block';
+  history.pushState({v:'card', id: id}, '');
 };
+
 window.closeAll = () => { 
-  document.querySelectorAll('.sheet').forEach(el => el.classList.remove('open')); 
+  document.getElementById('cardDetailSheet').classList.remove('open');
+  document.getElementById('cardDetailSheet').style.transform = '';
   document.getElementById('globalScrim').style.display = 'none'; 
   if(history.state?.v === 'card') history.back();
 };
+
 window.onpopstate = (e) => { 
   const cSheet = document.getElementById('cardDetailSheet');
   if (cSheet.classList.contains('open')) {
     cSheet.classList.remove('open');
+    cSheet.style.transform = '';
     document.getElementById('globalScrim').style.display = 'none';
   } else if (e.state?.v !== 'detail' && window.selectedPlayer) {
     window.closeDetail();
   }
 };
+
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
+
 window.toggleOwnership = async (id) => {
   const c = ALL_CARDS.find(x => x.id === id); const owned = (c.Owned === true || c.Owned === "true");
   if (confirm(owned ? "Mark as unsleevd?" : "Mark as sleevd?")) {
     await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: !owned }, { merge: true });
-    window.handleCardTap(id);
+    updatePanelContent('panelA', id);
   }
 };
 </script>
