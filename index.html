@@ -110,13 +110,44 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 .expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-.filter-bar { display: flex; gap: 8px; padding: 12px 16px; }
-.filter-chip { border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--md-surface-1); background: #fff; transition: 0.2s; }
-.filter-chip.active { background: var(--md-surface-1); }
+/* Container to hold both search and chips on one line */
+.search-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--md-surface);
+}
+
+/* Compact search bar that grows to fill available space */
+.search-input-compact {
+  flex: 1; 
+  background: var(--md-surface-2);
+  border: 1px solid var(--md-surface-1);
+  border-radius: 28px;
+  padding: 12px 20px;
+  color: var(--md-on-surface);
+  font-size: 16px;
+  outline: none;
+}
+
+/* Slimmer chips for the shared row */
+.filter-chip-compact {
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid var(--md-surface-1);
+  background: #fff;
+  white-space: nowrap;
+  transition: 0.2s;
+}
+.filter-chip-compact.active { 
+  background: var(--md-surface-1); 
+}
 
 .fab { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); right: 20px; width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer; }
-
-.search-input { width: calc(100% - 32px); margin: 8px 16px; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 18px 24px; color: var(--md-on-surface); font-size: 16px; outline: none; }
 
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); }
 .sheet.open { transform: translateY(0); }
@@ -175,10 +206,11 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       </div>
     </div>
     <input type="text" id="cardSearchInput" class="search-input" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-    <div class="filter-bar">
-      <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-      <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
-    </div>
+    <div class="search-filter-row">
+  <input type="text" id="cardSearchInput" class="search-input-compact" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+  <div id="chipWishlist" class="filter-chip-compact" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+  <div id="chipGraded" class="filter-chip-compact" onclick="window.toggleFilterChip('graded')">Graded</div>
+</div>
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
     <button class="fab" id="addCardFab"><svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
   </div>
