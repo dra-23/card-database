@@ -282,16 +282,26 @@ window.initTouchEvents = () => {
   });
 };
 function getNextCardData(dir) {
-  const cCard = ALL_CARDS.find(c => c.id === window.currentCardId);
-  const list = ALL_CARDS.filter(c => c.Player === cCard.Player).sort((a,b) => {
-    const yA = (a.Year||"").toString(), yB = (b.Year||"").toString();
-    if(yA !== yB) return yA.localeCompare(yB);
-    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
-  });
-  const idx = list.findIndex(c => c.id === window.currentCardId);
+  // If we haven't defined a sequence yet (safety), fallback to current card
+  if (!window.cardSequence || window.cardSequence.length === 0) {
+    return ALL_CARDS.find(c => c.id === window.currentCardId);
+  }
+
+  // Find where we are in the exact list shown on the screen
+  const idx = window.cardSequence.indexOf(window.currentCardId);
+  
+  // If the card isn't in the current filtered list, default to the first card
+  if (idx === -1) return ALL_CARDS.find(c => c.id === window.cardSequence[0]);
+
+  // Move forward or backward in the sequence
   let nIdx = dir === 'next' ? idx + 1 : idx - 1;
-  if (nIdx >= list.length) nIdx = 0; if (nIdx < 0) nIdx = list.length - 1;
-  return list[nIdx];
+  
+  // Handle Looping: Swipe past the last card to get back to the first
+  if (nIdx >= window.cardSequence.length) nIdx = 0; 
+  if (nIdx < 0) nIdx = window.cardSequence.length - 1;
+  
+  const nextId = window.cardSequence[nIdx];
+  return ALL_CARDS.find(c => c.id === nextId);
 }
 
 function updatePanelContent(panelId, cardId) {
@@ -367,28 +377,46 @@ window.toggleFilterChip = (type) => {
 };
 
 function renderDetail(player) {
+function renderDetail(player) {
+  // 1. Sort the cards exactly as they appear in the list
   let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => {
-    const yA = (a.Year||"").toString(), yB = (b.Year||"").toString();
-    if(yA !== yB) return yA.localeCompare(yB);
-    const sA = (a.Set||"").toLowerCase(), sB = (b.Set||"").toLowerCase();
-    if(sA !== sB) return sA.localeCompare(sB);
-    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
+    const yA = (a.Year || "").toString();
+    const yB = (b.Year || "").toString();
+    if (yA !== yB) return yA.localeCompare(yB);
+
+    const sA = (a.Set || "").toLowerCase();
+    const sB = (b.Set || "").toLowerCase();
+    if (sA !== sB) return sA.localeCompare(sB);
+
+    // Numeric sort for card numbers, handling potential non-numeric strings
+    const nA = parseInt(a.Number) || 0;
+    const nB = parseInt(b.Number) || 0;
+    return nA - nB;
   });
-  if (cardSearchQuery) {
+if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
-    cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
+    cards = cards.filter(c => 
+      (c.Year || "").toString().toLowerCase().includes(q) || 
+      (c.Set || "").toLowerCase().includes(q)
+    );
   }
   if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
   window.cardSequence = cards.map(c => c.id);
-  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>(c.Owned===true||c.Owned==="true")).length} Owned`;
+document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
+  
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const owned = (c.Owned === true || c.Owned === "true");
     const co = c["Grading Company"] || "", gr = c.Grade || "";
     const badge = (co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : '';
-    return `<div class="card-item ${!owned?'not-owned':''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
+    
+    // Applying the 'not-owned' class for the opacity fix
+    return `<div class="card-item ${!owned ? 'not-owned' : ''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set||''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number||'N/A'}</div></div>
+      <div class="card-info">
+        <div style="font-weight:700;">${c.Year} ${c.Set || ''}</div>
+        <div style="font-size:12px; opacity:0.6;">#${c.Number || 'N/A'}</div>
+      </div>
       ${badge}
     </div>`;
   }).join('');
