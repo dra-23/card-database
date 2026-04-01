@@ -459,18 +459,21 @@ sheet.addEventListener('touchend', (e) => {
     } 
     else if (gestureType === 'horizontal') {
       if (Math.abs(diffX) > 150) {
-        // Successful Swipe
-        window.navigateCards(diffX > 0 ? 'prev' : 'next');
-      } else {
-        // Cancel Swipe
-        sheet.style.transform = 'translateX(0)';
-      }
-      // Clean up the ghost card every time we let go
-      if (preview) {
-        preview.style.transition = 'transform 0.3s ease';
-        preview.style.transform = diffX > 0 ? 'translateX(-100%)' : 'translateX(100%)';
-        setTimeout(() => { if (preview) preview.remove(); }, 300);
-      }
+  // 1. Slide the preview card into the center
+  if (preview) {
+    preview.classList.remove('no-transition');
+    preview.style.transform = 'translateX(0)';
+    preview.style.opacity = '1';
+  }
+  
+  // 2. Tell the main sheet to update its data in the background
+  window.navigateCards(diffX > 0 ? 'prev' : 'next');
+  
+  // 3. Wait for the main sheet to be ready, then kill the ghost
+  setTimeout(() => { 
+    if (preview) preview.remove(); 
+  }, 400); // Slightly longer to ensure the main sheet is fully under it
+}
     }
     else {
       sheet.style.transform = '';
