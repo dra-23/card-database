@@ -452,34 +452,50 @@ sheet.addEventListener('touchend', (e) => {
     const diffY = currentY - startY;
     const preview = document.getElementById('sheetPreview');
 
+    // 1. Vertical Logic (Close)
     if (gestureType === 'vertical' && diffY > 150) {
       sheet.style.transform = ''; 
       if (preview) preview.remove();
       window.closeAll(); 
     } 
+    // 2. Horizontal Logic (Navigate)
     else if (gestureType === 'horizontal') {
       if (Math.abs(diffX) > 150) {
-  // 1. Slide the preview card into the center
-  if (preview) {
-    preview.classList.remove('no-transition');
-    preview.style.transform = 'translateX(0)';
-    preview.style.opacity = '1';
-  }
-  
-  // 2. Tell the main sheet to update its data in the background
-  window.navigateCards(diffX > 0 ? 'prev' : 'next');
-  
-  // 3. Wait for the main sheet to be ready, then kill the ghost
-  setTimeout(() => { 
-    if (preview) preview.remove(); 
-  }, 400); // Slightly longer to ensure the main sheet is fully under it
-}
+        // SUCCESS: The preview card takes center stage
+        if (preview) {
+          preview.classList.remove('no-transition');
+          preview.style.transform = 'translateX(0)';
+        }
+
+        // We "teleport" the main sheet to the opposite side while hidden
+        sheet.style.opacity = '0';
+        
+        // Trigger the swap animation
+        window.navigateCards(diffX > 0 ? 'prev' : 'next');
+
+        // Cleanup the ghost card after the main sheet has taken its place
+        setTimeout(() => { 
+          if (preview) preview.remove(); 
+          sheet.style.opacity = '1';
+        }, 400); 
+      } else {
+        // CANCEL: Snap everything back to the starting point
+        sheet.style.transform = 'translateX(0)';
+        if (preview) {
+          preview.classList.remove('no-transition');
+          const cancelPos = diffX > 0 ? '-100%' : '100%';
+          preview.style.transform = `translateX(${cancelPos})`;
+          setTimeout(() => { if (preview) preview.remove(); }, 300);
+        }
+      }
     }
+    // 3. General Reset
     else {
       sheet.style.transform = '';
+      if (preview) preview.remove();
     }
     
-    // CRITICAL RESET: This ensures the next touch always works
+    // Reset trackers for the next gesture
     startX = 0; startY = 0; currentX = 0; currentY = 0;
     gestureType = null;
   });
@@ -878,18 +894,39 @@ window.navigateCards = (direction) => {
   const newCard = playerCardList[newIndex];
 
   // 2. The Hand-off: Prepare the main sheet to "take over"
-  sheet.classList.add('no-transition');
+sheet.classList.add('no-transition');
+  sheet.style.opacity = '0'; // Hide it so we don't see it "jump"
   
-  // Update the content IMMEDIATELY while the user sees the preview card
+  // Decide where the main sheet should start its slide-in from
+  // If moving to 'next', the new card should slide in from the RIGHT (100%)
+  const startPos = direction === 'next' ? '100%' : '-100%';
+  sheet.style.transform = `translateX(${startPos})`;
+  
+  // Update the content behind the scenes
   window.handleCardTap(newCard.id);
 
-  // 3. Smoothly bring the main sheet back to center
+  // 3. THE SLIDE-IN: Smoothly bring the main sheet to the center
   setTimeout(() => {
     sheet.classList.remove('no-transition');
-    sheet.style.transform = 'translateX(0)';
     sheet.style.opacity = '1';
+    sheet.style.transform = 'translateX(0)';
   }, 50); 
-};
+}
+  // Add this helper function
+function getNextCardData(direction) {
+    const currentCard = ALL_CARDS.find(c => c.id === window.currentCardId);
+    const playerCardList = ALL_CARDS
+        .filter(c => c.Player === currentCard.Player)
+        .sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
+
+    const currentIndex = playerCardList.findIndex(c => c.id === window.currentCardId);
+    let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    if (newIndex >= playerCardList.length) newIndex = 0;
+    if (newIndex < 0) newIndex = playerCardList.length - 1;
+
+    return playerCardList[newIndex];
+}
 </script>
 </body>
 </html>
