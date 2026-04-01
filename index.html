@@ -216,6 +216,9 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sheet.dragging {
   transition: none !important;
 }
+.sheet.no-transition {
+  transition: none !important;
+}
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; }
 
@@ -426,23 +429,28 @@ window.initTouchEvents = () => {
     }
   }, { passive: true });
 
-  sheet.addEventListener('touchend', (e) => {
+sheet.addEventListener('touchend', (e) => {
     sheet.classList.remove('dragging');
     const diffX = currentX - startX;
     const diffY = currentY - startY;
 
-    // Logic for Closing (Vertical)
+    // Logic for Closing (Vertical) - Keep this as is
     if (gestureType === 'vertical' && diffY > 150) {
       sheet.style.transform = ''; 
       window.closeAll(); 
     } 
     // Logic for Next/Prev Card (Horizontal)
     else if (gestureType === 'horizontal' && Math.abs(diffX) > 100) {
-      navigateCards(diffX > 0 ? 'prev' : 'next');
+      // We trigger the new animation function here
+      window.navigateCards(diffX > 0 ? 'prev' : 'next');
+      // IMPORTANT: We do NOT reset the transform here!
+    }
+    else {
+      // ONLY reset if we didn't swipe far enough to trigger a move
+      sheet.style.transform = '';
     }
     
-    // Reset position
-    sheet.style.transform = '';
+    // Reset our starting points for the next touch
     startX = 0; startY = 0; currentX = 0; currentY = 0;
   });
 };
@@ -824,33 +832,44 @@ window.savePlayer = async () => {
 
 window.onpopstate = (e) => { window.closeAll(); if (e.state?.v !== 'detail') { window.closeDetail(); } };
 window.navigateCards = (direction) => {
-  // Use the ID we saved in handleCardTap to find our current spot
   if (!window.currentCardId) return;
+  const sheet = document.getElementById('cardDetailSheet');
 
-  // Find the current card to identify the player (e.g., Michael Jordan)
+  // 1. Find the new card data
   const currentCard = ALL_CARDS.find(c => c.id === window.currentCardId);
-  if (!currentCard) return;
-
-  // Filter ALL_CARDS for this player and sort by Year
   const playerCardList = ALL_CARDS
     .filter(c => c.Player === currentCard.Player)
     .sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
 
-  // Find where we are in the list
   const currentIndex = playerCardList.findIndex(c => c.id === window.currentCardId);
-  if (currentIndex === -1) return;
-
-  // Calculate the new index (infinite loop logic)
   let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
 
   if (newIndex >= playerCardList.length) newIndex = 0;
   if (newIndex < 0) newIndex = playerCardList.length - 1;
-
-  // Open the new card!
   const newCard = playerCardList[newIndex];
-  if (newCard) {
+
+  // 2. ANIMATION: Slide the current card out
+  const exitOut = direction === 'next' ? '-100%' : '100%';
+  const enterFrom = direction === 'next' ? '100%' : '-100%';
+
+  sheet.style.transform = `translateX(${exitOut})`;
+  sheet.style.opacity = '0';
+
+  // 3. TELEPORT: Move to the other side while invisible
+  setTimeout(() => {
+    sheet.classList.add('no-transition');
+    sheet.style.transform = `translateX(${enterFrom})`;
+    
+    // Load the new card data while it's off-screen
     window.handleCardTap(newCard.id);
-  }
+
+    // 4. SLIDE IN: Bring the new card to the center
+    setTimeout(() => {
+      sheet.classList.remove('no-transition');
+      sheet.style.transform = 'translateX(0)';
+      sheet.style.opacity = '1';
+    }, 50); 
+  }, 250); // Matches your CSS transition speed
 };
 </script>
 </body>
