@@ -208,7 +208,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   overflow: hidden; 
   padding-bottom: env(safe-area-inset-bottom);
   /* NEW ADDITIONS FOR SWIPING */
-  touch-action: pan-y; 
+  touch-action: pan-x; 
   will-change: transform; 
 }
 .sheet.open { transform: translateY(0); }
@@ -380,7 +380,49 @@ window.startApp = function() {
     checkReady();
     if(window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
-  window.initTouchEvents();
+  window.initTouchEvents = () => {
+  let startY = 0;
+  let currentY = 0;
+  const sheet = document.getElementById('cardDetailSheet');
+  const scrim = document.getElementById('globalScrim');
+
+  sheet.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+    sheet.classList.add('dragging'); 
+  }, { passive: true });
+
+  sheet.addEventListener('touchmove', (e) => {
+    currentY = e.touches[0].clientY;
+    let diff = currentY - startY;
+
+    // Only allow pulling DOWN (positive Y)
+    if (diff > 0) {
+      sheet.style.transform = `translateY(${diff}px)`;
+      // Fade the background scrim as you pull down
+      if (scrim) scrim.style.opacity = Math.max(0, 1 - (diff / 500));
+    }
+  }, { passive: true });
+
+  sheet.addEventListener('touchend', (e) => {
+    sheet.classList.remove('dragging');
+    const diff = currentY - startY;
+
+    // Threshold: If pulled down more than 150px, close it
+    if (diff > 150) {
+      window.closeAll(); 
+      // Reset position for next time it opens
+      setTimeout(() => { 
+        sheet.style.transform = ''; 
+        if (scrim) scrim.style.opacity = '1';
+      }, 300);
+    } else {
+      // Snap back up if you didn't pull far enough
+      sheet.style.transform = 'translateY(0)';
+      if (scrim) scrim.style.opacity = '1';
+    }
+    startY = 0; currentY = 0;
+  });
+window.initTouchEvents(); 
 };
 
 function checkReady() {
