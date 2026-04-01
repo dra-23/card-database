@@ -218,6 +218,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .status-tag.unsleevd { color: var(--soft-red); }
 /* New button style for the sleevd/unsleevd toggle */
 /* Container for the toggle switch */
+/* Container for the toggle switch */
 .status-toggle-btn {
   position: relative;
   width: 48px;
@@ -247,18 +248,18 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   font-weight: bold;
 }
 
-/* Styles for the 'sleevd' (ON) state */
+/* Updated to use your App's Primary Red for 'sleevd' */
 .status-toggle-btn.sleevd {
-  background: #6750A4; /* Purple color from your icon */
+  background: var(--md-primary); 
 }
 
 .status-toggle-btn.sleevd::after {
   transform: translateX(20px);
-  content: '✓'; /* The checkmark from your icon */
-  color: #6750A4;
+  content: '✓'; 
+  color: var(--md-primary); /* Checkmark matches the track color */
 }
 
-/* Styles for the 'unsleevd' (OFF) state */
+/* Styles for 'unsleevd' state */
 .status-toggle-btn.unsleevd::after {
   transform: translateX(0);
   content: '';
@@ -484,13 +485,13 @@ const contentHtml = `
       <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
       
       <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size: 14px; font-weight: 500; color: var(--md-on-surface-variant); text-transform: lowercase;">
-          ${isOwned ? 'sleevd' : 'unsleevd'}
-        </span>
-        <button class="status-toggle-btn ${isOwned ? 'sleevd' : 'unsleevd'}" 
-                onclick="window.toggleOwnership('${c.id}')">
-        </button>
-      </div>
+  <span style="font-size: 14px; font-weight: 500; color: var(--md-on-surface-variant); text-transform: lowercase;">
+    ${isOwned ? 'sleevd' : 'unsleevd'}
+  </span>
+  <button class="status-toggle-btn ${isOwned ? 'sleevd' : 'unsleevd'}" 
+          onclick="window.toggleOwnership('${c.id}')">
+  </button>
+</div>
     </div>
     
     <div style="position:relative; display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
