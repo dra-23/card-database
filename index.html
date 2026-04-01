@@ -377,7 +377,6 @@ window.toggleFilterChip = (type) => {
 };
 
 function renderDetail(player) {
-function renderDetail(player) {
   // 1. Sort the cards exactly as they appear in the list
   let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => {
     const yA = (a.Year || "").toString();
