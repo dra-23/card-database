@@ -405,49 +405,74 @@ window.initTouchEvents = () => {
     sheet.classList.add('dragging'); 
   }, { passive: true });
 
-  sheet.addEventListener('touchmove', (e) => {
+sheet.addEventListener('touchmove', (e) => {
     currentX = e.touches[0].clientX;
-    currentY = e.touches[0].clientY;
-    
     const diffX = currentX - startX;
-    const diffY = currentY - startY;
 
-    // Determine gesture intent if not already locked
-    if (!gestureType) {
-      if (Math.abs(diffY) > Math.abs(diffX)) gestureType = 'vertical';
-      else if (Math.abs(diffX) > 10) gestureType = 'horizontal';
-    }
+    if (gestureType === 'horizontal') {
+      // 1. Move the current sheet 1:1 with your finger
+      sheet.style.transform = `translateX(${diffX}px)`;
 
-    // Handle Vertical (Pull Down to Close)
-    if (gestureType === 'vertical' && diffY > 0) {
-      sheet.style.transform = `translateY(${diffY}px)`;
-    } 
-    // Handle Horizontal (Slide to Next/Prev)
-    else if (gestureType === 'horizontal') {
-      // We slide it slightly to give visual feedback that a swap is coming
-      sheet.style.transform = `translateX(${diffX * 0.4}px)`;
+      // 2. Create or update the "Preview" card behind it
+      let preview = document.getElementById('sheetPreview');
+      if (!preview) {
+        preview = sheet.cloneNode(true);
+        preview.id = 'sheetPreview';
+        preview.classList.add('no-transition');
+        preview.style.zIndex = '999'; // Just below the main sheet
+        sheet.parentNode.appendChild(preview);
+      }
+
+      // 3. Position the preview so it "follows" from the side
+      const previewOffset = diffX > 0 ? '-100%' : '100%';
+      preview.style.transform = `translateX(calc(${previewOffset} + ${diffX}px))`;
+      preview.style.opacity = '0.5'; // Dim it slightly for a "stack" effect
     }
+    // ... vertical logic stays the same ...
   }, { passive: true });
 
 sheet.addEventListener('touchend', (e) => {
     sheet.classList.remove('dragging');
     const diffX = currentX - startX;
     const diffY = currentY - startY;
+    const preview = document.getElementById('sheetPreview');
 
-    // Logic for Closing (Vertical) - Keep this as is
+    // 1. Logic for Closing (Vertical)
     if (gestureType === 'vertical' && diffY > 150) {
       sheet.style.transform = ''; 
+      if (preview) preview.remove(); // Cleanup preview if it exists
       window.closeAll(); 
     } 
-    // Logic for Next/Prev Card (Horizontal)
-    else if (gestureType === 'horizontal' && Math.abs(diffX) > 100) {
-      // We trigger the new animation function here
-      window.navigateCards(diffX > 0 ? 'prev' : 'next');
-      // IMPORTANT: We do NOT reset the transform here!
+    // 2. Logic for Next/Prev Card (Horizontal)
+    else if (gestureType === 'horizontal') {
+      if (Math.abs(diffX) > 150) { // Increased threshold slightly for better "feel"
+        // SUCCESS: Swipe the preview into the center
+        if (preview) {
+          preview.classList.remove('no-transition');
+          preview.style.transform = 'translateX(0)';
+          preview.style.opacity = '1';
+        }
+        
+        // Trigger the data swap
+        window.navigateCards(diffX > 0 ? 'prev' : 'next');
+        
+        // Remove the ghost card after the animation finishes
+        setTimeout(() => { if (preview) preview.remove(); }, 300);
+      } else {
+        // CANCEL: Snap everything back to the starting position
+        sheet.style.transform = 'translateX(0)';
+        if (preview) {
+          preview.classList.remove('no-transition');
+          // Slide the preview back to whichever side it came from
+          preview.style.transform = diffX > 0 ? 'translateX(-100%)' : 'translateX(100%)';
+          setTimeout(() => { if (preview) preview.remove(); }, 300);
+        }
+      }
     }
+    // 3. Fallback reset
     else {
-      // ONLY reset if we didn't swipe far enough to trigger a move
       sheet.style.transform = '';
+      if (preview) preview.remove();
     }
     
     // Reset our starting points for the next touch
