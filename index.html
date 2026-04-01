@@ -231,10 +231,9 @@ let playersLoaded = false, cardsLoaded = false;
 
 const SPORT_ICONS = { Basketball:'🏀', Football:'🏈', Baseball:'⚾', Golf:'⛳' };
 
-// Which panel is currently "front"?  'A' | 'B'
+// Carousel State
 let activePanelId = 'A';
-// The track's logical X offset (0 = panel A visible, -50% = panel B visible)
-let trackBaseX = 0; // 0 or -50 (percent)
+let trackBaseX = 0; 
 
 // ─────────────────────────────────────────────────────────
 //  UTILS
@@ -251,15 +250,20 @@ function getCleanImg(url) {
   return u;
 }
 
+// FIXED: Corrected the filtering to match your data structure
 function getCardList() {
   if (!selectedPlayer) return [];
-  let cards = ALL_CARDS.filter(c => c.Player === selectedPlayer.id).sort((a,b) => {
+  // Use .id or .Player depending on how your state is saved
+  const pId = selectedPlayer.id || selectedPlayer.Player;
+  
+  let cards = ALL_CARDS.filter(c => c.Player === pId).sort((a,b) => {
     const yA = (a.Year||'').toString(), yB = (b.Year||'').toString();
     if (yA !== yB) return yA.localeCompare(yB);
     const sA = (a.Set||'').toLowerCase(), sB = (b.Set||'').toLowerCase();
     if (sA !== sB) return sA.localeCompare(sB);
     return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
   });
+
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
     cards = cards.filter(c => (c.Year||'').toString().toLowerCase().includes(q) || (c.Set||'').toLowerCase().includes(q));
@@ -269,9 +273,10 @@ function getCardList() {
   return cards;
 }
 
-function getAdjacentCard(dir) { // dir: 'prev' | 'next'
+function getAdjacentCard(dir) {
   const list = getCardList();
   const idx  = list.findIndex(c => c.id === window.currentCardId);
+  if (idx === -1) return null;
   let ni = dir === 'next' ? idx + 1 : idx - 1;
   if (ni >= list.length) ni = 0;
   if (ni < 0) ni = list.length - 1;
@@ -283,6 +288,8 @@ function buildCardHTML(c) {
   const isOwned = (c.Owned === true || c.Owned === 'true');
   const ebUrl   = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((c.Year||'')+' '+(c.Set||'')+' '+(selectedPlayer?.Player||'')+' #'+(c.Number||'')+' sold')}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c['Card Information'] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent((c.Year||'')+' '+(c.Set||''))}`;
+  const co = c['Grading Company'] || "";
+  
   return `
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
@@ -292,9 +299,12 @@ function buildCardHTML(c) {
         <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
       </div>
     </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
+    <div style="position:relative; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
+      <button class="edit-icon-inline" onclick="window.openCardForm('${c.id}')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c['Grading Company']&&c['Grading Company']!=='Raw')?c['Grading Company']+' '+c.Grade:'Raw'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(co && co !== "Raw") ? co + ' ' + c.Grade : "Raw"}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'Unknown'}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Purchase Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
     </div>
@@ -311,15 +321,11 @@ function sheetOpen(cardId) {
   window.currentCardId = cardId;
   activePanelId = 'A';
   trackBaseX = 0;
-
   const track = document.getElementById('sheetTrack');
   track.classList.remove('animating');
   track.style.transform = 'translateX(0)';
-
-  // Populate active panel immediately; preload the neighbour
   document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === cardId));
   preloadNeighbour('next');
-
   document.getElementById('sheetViewport').classList.add('open');
   document.getElementById('globalScrim').classList.add('visible');
 }
@@ -329,7 +335,6 @@ function sheetClose() {
   document.getElementById('globalScrim').classList.remove('visible');
 }
 
-/** Load the next (or prev) card into the hidden panel */
 function preloadNeighbour(dir) {
   const neighbour = getAdjacentCard(dir);
   const inactiveId = activePanelId === 'A' ? 'B' : 'A';
@@ -343,98 +348,59 @@ function preloadNeighbour(dir) {
   const viewport = document.getElementById('sheetViewport');
   const track    = document.getElementById('sheetTrack');
   const VIEWPORT_W = () => viewport.offsetWidth || window.innerWidth;
-
-  let startX = 0, startY = 0, curX = 0, curY = 0;
-  let gestureType = null;   // 'h' | 'v' | null
-  let dragging = false;
-
-  function setTrackX(px, animate) {
-    track.classList.toggle('animating', animate);
-    // convert px offset to % of track width (track = 200% of viewport)
-    // translateX(Npx) where N is the raw pixel delta from the base
-    const baseOffsetPx = trackBaseX === 0 ? 0 : -VIEWPORT_W();
-    track.style.transform = `translateX(${baseOffsetPx + px}px)`;
-  }
+  let startX = 0, startY = 0, curX = 0, curY = 0, gestureType = null, dragging = false;
 
   viewport.addEventListener('touchstart', e => {
     if (e.touches.length !== 1) return;
-    startX  = e.touches[0].clientX;
-    startY  = e.touches[0].clientY;
-    curX = startX; curY = startY;
-    gestureType = null;
-    dragging = true;
+    startX  = e.touches[0].clientX; startY  = e.touches[0].clientY;
+    curX = startX; curY = startY; gestureType = null; dragging = true;
     track.classList.remove('animating');
   }, { passive: true });
 
   viewport.addEventListener('touchmove', e => {
-    if (!dragging || e.touches.length !== 1) return;
-    curX = e.touches[0].clientX;
-    curY = e.touches[0].clientY;
+    if (!dragging) return;
+    curX = e.touches[0].clientX; curY = e.touches[0].clientY;
     const dx = curX - startX, dy = curY - startY;
-
-    // Lock gesture direction after 8px of movement
     if (!gestureType) {
       if (Math.abs(dy) > Math.abs(dx) + 4) gestureType = 'v';
-      else if (Math.abs(dx) > 8)           gestureType = 'h';
+      else if (Math.abs(dx) > 8) gestureType = 'h';
       else return;
     }
-
     if (gestureType === 'v') {
-      // Vertical: drag the whole viewport up/down (dismiss)
-      const clampedDy = Math.max(0, dy);   // only downward
-      viewport.style.transition = 'none';
+      const clampedDy = Math.max(0, dy);
       viewport.style.transform  = `translateY(${clampedDy}px)`;
+      viewport.classList.add('dragging');
     } else {
-      // Horizontal: slide the track
-      setTrackX(dx, false);
+      const baseOffsetPx = activePanelId === 'A' ? 0 : -VIEWPORT_W();
+      track.style.transform = `translateX(${baseOffsetPx + dx}px)`;
     }
   }, { passive: true });
 
   viewport.addEventListener('touchend', () => {
     if (!dragging) return;
     dragging = false;
-
-    const dx = curX - startX;
-    const dy = curY - startY;
+    viewport.classList.remove('dragging');
+    const dx = curX - startX, dy = curY - startY;
 
     if (gestureType === 'v') {
-      // Restore viewport vertical position
-      viewport.style.transition = '';
-      if (dy > 120) {
-        viewport.style.transform = '';
-        window.closeAll();
-      } else {
-        viewport.style.transform = '';
-      }
+      if (dy > 120) { window.closeAll(); } 
+      else { viewport.style.transform = ''; }
     } else if (gestureType === 'h') {
-      const threshold = VIEWPORT_W() * 0.35;
-      if (Math.abs(dx) >= threshold) {
-        commitSwipe(dx > 0 ? 'prev' : 'next');
-      } else {
-        // Snap back
-        setTrackX(0, true);
-        track.addEventListener('transitionend', () => track.classList.remove('animating'), { once: true });
+      const threshold = VIEWPORT_W() * 0.3;
+      if (Math.abs(dx) >= threshold) commitSwipe(dx > 0 ? 'prev' : 'next');
+      else {
+        track.classList.add('animating');
+        track.style.transform = activePanelId === 'A' ? 'translateX(0)' : `translateX(-${VIEWPORT_W()}px)`;
       }
     }
-
     gestureType = null;
   });
 })();
 
-/**
- * Complete a swipe commit:
- *  1. Animate the track so the incoming panel lands at centre
- *  2. Once done, swap roles: the incoming panel becomes active,
- *     the old one is recycled to hold the next neighbour.
- */
 function commitSwipe(dir) {
-  const vw    = document.getElementById('sheetViewport').offsetWidth || window.innerWidth;
+  const vw = document.getElementById('sheetViewport').offsetWidth || window.innerWidth;
   const track = document.getElementById('sheetTrack');
-
-  // Which panel is coming in?
   const incomingId = activePanelId === 'A' ? 'B' : 'A';
-  // What's the target translateX to centre the incoming panel?
-  // Panel A is at x=0, Panel B is at x=-vw (since track is 200% wide)
   const targetOffsetPx = incomingId === 'A' ? 0 : -vw;
 
   track.classList.add('animating');
@@ -442,61 +408,22 @@ function commitSwipe(dir) {
 
   track.addEventListener('transitionend', () => {
     track.classList.remove('animating');
-
-    // Update state
     const incomingCard = getAdjacentCard(dir);
     if (incomingCard) window.currentCardId = incomingCard.id;
-
-    // Swap active panel
     activePanelId = incomingId;
-    trackBaseX    = incomingId === 'A' ? 0 : -50; // conceptual %, not used directly below
-
-    // Recycle the OLD panel: fill with the next neighbour in the new direction
-    // Then reset track so active panel appears at X=0 visually, without animation
-    track.classList.remove('animating');
-
-    if (activePanelId === 'A') {
-      // A is active (at translateX 0), B is off to the right — put next neighbour in B
-      track.style.transform = 'translateX(0)';
-      preloadNeighbourForDir(dir);
-    } else {
-      // B is active (at translateX -vw), A is off to the left — reset: move A to right of B
-      // Reorder visually: swap DOM order so active is always "first"
-      // Simpler: just translate track so B is at 0 visually
-      // We do this by placing A after B in the flex row temporarily
-      // Instead: keep DOM order, make A the hidden "next" one to the RIGHT of B
-      // Track = [A | B], B is active at offset -vw.
-      // To make the next swipe work from B, we want A to be to B's right.
-      // Move A to position +vw relative to B, achieved by flipping track width
-      // SIMPLEST APPROACH: always reset so active panel = A slot
-      swapPanelContents(); // Copy B→A, reset track to 0, preload B with neighbour
-    }
-
-    // Update history state
+    
+    // History Management
     history.replaceState({ v: 'card', id: window.currentCardId }, '');
+    
+    // Setup for next swipe
+    if (activePanelId === 'B') {
+        // Reset B to A position visually
+        document.getElementById('panelABody').innerHTML = document.getElementById('panelBBody').innerHTML;
+        track.style.transform = 'translateX(0)';
+        activePanelId = 'A';
+    }
+    preloadNeighbour('next');
   }, { once: true });
-}
-
-/** After B becomes active, copy its content to A, reset track, preload B with next neighbour */
-function swapPanelContents() {
-  const track = document.getElementById('sheetTrack');
-  const bodyA = document.getElementById('panelABody');
-  const bodyB = document.getElementById('panelBBody');
-  // Copy B → A
-  bodyA.innerHTML = bodyB.innerHTML;
-  // Reset track without animation
-  track.style.transform = 'translateX(0)';
-  activePanelId = 'A';
-  trackBaseX    = 0;
-  // Preload B with the appropriate neighbour (will be overwritten at next swipe)
-  preloadNeighbour('next');
-}
-
-/** Preload the panel that ISN'T active, with the card adjacent in `dir` */
-function preloadNeighbourForDir(lastDir) {
-  // After committing a swipe in `lastDir`, the user is more likely
-  // to continue in the same direction, so preload that next card.
-  preloadNeighbour(lastDir);
 }
 
 // ─────────────────────────────────────────────────────────
@@ -525,16 +452,15 @@ function checkReady() {
 }
 
 function renderGallery() {
-  const grid   = document.getElementById('playerGrid');
+  const grid = document.getElementById('playerGrid');
   const sorted = [...ALL_PLAYERS].sort((a, b) => {
     const aC = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === 'true')).length;
     const bC = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === 'true')).length;
     return bC - aC || a.id.localeCompare(b.id);
   });
   grid.innerHTML = sorted.map(p => {
-    const pC    = ALL_CARDS.filter(c => c.Player === p.id);
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))]
-                    .map(s => `<div class="sport-icon">${SPORT_ICONS[s]||'🏐'}</div>`).join('');
+    const pC = ALL_CARDS.filter(c => c.Player === p.id);
+    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s]||'🏐'}</div>`).join('');
     return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g,"\\'")}')">
       <div class="sport-badge-overlay">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}" loading="lazy">
@@ -548,9 +474,9 @@ function renderGallery() {
 
 window.openDetail = id => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
-  document.getElementById('playerName').innerText  = window.selectedPlayer.Player || window.selectedPlayer.id;
-  document.getElementById('playerBanner').src      = getCleanImg(window.selectedPlayer['Banner_Image']);
-  document.getElementById('playerThumb').src       = getCleanImg(window.selectedPlayer['Main Image']);
+  document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
+  document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
+  document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
   cardSearchQuery = '';
   document.getElementById('cardSearchInput').value = '';
   renderDetail(window.selectedPlayer);
@@ -568,12 +494,11 @@ window.closeDetail = () => {
 
 function renderDetail(player) {
   const cards = getCardList();
-  document.getElementById('playerDetailCount').innerText =
-    `${cards.filter(c=>(c.Owned===true||c.Owned==='true')).length} Owned`;
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>(c.Owned===true||c.Owned==='true')).length} Owned`;
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const owned = (c.Owned === true || c.Owned === 'true');
-    const co    = c['Grading Company'] || '';
-    const gr    = c.Grade || '';
+    const co = c['Grading Company'] || '';
+    const gr = c.Grade || '';
     const badge = (co && co !== 'Raw') ? `<span class="badge-inline">${co} ${gr}</span>` : '';
     return `<div class="card-item ${!owned?'not-owned':''}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
@@ -588,12 +513,8 @@ function renderDetail(player) {
 
 window.handleCardTap = (id, fromSwipe = false) => {
   if (!fromSwipe) {
-    // Fresh open from list: open sheet at position 0 (panel A)
     sheetOpen(id);
     history.pushState({ v:'card', id }, '');
-  } else {
-    // Called by swipe commit — state already managed by commitSwipe
-    sheetOpen(id);
   }
 };
 
@@ -602,51 +523,104 @@ window.closeAll = () => {
   if (history.state?.v === 'card') history.back();
 };
 
-// ─────────────────────────────────────────────────────────
-//  ANDROID BACK GESTURE
-// ─────────────────────────────────────────────────────────
 window.onpopstate = e => {
   const state = e.state || {};
-  const viewport = document.getElementById('sheetViewport');
-  const isSheetOpen = viewport.classList.contains('open');
-
-  if (isSheetOpen) {
-    // Back from card → stay on detail (don't close detail)
+  if (document.getElementById('sheetViewport').classList.contains('open')) {
     sheetClose();
   } else if (state.v !== 'detail' && window.selectedPlayer) {
-    // Back from detail → gallery
-    document.getElementById('detail-view').classList.remove('active');
-    setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
-    window.selectedPlayer = null;
+    window.closeDetail();
   }
-};
-
-window.toggleFilterChip = type => {
-  if (type === 'wishlist') {
-    showWishlistOnly = !showWishlistOnly;
-    document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly);
-  } else {
-    showGradedOnly = !showGradedOnly;
-    document.getElementById('chipGraded').classList.toggle('active', showGradedOnly);
-  }
-  renderDetail(window.selectedPlayer);
 };
 
 window.updateCardSearch = v => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
+window.toggleFilterChip = type => {
+  if (type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); } 
+  else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
+  renderDetail(window.selectedPlayer);
+};
 
 window.toggleOwnership = async id => {
-  const c     = ALL_CARDS.find(x => x.id === id);
+  const c = ALL_CARDS.find(x => x.id === id);
   const owned = (c.Owned === true || c.Owned === 'true');
   if (confirm(owned ? 'Mark as unsleevd?' : 'Mark as sleevd?')) {
     await window.fs.setDoc(window.fs.doc(window.db, 'Cards', id), { Owned: !owned }, { merge: true });
-    // Refresh the current panel in place
-    document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === id));
+    if (window.currentCardId === id) document.getElementById('panelABody').innerHTML = buildCardHTML(ALL_CARDS.find(c => c.id === id));
   }
 };
 
+// ── RESTORED FORM LOGIC ──────────────────────────────────
 window.openPlayerForm = (id = null) => {
-  // Retain original form logic — add as needed
-  alert('Player form coming soon');
+  const p = id ? ALL_PLAYERS.find(x => x.id === id) : {};
+  const isEditing = !!id;
+  const html = `
+    <div class="form-header">
+      <button class="form-action-btn cancel" onclick="window.closeModal()">Cancel</button>
+      <div class="form-title">${isEditing ? "Edit Profile" : "Add Player"}</div>
+      <button class="form-action-btn" onclick="window.savePlayer()">Done</button>
+    </div>
+    <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+      <input type="text" id="pf-n" class="form-input" placeholder="Player Name" value="${p.Player||p.id||''}" ${isEditing?'disabled':''}>
+      <input type="text" id="pf-m" class="form-input" placeholder="Portrait Image URL" value="${p['Main Image']||''}">
+      <input type="text" id="pf-b" class="form-input" placeholder="Banner Image URL" value="${p['Banner_Image']||''}">
+    </div>`;
+  openModal(html);
+};
+
+window.savePlayer = async () => {
+  const name = document.getElementById('pf-n').value;
+  if (!name) return alert("Name required");
+  const data = { Player: name, "Main Image": document.getElementById('pf-m').value, "Banner_Image": document.getElementById('pf-b').value };
+  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), data, {merge:true});
+  window.closeModal();
+};
+
+window.openCardForm = (id = null) => {
+  const c = id ? ALL_CARDS.find(x => x.id === id) : {};
+  const isEditing = !!id;
+  const html = `
+    <div class="form-header">
+      <button class="form-action-btn cancel" onclick="window.closeModal()">Cancel</button>
+      <div class="form-title">${isEditing ? "Edit Card" : "Add Card"}</div>
+      <button class="form-action-btn" onclick="window.saveCard('${id||''}')">Done</button>
+    </div>
+    <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
+      <input type="text" id="cf-y" class="form-input" placeholder="Year" value="${c.Year||''}">
+      <input type="text" id="cf-s" class="form-input" placeholder="Set" value="${c.Set||''}">
+      <input type="text" id="cf-n" class="form-input" placeholder="Number" value="${c.Number||''}">
+      <input type="text" id="cf-i" class="form-input" placeholder="Image URL" value="${c['App Image']||''}">
+    </div>`;
+  openModal(html);
+};
+
+window.saveCard = async (id) => {
+  const data = { 
+    Player: selectedPlayer.id, 
+    Year: document.getElementById('cf-y').value, 
+    Set: document.getElementById('cf-s').value, 
+    Number: document.getElementById('cf-n').value, 
+    "App Image": document.getElementById('cf-i').value,
+    Owned: true 
+  };
+  if(id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), data, {merge:true});
+  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), data);
+  window.closeModal();
+};
+
+function openModal(html) {
+  const m = document.createElement('div');
+  m.id = "tempModal";
+  m.className = "sheet form-sheet open";
+  m.style.zIndex = "2000";
+  m.innerHTML = `<div class="sheet-handle"></div><div class="sheet-body">${html}</div>`;
+  document.body.appendChild(m);
+  document.getElementById('globalScrim').classList.add('visible');
+}
+
+window.closeModal = () => {
+  document.getElementById('tempModal')?.remove();
+  if (!document.getElementById('sheetViewport').classList.contains('open')) {
+    document.getElementById('globalScrim').classList.remove('visible');
+  }
 };
 </script>
 </body>
