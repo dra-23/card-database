@@ -420,33 +420,30 @@ window.initTouchEvents = () => {
   sheet.addEventListener('touchend', (e) => {
     const diff = currentY - startY;
 
-    // If you pulled down more than 150 pixels, close the card
+    // Threshold: If pulled down more than 150px
     if (diff > 150) {
-      // Keep 'dragging' on so the final "slice" is instant and doesn't lag
-      sheet.classList.add('dragging'); 
+      // 1. Turn the smooth CSS transition back ON
+      sheet.classList.remove('dragging'); 
       
-      // Force the sheet to the bottom immediately
-      sheet.style.transform = 'translateY(100%)'; 
+      // 2. Clear our manual transform so the CSS can take over
+      sheet.style.transform = ''; 
       
-      // Trigger the app's internal close logic (scrim, state, etc.)
+      // 3. Trigger the actual closing logic
       window.closeAll(); 
 
-      // Clean up after the sheet is safely off-screen
+      // 4. Reset the opacity for the next card
       setTimeout(() => { 
-        sheet.classList.remove('dragging');
-        sheet.style.transform = ''; 
         if (scrim) scrim.style.opacity = '1';
-      }, 300);
+      }, 350);
     } else {
-      // If you didn't pull far enough, snap it back UP
+      // If you didn't pull far enough, snap it back UP smoothly
       sheet.classList.remove('dragging');
       sheet.style.transform = 'translateY(0)';
       if (scrim) scrim.style.opacity = '1';
     }
     
-    // Reset our trackers
-    startY = 0;
-    currentY = 0;
+    // Reset trackers
+    startY = 0; currentY = 0;
   });
 };
 function checkReady() {
