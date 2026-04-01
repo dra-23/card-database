@@ -797,59 +797,6 @@ window.savePlayer = async () => {
 };
 
 window.onpopstate = (e) => { window.closeAll(); if (e.state?.v !== 'detail') { window.closeDetail(); } };
-  window.initTouchEvents = () => {
-  let startX = 0;
-  let currentX = 0;
-  let isDragging = false;
-  const sheet = document.getElementById('cardDetailSheet');
-  const scrim = document.getElementById('globalScrim');
-
-  sheet.addEventListener('touchstart', (e) => {
-    // Only start tracking if we are sliding from the left side of the sheet
-    startX = e.touches[0].clientX;
-    isDragging = true;
-    sheet.classList.add('dragging'); 
-  }, { passive: true });
-
-  sheet.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    
-    currentX = e.touches[0].clientX;
-    let diff = currentX - startX;
-
-    // Only allow sliding to the right (dismissal)
-    if (diff > 0) {
-      sheet.style.transform = `translateX(${diff}px)`;
-      // Optional: Fade out the background scrim as you "slice" it away
-      if (scrim) scrim.style.opacity = Math.max(0, 1 - (diff / 400));
-    }
-  }, { passive: true });
-
-  sheet.addEventListener('touchend', (e) => {
-    if (!isDragging) return;
-    isDragging = false;
-    sheet.classList.remove('dragging');
-    
-    const diff = currentX - startX;
-
-    // Threshold: If you've slid more than 120px, close it. 
-    // Otherwise, snap it back to the center.
-    if (diff > 120) {
-      window.closeAll(); 
-      // Reset the transform after the closing animation finishes
-      setTimeout(() => { 
-        sheet.style.transform = ''; 
-        if (scrim) scrim.style.opacity = '1';
-      }, 350);
-    } else {
-      sheet.style.transform = 'translateX(0)';
-      if (scrim) scrim.style.opacity = '1';
-    }
-    
-    startX = 0;
-    currentX = 0;
-  });
-};
 </script>
 </body>
 </html>
