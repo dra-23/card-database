@@ -436,9 +436,13 @@ sheet.addEventListener('touchmove', (e) => {
       }
 
       if (preview) {
-        const previewOffset = diffX > 0 ? '-100%' : '100%';
-        preview.style.transform = `translateX(calc(${previewOffset} + ${diffX}px))`;
-      }
+  // We add (or subtract) 40px to create a visible gap between the sheets
+  const gap = diffX > 0 ? -40 : 40; 
+  const previewOffset = diffX > 0 ? '-100%' : '100%';
+  
+  preview.style.transform = `translateX(calc(${previewOffset} + ${diffX + gap}px))`;
+  preview.style.opacity = '0.8'; // Making it slightly more solid looks better with a gap
+}
     }
   }, { passive: true });
 
@@ -857,8 +861,8 @@ window.onpopstate = (e) => { window.closeAll(); if (e.state?.v !== 'detail') { w
 window.navigateCards = (direction) => {
   if (!window.currentCardId) return;
   const sheet = document.getElementById('cardDetailSheet');
-
-  // 1. Find the new card data
+  
+  // 1. Find the data first (do this BEFORE moving anything)
   const currentCard = ALL_CARDS.find(c => c.id === window.currentCardId);
   const playerCardList = ALL_CARDS
     .filter(c => c.Player === currentCard.Player)
@@ -866,33 +870,22 @@ window.navigateCards = (direction) => {
 
   const currentIndex = playerCardList.findIndex(c => c.id === window.currentCardId);
   let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-
   if (newIndex >= playerCardList.length) newIndex = 0;
   if (newIndex < 0) newIndex = playerCardList.length - 1;
   const newCard = playerCardList[newIndex];
 
-  // 2. ANIMATION: Slide the current card out
-  const exitOut = direction === 'next' ? '-100%' : '100%';
-  const enterFrom = direction === 'next' ? '100%' : '-100%';
+  // 2. The Hand-off: Prepare the main sheet to "take over"
+  sheet.classList.add('no-transition');
+  
+  // Update the content IMMEDIATELY while the user sees the preview card
+  window.handleCardTap(newCard.id);
 
-  sheet.style.transform = `translateX(${exitOut})`;
-  sheet.style.opacity = '0';
-
-  // 3. TELEPORT: Move to the other side while invisible
+  // 3. Smoothly bring the main sheet back to center
   setTimeout(() => {
-    sheet.classList.add('no-transition');
-    sheet.style.transform = `translateX(${enterFrom})`;
-    
-    // Load the new card data while it's off-screen
-    window.handleCardTap(newCard.id);
-
-    // 4. SLIDE IN: Bring the new card to the center
-    setTimeout(() => {
-      sheet.classList.remove('no-transition');
-      sheet.style.transform = 'translateX(0)';
-      sheet.style.opacity = '1';
-    }, 50); 
-  }, 250); // Matches your CSS transition speed
+    sheet.classList.remove('no-transition');
+    sheet.style.transform = 'translateX(0)';
+    sheet.style.opacity = '1';
+  }, 50); 
 };
 </script>
 </body>
