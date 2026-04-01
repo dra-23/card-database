@@ -150,7 +150,8 @@ let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 let playersLoaded = false, cardsLoaded = false;
 let currentCardId = null;
-
+let cardSequence = [];
+  
 // GESTURE STATE
 let startX = 0, startY = 0, currentX = 0, currentY = 0, gestureType = null;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
@@ -369,6 +370,7 @@ function renderDetail(player) {
   }
   if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
+  window.cardSequence = cards.map(c => c.id);
   document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>(c.Owned===true||c.Owned==="true")).length} Owned`;
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const owned = (c.Owned === true || c.Owned === "true");
@@ -384,11 +386,24 @@ function renderDetail(player) {
 
 window.handleCardTap = (id) => {
   window.currentCardId = id;
+  
+  // Reset the track state before showing the sheet
+  const track = document.getElementById('sheetTrack');
+  const panelB = document.getElementById('panelB');
+  
+  track.style.transition = 'none'; // Instant reset
+  track.style.transform = 'translateX(0)'; // Align to Panel A
+  panelB.style.order = "1"; // Put B back in the 'next' position
+  
+  // Load the card into the primary panel
   updatePanelContent('panelA', id);
+  
   const sheet = document.getElementById('cardDetailSheet');
   sheet.classList.add('open');
   sheet.style.transform = 'translateY(0)';
   document.getElementById('globalScrim').style.display = 'block';
+  
+  // Push state so the Android back gesture works
   history.pushState({v:'card', id: id}, '');
 };
 
