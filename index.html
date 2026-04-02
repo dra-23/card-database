@@ -162,22 +162,36 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   z-index: 20;
 }
 
-/* Material 3 Expressive Search Input (Pill) */
+/* UPDATE: Set default surface with background-clip to allow sticky blur */
+.scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); background-clip: padding-box; }
+
+/* Material 3 Expressive Search Input (Glass Pill) */
 .search-input-expressive {
-  flex: 1; /* Occupies all available space on the left */
+  flex: 1;
   height: 48px;
-  border-radius: 24px; /* Makes it a perfect pill shape */
+  border-radius: 24px;
   border: none;
-  background: var(--md-surface-2); /* The light purple background from your M3 palette */
-  padding: 0 24px; /* Wider padding for the pill start */
+  /* Glassmorphism/Transparent look from back arrow */
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safary/iOS support */
+  
+  padding: 0 24px;
   font-family: 'Google Sans', sans-serif;
   font-size: 16px;
   color: var(--md-on-surface);
   outline: none;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, background 0.2s;
+  /* Keep it visible on top of background content */
+  z-index: 10;
 }
 .search-input-expressive::placeholder { color: var(--md-outline); opacity: 0.7; }
-.search-input-expressive:focus { box-shadow: 0 0 0 2px var(--md-primary); }
+/* Slightly less transparent when focused */
+.search-input-expressive:focus { 
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 2px var(--md-primary); 
+}
+
 
 /* Material 3 Filter Chips */
 .filter-chip {
