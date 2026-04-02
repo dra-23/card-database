@@ -67,12 +67,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
 
 /* Layout */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); padding-top: env(safe-area-inset-top); will-change: transform; }
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); padding-top: env(safe-area-inset-top); will-change: transform; }
 #gallery-view { z-index: 1; display: flex; }
-
-/* FIX: Ensure detail view is explicitly hidden when not active to prevent ghost layers */
-#detail-view { z-index: 100; display: none; transform: translateX(100%); visibility: hidden; }
-#detail-view.active { display: flex; transform: translateX(0); visibility: visible; }
+#detail-view { z-index: 10; display: none; transform: translateX(100%); }
+#detail-view.active { display: flex; transform: translateX(0); }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -102,7 +100,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .filter-chip.active { background: var(--md-surface-2); border-color: var(--md-surface-2); color: var(--md-primary); font-weight: 700; }
 
 /* Sheets & Interaction */
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 50px rgba(0,0,0,0.3); }
 .sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; }
@@ -473,16 +471,13 @@ window.openDetail = (id) => {
 
   renderDetail(window.selectedPlayer);
   const detailView = document.getElementById('detail-view');
-  
-  // FIX: Force a reflow to "wake up" the browser stack
   detailView.style.display = 'flex';
-  void detailView.offsetWidth; 
-  
+  void detailView.offsetWidth; // Force Layout
   detailView.classList.add('active');
   history.pushState({v:'detail', p:id}, '');
 };
 
-window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 350); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
+window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
 window.toggleFilterChip = (type) => { if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); } else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); } renderDetail(window.selectedPlayer); };
 
 function renderDetail(player) {
@@ -503,15 +498,12 @@ window.handleCardTap = (id) => {
   const isLargeScreen = window.innerWidth >= 600;
   updatePanelContent('panelA', id); 
   const sheet = document.getElementById('cardDetailSheet'); 
-  const scrim = document.getElementById('globalScrim');
 
   if (!isLargeScreen) {
-    scrim.style.display = 'block';
-    void scrim.offsetWidth; // Force reflow
+    // REMOVED: globalScrim display. We rely on the sheet's shadow now to avoid touch conflicts.
     sheet.classList.add('open'); 
   } else {
     sheet.style.transform = 'none';
-    scrim.style.display = 'none';
   }
   history.pushState({v:'card', id: id}, ''); 
 };
@@ -520,7 +512,6 @@ window.closeAll = () => {
   const isLargeScreen = window.innerWidth >= 600;
   if (!isLargeScreen) {
     document.getElementById('cardDetailSheet').classList.remove('open'); 
-    document.getElementById('globalScrim').style.display = 'none'; 
   }
   if(history.state?.v === 'card') history.back(); 
 };
