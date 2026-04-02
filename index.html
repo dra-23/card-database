@@ -58,7 +58,7 @@
 }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* M3 Fields */
+/* Fields */
 .m3-field { position: relative; display: flex; flex-direction: column; background: #F0F0F0; border-radius: 4px 4px 0 0; height: 56px; width: 100%; border-bottom: 1px solid var(--md-outline); transition: background 0.2s; }
 .m3-field:focus-within { background: #E8E8E8; border-bottom: 2px solid var(--md-primary); }
 .m3-label { position: absolute; top: 8px; left: 16px; font-size: 12px; font-weight: 500; color: var(--md-primary); pointer-events: none; }
@@ -78,7 +78,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 
-/* Tiles */
+/* Grid */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
 .player-grid.loaded { opacity: 1; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -89,13 +89,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-badge-overlay { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 10; }
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
-/* Buttons & Chips */
-.fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
-.expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+/* Chips */
 .search-filter-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; }
 .search-input-expressive { flex: 1; min-width: 120px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); padding: 0 16px; font-family: 'Google Sans', sans-serif; font-size: 15px; color: var(--md-on-surface); outline: none; }
-.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--md-outline); background: transparent; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--md-outline); background: transparent; font-size: 13px; font-weight: 500; cursor: pointer; }
 .filter-chip.active { background: var(--md-surface-2); border-color: var(--md-surface-2); color: var(--md-primary); font-weight: 700; }
 
 /* Sheets & Interaction */
@@ -105,34 +102,22 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; }
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
 .card-item.not-owned { opacity: 0.5; border-style: dashed; }
-.card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
-.badge-inline { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: auto; border: 1.5px solid var(--md-surface-1); }
-.back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; }
 .status-toggle-btn { position: relative; width: 48px; height: 28px; background: var(--md-outline); border-radius: 20px; cursor: pointer; border: none; transition: background 0.3s ease; display: flex; align-items: center; padding: 0 4px; }
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
 
-/* Split Screen Media Query */
+/* Split Screen (Tablet/Desktop) */
 @media (min-width: 600px) {
   #detail-view { flex-direction: row !important; }
   #detail-view .master-col { width: 50% !important; flex-shrink: 0; border-right: 1px solid var(--md-surface-2); }
-  
-  #cardDetailSheet { 
-    position: relative !important; 
-    inset: auto !important; 
-    transform: none !important; 
-    flex: 1 !important; 
-    height: 100% !important; 
-    max-height: none !important; 
-    border-radius: 0 !important; 
-    box-shadow: none !important; 
-    display: flex !important; 
-    background: var(--md-surface); 
-  }
+  #cardDetailSheet { position: relative !important; inset: auto !important; transform: none !important; flex: 1 !important; height: 100% !important; border-radius: 0 !important; box-shadow: none !important; display: flex !important; background: var(--md-surface); z-index: 51 !important; }
   .sheet-handle { display: none; }
   #globalScrim { display: none !important; }
 }
+
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 900; }
+.fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -184,7 +169,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </div>
 </div>
 
-<div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+<div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="display:none;"></div>
 
 <div class="sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>
@@ -197,7 +182,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
         <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
       </div>
       <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
-      <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none;" onclick="document.getElementById('f_fileInput').click()">Select Card Photo</button>
+      <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none; padding:18px; border-radius:20px; border:none; font-weight:700;" onclick="document.getElementById('f_fileInput').click()">Select Card Photo</button>
       <div class="m3-field read-only"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field"><label class="m3-label">Year</label><input type="number" id="f_year" class="m3-input"></div>
@@ -215,8 +200,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       </div>
       <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" id="f_price" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
-      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.saveCard()">Save Card</button>
-      <button class="expressive-btn" id="btnDeleteCard" style="background:transparent; box-shadow:none; color:var(--soft-red); display:none;" onclick="window.deleteCard()">Delete Card</button>
+      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px; border:none; font-weight:700;" onclick="window.saveCard()">Save Card</button>
+      <button class="expressive-btn" id="btnDeleteCard" style="background:transparent; box-shadow:none; color:var(--soft-red); display:none; border:none; font-weight:700; padding:18px;" onclick="window.deleteCard()">Delete Card</button>
     </div>
   </div>
 </div>
@@ -230,7 +215,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <div class="m3-field"><label class="m3-label">Default Sport</label><select id="pf_sport" class="m3-select"><option value="Baseball">Baseball ⚾</option><option value="Basketball">Basketball 🏀</option><option value="Football">Football 🏈</option><option value="Golf">Golf ⛳</option></select></div>
       <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Banner Image URL</label><input type="text" id="pf_bannerImg" class="m3-input"></div>
-      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.savePlayer()">Add Player</button>
+      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px; border:none; font-weight:700;" onclick="window.savePlayer()">Add Player</button>
     </div>
   </div>
 </div>
@@ -439,8 +424,8 @@ function updatePanelContent(panelId, cardId) {
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
-      <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
+      <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#0064D2; color:white; border:none; border-radius:20px; padding:18px; font-weight:700;">eBay Sold</button></a>
+      <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#FF8200; color:white; border:none; border-radius:20px; padding:18px; font-weight:700;">TCDB.com</button></a>
     </div>`;
 }
 
@@ -463,7 +448,7 @@ window.openDetail = (id) => {
   cardSearchQuery = ""; document.getElementById('cardSearchInput').value = ""; 
 
   document.getElementById('panelA').innerHTML = `
-    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; opacity:0.3; text-align:center;">
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:400px; opacity:0.3; text-align:center;">
       <svg viewBox="0 0 24 24" width="64" height="64" fill="currentColor"><path d="M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22C11.79 22 11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2C12.21 2 12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z"/></svg>
       <p style="margin-top:16px; font-weight:700;">Select a card to view</p>
     </div>`;
@@ -498,6 +483,7 @@ window.handleCardTap = (id) => {
   if (!isLargeScreen) {
     sheet.classList.add('open'); 
     sheet.style.transform = 'translateY(0)'; 
+    // This is the fix: only show the scrim on small screens
     document.getElementById('globalScrim').style.display = 'block'; 
   } else {
     sheet.style.transform = 'none';
