@@ -22,6 +22,7 @@
   import { 
     getStorage, ref, uploadBytes, getDownloadURL 
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  
   const firebaseConfig = {
     apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
     authDomain: "sleevd-7214c.firebaseapp.com",
@@ -31,6 +32,7 @@
     appId: "1:176444568903:web:0acce08ab1f18b8fe30862",
     measurementId: "G-67S1G9KPJM"
   };
+
   try {
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
@@ -130,6 +132,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 </style>
 </head>
 <body>
+
 <div class="view" id="gallery-view">
   <div class="top-bar">
     <span class="brand">sleevd</span>
@@ -140,6 +143,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </div>
   <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
 </div>
+
 <div class="view" id="detail-view">
   <div class="master-col">
     <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
@@ -159,10 +163,17 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <div id="chipWishlist" class="filter-chip-compact" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
       <div id="chipGraded" class="filter-chip-compact" onclick="window.toggleFilterChip('graded')">Graded</div>
     </div>
+    <div style="padding: 10px 16px;">
+      <button class="expressive-btn" style="background:var(--md-surface-2); color:var(--md-primary); box-shadow:none; border:1px solid var(--md-surface-1);" onclick="window.openCardForm()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right:8px;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Add Card to Collection
+      </button>
+    </div>
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
   </div>
 </div>
-<div class="scrim" id="globalScrim" onclick="window.closeAll()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+
+<div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
 <div class="sheet" id="cardDetailSheet">
   <div class="sheet-handle"></div>
@@ -170,6 +181,63 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     <div id="sheetTrack" style="transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);">
       <div id="panelA" class="sheet-body panel"></div>
       <div id="panelB" class="sheet-body panel"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="cardFormSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 id="cardFormTitle" style="margin-bottom:20px; font-family:'Google Sans Display';">Add Card</h2>
+    <input type="hidden" id="f_cardId">
+    
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div id="imagePreviewContainer" style="width:100%; aspect-ratio:3/4; background:var(--md-surface-2); border-radius:20px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px dashed var(--md-outline);">
+        <span id="previewPlaceholder">No Image Selected</span>
+        <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+      </div>
+      <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
+      <button class="expressive-btn" style="background:var(--md-surface-1);" onclick="document.getElementById('f_fileInput').click()">Choose Image</button>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <input type="number" id="f_year" class="search-input-compact" placeholder="Year" style="max-width:100%">
+        <input type="text" id="f_number" class="search-input-compact" placeholder="Card #" style="max-width:100%">
+      </div>
+      <input type="text" id="f_set" class="search-input-compact" placeholder="Set Name" style="max-width:100%">
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <select id="f_grading" class="search-input-compact" style="max-width:100%">
+          <option value="Raw">Raw</option>
+          <option value="PSA">PSA</option>
+          <option value="SGC">SGC</option>
+          <option value="BGS">BGS</option>
+        </select>
+        <input type="text" id="f_grade" class="search-input-compact" placeholder="Grade" style="max-width:100%">
+      </div>
+      
+      <input type="text" id="f_price" class="search-input-compact" placeholder="Purchase Price ($)" style="max-width:100%">
+      
+      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:10px;" onclick="window.saveCard()">Save Card</button>
+      <button class="expressive-btn" id="btnDeleteCard" style="background:transparent; box-shadow:none; color:var(--soft-red); display:none;" onclick="window.deleteCard()">Delete Card</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="playerFormSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 style="margin-bottom:20px; font-family:'Google Sans Display';">New Player</h2>
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <input type="text" id="pf_name" class="search-input-compact" placeholder="Player Name" style="max-width:100%">
+      <select id="pf_sport" class="search-input-compact" style="max-width:100%">
+        <option value="Baseball">Baseball ⚾</option>
+        <option value="Basketball">Basketball 🏀</option>
+        <option value="Football">Football 🏈</option>
+        <option value="Golf">Golf ⛳</option>
+      </select>
+      <input type="text" id="pf_mainImg" class="search-input-compact" placeholder="Main Image URL" style="max-width:100%">
+      <input type="text" id="pf_bannerImg" class="search-input-compact" placeholder="Banner Image URL" style="max-width:100%">
+      <button class="expressive-btn" style="background:var(--md-primary); color:white;" onclick="window.savePlayer()">Add Player</button>
     </div>
   </div>
 </div>
@@ -299,10 +367,120 @@ function getNextCardData(dir) {
   return ALL_CARDS.find(c => c.id === window.cardSequence[nIdx]);
 }
 
-window.openEditForm = (id) => {
-  console.log("Edit card triggered:", id);
-  // Add your form opening logic here
+/* --- FORM LOGIC --- */
+
+window.openPlayerForm = () => {
+  document.getElementById('playerFormSheet').classList.add('open');
+  document.getElementById('globalScrim').style.display = 'block';
 };
+
+window.savePlayer = async () => {
+  const name = document.getElementById('pf_name').value.trim();
+  const sport = document.getElementById('pf_sport').value;
+  if(!name) return alert("Name required");
+  
+  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), {
+    Player: name,
+    Sport: sport,
+    "Main Image": document.getElementById('pf_mainImg').value,
+    "Banner_Image": document.getElementById('pf_bannerImg').value
+  });
+  
+  window.closeAllForms();
+};
+
+window.openCardForm = (cardId = null) => {
+  const isEdit = !!cardId;
+  document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
+  document.getElementById('f_cardId').value = cardId || "";
+  document.getElementById('btnDeleteCard').style.display = isEdit ? "block" : "none";
+  
+  if(isEdit) {
+    const c = ALL_CARDS.find(x => x.id === cardId);
+    document.getElementById('f_year').value = c.Year || "";
+    document.getElementById('f_set').value = c.Set || "";
+    document.getElementById('f_number').value = c.Number || "";
+    document.getElementById('f_grading').value = c["Grading Company"] || "Raw";
+    document.getElementById('f_grade').value = c.Grade || "";
+    document.getElementById('f_price').value = c.Price || "";
+    if(c['App Image']) {
+      document.getElementById('f_imagePreview').src = getCleanImg(c['App Image']);
+      document.getElementById('f_imagePreview').style.display = 'block';
+      document.getElementById('previewPlaceholder').style.display = 'none';
+    }
+  } else {
+    ['f_year','f_set','f_number','f_grade','f_price'].forEach(id => document.getElementById(id).value = "");
+    document.getElementById('f_grading').value = "Raw";
+    document.getElementById('f_imagePreview').style.display = 'none';
+    document.getElementById('previewPlaceholder').style.display = 'block';
+  }
+  
+  document.getElementById('cardFormSheet').classList.add('open');
+  document.getElementById('globalScrim').style.display = 'block';
+};
+
+window.openEditForm = (id) => window.openCardForm(id);
+
+window.handleFileSelect = (input) => {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('f_imagePreview').src = e.target.result;
+      document.getElementById('f_imagePreview').style.display = 'block';
+      document.getElementById('previewPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+window.saveCard = async () => {
+  const id = document.getElementById('f_cardId').value;
+  const file = document.getElementById('f_fileInput').files[0];
+  let imageUrl = id ? ALL_CARDS.find(x => x.id === id)['App Image'] : "";
+
+  if (file) {
+    const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
+    const snapshot = await window.st.uploadBytes(storageRef, file);
+    imageUrl = await window.st.getDownloadURL(snapshot.ref);
+  }
+
+  const cardData = {
+    Player: window.selectedPlayer.id,
+    Year: document.getElementById('f_year').value,
+    Set: document.getElementById('f_set').value,
+    Number: document.getElementById('f_number').value,
+    "Grading Company": document.getElementById('f_grading').value,
+    Grade: document.getElementById('f_grade').value,
+    Price: document.getElementById('f_price').value,
+    "App Image": imageUrl,
+    Owned: id ? ALL_CARDS.find(x => x.id === id).Owned : false
+  };
+
+  if (id) {
+    await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true });
+  } else {
+    await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData);
+  }
+  
+  window.closeAllForms();
+};
+
+window.deleteCard = async () => {
+  const id = document.getElementById('f_cardId').value;
+  if(id && confirm("Delete this card permanently?")) {
+    await window.fs.deleteDoc(window.fs.doc(window.db, "Cards", id));
+    window.closeAllForms();
+    window.closeAll();
+  }
+};
+
+window.closeAllForms = () => {
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
+  document.getElementById('globalScrim').style.display = 'none';
+};
+
+/* --- RENDER LOGIC --- */
 
 function updatePanelContent(panelId, cardId) {
   const c = ALL_CARDS.find(x => x.id === cardId);
@@ -434,10 +612,13 @@ window.closeAll = () => {
 
 window.onpopstate = (e) => { 
   const cSheet = document.getElementById('cardDetailSheet');
-  if (cSheet.classList.contains('open')) {
-    cSheet.classList.remove('open');
-    cSheet.style.transform = '';
-    document.getElementById('globalScrim').style.display = 'none';
+  const pForm = document.getElementById('playerFormSheet');
+  const cForm = document.getElementById('cardFormSheet');
+
+  if (cForm.classList.contains('open') || pForm.classList.contains('open')) {
+    window.closeAllForms();
+  } else if (cSheet.classList.contains('open')) {
+    window.closeAll();
   } else if (e.state?.v !== 'detail' && window.selectedPlayer) {
     window.closeDetail();
   }
