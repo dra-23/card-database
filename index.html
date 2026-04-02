@@ -67,13 +67,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
 
 /* Layout */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); }
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); padding-top: env(safe-area-inset-top); }
 #gallery-view { z-index: 5; display: flex; }
-#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } 
+#detail-view { z-index: 50; display: none; transform: translateX(100%); } 
 #detail-view.active { display: flex; transform: translateX(0); }
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
-.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; }
+.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; height: 100%; }
 .top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
@@ -99,8 +99,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .filter-chip.active { background: var(--md-surface-2); border-color: var(--md-surface-2); color: var(--md-primary); font-weight: 700; }
 
 /* Sheets & Interaction */
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
-.sheet.open { transform: translateY(0); }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); pointer-events: none; }
+.sheet.open { transform: translateY(0); pointer-events: auto; }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; }
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
@@ -129,6 +129,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     box-shadow: none !important; 
     display: flex !important; 
     background: var(--md-surface); 
+    pointer-events: auto !important;
   }
   .sheet-handle { display: none; }
   #globalScrim { display: none !important; }
@@ -469,12 +470,19 @@ window.openDetail = (id) => {
     </div>`;
 
   renderDetail(window.selectedPlayer);
-  document.getElementById('detail-view').style.display = 'flex';
-  setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
+  const detailView = document.getElementById('detail-view');
+  detailView.style.display = 'flex';
+  
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        detailView.classList.add('active');
+    });
+  });
+
   history.pushState({v:'detail', p:id}, '');
 };
 
-window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
+window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 400); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
 window.toggleFilterChip = (type) => { if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); } else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); } renderDetail(window.selectedPlayer); };
 
 function renderDetail(player) {
@@ -495,10 +503,13 @@ window.handleCardTap = (id) => {
   const isLargeScreen = window.innerWidth >= 600;
   updatePanelContent('panelA', id); 
   const sheet = document.getElementById('cardDetailSheet'); 
+  
   if (!isLargeScreen) {
-    sheet.classList.add('open'); 
-    sheet.style.transform = 'translateY(0)'; 
     document.getElementById('globalScrim').style.display = 'block'; 
+    requestAnimationFrame(() => {
+        sheet.classList.add('open');
+        sheet.style.transform = 'translateY(0)';
+    });
   } else {
     sheet.style.transform = 'none';
     document.getElementById('globalScrim').style.display = 'none';
