@@ -12,73 +12,107 @@
 <title>sleevd</title>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { 
-    initializeFirestore, 
-    persistentLocalCache, 
-    persistentMultipleTabManager,
-    collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { 
-    getStorage, ref, uploadBytes, getDownloadURL 
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-  
-  const firebaseConfig = {
-    apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
-    authDomain: "sleevd-7214c.firebaseapp.com",
-    projectId: "sleevd-7214c",
-    storageBucket: "sleevd-7214c.firebasestorage.app",
-    messagingSenderId: "176444568903",
-    appId: "1:176444568903:web:0acce08ab1f18b8fe30862",
-    measurementId: "G-67S1G9KPJM"
-  };
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    initializeFirestore, 
+    persistentLocalCache, 
+    persistentMultipleTabManager,
+    collection, onSnapshot, doc, setDoc, addDoc, deleteDoc 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { 
+    getStorage, ref, uploadBytes, getDownloadURL 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
+    authDomain: "sleevd-7214c.firebaseapp.com",
+    projectId: "sleevd-7214c",
+    storageBucket: "sleevd-7214c.firebasestorage.app",
+    messagingSenderId: "176444568903",
+    appId: "1:176444568903:web:0acce08ab1f18b8fe30862",
+    measurementId: "G-67S1G9KPJM"
+  };
 
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
-    const storage = getStorage(app); 
-    window.db = db;
-    window.storage = storage;
-    window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
-    window.st = { ref, uploadBytes, getDownloadURL }; 
-    window.startApp();
-  } catch (e) { console.error(e); }
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    const storage = getStorage(app); 
+    window.db = db;
+    window.storage = storage;
+    window.fs = { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc };
+    window.st = { ref, uploadBytes, getDownloadURL }; 
+    window.startApp();
+  } catch (e) { console.error(e); }
 </script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
-  --md-primary: #E8192C;
-  --md-surface: #FFFFFF;
-  --md-surface-1: #c2caf0;
-  --md-surface-2: #dfe4fb;
-  --md-on-surface: #1A1C1E;
-  --md-on-surface-variant: #44474E;
-  --md-outline: #74777F;
-  --soft-red: #EF5350;
+  --md-primary: #E8192C;
+  --md-surface: #FFFFFF;
+  --md-surface-1: #c2caf0;
+  --md-surface-2: #dfe4fb;
+  --md-on-surface: #1A1C1E;
+  --md-on-surface-variant: #44474E;
+  --md-outline: #74777F;
+  --soft-red: #EF5350;
 }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* M3 Fields */
-.m3-field { position: relative; display: flex; flex-direction: column; background: #F0F0F0; border-radius: 4px 4px 0 0; height: 56px; width: 100%; border-bottom: 1px solid var(--md-outline); transition: background 0.2s; }
+/* Material 3 Filled Text Field Styles */
+.m3-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #F0F0F0;
+  border-radius: 4px 4px 0 0;
+  height: 56px;
+  width: 100%;
+  border-bottom: 1px solid var(--md-outline);
+  transition: background 0.2s;
+}
 .m3-field:focus-within { background: #E8E8E8; border-bottom: 2px solid var(--md-primary); }
-.m3-label { position: absolute; top: 8px; left: 16px; font-size: 12px; font-weight: 500; color: var(--md-primary); pointer-events: none; }
-.m3-input, .m3-select { border: none; background: transparent; padding: 24px 16px 8px 16px; font-family: 'Roboto', sans-serif; font-size: 16px; color: var(--md-on-surface); width: 100%; outline: none; appearance: none; }
-.m3-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2344474E'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 24px; }
+.m3-label {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-primary);
+  pointer-events: none;
+}
+.m3-input, .m3-select {
+  border: none;
+  background: transparent;
+  padding: 24px 16px 8px 16px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  color: var(--md-on-surface);
+  width: 100%;
+  outline: none;
+  appearance: none;
+}
+.m3-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2344474E'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 24px;
+}
 .m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
 
-/* Layout */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); padding-top: env(safe-area-inset-top); }
+/* Layout & Views */
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); }
 #gallery-view { z-index: 5; display: flex; }
-#detail-view { z-index: 50; display: none; transform: translateX(100%); } 
+#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } 
 #detail-view.active { display: flex; transform: translateX(0); }
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
-.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; height: 100%; }
+.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; }
 .top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 
-/* Tiles */
+/* Grid & Tiles */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
 .player-grid.loaded { opacity: 1; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -89,22 +123,19 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-badge-overlay { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 10; }
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
-/* Buttons & Chips */
+/* Buttons */
 .fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
 .expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; }
-.search-input-expressive { flex: 1; min-width: 120px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); padding: 0 16px; font-family: 'Google Sans', sans-serif; font-size: 15px; color: var(--md-on-surface); outline: none; }
-.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--md-outline); background: transparent; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s; }
-.filter-chip.active { background: var(--md-surface-2); border-color: var(--md-surface-2); color: var(--md-primary); font-weight: 700; }
 
-/* Sheets & Interaction */
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); pointer-events: none; }
-.sheet.open { transform: translateY(0); pointer-events: auto; }
+/* Sheets */
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
+.sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
-.sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; }
+.sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; touch-action: pan-y; }
+
+/* Detail Items */
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
-.card-item.not-owned { opacity: 0.5; border-style: dashed; }
 .card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .badge-inline { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: auto; border: 1.5px solid var(--md-surface-1); }
 .back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; }
@@ -112,128 +143,230 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
+.card-item.not-owned { opacity: 0.5; border-style: dashed; }
+/* Add a subtle scale effect to tiles on tap */
+.player-tile:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
 
-/* Split Screen Media Query */
-@media (min-width: 600px) {
-  #detail-view { flex-direction: row !important; }
-  #detail-view .master-col { width: 50% !important; flex-shrink: 0; border-right: 1px solid var(--md-surface-2); }
-  
-  #cardDetailSheet { 
-    position: relative !important; 
-    inset: auto !important; 
-    transform: none !important; 
-    flex: 1 !important; 
-    height: 100% !important; 
-    max-height: none !important; 
-    border-radius: 0 !important; 
-    box-shadow: none !important; 
-    display: flex !important; 
-    background: var(--md-surface); 
-    pointer-events: auto !important;
-  }
-  .sheet-handle { display: none; }
-  #globalScrim { display: none !important; }
+/* Updated Row: Ensures horizontal layout with no wrapping */
+.search-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Slightly tighter gap to save space on small screens */
+  padding: 12px 16px;
+  background: var(--md-surface);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  width: 100%;
+  overflow-x: hidden; /* Prevents row from causing horizontal page scroll */
+}
+
+/* Search Bar: Flex-grow lets it take available space, flex-shrink lets it get smaller */
+.search-input-expressive {
+  flex: 1; 
+  min-width: 120px; /* Ensures search bar doesn't disappear entirely on tiny screens */
+  height: 48px;
+  border-radius: 24px;
+  border: none;
+  background: var(--md-surface-2); /* Back to the solid surface color */
+  padding: 0 16px;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 15px;
+  color: var(--md-on-surface);
+  outline: none;
+}
+.search-input-expressive::placeholder { color: var(--md-outline); opacity: 0.7; }
+.search-input-expressive:focus { box-shadow: 0 0 0 2px var(--md-primary); }
+
+/* Filter Chips: flex-shrink: 0 ensures they NEVER get smaller than their content */
+.filter-chip {
+  flex-shrink: 0; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 18px; /* More "pill-like" to match the search bar */
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap; /* Prevents text from wrapping to two lines */
+  cursor: pointer;
+}
+.filter-chip:active { background: rgba(0,0,0,0.05); }
+
+/* Active State for Filter Chips (Filled look) */
+.filter-chip.active {
+  background: var(--md-surface-2);
+  border-color: var(--md-surface-2);
+  color: var(--md-primary); /* Uses primary color for text when active */
+  font-weight: 700;
+}
+
+/* Material 3 Filter Chips */
+.filter-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px; /* Standard M3 chip radius */
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+  cursor: pointer;
+  transition: 0.2s;
+  user-select: none;
+}
+.filter-chip:active { background: rgba(0,0,0,0.05); }
+
+/* Active State for Filter Chips (Filled look) */
+.filter-chip.active {
+  background: var(--md-surface-2);
+  border-color: var(--md-surface-2);
+  color: var(--md-primary); /* Uses primary color for text when active */
+  font-weight: 700;
+}
+
+/* Custom Scrollbar for the card list */
+.scroll-body::-webkit-scrollbar {
+  width: 4px;
+}
+.scroll-body::-webkit-scrollbar-thumb {
+  background: var(--md-surface-2);
+  border-radius: 10px;
 }
 </style>
 </head>
 <body>
 
 <div class="view" id="gallery-view">
-  <div class="top-bar">
-    <span class="brand">sleevd</span>
-    <div class="total-count-pill" id="totalOwnedCounter">0</div>
-    <button class="icon-btn" onclick="window.openPlayerForm()">
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </button>
-  </div>
-  <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
+  <div class="top-bar">
+    <span class="brand">sleevd</span>
+    <div class="total-count-pill" id="totalOwnedCounter">0</div>
+    <button class="icon-btn" onclick="window.openPlayerForm()">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </button>
+  </div>
+  <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
 </div>
 
 <div class="view" id="detail-view">
-  <div class="master-col">
-    <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
-      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
-      <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-      <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
-    </div>
-    <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-      <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-      <div style="padding-bottom:8px;">
-        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
-        <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
-      </div>
-    </div>
-    <div class="search-filter-row">
-      <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-      <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-      <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
-    </div>
-    <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
-    <button class="fab" onclick="window.openCardForm()">
-      <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-    </button>
-  </div>
-  
-  <div class="sheet" id="cardDetailSheet">
-    <div class="sheet-handle"></div>
-    <div id="sheetViewport" style="flex: 1; overflow: hidden;">
-      <div id="sheetTrack" style="transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);">
-        <div id="panelA" class="sheet-body panel"></div>
-        <div id="panelB" class="sheet-body panel"></div>
-      </div>
-    </div>
-  </div>
+  <div class="master-col">
+    <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
+      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
+      <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
+      <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+    </div>
+    <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+      <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <div style="padding-bottom:8px;">
+        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
+        <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+      </div>
+    </div>
+    <div class="search-filter-row">
+  <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+  <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+  <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
+</div>
+    <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
+    
+    <button class="fab" onclick="window.openCardForm()">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    </button>
+  </div>
 </div>
 
 <div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
+<div class="sheet" id="cardDetailSheet">
+  <div class="sheet-handle"></div>
+  <div id="sheetViewport" style="flex: 1; overflow: hidden;">
+    <div id="sheetTrack" style="transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);">
+      <div id="panelA" class="sheet-body panel"></div>
+      <div id="panelB" class="sheet-body panel"></div>
+    </div>
+  </div>
+</div>
+
 <div class="sheet" id="cardFormSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-body">
-    <h2 id="cardFormTitle" style="margin-bottom:24px; font-family:'Google Sans Display';">Add Card</h2>
-    <input type="hidden" id="f_cardId">
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <div id="imagePreviewContainer" style="width:100%; aspect-ratio:3/4; background:#F0F0F0; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-        <span id="previewPlaceholder">No Image Selected</span>
-        <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-      </div>
-      <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
-      <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none;" onclick="document.getElementById('f_fileInput').click()">Select Card Photo</button>
-      <div class="m3-field read-only"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Year</label><input type="number" id="f_year" class="m3-input"></div>
-        <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input"></div>
-      </div>
-      <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input"></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Sport</label><select id="f_sport" class="m3-select"></select></div>
-        <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Grading Co.</label><select id="f_grading" class="m3-select"><option value="Raw">Raw</option><option value="PSA">PSA</option><option value="BGS">BGS</option><option value="SGC">SGC</option><option value="CGC">CGC</option></select></div>
-        <div class="m3-field"><label class="m3-label">Grade</label><select id="f_grade" class="m3-select"></select></div>
-      </div>
-      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" id="f_price" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
-      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.saveCard()">Save Card</button>
-      <button class="expressive-btn" id="btnDeleteCard" style="background:transparent; box-shadow:none; color:var(--soft-red); display:none;" onclick="window.deleteCard()">Delete Card</button>
-    </div>
-  </div>
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 id="cardFormTitle" style="margin-bottom:24px; font-family:'Google Sans Display';">Add Card</h2>
+    <input type="hidden" id="f_cardId">
+    
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div id="imagePreviewContainer" style="width:100%; aspect-ratio:3/4; background:#F0F0F0; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
+        <span id="previewPlaceholder">No Image Selected</span>
+        <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+      </div>
+      <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
+      <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none;" onclick="document.getElementById('f_fileInput').click()">Select Card Photo</button>
+
+      <div class="m3-field read-only"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly></div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="m3-field"><label class="m3-label">Year</label><input type="number" id="f_year" class="m3-input"></div>
+        <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input"></div>
+      </div>
+
+      <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input"></div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="m3-field"><label class="m3-label">Sport</label><select id="f_sport" class="m3-select"><option value="">Select...</option></select></div>
+        <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="m3-field">
+          <label class="m3-label">Grading Co.</label>
+          <select id="f_grading" class="m3-select">
+            <option value="Raw">Raw</option>
+            <option value="PSA">PSA</option>
+            <option value="BGS">BGS</option>
+            <option value="SGC">SGC</option>
+            <option value="CGC">CGC</option>
+          </select>
+        </div>
+        <div class="m3-field"><label class="m3-label">Grade</label><select id="f_grade" class="m3-select"></select></div>
+      </div>
+      
+      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" id="f_price" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
+      
+      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.saveCard()">Save Card</button>
+      <button class="expressive-btn" id="btnDeleteCard" style="background:transparent; box-shadow:none; color:var(--soft-red); display:none;" onclick="window.deleteCard()">Delete Card</button>
+    </div>
+  </div>
 </div>
 
 <div class="sheet" id="playerFormSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-body">
-    <h2 style="margin-bottom:20px; font-family:'Google Sans Display';">New Player</h2>
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <div class="m3-field"><label class="m3-label">Player Name</label><input type="text" id="pf_name" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Default Sport</label><select id="pf_sport" class="m3-select"><option value="Baseball">Baseball ⚾</option><option value="Basketball">Basketball 🏀</option><option value="Football">Football 🏈</option><option value="Golf">Golf ⛳</option></select></div>
-      <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Banner Image URL</label><input type="text" id="pf_bannerImg" class="m3-input"></div>
-      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.savePlayer()">Add Player</button>
-    </div>
-  </div>
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 style="margin-bottom:20px; font-family:'Google Sans Display';">New Player</h2>
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="m3-field"><label class="m3-label">Player Name</label><input type="text" id="pf_name" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Default Sport</label>
+        <select id="pf_sport" class="m3-select">
+          <option value="Baseball">Baseball ⚾</option>
+          <option value="Basketball">Basketball 🏀</option>
+          <option value="Football">Football 🏈</option>
+          <option value="Golf">Golf ⛳</option>
+        </select>
+      </div>
+      <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Banner Image URL</label><input type="text" id="pf_bannerImg" class="m3-input"></div>
+      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.savePlayer()">Add Player</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -245,291 +378,250 @@ let startX = 0, startY = 0, currentX = 0, currentY = 0, gestureType = null;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
 function getCleanImg(url) {
-  if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
-  let cleanUrl = url.toString().trim();
-  if (cleanUrl.includes('drive.google.com')) {
-    let id = "";
-    if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
-    else if (cleanUrl.includes('file/d/')) { id = cleanUrl.split('file/d/')[1].split('/')[0]; }
-    return `https://drive.google.com/thumbnail?id=${id}&sz=1000`;
-  }
-  return cleanUrl;
+  if (!url) return 'https://placehold.co/400x600/eee/999?text=No+Image';
+  let cleanUrl = url.toString().trim();
+  if (cleanUrl.includes('drive.google.com')) {
+    let id = "";
+    if (cleanUrl.includes('id=')) { id = cleanUrl.split('id=')[1].split('&')[0]; }
+    else if (cleanUrl.includes('file/d/')) { id = cleanUrl.split('file/d/')[1].split('/')[0]; }
+    return `https://drive.google.com/thumbnail?id=${id}&sz=1000`;
+  }
+  return cleanUrl;
 }
 
 window.startApp = function() {
-  const { onSnapshot, collection } = window.fs;
-  onSnapshot(collection(window.db, "Players"), snap => { 
-    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
-    playersLoaded = true; checkReady();
-    populateSportsDropdown();
-  });
-  onSnapshot(collection(window.db, "Cards"), snap => {
-    ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
-    cardsLoaded = true; checkReady();
-    if(window.selectedPlayer) renderDetail(window.selectedPlayer);
-    if(window.currentCardId) updatePanelContent('panelA', window.currentCardId);
-  });
-  initGradeDropdown();
-  window.initTouchEvents(); 
+  const { onSnapshot, collection } = window.fs;
+  onSnapshot(collection(window.db, "Players"), snap => { 
+    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
+    playersLoaded = true; checkReady();
+    populateSportsDropdown();
+  });
+  onSnapshot(collection(window.db, "Cards"), snap => {
+    ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('totalOwnedCounter').innerText = ALL_CARDS.filter(c => (c.Owned === true || c.Owned === "true")).length;
+    cardsLoaded = true; checkReady();
+    if(window.selectedPlayer) renderDetail(window.selectedPlayer);
+    if(window.currentCardId) updatePanelContent('panelA', window.currentCardId);
+  });
+  initGradeDropdown();
+  window.initTouchEvents(); 
 };
 
 function populateSportsDropdown() {
-  const sports = [...new Set(ALL_PLAYERS.map(p => p.Sport).filter(Boolean))];
-  document.getElementById('f_sport').innerHTML = '<option value="">Select...</option>' + sports.map(s => `<option value="${s}">${s}</option>`).join('');
+  const sports = [...new Set(ALL_PLAYERS.map(p => p.Sport).filter(Boolean))];
+  document.getElementById('f_sport').innerHTML = '<option value="">Select...</option>' + sports.map(s => `<option value="${s}">${s}</option>`).join('');
 }
 
 function initGradeDropdown() {
-  const select = document.getElementById('f_grade');
-  let html = '<option value="N/A">N/A</option>';
-  for(let i = 10; i >= 1; i -= 0.5) html += `<option value="${i.toFixed(1)}">${i.toFixed(1)}</option>`;
-  select.innerHTML = html;
+  const select = document.getElementById('f_grade');
+  let html = '<option value="N/A">N/A</option>';
+  for(let i = 10; i >= 1; i -= 0.5) html += `<option value="${i.toFixed(1)}">${i.toFixed(1)}</option>`;
+  select.innerHTML = html;
 }
 
 window.openCardForm = (cardId = null) => {
-  const isEdit = !!cardId;
-  document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
-  document.getElementById('f_cardId').value = cardId || "";
-  document.getElementById('f_player').value = window.selectedPlayer.Player || window.selectedPlayer.id;
-  document.getElementById('btnDeleteCard').style.display = isEdit ? "block" : "none";
-  const playerTeams = [...new Set(ALL_CARDS.filter(c => c.Player === window.selectedPlayer.id).map(c => c.Team).filter(Boolean))];
-  document.getElementById('f_team').innerHTML = playerTeams.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="">(New Team...)</option>';
-  if(isEdit) {
-    const c = ALL_CARDS.find(x => x.id === cardId);
-    document.getElementById('f_year').value = c.Year || "";
-    document.getElementById('f_set').value = c.Set || "";
-    document.getElementById('f_number').value = c.Number || "";
-    document.getElementById('f_manufacturer').value = c.Manufacturer || "";
-    document.getElementById('f_sport').value = c.Sport || "";
-    document.getElementById('f_team').value = c.Team || "";
-    document.getElementById('f_grading').value = c["Grading Company"] || "Raw";
-    document.getElementById('f_grade').value = c.Grade || "N/A";
-    document.getElementById('f_price').value = c.Price || "";
-    document.getElementById('f_url').value = c["Card Information"] || "";
-    if(c['App Image']) {
-      document.getElementById('f_imagePreview').src = getCleanImg(c['App Image']);
-      document.getElementById('f_imagePreview').style.display = 'block';
-      document.getElementById('previewPlaceholder').style.display = 'none';
-    }
-  } else {
-    ['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => document.getElementById(id).value = "");
-    document.getElementById('f_sport').value = window.selectedPlayer.Sport || "";
-    document.getElementById('f_grading').value = "Raw";
-    document.getElementById('f_grade').value = "N/A";
-    document.getElementById('f_imagePreview').style.display = 'none';
-    document.getElementById('previewPlaceholder').style.display = 'block';
-  }
-  document.getElementById('cardFormSheet').classList.add('open');
-  document.getElementById('globalScrim').style.display = 'block';
+  const isEdit = !!cardId;
+  document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
+  document.getElementById('f_cardId').value = cardId || "";
+  document.getElementById('f_player').value = window.selectedPlayer.Player || window.selectedPlayer.id;
+  document.getElementById('btnDeleteCard').style.display = isEdit ? "block" : "none";
+  
+  const playerTeams = [...new Set(ALL_CARDS.filter(c => c.Player === window.selectedPlayer.id).map(c => c.Team).filter(Boolean))];
+  document.getElementById('f_team').innerHTML = playerTeams.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="">(New Team...)</option>';
+
+  if(isEdit) {
+    const c = ALL_CARDS.find(x => x.id === cardId);
+    document.getElementById('f_year').value = c.Year || "";
+    document.getElementById('f_set').value = c.Set || "";
+    document.getElementById('f_number').value = c.Number || "";
+    document.getElementById('f_manufacturer').value = c.Manufacturer || "";
+    document.getElementById('f_sport').value = c.Sport || "";
+    document.getElementById('f_team').value = c.Team || "";
+    document.getElementById('f_grading').value = c["Grading Company"] || "Raw";
+    document.getElementById('f_grade').value = c.Grade || "N/A";
+    document.getElementById('f_price').value = c.Price || "";
+    document.getElementById('f_url').value = c["Card Information"] || "";
+    if(c['App Image']) {
+      document.getElementById('f_imagePreview').src = getCleanImg(c['App Image']);
+      document.getElementById('f_imagePreview').style.display = 'block';
+      document.getElementById('previewPlaceholder').style.display = 'none';
+    }
+  } else {
+    ['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => document.getElementById(id).value = "");
+    document.getElementById('f_sport').value = window.selectedPlayer.Sport || "";
+    document.getElementById('f_grading').value = "Raw";
+    document.getElementById('f_grade').value = "N/A";
+    document.getElementById('f_imagePreview').style.display = 'none';
+    document.getElementById('previewPlaceholder').style.display = 'block';
+  }
+  document.getElementById('cardFormSheet').classList.add('open');
+  document.getElementById('globalScrim').style.display = 'block';
 };
 
 window.saveCard = async () => {
-  const id = document.getElementById('f_cardId').value;
-  const file = document.getElementById('f_fileInput').files[0];
-  let imageUrl = id ? ALL_CARDS.find(x => x.id === id)['App Image'] : "";
-  if (file) {
-    const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
-    const snapshot = await window.st.uploadBytes(storageRef, file);
-    imageUrl = await window.st.getDownloadURL(snapshot.ref);
-  }
-  const cardData = {
-    Player: window.selectedPlayer.id,
-    Year: document.getElementById('f_year').value,
-    Set: document.getElementById('f_set').value,
-    Number: document.getElementById('f_number').value,
-    Manufacturer: document.getElementById('f_manufacturer').value,
-    Sport: document.getElementById('f_sport').value,
-    Team: document.getElementById('f_team').value,
-    "Grading Company": document.getElementById('f_grading').value,
-    Grade: document.getElementById('f_grade').value,
-    Price: document.getElementById('f_price').value,
-    "Card Information": document.getElementById('f_url').value,
-    "App Image": imageUrl,
-    Owned: id ? ALL_CARDS.find(x => x.id === id).Owned : false
-  };
-  if (id) { await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true }); } 
-  else { await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData); }
-  window.closeAllForms();
+  const id = document.getElementById('f_cardId').value;
+  const file = document.getElementById('f_fileInput').files[0];
+  let imageUrl = id ? ALL_CARDS.find(x => x.id === id)['App Image'] : "";
+
+  if (file) {
+    const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
+    const snapshot = await window.st.uploadBytes(storageRef, file);
+    imageUrl = await window.st.getDownloadURL(snapshot.ref);
+  }
+
+  const cardData = {
+    Player: window.selectedPlayer.id,
+    Year: document.getElementById('f_year').value,
+    Set: document.getElementById('f_set').value,
+    Number: document.getElementById('f_number').value,
+    Manufacturer: document.getElementById('f_manufacturer').value,
+    Sport: document.getElementById('f_sport').value,
+    Team: document.getElementById('f_team').value,
+    "Grading Company": document.getElementById('f_grading').value,
+    Grade: document.getElementById('f_grade').value,
+    Price: document.getElementById('f_price').value,
+    "Card Information": document.getElementById('f_url').value,
+    "App Image": imageUrl,
+    Owned: id ? ALL_CARDS.find(x => x.id === id).Owned : false
+  };
+
+  if (id) { await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true }); } 
+  else { await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData); }
+  window.closeAllForms();
 };
 
 window.openPlayerForm = () => { document.getElementById('playerFormSheet').classList.add('open'); document.getElementById('globalScrim').style.display = 'block'; };
 window.savePlayer = async () => {
-  const name = document.getElementById('pf_name').value.trim();
-  if(!name) return;
-  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), { Player: name, Sport: document.getElementById('pf_sport').value, "Main Image": document.getElementById('pf_mainImg').value, "Banner_Image": document.getElementById('pf_bannerImg').value });
-  window.closeAllForms();
+  const name = document.getElementById('pf_name').value.trim();
+  if(!name) return;
+  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), { Player: name, Sport: document.getElementById('pf_sport').value, "Main Image": document.getElementById('pf_mainImg').value, "Banner_Image": document.getElementById('pf_bannerImg').value });
+  window.closeAllForms();
 };
 
 window.deleteCard = async () => {
-  const id = document.getElementById('f_cardId').value;
-  if(id && confirm("Delete?")) { await window.fs.deleteDoc(window.fs.doc(window.db, "Cards", id)); window.closeAllForms(); window.closeAll(); }
+  const id = document.getElementById('f_cardId').value;
+  if(id && confirm("Delete?")) { await window.fs.deleteDoc(window.fs.doc(window.db, "Cards", id)); window.closeAllForms(); window.closeAll(); }
 };
 
 window.closeAllForms = () => { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open')); document.getElementById('globalScrim').style.display = 'none'; };
 
 window.handleFileSelect = (input) => {
-  const file = input.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => { document.getElementById('f_imagePreview').src = e.target.result; document.getElementById('f_imagePreview').style.display = 'block'; document.getElementById('previewPlaceholder').style.display = 'none'; };
-    reader.readAsDataURL(file);
-  }
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => { document.getElementById('f_imagePreview').src = e.target.result; document.getElementById('f_imagePreview').style.display = 'block'; document.getElementById('previewPlaceholder').style.display = 'none'; };
+    reader.readAsDataURL(file);
+  }
 };
 
 window.initTouchEvents = () => {
-  const sheet = document.getElementById('cardDetailSheet');
-  const track = document.getElementById('sheetTrack');
-  sheet.addEventListener('touchstart', (e) => { 
-    if (window.innerWidth >= 600) return; 
-    startX = e.touches[0].clientX; startY = e.touches[0].clientY; gestureType = null; track.style.transition = 'none'; 
-  }, { passive: true });
-  sheet.addEventListener('touchmove', (e) => {
-    if (window.innerWidth >= 600) return;
-    currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
-    const diffX = currentX - startX, diffY = currentY - startY;
-    if (!gestureType) {
-      if (Math.abs(diffX) > 10 && Math.abs(diffX) > Math.abs(diffY)) gestureType = 'horizontal';
-      else if (diffY > 10) gestureType = 'vertical';
-    }
-    if (gestureType === 'vertical') { if (e.cancelable) e.preventDefault(); sheet.style.transform = `translateY(${diffY}px)`; }
-    else if (gestureType === 'horizontal') {
-      if (e.cancelable) e.preventDefault();
-      const base = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
-      track.style.transform = `translateX(${base + (diffX / window.innerWidth) * 50}%)`;
-    }
-  }, { passive: false });
-  sheet.addEventListener('touchend', () => {
-    if (window.innerWidth >= 600) return;
-    const diffX = currentX - startX, diffY = currentY - startY;
-    track.style.transition = sheet.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
-    if (gestureType === 'vertical') { if (diffY > 150) window.closeAll(); else sheet.style.transform = 'translateY(0)'; }
-    else if (gestureType === 'horizontal') {
-      if (Math.abs(diffX) > 100) {
-        const next = getNextCardData(diffX > 0 ? 'prev' : 'next');
-        track.style.transform = `translateX(${document.getElementById('panelB').style.order === "-1" ? 0 : -50}%)`;
-        setTimeout(() => { window.currentCardId = next.id; updatePanelContent('panelA', next.id); track.style.transition = 'none'; track.style.transform = 'translateX(0)'; document.getElementById('panelB').style.order = "1"; }, 300);
-      } else { track.style.transform = `translateX(${document.getElementById('panelB').style.order === "-1" ? -50 : 0}%)`; }
-    }
-    gestureType = null;
-  });
+  const sheet = document.getElementById('cardDetailSheet');
+  const track = document.getElementById('sheetTrack');
+  sheet.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; gestureType = null; track.style.transition = 'none'; }, { passive: true });
+  sheet.addEventListener('touchmove', (e) => {
+    currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
+    const diffX = currentX - startX, diffY = currentY - startY;
+    if (!gestureType) {
+      if (Math.abs(diffX) > 10 && Math.abs(diffX) > Math.abs(diffY)) gestureType = 'horizontal';
+      else if (diffY > 10) gestureType = 'vertical';
+    }
+    if (gestureType === 'vertical') { if (e.cancelable) e.preventDefault(); sheet.style.transform = `translateY(${diffY}px)`; }
+    else if (gestureType === 'horizontal') {
+      if (e.cancelable) e.preventDefault();
+      const base = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
+      track.style.transform = `translateX(${base + (diffX / window.innerWidth) * 50}%)`;
+    }
+  }, { passive: false });
+  sheet.addEventListener('touchend', () => {
+    const diffX = currentX - startX, diffY = currentY - startY;
+    track.style.transition = sheet.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    if (gestureType === 'vertical') { if (diffY > 150) window.closeAll(); else sheet.style.transform = 'translateY(0)'; }
+    else if (gestureType === 'horizontal') {
+      if (Math.abs(diffX) > 100) {
+        const next = getNextCardData(diffX > 0 ? 'prev' : 'next');
+        track.style.transform = `translateX(${document.getElementById('panelB').style.order === "-1" ? 0 : -50}%)`;
+        setTimeout(() => { window.currentCardId = next.id; updatePanelContent('panelA', next.id); track.style.transition = 'none'; track.style.transform = 'translateX(0)'; document.getElementById('panelB').style.order = "1"; }, 300);
+      } else { track.style.transform = `translateX(${document.getElementById('panelB').style.order === "-1" ? -50 : 0}%)`; }
+    }
+    gestureType = null;
+  });
 };
 
 function getNextCardData(dir) {
-  const idx = window.cardSequence.indexOf(window.currentCardId);
-  let nIdx = dir === 'next' ? idx + 1 : idx - 1;
-  if (nIdx >= window.cardSequence.length) nIdx = 0; if (nIdx < 0) nIdx = window.cardSequence.length - 1;
-  return ALL_CARDS.find(c => c.id === window.cardSequence[nIdx]);
+  const idx = window.cardSequence.indexOf(window.currentCardId);
+  let nIdx = dir === 'next' ? idx + 1 : idx - 1;
+  if (nIdx >= window.cardSequence.length) nIdx = 0; if (nIdx < 0) nIdx = window.cardSequence.length - 1;
+  return ALL_CARDS.find(c => c.id === window.cardSequence[nIdx]);
 }
 
 function updatePanelContent(panelId, cardId) {
-  const c = ALL_CARDS.find(x => x.id === cardId); if(!c) return;
-  const isOwned = (c.Owned === true || c.Owned === "true");
-  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year+' '+c.Set+' '+window.selectedPlayer.Player+' #'+c.Number+' sold')}&LH_Sold=1&LH_Complete=1`;
-  const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year+' '+c.Set)}`;
-  document.getElementById(panelId).innerHTML = `
-    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-      <h1 style="font-family:'Google Sans Display'; font-size:24px;">${c.Year} ${c.Set}</h1>
-      <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
-    </div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px; position:relative;">
-      <button onclick="window.openCardForm('${c.id}')" style="position:absolute; top:12px; right:12px; background:#fff; border:none; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'N/A'}</div></div>
-      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <a href="${ebUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
-      <a href="${tcdbUrl}" target="_blank" style="text-decoration:none;"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
-    </div>`;
+  const c = ALL_CARDS.find(x => x.id === cardId); if(!c) return;
+  const isOwned = (c.Owned === true || c.Owned === "true");
+  const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year+' '+c.Set+' '+window.selectedPlayer.Player+' #'+c.Number+' sold')}&LH_Sold=1&LH_Complete=1`;
+  const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year+' '+c.Set)}`;
+  document.getElementById(panelId).innerHTML = `
+    <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <h1 style="font-family:'Google Sans Display'; font-size:24px;">${c.Year} ${c.Set}</h1>
+      <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px; position:relative;">
+      <button onclick="window.openCardForm('${c.id}')" style="position:absolute; top:12px; right:12px; background:#fff; border:none; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'N/A'}</div></div>
+      <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
+    </div>
+    <div class="button-row-split">
+      <a href="${ebUrl}" target="_blank"><button class="expressive-btn" style="background:#0064D2; color:white;">eBay Sold</button></a>
+      <a href="${tcdbUrl}" target="_blank"><button class="expressive-btn" style="background:#FF8200; color:white;">TCDB.com</button></a>
+    </div>`;
 }
 
 function checkReady() { if(playersLoaded && cardsLoaded) { renderGallery(); document.getElementById('playerGrid').classList.add('loaded'); } }
 function renderGallery() {
-  const grid = document.getElementById('playerGrid');
-  const sorted = [...ALL_PLAYERS].sort((a,b) => (ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length - ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length) || a.id.localeCompare(b.id));
-  grid.innerHTML = sorted.map(p => {
-    const pC = ALL_CARDS.filter(c => c.Player === p.id);
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('');
-    return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')"><div class="sport-badge-overlay">${icons}</div><img class="tile-img" src="${getCleanImg(p['Main Image'])}"><div class="tile-text-bar"><div class="tile-title">${p.Player || p.id}</div><div class="tile-subtitle">${pC.filter(c=>(c.Owned===true||c.Owned==="true")).length} owned</div></div></div>`;
-  }).join('');
+  const grid = document.getElementById('playerGrid');
+  const sorted = [...ALL_PLAYERS].sort((a,b) => (ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length - ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length) || a.id.localeCompare(b.id));
+  grid.innerHTML = sorted.map(p => {
+    const pC = ALL_CARDS.filter(c => c.Player === p.id);
+    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('');
+    return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')"><div class="sport-badge-overlay">${icons}</div><img class="tile-img" src="${getCleanImg(p['Main Image'])}"><div class="tile-text-bar"><div class="tile-title">${p.Player || p.id}</div><div class="tile-subtitle">${pC.filter(c=>(c.Owned===true||c.Owned==="true")).length} owned</div></div></div>`;
+  }).join('');
 }
 
 window.openDetail = (id) => {
-  window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
-  document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
-  document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
-  document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
-  cardSearchQuery = ""; document.getElementById('cardSearchInput').value = ""; 
-
-  document.getElementById('panelA').innerHTML = `
-    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; opacity:0.3; text-align:center;">
-      <svg viewBox="0 0 24 24" width="64" height="64" fill="currentColor"><path d="M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22C11.79 22 11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2C12.21 2 12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z"/></svg>
-      <p style="margin-top:16px; font-weight:700;">Select a card to view</p>
-    </div>`;
-
-  renderDetail(window.selectedPlayer);
-  const detailView = document.getElementById('detail-view');
-  detailView.style.display = 'flex';
-  
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-        detailView.classList.add('active');
-    });
-  });
-
-  history.pushState({v:'detail', p:id}, '');
+  window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
+  document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
+  document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
+  document.getElementById('playerThumb').src = getCleanImg(window.selectedPlayer['Main Image']);
+  cardSearchQuery = ""; document.getElementById('cardSearchInput').value = ""; renderDetail(window.selectedPlayer);
+  document.getElementById('detail-view').style.display = 'flex';
+  setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
+  history.pushState({v:'detail', p:id}, '');
 };
 
-window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 400); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
+window.closeDetail = () => { document.getElementById('detail-view').classList.remove('active'); setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300); window.selectedPlayer = null; if(history.state?.v === 'detail') history.back(); };
 window.toggleFilterChip = (type) => { if(type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); } else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); } renderDetail(window.selectedPlayer); };
 
 function renderDetail(player) {
-  let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => { const yA = (a.Year || "").toString(), yB = (b.Year || "").toString(); if (yA !== yB) return yA.localeCompare(yB); const sA = (a.Set || "").toLowerCase(), sB = (b.Set || "").toLowerCase(); if (sA !== sB) return sA.localeCompare(sB); return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0); });
-  if (cardSearchQuery) { const q = cardSearchQuery.toLowerCase(); cards = cards.filter(c => (c.Year || "").toString().toLowerCase().includes(q) || (c.Set || "").toLowerCase().includes(q)); }
-  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
-  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
-  window.cardSequence = cards.map(c => c.id);
-  document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
-  document.getElementById('cardList').innerHTML = cards.map(c => {
-    const owned = (c.Owned === true || c.Owned === "true"), co = c["Grading Company"] || "", gr = c.Grade || "";
-    return `<div class="card-item ${!owned ? 'not-owned' : ''}" onclick="window.handleCardTap('${c.id}')"><img class="card-thumb" src="${getCleanImg(c['App Image'])}"><div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number || 'N/A'}</div></div>${(co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : ''}</div>`;
-  }).join('');
+  let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => { const yA = (a.Year || "").toString(), yB = (b.Year || "").toString(); if (yA !== yB) return yA.localeCompare(yB); const sA = (a.Set || "").toLowerCase(), sB = (b.Set || "").toLowerCase(); if (sA !== sB) return sA.localeCompare(sB); return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0); });
+  if (cardSearchQuery) { const q = cardSearchQuery.toLowerCase(); cards = cards.filter(c => (c.Year || "").toString().toLowerCase().includes(q) || (c.Set || "").toLowerCase().includes(q)); }
+  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
+  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
+  window.cardSequence = cards.map(c => c.id);
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
+  document.getElementById('cardList').innerHTML = cards.map(c => {
+    const owned = (c.Owned === true || c.Owned === "true"), co = c["Grading Company"] || "", gr = c.Grade || "";
+    return `<div class="card-item ${!owned ? 'not-owned' : ''}" onclick="window.handleCardTap('${c.id}')"><img class="card-thumb" src="${getCleanImg(c['App Image'])}"><div class="card-info"><div style="font-weight:700;">${c.Year} ${c.Set || ''}</div><div style="font-size:12px; opacity:0.6;">#${c.Number || 'N/A'}</div></div>${(co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : ''}</div>`;
+  }).join('');
 }
 
-window.handleCardTap = (id) => { 
-  window.currentCardId = id; 
-  const isLargeScreen = window.innerWidth >= 600;
-  updatePanelContent('panelA', id); 
-  const sheet = document.getElementById('cardDetailSheet'); 
-  
-  if (!isLargeScreen) {
-    document.getElementById('globalScrim').style.display = 'block'; 
-    requestAnimationFrame(() => {
-        sheet.classList.add('open');
-        sheet.style.transform = 'translateY(0)';
-    });
-  } else {
-    sheet.style.transform = 'none';
-    document.getElementById('globalScrim').style.display = 'none';
-  }
-  history.pushState({v:'card', id: id}, ''); 
-};
-
-window.closeAll = () => { 
-  const isLargeScreen = window.innerWidth >= 600;
-  if (!isLargeScreen) {
-    document.getElementById('cardDetailSheet').classList.remove('open'); 
-    document.getElementById('cardDetailSheet').style.transform = ''; 
-    document.getElementById('globalScrim').style.display = 'none'; 
-  }
-  if(history.state?.v === 'card') history.back(); 
-};
-
+window.handleCardTap = (id) => { window.currentCardId = id; const track = document.getElementById('sheetTrack'); document.getElementById('panelB').style.order = "1"; updatePanelContent('panelA', id); const sheet = document.getElementById('cardDetailSheet'); sheet.classList.add('open'); sheet.style.transform = 'translateY(0)'; document.getElementById('globalScrim').style.display = 'block'; history.pushState({v:'card', id: id}, ''); };
+window.closeAll = () => { document.getElementById('cardDetailSheet').classList.remove('open'); document.getElementById('cardDetailSheet').style.transform = ''; document.getElementById('globalScrim').style.display = 'none'; if(history.state?.v === 'card') history.back(); };
 window.onpopstate = (e) => { if (document.getElementById('cardFormSheet').classList.contains('open') || document.getElementById('playerFormSheet').classList.contains('open')) { window.closeAllForms(); } else if (document.getElementById('cardDetailSheet').classList.contains('open')) { window.closeAll(); } else if (e.state?.v !== 'detail' && window.selectedPlayer) { window.closeDetail(); } };
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 window.toggleOwnership = async (id) => { const c = ALL_CARDS.find(x => x.id === id); const owned = (c.Owned === true || c.Owned === "true"); if (confirm(owned ? "Mark as unsleevd?" : "Mark as sleevd?")) { await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: !owned }, { merge: true }); updatePanelContent('panelA', id); } };
 </script>
 </body>
 </html>
+I also need the right pane to reset if a user opens another player.
