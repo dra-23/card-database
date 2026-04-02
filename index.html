@@ -88,7 +88,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .search-input-compact { flex: 1; min-width: 0; max-width: 60%; background: var(--md-surface-2); border: 1px solid var(--md-surface-1); border-radius: 28px; padding: 12px 16px; color: var(--md-on-surface); font-size: 14px; outline: none; }
 .filter-chip-compact { border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--md-surface-1); background: #fff; white-space: nowrap; transition: 0.2s; }
 .filter-chip-compact.active { background: var(--md-surface-1); }
-.fab { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom)); right: 20px; width: 68px; height: 68px; border-radius: 22px; background: var(--md-primary); color: #fff; border: none; display: flex; align-items: center; justify-content: center; z-index: 150; box-shadow: 0 6px 16px rgba(232, 25, 44, 0.4); cursor: pointer; }
+
 .sheet { 
   position: fixed; 
   bottom: 0; 
@@ -104,35 +104,29 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   flex-direction: column; 
   overflow: hidden; 
   padding-bottom: env(safe-area-inset-bottom);
-  /* Remove touch-action from here */
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
 }
 .sheet.open { transform: translateY(0); }
-.sheet.dragging, .sheet.no-transition { transition: none !important; }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body {
   padding: 0 24px 24px;
   overflow-y: auto;
-  flex: 1; /* Ensure it takes up remaining space to be scrollable */
+  flex: 1;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  touch-action: pan-y; /* Allow natural browser scrolling for Y-axis */
+  touch-action: pan-y;
 }
 .status-toggle-btn { position: relative; width: 48px; height: 28px; background: var(--md-outline); border-radius: 20px; cursor: pointer; border: none; transition: background 0.3s ease; display: flex; align-items: center; padding: 0 4px; }
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
-.card-item.not-owned {
-  opacity: 0.5;
-  background: var(--md-surface-1); /* Slightly different background to differentiate */
-  border-style: dashed; /* Optional: adds a "placeholder" feel */
-}
 
-/* Ensure the image inside also looks dimmed */
-.card-item.not-owned .card-thumb {
-  filter: grayscale(0.5);
-}
-#sheetPreview, #cardDetailSheet { backface-visibility: hidden; box-shadow: -10px 0 30px rgba(0,0,0,0.2), 10px 0 30px rgba(0,0,0,0.2); background: white !important; border-radius: 24px; }
+.card-item.not-owned { opacity: 0.5; border-style: dashed; }
+.card-item.not-owned .card-thumb { filter: grayscale(0.5); }
+
+#sheetTrack { display: flex; width: 200%; height: 100%; }
+.panel { width: 50%; height: 100%; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -169,12 +163,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </div>
 </div>
 <div class="scrim" id="globalScrim" onclick="window.closeAll()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+
 <div class="sheet" id="cardDetailSheet">
   <div class="sheet-handle"></div>
-  <div id="sheetViewport" style="flex: 1; overflow: hidden; position: relative; width: 100%;">
-    <div id="sheetTrack" style="display: flex; width: 200%; height: 100%; transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);">
-      <div id="panelA" class="sheet-body" style="width: 50%; flex-shrink: 0;"></div>
-      <div id="panelB" class="sheet-body" style="width: 50%; flex-shrink: 0;"></div>
+  <div id="sheetViewport" style="flex: 1; overflow: hidden;">
+    <div id="sheetTrack" style="transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);">
+      <div id="panelA" class="sheet-body panel"></div>
+      <div id="panelB" class="sheet-body panel"></div>
     </div>
   </div>
 </div>
@@ -186,7 +181,6 @@ let playersLoaded = false, cardsLoaded = false;
 let currentCardId = null;
 let cardSequence = [];
   
-// GESTURE STATE
 let startX = 0, startY = 0, currentX = 0, currentY = 0, gestureType = null;
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
@@ -236,36 +230,30 @@ window.initTouchEvents = () => {
     const diffX = currentX - startX;
     const diffY = currentY - startY;
 
-    // Identify which panel is currently visible to check its scroll status
-    const isPanelBActive = track.style.transform.includes('-50%');
-    const activePanel = isPanelBActive ? document.getElementById('panelB') : document.getElementById('panelA');
+    const activePanel = track.style.transform.includes('-50%') ? 
+                        document.getElementById('panelB') : 
+                        document.getElementById('panelA');
 
     if (!gestureType) {
-      // Horizontal threshold: 10px
       if (Math.abs(diffX) > 10 && Math.abs(diffX) > Math.abs(diffY)) {
         gestureType = 'horizontal';
         const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
         updatePanelContent('panelB', nextData.id);
         document.getElementById('panelB').style.order = diffX > 0 ? "-1" : "1";
-      } 
-      // Vertical threshold: Only if at the top and pulling down
-      else if (diffY > 10 && activePanel.scrollTop <= 0) {
+      } else if (diffY > 10 && activePanel.scrollTop <= 0) {
         gestureType = 'vertical';
       }
     }
 
     if (gestureType === 'vertical') {
-      // We are dismissing the sheet
-      if (e.cancelable) e.preventDefault(); 
+      if (e.cancelable) e.preventDefault();
       sheet.style.transform = `translateY(${diffY}px)`;
     } else if (gestureType === 'horizontal') {
-      // We are swiping between cards
       if (e.cancelable) e.preventDefault();
       const baseTranslate = document.getElementById('panelB').style.order === "-1" ? -50 : 0;
       const percentMove = (diffX / window.innerWidth) * 50;
       track.style.transform = `translateX(${baseTranslate + percentMove}%)`;
     }
-    // If gestureType remains null, the browser handles natural scrolling inside the panel
   }, { passive: false });
 
   sheet.addEventListener('touchend', () => {
@@ -280,8 +268,7 @@ window.initTouchEvents = () => {
     } else if (gestureType === 'horizontal') {
       if (Math.abs(diffX) > 100) {
         const nextData = getNextCardData(diffX > 0 ? 'prev' : 'next');
-        const isPrev = document.getElementById('panelB').style.order === "-1";
-        const finalTranslate = isPrev ? 0 : -50;
+        const finalTranslate = document.getElementById('panelB').style.order === "-1" ? 0 : -50;
         track.style.transform = `translateX(${finalTranslate}%)`;
         
         setTimeout(() => {
@@ -290,7 +277,7 @@ window.initTouchEvents = () => {
           track.style.transition = 'none';
           track.style.transform = 'translateX(0)';
           document.getElementById('panelB').style.order = "1";
-          document.getElementById('panelA').scrollTop = 0; // Reset scroll for new card
+          document.getElementById('panelA').scrollTop = 0;
           history.replaceState({v:'card', id: nextData.id}, '');
         }, 300);
       } else {
@@ -299,63 +286,44 @@ window.initTouchEvents = () => {
       }
     }
     gestureType = null;
-    startX = 0; startY = 0; currentX = 0; currentY = 0;
   });
 };
+
 function getNextCardData(dir) {
-  // If we haven't defined a sequence yet (safety), fallback to current card
-  if (!window.cardSequence || window.cardSequence.length === 0) {
-    return ALL_CARDS.find(c => c.id === window.currentCardId);
-  }
-
-  // Find where we are in the exact list shown on the screen
+  if (!window.cardSequence || window.cardSequence.length === 0) return ALL_CARDS.find(c => c.id === window.currentCardId);
   const idx = window.cardSequence.indexOf(window.currentCardId);
-  
-  // If the card isn't in the current filtered list, default to the first card
   if (idx === -1) return ALL_CARDS.find(c => c.id === window.cardSequence[0]);
-
-  // Move forward or backward in the sequence
   let nIdx = dir === 'next' ? idx + 1 : idx - 1;
-  
-  // Handle Looping: Swipe past the last card to get back to the first
   if (nIdx >= window.cardSequence.length) nIdx = 0; 
   if (nIdx < 0) nIdx = window.cardSequence.length - 1;
-  
-  const nextId = window.cardSequence[nIdx];
-  return ALL_CARDS.find(c => c.id === nextId);
+  return ALL_CARDS.find(c => c.id === window.cardSequence[nIdx]);
 }
+
+window.openEditForm = (id) => {
+  console.log("Edit card triggered:", id);
+  // Add your form opening logic here
+};
 
 function updatePanelContent(panelId, cardId) {
   const c = ALL_CARDS.find(x => x.id === cardId);
   if(!c) return;
-  
   const isOwned = (c.Owned === true || c.Owned === "true");
   const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.Year+' '+c.Set+' '+window.selectedPlayer.Player+' #'+c.Number+' sold')}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c["Card Information"] || `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year+' '+c.Set)}`;
 
-  // Status Text & Color Logic
-  const statusText = isOwned ? 'sleevd' : 'unsleevd';
-  const statusColor = isOwned ? 'var(--md-surface-1)' : 'var(--md-outline)'; // Uses existing theme colors
-
   document.getElementById(panelId).innerHTML = `
     <img src="${getCleanImg(c['App Image'])}" style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9;">
-    
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-      <h1 style="font-family:'Google Sans Display'; font-size:28px;">${c.Year} ${c.Set}</h1>
-      
-      <div style="display:flex; align-items:center; gap:8px;">
-        <div style="display:flex; align-items:center; gap:6px; color: ${statusColor};">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-          </svg>
-          <span style="font-size: 14px; font-weight: 700;">${statusText}</span>
-        </div>
-        
-        <button class="status-toggle-btn ${isOwned ? 'sleevd' : 'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
+      <h1 style="font-family:'Google Sans Display'; font-size:24px; line-height:1.2;">${c.Year} ${c.Set}</h1>
+      <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <span style="font-size: 14px; font-weight: 700; opacity:0.8;">${isOwned ? 'sleevd' : 'unsleevd'}</span>
+        <button class="status-toggle-btn ${isOwned?'sleevd':'unsleevd'}" onclick="window.toggleOwnership('${c.id}')"></button>
       </div>
     </div>
-    
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:20px 0; background:var(--md-surface-2); padding:16px; border-radius:20px; position:relative;">
+      <button onclick="window.openEditForm('${c.id}')" style="position:absolute; top:12px; right:12px; background:#fff; border:none; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.1); cursor:pointer;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--md-on-surface)"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div><div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'Unknown'}</div></div>
@@ -412,39 +380,25 @@ window.toggleFilterChip = (type) => {
 };
 
 function renderDetail(player) {
-  // 1. Sort the cards exactly as they appear in the list
   let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a,b) => {
-    const yA = (a.Year || "").toString();
-    const yB = (b.Year || "").toString();
+    const yA = (a.Year || "").toString(), yB = (b.Year || "").toString();
     if (yA !== yB) return yA.localeCompare(yB);
-
-    const sA = (a.Set || "").toLowerCase();
-    const sB = (b.Set || "").toLowerCase();
+    const sA = (a.Set || "").toLowerCase(), sB = (b.Set || "").toLowerCase();
     if (sA !== sB) return sA.localeCompare(sB);
-
-    // Numeric sort for card numbers, handling potential non-numeric strings
-    const nA = parseInt(a.Number) || 0;
-    const nB = parseInt(b.Number) || 0;
-    return nA - nB;
+    return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0);
   });
-if (cardSearchQuery) {
+  if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
-    cards = cards.filter(c => 
-      (c.Year || "").toString().toLowerCase().includes(q) || 
-      (c.Set || "").toLowerCase().includes(q)
-    );
+    cards = cards.filter(c => (c.Year || "").toString().toLowerCase().includes(q) || (c.Set || "").toLowerCase().includes(q));
   }
   if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
   if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
   window.cardSequence = cards.map(c => c.id);
-document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
-  
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c.Owned === true || c.Owned === "true")).length} Owned`;
   document.getElementById('cardList').innerHTML = cards.map(c => {
     const owned = (c.Owned === true || c.Owned === "true");
     const co = c["Grading Company"] || "", gr = c.Grade || "";
     const badge = (co && co !== "Raw") ? `<span class="badge-inline">${co} ${gr}</span>` : '';
-    
-    // Applying the 'not-owned' class for the opacity fix
     return `<div class="card-item ${!owned ? 'not-owned' : ''}" id="card-item-${c.id}" onclick="window.handleCardTap('${c.id}')">
       <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
       <div class="card-info">
@@ -458,24 +412,16 @@ document.getElementById('playerDetailCount').innerText = `${cards.filter(c => (c
 
 window.handleCardTap = (id) => {
   window.currentCardId = id;
-  
-  // Reset the track state before showing the sheet
   const track = document.getElementById('sheetTrack');
   const panelB = document.getElementById('panelB');
-  
-  track.style.transition = 'none'; // Instant reset
-  track.style.transform = 'translateX(0)'; // Align to Panel A
-  panelB.style.order = "1"; // Put B back in the 'next' position
-  
-  // Load the card into the primary panel
+  track.style.transition = 'none';
+  track.style.transform = 'translateX(0)';
+  panelB.style.order = "1";
   updatePanelContent('panelA', id);
-  
   const sheet = document.getElementById('cardDetailSheet');
   sheet.classList.add('open');
   sheet.style.transform = 'translateY(0)';
   document.getElementById('globalScrim').style.display = 'block';
-  
-  // Push state so the Android back gesture works
   history.pushState({v:'card', id: id}, '');
 };
 
