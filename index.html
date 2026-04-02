@@ -77,9 +77,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   left: 16px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--md-primary);
+  color: var(--md-on-surface-variant);
   pointer-events: none;
 }
+.m3-field:focus-within .m3-label { color: var(--md-primary); }
 .m3-input, .m3-select {
   border: none;
   background: transparent;
@@ -424,29 +425,44 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 <div class="sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body">
-    <h2 id="cardFormTitle" style="margin-bottom:24px; font-family:'Google Sans Display';">Add Card</h2>
+    <h2 id="cardFormTitle" style="margin-bottom:20px; font-family:'Google Sans Display';">Add Card</h2>
     <input type="hidden" id="f_cardId">
     
     <div style="display:flex; flex-direction:column; gap:16px;">
-      <div id="imagePreviewContainer" style="width:100%; aspect-ratio:3/4; background:#F0F0F0; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-        <span id="previewPlaceholder">No Image Selected</span>
-        <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-      </div>
-      <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
-      <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none;" onclick="document.getElementById('f_fileInput').click()">Select Card Photo</button>
 
-      <div class="m3-field read-only"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly></div>
-      
+      <!-- Smaller image preview: horizontal layout, fixed height -->
+      <div style="display:flex; gap:12px; align-items:stretch;">
+        <div id="imagePreviewContainer" style="width:90px; height:120px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
+          <span id="previewPlaceholder" style="font-size:10px; color:var(--md-outline); text-align:center; padding:4px;">No<br>Image</span>
+          <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center;">
+          <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
+          <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none; padding:12px; font-size:13px;" onclick="document.getElementById('f_fileInput').click()">📷 Select Photo</button>
+          <div class="m3-field read-only" style="height:48px;"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly style="font-size:14px; padding-top:20px;"></div>
+        </div>
+      </div>
+
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Year</label><input type="number" id="f_year" class="m3-input"></div>
-        <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input"></div>
+        <div class="m3-field"><label class="m3-label">Year</label><input type="text" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
+        <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input" placeholder="e.g. MJ-23"></div>
       </div>
 
       <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input"></div>
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Sport</label><select id="f_sport" class="m3-select"><option value="">Select...</option></select></div>
+        <div class="m3-field"><label class="m3-label">Sport</label>
+          <select id="f_sport" class="m3-select">
+            <option value="">Select...</option>
+            <option value="Baseball">Baseball ⚾</option>
+            <option value="Basketball">Basketball 🏀</option>
+            <option value="Football">Football 🏈</option>
+            <option value="Hockey">Hockey 🏒</option>
+            <option value="Golf">Golf ⛳</option>
+            <option value="Soccer">Soccer ⚽</option>
+          </select>
+        </div>
         <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
       </div>
 
@@ -488,9 +504,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       </div>
       <input type="hidden" id="f_rc" value="false">
       <input type="hidden" id="f_auto" value="false">
-      
-      <button class="expressive-btn" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;" onclick="window.saveCard()">Save Card</button>
-      <button class="expressive-btn" id="btnDeleteCard" style="background:transparent; box-shadow:none; color:var(--soft-red); display:none;" onclick="window.deleteCard()">Delete Card</button>
+
+      <!-- Save / Cancel row -->
+      <div style="display:flex; gap:12px; margin-top:4px;">
+        <button class="expressive-btn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;" onclick="window.closeAllForms()">Cancel</button>
+        <button class="expressive-btn" id="btnSaveCard" style="background:var(--md-primary); color:white; flex:1; height:56px; border-radius:28px;" onclick="window.saveCard()">Save Card</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -506,7 +526,9 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
           <option value="Baseball">Baseball ⚾</option>
           <option value="Basketball">Basketball 🏀</option>
           <option value="Football">Football 🏈</option>
+          <option value="Hockey">Hockey 🏒</option>
           <option value="Golf">Golf ⛳</option>
+          <option value="Soccer">Soccer ⚽</option>
         </select>
       </div>
       <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>
@@ -575,7 +597,6 @@ window.startApp = function() {
   onSnapshot(collection(window.db, "Players"), snap => { 
     ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
     playersLoaded = true; checkReady();
-    populateSportsDropdown();
   });
   onSnapshot(collection(window.db, "Cards"), snap => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -589,12 +610,6 @@ window.startApp = function() {
   initSheetGestures();
 };
 
-function populateSportsDropdown() {
-  const sports = [...new Set(ALL_PLAYERS.map(p => p.Sport).filter(Boolean))];
-  document.getElementById('f_sport').innerHTML =
-    '<option value="">Select...</option>' +
-    sports.map(s => `<option value="${s}">${s}</option>`).join('');
-}
 function initGradeDropdown() {
   const sel = document.getElementById('f_grade');
   let html = '<option value="N/A">N/A</option>';
@@ -1002,7 +1017,8 @@ window.openCardForm = (cardId = null) => {
   document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
   document.getElementById('f_cardId').value  = cardId || "";
   document.getElementById('f_player').value  = window.selectedPlayer.Player || window.selectedPlayer.id;
-  document.getElementById('btnDeleteCard').style.display = isEdit ? "block" : "none";
+  // Save button label: "Save Card" when editing, "Mark Sleevd" for new cards
+  document.getElementById('btnSaveCard').innerText = isEdit ? "Save Card" : "Mark Sleevd";
 
   const playerTeams = [...new Set(
     ALL_CARDS.filter(c => c.Player === window.selectedPlayer.id).map(c => c.Team).filter(Boolean)
@@ -1071,7 +1087,7 @@ window.saveCard = async () => {
     "App Image": imageUrl,
     RC:   document.getElementById('f_rc').value   === "true",
     Auto: document.getElementById('f_auto').value === "true",
-    Owned:  id ? ALL_CARDS.find(x => x.id === id).Owned : false
+    Owned:  id ? ALL_CARDS.find(x => x.id === id).Owned : true
   };
 
   if (id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true });
