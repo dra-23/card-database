@@ -24,7 +24,7 @@
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
   
   const firebaseConfig = {
-    apiKey: "_",
+    apiKey: "AIzaSyCl_v7yBddGdkldYyiKFoR8wQ73R5LdAN0",
     authDomain: "sleevd-7214c.firebaseapp.com",
     projectId: "sleevd-7214c",
     storageBucket: "sleevd-7214c.firebasestorage.app",
@@ -67,9 +67,9 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
 
 /* Layout */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); }
+.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); will-change: transform; }
 #gallery-view { z-index: 5; display: flex; }
-#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } 
+#detail-view { z-index: 50; display: none; transform: translateX(100%); opacity: 1; pointer-events: auto; }
 #detail-view.active { display: flex; transform: translateX(0); }
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -99,8 +99,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .filter-chip.active { background: var(--md-surface-2); border-color: var(--md-surface-2); color: var(--md-primary); font-weight: 700; }
 
 /* Sheets & Interaction */
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
-.sheet.open { transform: translateY(0); }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); pointer-events: none; }
+.sheet.open { transform: translateY(0); pointer-events: auto; }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; }
 .card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
@@ -129,6 +129,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     box-shadow: none !important; 
     display: flex !important; 
     background: var(--md-surface); 
+    pointer-events: auto !important;
   }
   .sheet-handle { display: none; }
   #globalScrim { display: none !important; }
@@ -184,7 +185,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </div>
 </div>
 
-<div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+<div id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
 <div class="sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>
@@ -319,7 +320,7 @@ window.openCardForm = (cardId = null) => {
     document.getElementById('previewPlaceholder').style.display = 'block';
   }
   document.getElementById('cardFormSheet').classList.add('open');
-  document.getElementById('globalScrim').style.display = 'block';
+  toggleScrim(true);
 };
 
 window.saveCard = async () => {
@@ -351,7 +352,7 @@ window.saveCard = async () => {
   window.closeAllForms();
 };
 
-window.openPlayerForm = () => { document.getElementById('playerFormSheet').classList.add('open'); document.getElementById('globalScrim').style.display = 'block'; };
+window.openPlayerForm = () => { document.getElementById('playerFormSheet').classList.add('open'); toggleScrim(true); };
 window.savePlayer = async () => {
   const name = document.getElementById('pf_name').value.trim();
   if(!name) return;
@@ -364,7 +365,7 @@ window.deleteCard = async () => {
   if(id && confirm("Delete?")) { await window.fs.deleteDoc(window.fs.doc(window.db, "Cards", id)); window.closeAllForms(); window.closeAll(); }
 };
 
-window.closeAllForms = () => { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open')); document.getElementById('globalScrim').style.display = 'none'; };
+window.closeAllForms = () => { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open')); toggleScrim(false); };
 
 window.handleFileSelect = (input) => {
   const file = input.files[0];
@@ -455,6 +456,11 @@ function renderGallery() {
   }).join('');
 }
 
+function toggleScrim(show) {
+  const scrim = document.getElementById('globalScrim');
+  scrim.style.display = show ? 'block' : 'none';
+}
+
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   document.getElementById('playerName').innerText = window.selectedPlayer.Player || window.selectedPlayer.id;
@@ -469,8 +475,14 @@ window.openDetail = (id) => {
     </div>`;
 
   renderDetail(window.selectedPlayer);
-  document.getElementById('detail-view').style.display = 'flex';
-  setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
+  const detailView = document.getElementById('detail-view');
+  detailView.style.display = 'flex';
+  
+  // Ensure we are active before doing anything
+  setTimeout(() => {
+    detailView.classList.add('active');
+  }, 10);
+
   history.pushState({v:'detail', p:id}, '');
 };
 
@@ -497,11 +509,10 @@ window.handleCardTap = (id) => {
   const sheet = document.getElementById('cardDetailSheet'); 
   if (!isLargeScreen) {
     sheet.classList.add('open'); 
-    sheet.style.transform = 'translateY(0)'; 
-    document.getElementById('globalScrim').style.display = 'block'; 
+    toggleScrim(true);
   } else {
     sheet.style.transform = 'none';
-    document.getElementById('globalScrim').style.display = 'none';
+    toggleScrim(false);
   }
   history.pushState({v:'card', id: id}, ''); 
 };
@@ -510,8 +521,7 @@ window.closeAll = () => {
   const isLargeScreen = window.innerWidth >= 600;
   if (!isLargeScreen) {
     document.getElementById('cardDetailSheet').classList.remove('open'); 
-    document.getElementById('cardDetailSheet').style.transform = ''; 
-    document.getElementById('globalScrim').style.display = 'none'; 
+    toggleScrim(false);
   }
   if(history.state?.v === 'card') history.back(); 
 };
