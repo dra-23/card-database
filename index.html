@@ -150,16 +150,60 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   transition: transform 0.1s ease;
 }
 
-/* Glassmorphism for the search row */
+/* Detail View: Search & Filter Row */
 .search-filter-row {
   display: flex;
-  gap: 8px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  align-items: center;
+  gap: 12px; /* Standard spacing from Material 3 Expressive */
+  padding: 16px 20px; /* Aligned with your player avatar */
+  background: var(--md-surface);
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+/* Material 3 Expressive Search Input (Pill) */
+.search-input-expressive {
+  flex: 1; /* Occupies all available space on the left */
+  height: 48px;
+  border-radius: 24px; /* Makes it a perfect pill shape */
+  border: none;
+  background: var(--md-surface-2); /* The light purple background from your M3 palette */
+  padding: 0 24px; /* Wider padding for the pill start */
+  font-family: 'Google Sans', sans-serif;
+  font-size: 16px;
+  color: var(--md-on-surface);
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+.search-input-expressive::placeholder { color: var(--md-outline); opacity: 0.7; }
+.search-input-expressive:focus { box-shadow: 0 0 0 2px var(--md-primary); }
+
+/* Material 3 Filter Chips */
+.filter-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px; /* Standard M3 chip radius */
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+  cursor: pointer;
+  transition: 0.2s;
+  user-select: none;
+}
+.filter-chip:active { background: rgba(0,0,0,0.05); }
+
+/* Active State for Filter Chips (Filled look) */
+.filter-chip.active {
+  background: var(--md-surface-2);
+  border-color: var(--md-surface-2);
+  color: var(--md-primary); /* Uses primary color for text when active */
+  font-weight: 700;
 }
 
 /* Custom Scrollbar for the card list */
@@ -200,10 +244,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       </div>
     </div>
     <div class="search-filter-row">
-      <input type="text" id="cardSearchInput" class="search-input-compact" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-      <div id="chipWishlist" class="filter-chip-compact" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-      <div id="chipGraded" class="filter-chip-compact" onclick="window.toggleFilterChip('graded')">Graded</div>
-    </div>
+  <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+  <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+  <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
+</div>
     <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
     
     <button class="fab" onclick="window.openCardForm()">
