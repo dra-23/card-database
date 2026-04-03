@@ -224,8 +224,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   display: none; flex-direction: column;
   background: var(--md-surface);
   padding-top: env(safe-area-inset-top);
-  /* Mobile: leave room for bottom nav */
-  padding-bottom: var(--nav-height-safe);
+  /* No bottom padding — floating toolbar overlays content */
 }
 .view.active { display: flex; }
 
@@ -233,7 +232,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
    GALLERY / PLAYERS VIEW
    ================================================================ */
 #gallery-view { z-index: 5; }
-#detail-view  { z-index: 50; padding-bottom: var(--nav-height-safe); }
+#detail-view  { z-index: 50; }
 #collection-view { z-index: 5; }
 #graded-view  { z-index: 5; }
 
@@ -260,13 +259,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 /* ================================================================
    SCROLL BODY
    ================================================================ */
-.scroll-body { flex: 1; overflow-y: auto; }
+.scroll-body { flex: 1; overflow-y: auto; padding-bottom: var(--nav-height-safe); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
 /* ================================================================
    BUTTONS
    ================================================================ */
-.fab { position: absolute; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
+.fab { position: absolute; bottom: calc(var(--nav-height-safe) + 16px); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
 .expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
@@ -393,6 +392,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   .view {
     padding-bottom: 0 !important;
   }
+
+  .scroll-body { padding-bottom: 0 !important; }
+
+  .fab { bottom: 24px !important; }
 
   /* Detail view uses flex-row for two-pane */
   #detail-view {
