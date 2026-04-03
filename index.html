@@ -152,11 +152,130 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; touch-action: pan-y; }
 
 /* =====================================================
-   CARD DETAIL SHEET — swipe viewport
-   The viewport clips; the single content panel slides
-   in/out within it via JS-managed transforms.
+   TWO-PANE LAYOUT — tablet & desktop (≥840px)
    ===================================================== */
-#cardDetailSheet {
+@media (min-width: 840px) {
+
+  /* Root shell: side-by-side columns, full viewport */
+  body { display: flex; flex-direction: row; overflow: hidden; }
+
+  /* Left pane — gallery / player list */
+  #gallery-view {
+    position: relative;          /* pull out of fixed stacking */
+    width: 340px;
+    flex-shrink: 0;
+    height: 100dvh;
+    border-right: 1px solid var(--md-surface-2);
+    z-index: 5;
+    transform: none !important;  /* override mobile translate */
+    display: flex;
+  }
+
+  /* Right pane — player detail + inline card panel */
+  #detail-view {
+    position: relative;
+    flex: 1;
+    height: 100dvh;
+    transform: none !important;
+    display: flex !important;    /* always visible */
+    z-index: 5;
+    overflow: hidden;
+  }
+
+  /* Narrower player tiles fit the 340px column better */
+  .player-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+
+  /* Back button hidden in two-pane (no navigation needed) */
+  #detail-view .back-btn { display: none; }
+
+  /* FAB stays but scoped to the right pane */
+  .fab { position: absolute; }
+
+  /* ---- Card detail: inline panel instead of bottom sheet ---- */
+
+  /* Hide the bottom sheet entirely */
+  #cardDetailSheet { display: none !important; }
+
+  /* Inline card detail panel — sits to the right of the card list */
+  #twoPane-cardDetail {
+    width: 380px;
+    flex-shrink: 0;
+    height: 100%;
+    overflow-y: auto;
+    border-left: 1px solid var(--md-surface-2);
+    background: var(--md-surface);
+    display: flex;
+    flex-direction: column;
+  }
+  #twoPane-cardDetail::-webkit-scrollbar { display: none; }
+
+  #twoPane-cardDetail .tp-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.35;
+    gap: 12px;
+    padding: 32px;
+    text-align: center;
+  }
+  #twoPane-cardDetail .tp-empty svg { opacity: 0.5; }
+  #twoPane-cardDetail .tp-empty p { font-size: 14px; font-weight: 600; }
+
+  /* The panel content inside inline detail */
+  #twoPane-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    will-change: transform;
+  }
+  #twoPane-panel::-webkit-scrollbar { display: none; }
+  #twoPane-panel.animating {
+    transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* Scrim not needed in two-pane for card detail */
+  #globalScrim.tp-card-scrim { display: none !important; }
+
+  /* Highlight selected card row */
+  .card-item.tp-selected {
+    border-color: var(--md-surface-1);
+    background: #e8ecff;
+  }
+
+  /* Detail view layout: master column + inline card detail side by side */
+  #detail-view .master-col {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* twoPane-cardDetail hidden on mobile, flex in wide (set by media query above) */
+#twoPane-cardDetail { display: none; }
+
+/* Wide-layout empty state: no player selected yet */
+#detail-view-empty {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  opacity: 0.32;
+  gap: 14px;
+  text-align: center;
+  padding: 32px;
+}
+#detail-view-empty p { font-size: 15px; font-weight: 600; }
+
+@media (min-width: 840px) {
+  #twoPane-cardDetail { display: flex; }
+  /* When no player is selected, hide the normal header content, show empty state */
+  #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
+  #detail-view.tp-no-player #detail-view-empty { display: flex; }
+}
   /* let JS drive the sheet's vertical position during drag */
 }
 
@@ -376,6 +495,11 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 <div class="view" id="detail-view">
   <div class="master-col">
+    <!-- Wide-mode empty state: shown before any player is selected -->
+    <div id="detail-view-empty">
+      <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <p>Select a player to browse their cards</p>
+    </div>
     <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
       <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
       <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
@@ -398,6 +522,15 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     <button class="fab" onclick="window.openCardForm()">
       <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     </button>
+  </div>
+
+  <!-- TWO-PANE: inline card detail panel (only visible at ≥840px) -->
+  <div id="twoPane-cardDetail">
+    <div class="tp-empty" id="twoPane-empty">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      <p>Select a card to view details</p>
+    </div>
+    <div id="twoPane-panel" style="display:none;"></div>
   </div>
 </div>
 
@@ -608,10 +741,11 @@ window.startApp = function() {
       ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
     cardsLoaded = true; checkReady();
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
-    if (window.currentCardId) renderCardPanel(window.currentCardId);
+    if (window.currentCardId) refreshCurrentCardPanel(window.currentCardId);
   });
   initGradeDropdown();
   initSheetGestures();
+  initInlinePanelSwipe();
 };
 
 function initGradeDropdown() {
@@ -624,8 +758,9 @@ function initGradeDropdown() {
 /* ================================================================
    CARD PANEL RENDER
    ================================================================ */
-function renderCardPanel(cardId, translateX) {
-  const panel = document.getElementById('cardDetailPanel');
+
+/* Core rendering function — writes into any target element */
+function renderCardPanelInto(targetEl, cardId, translateX) {
   const c = ALL_CARDS.find(x => x.id === cardId);
   if (!c) return;
 
@@ -641,15 +776,14 @@ function renderCardPanel(cardId, translateX) {
   const tcdbUrl = c["Card Information"] ||
     `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
 
-  // Set initial translateX without transition for instant repositioning
-  panel.classList.remove('animating');
+  targetEl.classList.remove('animating');
   if (translateX !== undefined) {
-    setTranslate(panel, translateX, null);
+    setTranslate(targetEl, translateX, null);
   } else {
-    panel.style.transform = '';
+    targetEl.style.transform = '';
   }
 
-  panel.innerHTML = `
+  targetEl.innerHTML = `
     <!-- 3-dot overflow menu button — anchored top-right of the panel -->
     <div style="position:relative;">
       <img src="${getCleanImg(c['App Image'])}" 
@@ -691,30 +825,54 @@ function renderCardPanel(cardId, translateX) {
     </div>`;
 }
 
+/* Mobile sheet panel — delegates to core */
+function renderCardPanel(cardId, translateX) {
+  renderCardPanelInto(document.getElementById('cardDetailPanel'), cardId, translateX);
+}
+
+/* Refresh whichever panel surface is active */
+function refreshCurrentCardPanel(cardId) {
+  if (isWideLayout()) {
+    const panel = document.getElementById('twoPane-panel');
+    if (panel.style.display !== 'none' && window.currentCardId === cardId) {
+      renderCardPanelInto(panel, cardId);
+    }
+  } else {
+    if (window.currentCardId === cardId) renderCardPanel(cardId);
+  }
+}
+
 /* navigate to adjacent card with a slide animation */
 function navigateCard(direction) {
   if (swipe.animating) return;
   const seq = window.cardSequence || [];
   const idx = seq.indexOf(window.currentCardId);
   const nextIdx = direction === 'next' ? idx + 1 : idx - 1;
-  if (nextIdx < 0 || nextIdx >= seq.length) return; // no wrap
+  if (nextIdx < 0 || nextIdx >= seq.length) return;
 
   const nextId = seq[nextIdx];
   const W = window.innerWidth;
-  const panel = document.getElementById('cardDetailPanel');
+  const panel = isWideLayout()
+    ? document.getElementById('twoPane-panel')
+    : document.getElementById('cardDetailPanel');
 
   swipe.animating = true;
 
-  // 1. Slide current panel out
   panel.classList.add('animating');
   setTranslate(panel, direction === 'next' ? -W : W, null);
 
   setTimeout(() => {
-    // 2. Swap content, position off-screen on the other side (no transition)
     window.currentCardId = nextId;
-    renderCardPanel(nextId, direction === 'next' ? W : -W);
+    // Update selected highlight in wide mode
+    if (isWideLayout()) {
+      document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+      const rowEl = document.querySelector(`.card-item[onclick*="${nextId}"]`);
+      if (rowEl) rowEl.classList.add('tp-selected');
+      renderCardPanelInto(panel, nextId, direction === 'next' ? W : -W);
+    } else {
+      renderCardPanel(nextId, direction === 'next' ? W : -W);
+    }
 
-    // 3. Slide new content in (rAF to ensure layout happened first)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         panel.classList.add('animating');
@@ -859,13 +1017,45 @@ function initSheetGestures() {
   }, { passive: true });
 }
 
-/* ================================================================
-   GALLERY
-   ================================================================ */
+/* Horizontal swipe on the inline two-pane panel (tablet / Fold touch) */
+function initInlinePanelSwipe() {
+  const tpDetail = document.getElementById('twoPane-cardDetail');
+  let tpStartX = 0, tpLastX = 0, tpActive = false;
+
+  tpDetail.addEventListener('touchstart', (e) => {
+    if (!window.currentCardId) return;
+    tpStartX = e.touches[0].clientX;
+    tpLastX  = tpStartX;
+    tpActive = true;
+  }, { passive: true });
+
+  tpDetail.addEventListener('touchmove', (e) => {
+    if (!tpActive) return;
+    tpLastX = e.touches[0].clientX;
+    const dx = tpLastX - tpStartX;
+    if (Math.abs(dx) > 10 && e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  tpDetail.addEventListener('touchend', () => {
+    if (!tpActive) return;
+    tpActive = false;
+    const dx = tpLastX - tpStartX;
+    const threshold = 80;
+    if (dx < -threshold) navigateCard('next');
+    else if (dx > threshold) navigateCard('prev');
+  });
+}
+
+window.startApp = function() {
 function checkReady() {
   if (playersLoaded && cardsLoaded) {
     renderGallery();
     document.getElementById('playerGrid').classList.add('loaded');
+    // In wide layout, detail-view is always shown; show placeholder state
+    if (isWideLayout()) {
+      document.getElementById('detail-view').style.display = 'flex';
+      document.getElementById('detail-view').classList.add('tp-no-player');
+    }
   }
 }
 function renderGallery() {
@@ -900,13 +1090,29 @@ window.openDetail = (id) => {
   document.getElementById('playerThumb').src  = getCleanImg(window.selectedPlayer['Main Image']);
   cardSearchQuery = "";
   document.getElementById('cardSearchInput').value = "";
+
+  // Reset card detail pane when switching players
+  if (isWideLayout()) {
+    window.currentCardId = null;
+    document.getElementById('detail-view').classList.remove('tp-no-player');
+    document.getElementById('twoPane-empty').style.display = 'flex';
+    document.getElementById('twoPane-panel').style.display = 'none';
+    document.getElementById('twoPane-panel').innerHTML = '';
+    document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+  }
+
   renderDetail(window.selectedPlayer);
-  document.getElementById('detail-view').style.display = 'flex';
-  setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
-  history.pushState({ v: 'detail', p: id }, '');
+
+  if (!isWideLayout()) {
+    document.getElementById('detail-view').style.display = 'flex';
+    setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
+    history.pushState({ v: 'detail', p: id }, '');
+  }
+  // In wide mode detail-view is always visible — just update content
 };
 
 window.closeDetail = () => {
+  if (isWideLayout()) return; // no navigation in wide mode
   document.getElementById('detail-view').classList.remove('active');
   setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
   window.selectedPlayer = null;
@@ -966,27 +1172,52 @@ function renderDetail(player) {
 }
 
 /* ================================================================
+   LAYOUT MODE DETECTION
+   ================================================================ */
+function isWideLayout() {
+  return window.matchMedia('(min-width: 840px)').matches;
+}
+
+/* ================================================================
    CARD TAP / OPEN / CLOSE
    ================================================================ */
 window.handleCardTap = (id) => {
   window.currentCardId = id;
-  const panel = document.getElementById('cardDetailPanel');
-  panel.classList.remove('animating');
-  panel.style.transform = '';
-  renderCardPanel(id);
-  const sheet = document.getElementById('cardDetailSheet');
-  sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
-  sheet.style.transform  = '';
-  sheet.classList.add('open');
-  document.getElementById('globalScrim').style.display = 'block';
-  history.pushState({ v: 'card', id }, '');
+
+  if (isWideLayout()) {
+    // Two-pane: render into inline panel, highlight selected row
+    document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+    const rowEl = document.querySelector(`.card-item[onclick*="${id}"]`);
+    if (rowEl) rowEl.classList.add('tp-selected');
+
+    const emptyEl = document.getElementById('twoPane-empty');
+    const panel   = document.getElementById('twoPane-panel');
+    emptyEl.style.display = 'none';
+    panel.style.display   = 'block';
+    panel.classList.remove('animating');
+    panel.style.transform = '';
+    renderCardPanelInto(panel, id);
+  } else {
+    // Mobile: bottom sheet
+    const panel = document.getElementById('cardDetailPanel');
+    panel.classList.remove('animating');
+    panel.style.transform = '';
+    renderCardPanel(id);
+    const sheet = document.getElementById('cardDetailSheet');
+    sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    sheet.style.transform  = '';
+    sheet.classList.add('open');
+    document.getElementById('globalScrim').style.display = 'block';
+    history.pushState({ v: 'card', id }, '');
+  }
 };
 
 window.closeAll = () => {
+  if (isWideLayout()) return; // no sheet to close in wide mode
   const sheet = document.getElementById('cardDetailSheet');
   sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
   sheet.classList.remove('open');
-  sheet.style.transform  = ''; // let the class handle it
+  sheet.style.transform  = '';
   document.getElementById('globalScrim').style.display = 'none';
   if (history.state?.v === 'card') history.back();
 };
@@ -1260,7 +1491,7 @@ window.onpopstate = (e) => {
     const url        = await window.st.getDownloadURL(snapshot.ref);
     await window.fs.setDoc(window.fs.doc(window.db, "Cards", _activeCardId), { "App Image": url }, { merge: true });
     // Re-render whichever surface is visible
-    if (window.currentCardId === _activeCardId) renderCardPanel(_activeCardId);
+    refreshCurrentCardPanel(_activeCardId);
   });
 
   // Toggle Owned
@@ -1272,7 +1503,7 @@ window.onpopstate = (e) => {
     const owned = (c.Owned === true || c.Owned === "true");
     await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: !owned }, { merge: true });
     // Update card panel if it's the open one in the sheet
-    if (window.currentCardId === id) renderCardPanel(id);
+    refreshCurrentCardPanel(id);
     // Re-render the list too (ownership state affects row styling)
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
   });
