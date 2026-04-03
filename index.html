@@ -253,7 +253,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   }
 }
 
-/* twoPane-cardDetail hidden on mobile, flex in wide (set by media query above) */
+/* twoPane-cardDetail hidden on mobile, shown in wide layout via media query */
 #twoPane-cardDetail { display: none; }
 
 /* Wide-layout empty state: no player selected yet */
@@ -275,8 +275,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   /* When no player is selected, hide the normal header content, show empty state */
   #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
   #detail-view.tp-no-player #detail-view-empty { display: flex; }
-}
-  /* let JS drive the sheet's vertical position during drag */
 }
 
 /* The single scrollable panel inside the card detail sheet */
