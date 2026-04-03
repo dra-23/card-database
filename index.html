@@ -59,9 +59,7 @@
   --nav-height: 80px;
   --nav-height-safe: calc(96px + env(safe-area-inset-bottom));
 }
-html { background: #c2caf0; }
-html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
-body { background: var(--md-surface-1); }
+html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface-1); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 #app-shell { background: var(--md-surface); }
 
 /* ================================================================
@@ -170,7 +168,7 @@ body { background: var(--md-surface-1); }
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--md-surface);
+  background: var(--md-surface-1);
   padding-top: env(safe-area-inset-top);
 }
 
@@ -230,6 +228,38 @@ body { background: var(--md-surface-1); }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: var(--nav-height-safe); }
 .scroll-body::-webkit-scrollbar { display: none; }
+
+/* ================================================================
+   FAST SCROLL BAR
+   ================================================================ */
+.fast-scroll-bar {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 20px;
+  z-index: 55;
+  pointer-events: none;
+}
+.fast-scroll-thumb {
+  position: absolute;
+  right: 5px;
+  width: 4px;
+  height: 44px;
+  background: var(--md-on-surface-variant);
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  transition: opacity 0.3s, width 0.15s, right 0.15s, background 0.15s;
+}
+.fast-scroll-bar.scrollable .fast-scroll-thumb { opacity: 0.28; }
+.fast-scroll-bar.dragging .fast-scroll-thumb {
+  opacity: 0.75;
+  width: 6px;
+  right: 4px;
+  background: var(--md-primary);
+  cursor: grabbing;
+}
 
 /* ================================================================
    BUTTONS
@@ -428,7 +458,7 @@ body { background: var(--md-surface-1); }
   background: #fff; color: #000;
   display: none;
   align-items: center; justify-content: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   z-index: 200; border: none; cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1), opacity 0.2s;
 }
@@ -571,6 +601,7 @@ body { background: var(--md-surface-1); }
             <div class="scroll-body" id="collectionScrollBody">
               <div id="collectionList"></div>
             </div>
+            <div class="fast-scroll-bar" id="collFastScroll"><div class="fast-scroll-thumb"></div></div>
             <button class="wide-fab" onclick="window.openCardForm(null,'collection')" title="Add card">
               <span class="material-symbols-outlined" style="font-size:26px;">add</span>
             </button>
@@ -641,6 +672,7 @@ body { background: var(--md-surface-1); }
           <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
         </div>
         <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
+        <div class="fast-scroll-bar" id="detailFastScroll"><div class="fast-scroll-thumb"></div></div>
         <button class="wide-fab" onclick="window.openCardForm(null,'player')" title="Add card">
           <span class="material-symbols-outlined" style="font-size:26px;">add</span>
         </button>
@@ -1145,6 +1177,8 @@ window.startApp = function() {
   initSheetGestures();
   initInlinePanelSwipe();
   initScrollHide();
+  initFastScroll(document.getElementById('detailScrollBody'), document.getElementById('detailFastScroll'));
+  initFastScroll(document.getElementById('collectionScrollBody'), document.getElementById('collFastScroll'));
   /* Init page swipe after a tick so layout is settled */
   requestAnimationFrame(() => initPageSwipe());
 
@@ -1165,6 +1199,71 @@ function initGradeDropdown() {
 /* ================================================================
    SCROLL-HIDE HEADERS
    ================================================================ */
+/* ================================================================
+   FAST SCROLL BAR
+   ================================================================ */
+function initFastScroll(scrollEl, barEl) {
+  if (!scrollEl || !barEl) return;
+  const thumb = barEl.querySelector('.fast-scroll-thumb');
+  let dragging = false;
+  let barTop = 0, barH = 0;
+
+  function reposition() {
+    const sr = scrollEl.getBoundingClientRect();
+    const pr = barEl.parentElement.getBoundingClientRect();
+    barEl.style.top = (sr.top - pr.top) + 'px';
+    barEl.style.height = sr.height + 'px';
+    barTop = sr.top;
+    barH = sr.height;
+  }
+
+  function updateThumb() {
+    const { scrollTop, scrollHeight, clientHeight } = scrollEl;
+    if (scrollHeight <= clientHeight + 2) {
+      barEl.classList.remove('scrollable'); return;
+    }
+    barEl.classList.add('scrollable');
+    const thumbH = thumb.offsetHeight;
+    const track = barH - thumbH;
+    thumb.style.top = ((scrollTop / (scrollHeight - clientHeight)) * track) + 'px';
+  }
+
+  function moveDrag(clientY) {
+    const thumbH = thumb.offsetHeight;
+    const track = barH - thumbH;
+    const relY = Math.max(0, Math.min(clientY - barTop - thumbH / 2, track));
+    const { scrollHeight, clientHeight } = scrollEl;
+    scrollEl.scrollTop = (relY / track) * (scrollHeight - clientHeight);
+  }
+
+  scrollEl.addEventListener('scroll', updateThumb, { passive: true });
+  new ResizeObserver(() => { reposition(); updateThumb(); }).observe(scrollEl);
+
+  thumb.addEventListener('touchstart', e => {
+    dragging = true; reposition();
+    barEl.classList.add('dragging');
+    e.preventDefault(); e.stopPropagation();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    moveDrag(e.touches[0].clientY);
+    e.preventDefault();
+  }, { passive: false });
+
+  const endDrag = () => { if (!dragging) return; dragging = false; barEl.classList.remove('dragging'); };
+  document.addEventListener('touchend', endDrag);
+  document.addEventListener('touchcancel', endDrag);
+
+  thumb.addEventListener('mousedown', e => {
+    dragging = true; reposition(); barEl.classList.add('dragging'); e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => { if (dragging) moveDrag(e.clientY); });
+  document.addEventListener('mouseup', endDrag);
+
+  setTimeout(() => { reposition(); updateThumb(); }, 300);
+}
+
 function initScrollHide() {
   const pairs = [
     { scrollId: 'galleryScrollBody',    headerId: 'galleryHeader'    },
