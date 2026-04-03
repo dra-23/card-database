@@ -59,8 +59,10 @@
   --nav-height: 80px;
   --nav-height-safe: calc(96px + env(safe-area-inset-bottom));
 }
+/* Full bleed — html bg matches the top-bar colour so status bar blends seamlessly */
 html { background: #c2caf0; }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+/* Extend surface-1 behind the system status bar and gesture bar */
 body { background: var(--md-surface-1); }
 #app-shell { background: var(--md-surface); }
 
@@ -80,14 +82,14 @@ body { background: var(--md-surface-1); }
 .m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
 
 /* ================================================================
-   APP SHELL
+   APP SHELL — root layout adapts between mobile and wide
    ================================================================ */
 #app-shell {
   display: flex;
   height: 100dvh;
   width: 100vw;
   overflow: hidden;
-  background: var(--md-surface-1);
+  background: var(--md-surface-1); /* fills safe-area gaps at edges */
 }
 
 /* ================================================================
@@ -111,11 +113,20 @@ body { background: var(--md-surface-1); }
 }
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
-  font-weight: normal; font-style: normal; font-size: 24px; line-height: 1;
-  letter-spacing: normal; text-transform: none; display: inline-block;
-  white-space: nowrap; word-wrap: normal; direction: ltr;
-  -webkit-font-smoothing: antialiased; font-feature-settings: 'liga';
-  flex-shrink: 0; user-select: none;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'liga';
+  flex-shrink: 0;
+  user-select: none;
 }
 .rail-item {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -126,9 +137,85 @@ body { background: var(--md-surface-1); }
 .rail-item .rail-label { font-size: 10px; font-weight: 600; font-family: 'Google Sans', sans-serif; }
 .rail-item:hover { background: rgba(0,0,0,0.06); }
 .rail-item.active { background: var(--md-surface-2); color: var(--md-on-surface); }
+.rail-item svg { flex-shrink: 0; }
 
 /* ================================================================
-   PAGE CONTAINER & SWIPEABLE TRACK
+   FLOATING TOOLBAR — mobile (< 840px) — compact icon-only pill
+   ================================================================ */
+#nav-bar {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  gap: 4px;
+  z-index: 200;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.14),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1);
+}
+.nav-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--md-on-surface-variant);
+  padding: 0;
+  border-radius: 32px;
+  transition: color 0.25s;
+  height: 52px;
+  width: 52px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.nav-item.active {
+  color: var(--md-on-surface);
+}
+/* Labels hidden — icon-only toolbar */
+.nav-item .nav-label { display: none; }
+.nav-item:not(.active):active { opacity: 0.6; }
+
+/* ================================================================
+   FLOATING ADD FAB — appears to right of toolbar on detail/collection
+   ================================================================ */
+#floating-fab {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 24px;
+  width: 64px;
+  height: 68px;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--md-surface-1);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  z-index: 200;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1), opacity 0.2s;
+}
+#floating-fab.visible { display: flex; }
+#floating-fab:active { transform: scale(0.93); }
+
+/* ================================================================
+   PAGE CONTAINER — horizontal strip of 3 views
    ================================================================ */
 #page-container {
   flex: 1;
@@ -136,69 +223,84 @@ body { background: var(--md-surface-1); }
   height: 100dvh;
   overflow: hidden;
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
-/* The track holds all 3 top-level pages side by side */
-#page-track {
+/* The strip holds gallery / collection / graded side-by-side */
+#view-strip {
   display: flex;
   flex-direction: row;
-  width: 300%;           /* 3 pages × 100% */
+  width: 300%; /* 3 × 100% */
   height: 100%;
   will-change: transform;
-  transition: transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-#page-track.dragging {
-  transition: none;      /* no transition while finger is down */
-}
-
-/* Each top-level page occupies 1/3 of the track (= 100vw) */
-.page-slot {
-  width: calc(100% / 3);
-  flex-shrink: 0;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
+  /* transition set by JS — none at rest */
 }
 
 /* ================================================================
-   VIEWS — now fill their page-slot (not absolutely positioned)
+   VIEWS
    ================================================================ */
 .view {
-  width: 100%;
+  width: 33.3333%;  /* 1/3 of the strip = 100vw */
+  flex-shrink: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--md-surface);
   padding-top: env(safe-area-inset-top);
+  overflow: hidden;
 }
+/* detail-view stays absolutely positioned — it's a sub-page, not a strip slide */
+#detail-view {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  z-index: 50;
+  display: none;
+}
+#detail-view.active { display: flex; }
 
-/* Keep the old z-index stacking for sheets that overlap */
-#detail-view  { z-index: 50; }
+/* ================================================================
+   GALLERY / PLAYERS VIEW
+   ================================================================ */
+#gallery-view { z-index: 5; }
+#collection-view { z-index: 5; }
+#graded-view  { z-index: 5; }
 
 /* ================================================================
    TOP BAR
    ================================================================ */
-.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
+.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 
+/*
+  Collapsible header — slides up as a unit via translateY.
+  The view has overflow:hidden so the translated content vanishes above.
+  We use a wrapper that reserves no space when collapsed (margin-top pulls
+  subsequent content up by exactly the header height).
+*/
 .collapsible-header {
   flex-shrink: 0;
-  overflow: hidden;
-  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-  max-height: 200px;
+  /* translateY set by JS — no CSS transition here by default */
+  will-change: transform;
+  /* When collapsed, pull content up by pushing a negative margin equal
+     to header height. JS sets this via --hdr-h custom property. */
 }
-#detailHeader { max-height: 380px; }
-.collapsible-header.collapsed { max-height: 0; }
+.collapsible-header.animating {
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Detail header needs overflow visible for the banner gradient */
+#detailHeader { overflow: visible; }
+
+/* Never collapse on wide layout */
 @media (min-width: 840px) {
-  .collapsible-header.collapsed { max-height: 380px !important; }
+  .collapsible-header { transform: none !important; }
   #detailCompactBar { display: none !important; }
 }
 
+/* Compact sticky bar that appears when detail header is scrolled away */
 #detailCompactBar {
-  display: none;
+  display: none; /* shown via JS */
   align-items: center;
   gap: 10px;
   padding: 8px 16px 8px 12px;
@@ -239,24 +341,32 @@ body { background: var(--md-surface-1); }
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
 /* ================================================================
-   WIDE FAB — tablet/desktop
+   WIDE FAB — tablet/desktop add card button (in master-col)
    ================================================================ */
 .wide-fab {
-  display: none;
+  display: none; /* hidden on mobile */
   position: absolute;
-  bottom: 24px; right: 24px;
-  width: 56px; height: 56px; border-radius: 16px;
-  background: var(--md-surface-2); color: var(--md-on-surface-variant);
-  border: none; cursor: pointer;
-  align-items: center; justify-content: center;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--md-surface-2);
+  color: var(--md-on-surface-variant);
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   z-index: 30;
   transition: transform 0.15s, background 0.2s;
 }
 .wide-fab:hover { background: var(--md-surface-1); color: var(--md-on-surface); }
 .wide-fab:active { transform: scale(0.93); }
-@media (min-width: 840px) { .wide-fab { display: flex; } }
 
+@media (min-width: 840px) {
+  .wide-fab { display: flex; }
+}
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: var(--nav-height-safe); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
@@ -300,7 +410,7 @@ body { background: var(--md-surface-1); }
 /* ================================================================
    SEARCH / FILTER ROW
    ================================================================ */
-.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; overflow-x: hidden; }
+.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--md-surface); width: 100%; overflow-x: hidden; }
 .search-input-expressive { flex: 1; min-width: 120px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); padding: 0 16px; font-family: 'Google Sans', sans-serif; font-size: 15px; color: var(--md-on-surface); outline: none; }
 .search-input-expressive::placeholder { color: var(--md-outline); opacity: 0.7; }
 .search-input-expressive:focus { box-shadow: 0 0 0 2px var(--md-primary); }
@@ -327,7 +437,7 @@ body { background: var(--md-surface-1); }
 .overflow-menu-item.sleevd-action svg { opacity: 1; }
 
 /* ================================================================
-   CARD DETAIL PANEL
+   CARD DETAIL PANEL (sheet & inline)
    ================================================================ */
 #cardDetailSheet { z-index: 1100; }
 #collectionCardSheet { z-index: 1100; }
@@ -345,12 +455,17 @@ body { background: var(--md-surface-1); }
 .year-group-header {
   padding: 18px 16px 8px;
   font-family: 'Google Sans Display';
-  font-size: 22px; font-weight: 700;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--md-on-surface);
-  position: sticky; top: 0;
-  background: var(--md-surface); z-index: 10;
+  position: sticky;
+  top: 0;
+  background: var(--md-surface);
+  z-index: 10;
   border-bottom: 1px solid var(--md-surface-2);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; }
 .collection-card-list { padding: 8px 16px; }
@@ -361,7 +476,8 @@ body { background: var(--md-surface-1); }
 .graded-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px; padding: 12px 16px;
+  gap: 12px;
+  padding: 12px 16px;
 }
 .graded-tile {
   border-radius: 20px; overflow: hidden; background: var(--md-surface-2);
@@ -370,100 +486,28 @@ body { background: var(--md-surface-1); }
   display: flex; flex-direction: column;
 }
 .graded-tile:active { transform: scale(0.96); transition: transform 0.1s ease; }
-.graded-tile-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #eee; }
-.graded-tile-bar { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 3px; }
-.graded-tile-grade { font-family: 'Google Sans Display'; font-size: 18px; font-weight: 700; line-height: 1; }
-.graded-tile-player { font-size: 11px; font-weight: 700; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.graded-tile-set { font-size: 10px; opacity: 0.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.graded-tile-img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  display: block; background: #eee;
+}
+.graded-tile-bar {
+  padding: 10px 12px 12px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.graded-tile-grade {
+  font-family: 'Google Sans Display'; font-size: 18px; font-weight: 700; line-height: 1;
+}
+.graded-tile-player {
+  font-size: 11px; font-weight: 700; opacity: 0.7;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.graded-tile-set {
+  font-size: 10px; opacity: 0.5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Keep old row classes in case they're referenced elsewhere */
 .graded-card-item { display: none; }
 .graded-thumb { display: none; }
-
-/* ================================================================
-   FLOATING TOOLBAR (mobile) — with sliding indicator pill
-   ================================================================ */
-#nav-bar {
-  position: fixed;
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border-radius: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  gap: 4px;
-  z-index: 200;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.14),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  /* toolbar itself doesn't translate during page swipe */
-  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1);
-}
-
-/* Sliding indicator pill — lives inside nav-bar, behind the icons */
-#nav-indicator {
-  position: absolute;
-  left: 8px; /* starting position = first button */
-  top: 8px;
-  width: 52px;
-  height: 52px;
-  border-radius: 32px;
-  background: var(--md-surface-1);
-  pointer-events: none;
-  z-index: 0;
-  /* transition matches page track speed */
-  transition: left 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-#nav-indicator.dragging {
-  transition: none; /* follow finger exactly while swiping */
-}
-
-.nav-item {
-  position: relative; /* stack above indicator */
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--md-on-surface-variant);
-  padding: 0;
-  border-radius: 32px;
-  transition: color 0.2s;
-  height: 52px;
-  width: 52px;
-  flex-shrink: 0;
-}
-.nav-item.active { color: var(--md-on-surface); }
-.nav-item .nav-label { display: none; }
-.nav-item:not(.active):active { background: rgba(0,0,0,0.06); }
-
-/* ================================================================
-   FLOATING ADD FAB
-   ================================================================ */
-#floating-fab {
-  position: fixed;
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  right: 24px;
-  width: 64px; height: 68px;
-  border-radius: 20px;
-  background: #fff; color: var(--md-surface-1);
-  display: none;
-  align-items: center; justify-content: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  z-index: 200; border: none; cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1), opacity 0.2s;
-}
-#floating-fab.visible { display: flex; }
-#floating-fab:active { transform: scale(0.93); }
 
 /* ================================================================
    TWO-PANE (≥840px)
@@ -474,26 +518,20 @@ body { background: var(--md-surface-1); }
   #nav-rail { display: flex; }
   #floating-fab { display: none !important; }
 
-  /* On wide layout, disable the page track swipe */
-  #page-track {
-    width: 100% !important;
-    transform: none !important;
-    display: flex;
-    flex-direction: row !important;
-    height: 100%;
-  }
-  /* Only the active page-slot is shown on desktop */
-  .page-slot { display: none; width: 100%; }
-  .page-slot.active { display: flex; flex-direction: column; }
-
   .view {
     padding-bottom: 0 !important;
   }
+
   .scroll-body { padding-bottom: 0 !important; }
+
   .fab { bottom: 24px !important; }
 
-  #detail-view { flex-direction: row !important; }
+  /* Detail view uses flex-row for two-pane */
+  #detail-view {
+    flex-direction: row !important;
+  }
 
+  /* Gallery */
   .player-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 
   #detail-view .back-btn { display: none; }
@@ -512,6 +550,7 @@ body { background: var(--md-surface-1); }
   #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
   #detail-view.tp-no-player #detail-view-empty { display: flex !important; }
 
+  /* Collection two-pane */
   #collection-view { flex-direction: row !important; }
   #collection-view .master-col { flex: 1; min-width: 0; }
   #collectionCardSheet { display: none !important; }
@@ -521,6 +560,7 @@ body { background: var(--md-surface-1); }
   #twoPane-coll-panel::-webkit-scrollbar { display: none; }
   #twoPane-coll-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 
+  /* Graded two-pane */
   #graded-view { flex-direction: row !important; }
   #graded-view .master-col { flex: 1; min-width: 0; }
   #gradedCardSheet { display: none !important; }
@@ -531,6 +571,7 @@ body { background: var(--md-surface-1); }
   #twoPane-grad-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 }
 
+/* Hidden on mobile */
 #twoPane-cardDetail, #twoPane-collectionDetail, #twoPane-gradedDetail { display: none; }
 
 #detail-view-empty { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; opacity: 0.32; gap: 14px; text-align: center; padding: 32px; }
@@ -564,89 +605,13 @@ body { background: var(--md-surface-1); }
   <!-- PAGE CONTAINER -->
   <div id="page-container">
 
-    <!-- SWIPEABLE TRACK — holds all 3 top-level pages -->
-    <div id="page-track">
-
-      <!-- SLOT 0: Players / Gallery -->
-      <div class="page-slot active" id="slot-players">
-        <div class="view" id="gallery-view">
-          <div class="collapsible-header" id="galleryHeader">
-            <div class="top-bar">
-              <span class="brand">sleevd</span>
-              <div class="total-count-pill" id="totalOwnedCounter">0</div>
-              <button class="icon-btn" onclick="window.openPlayerForm()">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-              </button>
-            </div>
-          </div>
-          <div class="scroll-body" id="galleryScrollBody"><div class="player-grid" id="playerGrid"></div></div>
-        </div>
-      </div>
-
-      <!-- SLOT 1: Collection -->
-      <div class="page-slot" id="slot-collection">
-        <div class="view" id="collection-view">
-          <div class="master-col" style="height:100%;">
-            <div class="collapsible-header" id="collectionHeader">
-              <div class="top-bar">
-                <span class="brand">Collection</span>
-                <div class="total-count-pill" id="collectionOwnedCounter">0</div>
-              </div>
-              <div class="search-filter-row">
-                <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set..." oninput="window.updateCollSearch(this.value)">
-                <div id="chipCollWishlist" class="filter-chip" onclick="window.toggleCollChip('wishlist')">Wishlist</div>
-                <div id="chipCollGraded" class="filter-chip" onclick="window.toggleCollChip('graded')">Graded</div>
-              </div>
-            </div>
-            <div class="scroll-body" id="collectionScrollBody">
-              <div id="collectionList"></div>
-            </div>
-            <button class="wide-fab" onclick="window.openCardForm(null,'collection')" title="Add card">
-              <span class="material-symbols-outlined" style="font-size:26px;">add</span>
-            </button>
-          </div>
-          <div id="twoPane-collectionDetail">
-            <div class="tp-empty" id="twoPane-coll-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.35; gap:12px; padding:32px; text-align:center;">
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z"/></svg>
-              <p style="font-size:14px; font-weight:600;">Select a card to view details</p>
-            </div>
-            <div id="twoPane-coll-panel" style="display:none;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SLOT 2: Graded -->
-      <div class="page-slot" id="slot-graded">
-        <div class="view" id="graded-view">
-          <div class="master-col" style="height:100%;">
-            <div class="collapsible-header" id="gradedHeader">
-              <div class="top-bar">
-                <span class="brand">Graded</span>
-                <div class="total-count-pill" id="gradedCounter">0</div>
-              </div>
-              <div class="search-filter-row">
-                <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set..." oninput="window.updateGradedSearch(this.value)">
-              </div>
-            </div>
-            <div class="scroll-body" id="gradedScrollBody">
-              <div class="graded-grid" id="gradedList"></div>
-            </div>
-          </div>
-          <div id="twoPane-gradedDetail">
-            <div class="tp-empty" id="twoPane-grad-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.35; gap:12px; padding:32px; text-align:center;">
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-              <p style="font-size:14px; font-weight:600;">Select a card to view details</p>
-            </div>
-            <div id="twoPane-grad-panel" style="display:none;"></div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /page-track -->
-
-    <!-- Detail view — overlays the track as a full-screen push on mobile -->
-    <div class="view" id="detail-view" style="position:absolute; inset:0; display:none; z-index:50;">
+    <!-- detail-view is an absolute overlay — not part of the swipe strip -->
+    <!-- ============================================================
+         DETAIL VIEW (player cards)
+         ============================================================ -->
+    <div class="view" id="detail-view">
       <div class="master-col">
+        <!-- Compact sticky bar — visible when full header is scrolled away (mobile only) -->
         <div id="detailCompactBar">
           <button class="compact-back" onclick="window.closeDetail()">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -678,11 +643,13 @@ body { background: var(--md-surface-1); }
           </div>
         </div>
         <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
+        <!-- Wide FAB: tablet/desktop only -->
         <button class="wide-fab" onclick="window.openCardForm(null,'player')" title="Add card">
           <span class="material-symbols-outlined" style="font-size:26px;">add</span>
         </button>
       </div>
 
+      <!-- TWO-PANE inline card detail -->
       <div id="twoPane-cardDetail">
         <div class="tp-empty" id="twoPane-empty">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
@@ -690,16 +657,101 @@ body { background: var(--md-surface-1); }
         </div>
         <div id="twoPane-panel" style="display:none;"></div>
       </div>
+    </div>
+
     </div><!-- /detail-view -->
+
+    <!-- ============================================================
+         VIEW STRIP — gallery · collection · graded (swipeable)
+         ============================================================ -->
+    <div id="view-strip">
+
+      <!-- PLAYERS / GALLERY VIEW -->
+      <div class="view" id="gallery-view">
+        <div class="collapsible-header" id="galleryHeader">
+          <div class="top-bar">
+            <span class="brand">sleevd</span>
+            <div class="total-count-pill" id="totalOwnedCounter">0</div>
+            <button class="icon-btn" onclick="window.openPlayerForm()">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="scroll-body" id="galleryScrollBody"><div class="player-grid" id="playerGrid"></div></div>
+      </div>
+
+      <!-- COLLECTION VIEW -->
+      <div class="view" id="collection-view">
+        <div class="master-col" style="height:100%;">
+          <div class="collapsible-header" id="collectionHeader">
+            <div class="top-bar">
+              <span class="brand">Collection</span>
+              <div class="total-count-pill" id="collectionOwnedCounter">0</div>
+            </div>
+            <div class="search-filter-row">
+              <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set..." oninput="window.updateCollSearch(this.value)">
+              <div id="chipCollWishlist" class="filter-chip" onclick="window.toggleCollChip('wishlist')">Wishlist</div>
+              <div id="chipCollGraded" class="filter-chip" onclick="window.toggleCollChip('graded')">Graded</div>
+            </div>
+          </div>
+          <div class="scroll-body" id="collectionScrollBody">
+            <div id="collectionList"></div>
+          </div>
+          <button class="wide-fab" onclick="window.openCardForm(null,'collection')" title="Add card">
+            <span class="material-symbols-outlined" style="font-size:26px;">add</span>
+          </button>
+        </div>
+        <div id="twoPane-collectionDetail">
+          <div class="tp-empty" id="twoPane-coll-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.35; gap:12px; padding:32px; text-align:center;">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z"/></svg>
+            <p style="font-size:14px; font-weight:600;">Select a card to view details</p>
+          </div>
+          <div id="twoPane-coll-panel" style="display:none;"></div>
+        </div>
+      </div>
+
+      <!-- GRADED VIEW -->
+      <div class="view" id="graded-view">
+        <div class="master-col" style="height:100%;">
+          <div class="collapsible-header" id="gradedHeader">
+            <div class="top-bar">
+              <span class="brand">Graded</span>
+              <div class="total-count-pill" id="gradedCounter">0</div>
+            </div>
+            <div class="search-filter-row">
+              <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set..." oninput="window.updateGradedSearch(this.value)">
+            </div>
+          </div>
+          <div class="scroll-body" id="gradedScrollBody">
+            <div class="graded-grid" id="gradedList"></div>
+          </div>
+        </div>
+        <div id="twoPane-gradedDetail">
+          <div class="tp-empty" id="twoPane-grad-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.35; gap:12px; padding:32px; text-align:center;">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+            <p style="font-size:14px; font-weight:600;">Select a card to view details</p>
+          </div>
+          <div id="twoPane-grad-panel" style="display:none;"></div>
+        </div>
+      </div>
+
+    </div><!-- /view-strip -->
 
   </div><!-- /page-container -->
 </div><!-- /app-shell -->
 
 <!-- FLOATING TOOLBAR (mobile) -->
 <nav id="nav-bar">
-  <!-- Sliding indicator pill -->
-  <div id="nav-indicator"></div>
-  <button class="nav-item active" id="nav-players" onclick="window.switchPage('players')">
+  <!-- Sliding active indicator — absolutely positioned behind icons -->
+  <div id="nav-indicator-pill" style="
+    position:absolute; top:8px; bottom:8px;
+    width:52px; border-radius:32px;
+    background:var(--md-surface-1);
+    transition:transform 0.35s cubic-bezier(0.05,0.7,0.1,1), width 0.35s cubic-bezier(0.05,0.7,0.1,1);
+    pointer-events:none; z-index:0;
+    left:8px; /* JS will set transform */">
+  </div>
+  <button class="nav-item" id="nav-players" onclick="window.switchPage('players')">
     <span class="material-symbols-outlined">cards_stack</span>
     <span class="nav-label">Players</span>
   </button>
@@ -713,7 +765,7 @@ body { background: var(--md-surface-1); }
   </button>
 </nav>
 
-<!-- FLOATING ADD FAB (mobile) -->
+<!-- FLOATING ADD FAB (mobile — player detail & collection pages) -->
 <button id="floating-fab" onclick="window.floatingFabTap()">
   <span class="material-symbols-outlined" style="font-size:28px;">add</span>
 </button>
@@ -722,7 +774,7 @@ body { background: var(--md-surface-1); }
 <div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
 <!-- ============================================================
-     CARD DETAIL SHEETS (mobile only)
+     PLAYER CARD DETAIL SHEET (mobile only)
      ============================================================ -->
 <div class="sheet" id="cardDetailSheet">
   <div class="sheet-handle"></div>
@@ -731,6 +783,9 @@ body { background: var(--md-surface-1); }
   <div id="cardDetailPanel"></div>
 </div>
 
+<!-- ============================================================
+     COLLECTION CARD DETAIL SHEET (mobile only)
+     ============================================================ -->
 <div class="sheet" id="collectionCardSheet">
   <div class="sheet-handle"></div>
   <div id="swipeHintColl" style="position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 0.15s; z-index:10; font-size:13px; font-weight:700; color:var(--md-on-surface); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.12); white-space:nowrap; left:16px;">← prev</div>
@@ -738,6 +793,9 @@ body { background: var(--md-surface-1); }
   <div id="collectionCardPanel"></div>
 </div>
 
+<!-- ============================================================
+     GRADED CARD DETAIL SHEET (mobile only)
+     ============================================================ -->
 <div class="sheet" id="gradedCardSheet">
   <div class="sheet-handle"></div>
   <div id="swipeHintGrad" style="position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 0.15s; z-index:10; font-size:13px; font-weight:700; color:var(--md-on-surface); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.12); white-space:nowrap; left:16px;">← prev</div>
@@ -859,254 +917,16 @@ let currentPage = 'players';
 let collSearchQuery = "";
 let gradedSearchQuery = "";
 let collShowGradedOnly = false, collShowWishlistOnly = false;
-let activeCardContext = 'player';
 
-/* Page index mapping */
-const PAGE_NAMES = ['players', 'collection', 'graded'];
-let currentPageIndex = 0;
+/* Context for each sheet — tracks which "surface" is active */
+let activeCardContext = 'player';   // 'player' | 'collection' | 'graded'
 
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
 /* ================================================================
-   SWIPE STATE (card-level)
+   SWIPE STATE
    ================================================================ */
 const swipe = { active: false, locked: null, startX: 0, startY: 0, lastX: 0, lastY: 0, sheetBaseY: 0, animating: false };
-
-/* ================================================================
-   PAGE SWIPE — horizontal swipe between the 3 top-level pages
-   ================================================================ */
-function initPageSwipe() {
-  if (isWideLayout()) return;
-
-  const track = document.getElementById('page-track');
-  const indicator = document.getElementById('nav-indicator');
-  const NAV_BTN_W = 52;   // width of each nav button (px)
-  const NAV_GAP   = 4;    // gap between nav buttons (px)
-  const NAV_PAD   = 8;    // nav-bar padding (px)
-
-  /* Returns the left offset of nav indicator for a given page index */
-  function indicatorLeft(idx) {
-    return NAV_PAD + idx * (NAV_BTN_W + NAV_GAP);
-  }
-
-  /* Apply track position: pageIndex + fractional drag offset */
-  function setTrackX(pageIdx, extraPx) {
-    const vw = window.innerWidth;
-    const baseX = -pageIdx * vw;
-    track.style.transform = `translateX(${baseX + extraPx}px)`;
-  }
-
-  /* Update indicator interpolated between two positions */
-  function setIndicatorInterp(fromIdx, toIdx, progress) {
-    const from = indicatorLeft(fromIdx);
-    const to   = indicatorLeft(toIdx);
-    indicator.style.left = (from + (to - from) * progress) + 'px';
-  }
-
-  /* Snap indicator to an exact page */
-  function snapIndicator(idx) {
-    indicator.style.left = indicatorLeft(idx) + 'px';
-  }
-
-  /* RESIZE: re-snap without animation */
-  window.addEventListener('resize', () => {
-    if (isWideLayout()) return;
-    track.style.transition = 'none';
-    setTrackX(currentPageIndex, 0);
-    snapIndicator(currentPageIndex);
-  });
-
-  /* Initialize positions */
-  setTrackX(0, 0);
-  snapIndicator(0);
-
-  /* ---- Touch handling ---- */
-  let ps = {
-    active: false,
-    startX: 0, startY: 0,
-    lastX: 0,
-    locked: null,        // 'h' | 'v' | null
-    startTime: 0
-  };
-
-  /* Block page swipe when any sheet or form is open */
-  function anySheetOpen() {
-    return ['cardDetailSheet','collectionCardSheet','gradedCardSheet','cardFormSheet','playerFormSheet']
-      .some(id => document.getElementById(id).classList.contains('open'));
-  }
-  /* Block page swipe when we're inside the player detail overlay */
-  function detailOpen() {
-    const dv = document.getElementById('detail-view');
-    return dv.style.display !== 'none' && dv.style.display !== '';
-  }
-
-  document.getElementById('page-container').addEventListener('touchstart', (e) => {
-    if (isWideLayout() || anySheetOpen() || detailOpen()) return;
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    ps.active    = true;
-    ps.locked    = null;
-    ps.startX    = t.clientX;
-    ps.startY    = t.clientY;
-    ps.lastX     = t.clientX;
-    ps.startTime = Date.now();
-    track.classList.add('dragging');
-    indicator.classList.add('dragging');
-  }, { passive: true });
-
-  document.getElementById('page-container').addEventListener('touchmove', (e) => {
-    if (!ps.active || isWideLayout()) return;
-    const t = e.touches[0];
-    const dx = t.clientX - ps.startX;
-    const dy = t.clientY - ps.startY;
-    ps.lastX = t.clientX;
-
-    /* Determine lock direction on first significant movement */
-    if (!ps.locked) {
-      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-        ps.locked = 'h';
-      } else if (Math.abs(dy) > 8) {
-        ps.locked = 'v';
-        ps.active = false; // let vertical scroll happen naturally
-        track.classList.remove('dragging');
-        indicator.classList.remove('dragging');
-        return;
-      } else {
-        return; // undecided
-      }
-    }
-
-    if (ps.locked !== 'h') return;
-    if (e.cancelable) e.preventDefault();
-
-    const vw = window.innerWidth;
-    /* Rubber-band at edges */
-    let resistance = 1;
-    if ((dx > 0 && currentPageIndex === 0) || (dx < 0 && currentPageIndex === PAGE_NAMES.length - 1)) {
-      resistance = 0.18;
-    }
-    const effectiveDx = dx * resistance;
-    setTrackX(currentPageIndex, effectiveDx);
-
-    /* Interpolate indicator */
-    const progress = Math.min(1, Math.max(-1, dx / vw));
-    if (progress < 0 && currentPageIndex < PAGE_NAMES.length - 1) {
-      setIndicatorInterp(currentPageIndex, currentPageIndex + 1, -progress);
-    } else if (progress > 0 && currentPageIndex > 0) {
-      setIndicatorInterp(currentPageIndex, currentPageIndex - 1, progress);
-    } else {
-      snapIndicator(currentPageIndex);
-    }
-  }, { passive: false });
-
-  function endPageSwipe() {
-    if (!ps.active) return;
-    ps.active = false;
-    track.classList.remove('dragging');
-    indicator.classList.remove('dragging');
-    if (ps.locked !== 'h') return;
-
-    const dx = ps.lastX - ps.startX;
-    const vw = window.innerWidth;
-    const dt = Date.now() - ps.startTime;
-    const velocity = Math.abs(dx) / dt; // px/ms
-
-    /* Commit if >25% of screen width OR fast flick (>0.3 px/ms) */
-    const commit = Math.abs(dx) > vw * 0.25 || velocity > 0.3;
-    let targetIdx = currentPageIndex;
-    if (commit && dx < 0 && currentPageIndex < PAGE_NAMES.length - 1) targetIdx = currentPageIndex + 1;
-    if (commit && dx > 0 && currentPageIndex > 0) targetIdx = currentPageIndex - 1;
-
-    goToPage(targetIdx);
-    ps.locked = null;
-  }
-
-  document.getElementById('page-container').addEventListener('touchend',    endPageSwipe, { passive: true });
-  document.getElementById('page-container').addEventListener('touchcancel', endPageSwipe, { passive: true });
-
-  /* Expose snap function for use by switchPage */
-  window._pageSwipeSnap = goToPage;
-  window._indicatorLeft = indicatorLeft;
-  window._snapIndicator = snapIndicator;
-
-  function goToPage(idx) {
-    const vw = window.innerWidth;
-    track.classList.remove('dragging');
-    indicator.classList.remove('dragging');
-    /* Re-enable transitions */
-    track.style.transition   = 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-    indicator.style.transition = 'left 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-
-    setTrackX(idx, 0);
-    snapIndicator(idx);
-
-    if (idx !== currentPageIndex) {
-      const newPage = PAGE_NAMES[idx];
-      _commitPageSwitch(newPage, idx);
-    }
-    currentPageIndex = idx;
-  }
-}
-
-/* ================================================================
-   PAGE NAVIGATION — shared logic for tap + swipe
-   ================================================================ */
-function _commitPageSwitch(page, idx) {
-  currentPage = page;
-
-  /* Update active classes on nav items and rail */
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.rail-item').forEach(n => n.classList.remove('active'));
-
-  if (page === 'players') {
-    document.getElementById('nav-players').classList.add('active');
-    document.getElementById('rail-players').classList.add('active');
-  } else if (page === 'collection') {
-    document.getElementById('nav-collection').classList.add('active');
-    document.getElementById('rail-collection').classList.add('active');
-    renderCollectionView();
-  } else if (page === 'graded') {
-    document.getElementById('nav-graded').classList.add('active');
-    document.getElementById('rail-graded').classList.add('active');
-    renderGradedView();
-  }
-
-  /* Page-slot active class (used only on desktop for show/hide) */
-  document.querySelectorAll('.page-slot').forEach(s => s.classList.remove('active'));
-  const slotMap = { players: 'slot-players', collection: 'slot-collection', graded: 'slot-graded' };
-  document.getElementById(slotMap[page])?.classList.add('active');
-
-  updateFloatingFab(page);
-}
-
-window.switchPage = function(page) {
-  /* On mobile, if we're in a player detail, go back first */
-  if (!isWideLayout() && detailIsOpen()) {
-    closeDetailSilent();
-  }
-
-  const idx = PAGE_NAMES.indexOf(page);
-  if (idx === -1) return;
-
-  if (!isWideLayout() && window._pageSwipeSnap) {
-    /* Let the swipe engine handle animation + indicator */
-    window._pageSwipeSnap(idx);
-  } else {
-    /* Desktop: just commit the switch */
-    _commitPageSwitch(page, idx);
-    currentPageIndex = idx;
-  }
-};
-
-function detailIsOpen() {
-  const dv = document.getElementById('detail-view');
-  return dv.style.display !== 'none' && dv.style.display !== '';
-}
-function closeDetailSilent() {
-  document.getElementById('detail-view').style.display = 'none';
-  window.selectedPlayer = null;
-  document.getElementById('floating-fab').classList.remove('visible');
-}
 
 /* ================================================================
    HELPERS
@@ -1131,16 +951,75 @@ function getSheetTranslateY(sheet) {
 function isWideLayout() {
   return window.matchMedia('(min-width: 840px)').matches;
 }
+
+/* ================================================================
+   YEAR SORT KEY — normalise "1991-92" → "1991" for grouping
+   Groups "1991" and "1991-92" together under "1991"
+   ================================================================ */
 function yearSortKey(year) {
   if (!year) return "0000";
   const s = year.toString().trim();
+  /* Extract the first 4-digit year */
   const m = s.match(/(\d{4})/);
   return m ? m[1] : s;
 }
 
 /* ================================================================
-   FLOATING FAB
+   PAGES — ordered list, index maps to strip position
    ================================================================ */
+const PAGES = ['players', 'collection', 'graded'];
+let pageSwipeAnimating = false;
+
+function getPageIndex(page) { return PAGES.indexOf(page); }
+
+/* Move the strip to a given page index, with optional animation */
+function setStripPosition(idx, animate) {
+  const strip = document.getElementById('view-strip');
+  if (!strip) return;
+  const pct = idx * (100 / 3); /* each view is 33.33% of strip width */
+  strip.style.transition = animate
+    ? 'transform 0.38s cubic-bezier(0.05,0.7,0.1,1)'
+    : 'none';
+  strip.style.transform = `translateX(-${pct}%)`;
+}
+
+/* Move the indicator pill to the button at index idx, interpolating for fractional positions */
+function setIndicatorPosition(fraction) {
+  /* fraction: 0 = players, 1 = collection, 2 = graded */
+  const pill = document.getElementById('nav-indicator-pill');
+  if (!pill) return;
+  const navBar = document.getElementById('nav-bar');
+  if (!navBar) return;
+  const btns = navBar.querySelectorAll('.nav-item');
+  if (!btns.length) return;
+
+  /* Get positions of all 3 buttons relative to nav-bar */
+  const barRect = navBar.getBoundingClientRect();
+  const rects = Array.from(btns).map(b => b.getBoundingClientRect());
+
+  /* Interpolate between button centres */
+  const lo = Math.floor(fraction), hi = Math.min(2, Math.ceil(fraction));
+  const t = fraction - lo;
+  const cx = rects[lo].left + rects[lo].width/2 + t*(rects[hi].left + rects[hi].width/2 - rects[lo].left - rects[lo].width/2) - barRect.left;
+  const w = 52; /* pill width stays constant */
+  pill.style.transform = `translateX(${cx - w/2}px)`;
+  /* No width transition during drag — only on snap */
+}
+
+function updateNavActive(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.rail-item').forEach(n => n.classList.remove('active'));
+  const idx = getPageIndex(page);
+  const navIds  = ['nav-players','nav-collection','nav-graded'];
+  const railIds = ['rail-players','rail-collection','rail-graded'];
+  if (idx >= 0) {
+    document.getElementById(navIds[idx])?.classList.add('active');
+    document.getElementById(railIds[idx])?.classList.add('active');
+  }
+  /* Snap indicator pill */
+  setIndicatorPosition(idx);
+}
+
 function updateFloatingFab(page) {
   if (isWideLayout()) return;
   const fab = document.getElementById('floating-fab');
@@ -1159,6 +1038,132 @@ window.floatingFabTap = function() {
   }
 };
 
+window.switchPage = function(page, animate = true) {
+  /* On mobile, if switching away from detail, hide it */
+  if (!isWideLayout() && page !== 'players') {
+    document.getElementById('detail-view').style.display = 'none';
+    document.getElementById('detail-view').classList.remove('active');
+    window.selectedPlayer = null;
+  }
+
+  const prevPage = currentPage;
+  currentPage = page;
+
+  if (!isWideLayout()) {
+    setStripPosition(getPageIndex(page), animate);
+  }
+
+  /* Reset the arriving page's header to fully visible */
+  const headerMap = { players: 'galleryHeader', collection: 'collectionHeader', graded: 'gradedHeader' };
+  const scrollMap = { players: 'galleryScrollBody', collection: 'collectionScrollBody', graded: 'gradedScrollBody' };
+  const hdr = document.getElementById(headerMap[page]);
+  const scr = document.getElementById(scrollMap[page]);
+  if (hdr) { hdr.style.transform = ''; hdr.style.transition = ''; }
+  if (scr) { scr.style.marginTop = ''; scr.style.paddingTop = ''; }
+
+  updateNavActive(page);
+
+  if (page === 'collection') renderCollectionView();
+  if (page === 'graded') renderGradedView();
+
+  updateFloatingFab(page);
+};
+
+/* ================================================================
+   PAGE SWIPE GESTURE (mobile only)
+   ================================================================ */
+function initPageSwipe() {
+  const container = document.getElementById('page-container');
+  let pgStart = { x: 0, y: 0 };
+  let pgLocked = null; /* 'h' | 'v' | null */
+  let pgActive = false;
+  let pgBaseIdx = 0;
+
+  container.addEventListener('touchstart', (e) => {
+    /* Ignore if any sheet or detail-view is open */
+    if (isWideLayout()) return;
+    if (document.getElementById('detail-view').style.display === 'flex') return;
+    if (document.querySelectorAll('.sheet.open').length > 0) return;
+    if (pageSwipeAnimating) return;
+
+    const t = e.touches[0];
+    pgStart = { x: t.clientX, y: t.clientY };
+    pgLocked = null;
+    pgActive = true;
+    pgBaseIdx = getPageIndex(currentPage);
+    document.getElementById('view-strip').style.transition = 'none';
+  }, { passive: true });
+
+  container.addEventListener('touchmove', (e) => {
+    if (!pgActive || isWideLayout()) return;
+    const t = e.touches[0];
+    const dx = t.clientX - pgStart.x;
+    const dy = t.clientY - pgStart.y;
+
+    if (!pgLocked) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) pgLocked = 'h';
+      else if (Math.abs(dy) > 8) pgLocked = 'v';
+      else return;
+    }
+
+    if (pgLocked !== 'h') return;
+    if (e.cancelable) e.preventDefault();
+
+    const W = window.innerWidth;
+    /* Each page is 33.33% of strip = 1 viewport width */
+    const rawFraction = pgBaseIdx - dx / W;
+    /* Rubber band at edges */
+    let fraction;
+    if (rawFraction < 0) fraction = rawFraction * 0.15;
+    else if (rawFraction > 2) fraction = 2 + (rawFraction - 2) * 0.15;
+    else fraction = rawFraction;
+
+    /* Move the strip */
+    const strip = document.getElementById('view-strip');
+    strip.style.transform = `translateX(-${fraction * (100/3)}%)`;
+
+    /* Slide the indicator pill */
+    setIndicatorPosition(Math.max(0, Math.min(2, fraction)));
+  }, { passive: false });
+
+  container.addEventListener('touchend', (e) => {
+    if (!pgActive || pgLocked !== 'h' || isWideLayout()) { pgActive = false; pgLocked = null; return; }
+    pgActive = false; pgLocked = null;
+
+    const dx = e.changedTouches[0].clientX - pgStart.x;
+    const W = window.innerWidth;
+    const velocity = Math.abs(dx) / W; /* rough proxy */
+
+    let targetIdx = pgBaseIdx;
+    if (dx < -W * 0.25 || (dx < -40 && velocity > 0.3)) targetIdx = Math.min(2, pgBaseIdx + 1);
+    else if (dx > W * 0.25 || (dx > 40 && velocity > 0.3)) targetIdx = Math.max(0, pgBaseIdx - 1);
+
+    /* Snap with animation */
+    pageSwipeAnimating = true;
+    window.switchPage(PAGES[targetIdx], true);
+    setTimeout(() => { pageSwipeAnimating = false; }, 400);
+  }, { passive: true });
+
+  container.addEventListener('touchcancel', () => {
+    if (!pgActive) return;
+    pgActive = false; pgLocked = null;
+    window.switchPage(currentPage, true); /* snap back */
+  }, { passive: true });
+}
+
+/* Initialise indicator position on first paint */
+function initIndicator() {
+  /* Wait a frame for layout */
+  requestAnimationFrame(() => {
+    document.getElementById('nav-indicator-pill').style.transition = 'none';
+    setIndicatorPosition(0);
+    requestAnimationFrame(() => {
+      document.getElementById('nav-indicator-pill').style.transition =
+        'transform 0.35s cubic-bezier(0.05,0.7,0.1,1)';
+    });
+  });
+}
+
 /* ================================================================
    APP BOOT
    ================================================================ */
@@ -1175,6 +1180,7 @@ window.startApp = function() {
     cardsLoaded = true; checkReady();
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
     if (window.currentCardId) refreshCurrentCardPanel(window.currentCardId);
+    /* re-render active views */
     if (currentPage === 'collection') renderCollectionView();
     if (currentPage === 'graded') renderGradedView();
   });
@@ -1182,11 +1188,10 @@ window.startApp = function() {
   initSheetGestures();
   initInlinePanelSwipe();
   initScrollHide();
-  /* Init page swipe after a tick so layout is settled */
-  requestAnimationFrame(() => initPageSwipe());
-
-  /* Set initial slot active class */
-  document.getElementById('slot-players').classList.add('active');
+  initPageSwipe();
+  initIndicator();
+  /* Set strip to page 0 (players) with no animation */
+  setStripPosition(0, false);
 };
 
 function initGradeDropdown() {
@@ -1203,44 +1208,83 @@ function initGradeDropdown() {
    SCROLL-HIDE HEADERS
    ================================================================ */
 function initScrollHide() {
+  /* Generic: translate header up by its own height on scroll-down, restore on scroll-up */
   const pairs = [
     { scrollId: 'galleryScrollBody',    headerId: 'galleryHeader'    },
     { scrollId: 'collectionScrollBody', headerId: 'collectionHeader' },
     { scrollId: 'gradedScrollBody',     headerId: 'gradedHeader'     },
   ];
+
   pairs.forEach(({ scrollId, headerId }) => {
-    const el = document.getElementById(scrollId);
-    const hdr = document.getElementById(headerId);
-    if (!el || !hdr) return;
+    const scrollEl = document.getElementById(scrollId);
+    const hdr      = document.getElementById(headerId);
+    if (!scrollEl || !hdr) return;
+
     let lastY = 0;
-    el.addEventListener('scroll', () => {
-      const y = el.scrollTop;
-      if (y < 40) hdr.classList.remove('collapsed');
-      else if (y > lastY + 8) hdr.classList.add('collapsed');
-      else if (y < lastY - 8) hdr.classList.remove('collapsed');
+    let currentOffset = 0; /* px translated upward (0 = fully visible) */
+
+    scrollEl.addEventListener('scroll', () => {
+      if (isWideLayout()) {
+        hdr.style.transform = '';
+        return;
+      }
+      const y    = scrollEl.scrollTop;
+      const hdrH = hdr.offsetHeight;
+      const dy   = y - lastY;
       lastY = y;
+
+      /* Always fully show when near top */
+      if (y < 8) {
+        currentOffset = 0;
+      } else {
+        currentOffset = Math.min(hdrH, Math.max(0, currentOffset + dy));
+      }
+
+      hdr.style.transition = 'none';
+      hdr.style.transform  = `translateY(-${currentOffset}px)`;
+
+      /* Compensate scroll body padding so content doesn't jump */
+      scrollEl.style.marginTop = `-${currentOffset}px`;
+      scrollEl.style.paddingTop = `${currentOffset}px`;
     }, { passive: true });
   });
 
-  const detailEl = document.getElementById('detailScrollBody');
+  /* Detail view: translate whole banner up with scroll, swap to compact bar */
+  const detailEl  = document.getElementById('detailScrollBody');
   const detailHdr = document.getElementById('detailHeader');
   const compactBar = document.getElementById('detailCompactBar');
-  if (detailEl && detailHdr && compactBar) {
-    let lastY = 0;
-    detailEl.addEventListener('scroll', () => {
-      if (isWideLayout()) return;
-      const y = detailEl.scrollTop;
-      const threshold = 180;
-      if (y > threshold) {
-        detailHdr.classList.add('collapsed');
-        compactBar.style.display = 'flex';
-      } else {
-        detailHdr.classList.remove('collapsed');
-        compactBar.style.display = 'none';
-      }
-      lastY = y;
-    }, { passive: true });
-  }
+  if (!detailEl || !detailHdr || !compactBar) return;
+
+  let lastDetailY = 0;
+
+  detailEl.addEventListener('scroll', () => {
+    if (isWideLayout()) {
+      detailHdr.style.transform = '';
+      compactBar.style.display = 'none';
+      return;
+    }
+
+    const y    = detailEl.scrollTop;
+    const hdrH = detailHdr.offsetHeight;
+    lastDetailY = y;
+
+    if (y >= hdrH) {
+      /* Fully scrolled past — hide header, show compact bar */
+      detailHdr.style.transform  = `translateY(-${hdrH}px)`;
+      detailHdr.style.transition = 'none';
+      compactBar.style.display   = 'flex';
+      /* Keep scroll body flush */
+      detailEl.style.marginTop   = `-${hdrH}px`;
+      detailEl.style.paddingTop  = `${hdrH}px`;
+    } else {
+      /* Partially visible — track scroll 1:1 */
+      detailHdr.style.transition = 'none';
+      detailHdr.style.transform  = `translateY(-${y}px)`;
+      compactBar.style.display   = 'none';
+      detailEl.style.marginTop   = `-${y}px`;
+      detailEl.style.paddingTop  = `${y}px`;
+    }
+  }, { passive: true });
 }
 
 /* ================================================================
@@ -1264,6 +1308,7 @@ function renderCardPanelInto(targetEl, cardId, context, translateX) {
   const c = ALL_CARDS.find(x => x.id === cardId);
   if (!c) return;
 
+  /* Sequence depends on context */
   let seq = [];
   if (context === 'player') seq = window.cardSequence || [];
   else if (context === 'collection') seq = window.collCardSequence || [];
@@ -1298,9 +1343,11 @@ function renderCardPanelInto(targetEl, cardId, context, translateX) {
           <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
         </svg>
       </button>
+      <!-- Tap zones for prev/next navigation -->
       ${hasPrev ? `<button onclick="window._navCard('prev','${context}')" style="position:absolute;left:0;top:0;bottom:0;width:35%;background:transparent;border:none;cursor:pointer;z-index:5;" aria-label="Previous card"></button>` : ''}
       ${hasNext ? `<button onclick="window._navCard('next','${context}')" style="position:absolute;right:0;top:0;bottom:0;width:35%;background:transparent;border:none;cursor:pointer;z-index:5;" aria-label="Next card"></button>` : ''}
     </div>
+    <!-- Dot indicator row -->
     <div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom:16px; flex-wrap:wrap; max-width:100%; overflow:hidden;">
       ${seq.slice(Math.max(0,idx-4), Math.min(seq.length, idx+5)).map((id,i) => {
         const absI = Math.max(0,idx-4) + i;
@@ -1325,6 +1372,7 @@ function renderCardPanelInto(targetEl, cardId, context, translateX) {
     </div>`;
 }
 
+/* Refresh active panel for a given card */
 function refreshCurrentCardPanel(cardId) {
   if (activeCardContext === 'player' && isWideLayout()) {
     const panel = document.getElementById('twoPane-panel');
@@ -1345,6 +1393,7 @@ function refreshCurrentCardPanel(cardId) {
   }
 }
 
+/* Navigate card within context */
 window._navCard = function(direction, context) { navigateCard(direction, context); };
 function navigateCard(direction, context) {
   if (swipe.animating) return;
@@ -1389,7 +1438,7 @@ function navigateCard(direction, context) {
 }
 
 /* ================================================================
-   GESTURE SYSTEM — card-level sheet gestures
+   GESTURE SYSTEM — generic sheet gesture factory
    ================================================================ */
 function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName) {
   const sheet = document.getElementById(sheetId);
@@ -1480,6 +1529,7 @@ function closeCardSheet(ctx) {
   sheet.classList.remove('open');
   sheet.style.transform = '';
   document.getElementById('globalScrim').style.display = 'none';
+  /* Restore floating toolbar and FAB */
   const nb = document.getElementById('nav-bar');
   nb.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
   nb.style.transform = 'translateX(-50%) translateY(0)';
@@ -1543,6 +1593,7 @@ function renderGallery() {
     </div>`;
   }).join('');
 
+  /* Long-press detection on each tile */
   grid.querySelectorAll('.player-tile').forEach(tile => {
     let pressTimer = null;
     tile.addEventListener('touchstart', (e) => {
@@ -1570,8 +1621,15 @@ window.openDetail = (id) => {
   cardSearchQuery = "";
   document.getElementById('cardSearchInput').value = "";
   document.getElementById('compactSearchInput').value = "";
+  /* Reset header + scroll body to fully visible state */
+  const dHdr = document.getElementById('detailHeader');
+  const dScroll = document.getElementById('detailScrollBody');
+  dHdr.style.transform = '';
+  dHdr.style.transition = '';
+  dScroll.style.marginTop = '';
+  dScroll.style.paddingTop = '';
+  dScroll.scrollTop = 0;
   document.getElementById('detailCompactBar').style.display = 'none';
-  document.getElementById('detailHeader').classList.remove('collapsed');
 
   if (isWideLayout()) {
     window.currentCardId = null;
@@ -1585,22 +1643,31 @@ window.openDetail = (id) => {
   renderDetail(window.selectedPlayer);
 
   if (!isWideLayout()) {
-    const dv = document.getElementById('detail-view');
-    dv.style.display = 'flex';
-    dv.style.flexDirection = 'column';
+    /* Switch to players page if not already there */
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('detail-view').style.display = 'flex';
+    document.getElementById('detail-view').classList.add('active');
+    /* Show the floating FAB */
     document.getElementById('floating-fab').classList.add('visible');
+    setTimeout(() => {}, 10);
     history.pushState({ v: 'detail', p: id }, '');
   } else {
-    /* Wide mode: ensure gallery-view stays visible alongside detail pane */
+    /* In wide mode just ensure detail-view is active as the right pane content */
+    if (currentPage !== 'players') window.switchPage('players');
+    document.getElementById('detail-view').classList.add('active');
+    document.getElementById('gallery-view').classList.add('active');
   }
 };
 
 window.closeDetail = () => {
   if (isWideLayout()) return;
-  const dv = document.getElementById('detail-view');
-  dv.style.display = 'none';
+  document.getElementById('detail-view').classList.remove('active');
+  document.getElementById('detail-view').style.display = '';
   window.selectedPlayer = null;
+  /* Hide the floating FAB */
   document.getElementById('floating-fab').classList.remove('visible');
+  /* Re-show the gallery */
+  document.getElementById('gallery-view').classList.add('active');
   if (history.state?.v === 'detail') history.back();
 };
 
@@ -1661,8 +1728,14 @@ function renderCollectionView() {
   if (!cardsLoaded) return;
 
   let cards = ALL_CARDS.filter(c => c.Owned===true||c.Owned==="true");
-  if (collShowWishlistOnly) cards = ALL_CARDS.filter(c => !(c.Owned===true||c.Owned==="true"));
-  if (collShowGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
+
+  /* Wishlist chip on collection = show UN-owned cards instead */
+  if (collShowWishlistOnly) {
+    cards = ALL_CARDS.filter(c => !(c.Owned===true||c.Owned==="true"));
+  }
+  if (collShowGradedOnly) {
+    cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
+  }
 
   if (collSearchQuery) {
     const q = collSearchQuery.toLowerCase();
@@ -1674,9 +1747,11 @@ function renderCollectionView() {
     );
   }
 
+  /* Sort: base year key asc, then set asc, then number asc */
   cards.sort((a, b) => {
     const yA = yearSortKey(a.Year), yB = yearSortKey(b.Year);
     if (yA !== yB) return yA.localeCompare(yB);
+    /* Within same base year, sort raw year string so "1991" comes before "1991-92" */
     const rA = (a.Year||"").toString(), rB = (b.Year||"").toString();
     if (rA !== rB) return rA.localeCompare(rB);
     const sA = (a.Set||"").toLowerCase(), sB = (b.Set||"").toLowerCase();
@@ -1686,6 +1761,7 @@ function renderCollectionView() {
 
   document.getElementById('collectionOwnedCounter').innerText = cards.length;
 
+  /* Group by base year key */
   const groups = new Map();
   cards.forEach(c => {
     const key = yearSortKey(c.Year);
@@ -1697,6 +1773,7 @@ function renderCollectionView() {
 
   let html = '';
   groups.forEach((groupCards, yearKey) => {
+    /* Display label: if all cards share the same raw year string, use that; else show range */
     const rawYears = [...new Set(groupCards.map(c => (c.Year||"").toString()))].sort();
     const displayYear = rawYears.length === 1 ? rawYears[0] : rawYears.join(' · ');
     html += `<div class="year-group-header">${displayYear}<span class="year-count">${groupCards.filter(c=>c.Owned===true||c.Owned==="true").length} cards</span></div>`;
@@ -1754,6 +1831,7 @@ function renderGradedView() {
     );
   }
 
+  /* Sort by grade desc, then player name, then year */
   cards.sort((a, b) => {
     const gA = parseFloat(a.Grade)||0, gB = parseFloat(b.Grade)||0;
     if (gB !== gA) return gB - gA;
@@ -1829,6 +1907,7 @@ window.handleCardTap = (id, ctx) => {
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
     sheet.style.transform = ''; sheet.classList.add('open');
     document.getElementById('globalScrim').style.display = 'block';
+    /* Hide floating toolbar and FAB while sheet is open */
     document.getElementById('nav-bar').style.transform = 'translateX(-50%) translateY(calc(100% + 32px))';
     document.getElementById('nav-bar').style.transition = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)';
     document.getElementById('floating-fab').style.transform = 'translateY(calc(100% + 32px))';
@@ -1845,6 +1924,7 @@ window.closeAll = () => {
     s.classList.remove('open'); s.style.transform = '';
   });
   document.getElementById('globalScrim').style.display = 'none';
+  /* Restore floating toolbar and FAB */
   const nb = document.getElementById('nav-bar');
   nb.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
   nb.style.transform = 'translateX(-50%) translateY(0)';
@@ -1868,7 +1948,10 @@ function setFormFlag(flag, active) {
 window.toggleFormFlag = (flag) => { setFormFlag(flag, document.getElementById(flag === 'rc' ? 'f_rc' : 'f_auto').value !== "true"); };
 
 window.openCardForm = (cardId = null, formCtx = null) => {
+  /* formCtx: 'player' (locked to selectedPlayer), 'collection' (free dropdown), null = infer */
   const ctx = formCtx || (window.selectedPlayer ? 'player' : 'collection');
+
+  /* When editing, find the card's player */
   let contextPlayer = null;
   if (cardId) {
     const c = ALL_CARDS.find(x => x.id === cardId);
@@ -1882,27 +1965,33 @@ window.openCardForm = (cardId = null, formCtx = null) => {
   document.getElementById('f_cardId').value = cardId || "";
   document.getElementById('btnSaveCard').innerText = isEdit ? "Save Card" : "Mark Sleevd";
 
+  /* Build player dropdown — always a select now */
   const playerSel = document.getElementById('f_player');
   const sortedPlayers = [...ALL_PLAYERS].sort((a,b) => (a.Player||a.id).localeCompare(b.Player||b.id));
+  /* Add a blank "Select player..." option for collection/new cards */
   const blankOpt = ctx === 'collection' && !isEdit ? '<option value="">Select player...</option>' : '';
   playerSel.innerHTML = blankOpt + sortedPlayers.map(p =>
     `<option value="${p.id}">${p.Player||p.id}</option>`
   ).join('');
 
   if (ctx === 'player' && contextPlayer) {
+    /* Lock to current player */
     playerSel.value = contextPlayer.id;
     playerSel.disabled = true;
     document.getElementById('f_player_field').classList.add('read-only');
   } else if (isEdit && contextPlayer) {
+    /* Editing — pre-select the card's player, keep enabled */
     playerSel.value = contextPlayer.id;
     playerSel.disabled = false;
     document.getElementById('f_player_field').classList.remove('read-only');
   } else {
+    /* Collection new card — no pre-selection */
     playerSel.value = '';
     playerSel.disabled = false;
     document.getElementById('f_player_field').classList.remove('read-only');
   }
 
+  /* Refresh teams whenever player changes */
   function refreshTeams() {
     const pid = document.getElementById('f_player').value;
     const teams = [...new Set(ALL_CARDS.filter(c => c.Player === pid).map(c => c.Team).filter(Boolean))];
@@ -1934,6 +2023,7 @@ window.openCardForm = (cardId = null, formCtx = null) => {
     }
   } else {
     ['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => document.getElementById(id).value = "");
+    /* Only pre-fill sport when locked to a specific player */
     document.getElementById('f_sport').value = (ctx === 'player' && contextPlayer) ? (contextPlayer.Sport||"") : "";
     document.getElementById('f_grading').value = "Raw";
     document.getElementById('f_grade').value = "N/A";
@@ -1945,8 +2035,9 @@ window.openCardForm = (cardId = null, formCtx = null) => {
   }
   document.getElementById('cardFormSheet').classList.add('open');
   const scrim = document.getElementById('globalScrim');
-  scrim.style.zIndex = '1150';
+  scrim.style.zIndex = '1150'; /* above card detail sheets (1100) but below form (1200) */
   scrim.style.display = 'block';
+  /* Close form (not card sheet) when scrim tapped */
   scrim.onclick = () => window.closeAllForms();
 };
 
@@ -1959,7 +2050,10 @@ window.saveCard = async () => {
     const snapshot = await window.st.uploadBytes(storageRef, file);
     imageUrl = await window.st.getDownloadURL(snapshot.ref);
   }
+
+  /* Player id now comes directly from the select value (which holds the Firestore doc id) */
   const playerId = document.getElementById('f_player').value;
+
   const cardData = {
     Player: playerId,
     Year: document.getElementById('f_year').value,
@@ -1999,6 +2093,7 @@ window.savePlayer = async () => {
 window.closeAllForms = () => {
   document.querySelectorAll('#cardFormSheet, #playerFormSheet').forEach(s => s.classList.remove('open'));
   const scrim = document.getElementById('globalScrim');
+  /* If a card detail sheet is still open, keep scrim visible at base z-index */
   const cardSheetOpen = ['cardDetailSheet','collectionCardSheet','gradedCardSheet']
     .some(id => document.getElementById(id).classList.contains('open'));
   if (cardSheetOpen) {
@@ -2094,6 +2189,7 @@ window.onpopstate = (e) => {
 
   document.getElementById('omEdit').addEventListener('click', () => {
     closeMenu();
+    /* Pass null context — openCardForm will infer from the card's player */
     window.openCardForm(_activeCardId, null);
   });
 
@@ -2126,6 +2222,7 @@ window.onpopstate = (e) => {
    PLAYER LONG-PRESS EDIT MENU
    ================================================================ */
 (function() {
+  /* Build a mini sheet for player editing */
   const sheet = document.createElement('div');
   sheet.id = 'playerEditSheet';
   sheet.className = 'sheet';
@@ -2160,6 +2257,7 @@ window.onpopstate = (e) => {
       </div>
     </div>`;
   document.body.appendChild(sheet);
+  /* z-index above card form */
   sheet.style.zIndex = '1200';
 
   let _editPlayerId = null;
