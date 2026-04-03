@@ -24,7 +24,7 @@
   "scope": "./",
   "display": "standalone",
   "display_override": ["window-controls-overlay"],
-  "background_color": "#0A0A0A",
-  "theme_color": "#D31510",
+  "background_color": "#c2caf0",
+  "theme_color": "#c2caf0",
   "orientation": "any"
 }
