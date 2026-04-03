@@ -125,13 +125,160 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
 /* Buttons */
-.fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
+.fab { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
 .expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 /* =====================================================
-   SHEET — card detail bottom sheet
+   BOTTOM NAV BAR — mobile only
    ===================================================== */
+#bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 80;
+  border-top: 1px solid var(--md-surface-2);
+}
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+  position: relative;
+}
+.nav-tab-icon {
+  width: 48px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px;
+  transition: background 0.2s;
+}
+.nav-tab.active .nav-tab-icon { background: var(--md-surface-2); }
+.nav-tab-icon img { width: 24px; height: 24px; opacity: 0.5; filter: invert(0); }
+.nav-tab.active .nav-tab-icon img { opacity: 1; }
+.nav-tab-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--md-outline);
+  transition: color 0.2s;
+}
+.nav-tab.active .nav-tab-label { color: var(--md-on-surface); }
+
+/* Adjust scroll body to clear the nav bar on mobile */
+.scroll-body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+/* =====================================================
+   COLLECTION VIEW
+   ===================================================== */
+#collection-view { z-index: 5; display: none; }
+#collection-view.active { display: flex; }
+
+.year-group-header {
+  padding: 20px 16px 8px;
+  font-family: 'Google Sans Display';
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--md-on-surface);
+  position: sticky;
+  top: 0;
+  background: var(--md-surface);
+  z-index: 10;
+}
+.year-group-header span {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.5;
+  margin-left: 8px;
+}
+
+.collection-card-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--md-surface-2);
+  cursor: pointer;
+}
+.collection-card-item:active { background: var(--md-surface-2); }
+.collection-thumb {
+  width: 44px; height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--md-surface-2);
+  flex-shrink: 0;
+}
+.collection-info { flex: 1; min-width: 0; }
+.collection-set { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.collection-meta { font-size: 12px; opacity: 0.6; margin-top: 2px; }
+.collection-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+
+/* =====================================================
+   GRADED VIEW
+   ===================================================== */
+#graded-view { z-index: 5; display: none; }
+#graded-view.active { display: flex; }
+
+.graded-card-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--md-surface-2);
+  cursor: pointer;
+}
+.graded-card-item:active { background: var(--md-surface-2); }
+.graded-thumb {
+  width: 56px; height: 76px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--md-surface-2);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.graded-info { flex: 1; min-width: 0; }
+.graded-title { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.graded-player { font-size: 13px; opacity: 0.55; margin-top: 2px; }
+.graded-meta { font-size: 12px; opacity: 0.6; margin-top: 3px; }
+.grade-badge-large {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: var(--md-surface-2);
+  gap: 1px;
+}
+.grade-badge-large .co { font-size: 10px; font-weight: 800; opacity: 0.7; }
+.grade-badge-large .gr { font-size: 20px; font-weight: 900; line-height: 1; }
+
+@media (min-width: 840px) {
+  /* Hide nav bar entirely on desktop/tablet */
+  #bottom-nav { display: none !important; }
+  /* Restore scroll-body padding on desktop (no nav bar) */
+  .scroll-body { padding-bottom: 24px; }
+  /* Collection and graded views in wide mode */
+  #collection-view, #graded-view {
+    position: relative !important;
+    inset: auto !important;
+    flex: 1 !important;
+    height: 100dvh;
+    transform: none !important;
+  }
+}
 .sheet {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -529,7 +676,55 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </div>
 </div>
 
-<div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
+<!-- ============================================================
+     COLLECTION VIEW — all owned cards grouped by Year > Set > #
+     ============================================================ -->
+<div class="view" id="collection-view">
+  <div style="display:flex; flex-direction:column; height:100%;">
+    <div class="top-bar">
+      <span class="brand">Collection</span>
+      <div class="total-count-pill" id="collectionCounter">0</div>
+    </div>
+    <div class="scroll-body" id="collectionScrollBody"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     GRADED VIEW — all graded cards
+     ============================================================ -->
+<div class="view" id="graded-view">
+  <div style="display:flex; flex-direction:column; height:100%;">
+    <div class="top-bar">
+      <span class="brand">Graded</span>
+      <div class="total-count-pill" id="gradedCounter">0</div>
+    </div>
+    <div class="scroll-body" id="gradedScrollBody"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     BOTTOM NAV BAR — mobile only
+     ============================================================ -->
+<nav id="bottom-nav">
+  <button class="nav-tab active" id="nav-players" onclick="window.switchTab('players')">
+    <div class="nav-tab-icon">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAYABgDASIAAhEBAxEB/8QAGQABAAIDAAAAAAAAAAAAAAAAAAYHAwQI/8QAJxAAAQMEAgIBBAMAAAAAAAAAAQIDBAUGBxEAIRITMQgiQUIyUXH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A5mwfZ0S/8p0S0p8t+JFnLcLzrABcCG2lukJ30CQjWyDre9HWjZNHsTEVZpzVSo9m59qMF7fqkxaZFdaXolJ8VJSQdEEHR+QRyYfTwiA5T8K1iMmNGap1ZrlOqLuko9kuRHUtnyP7KLaEJG+zpIH4HNm0LOy/buMk2rHxjcSKm1HkNsVOLkRUVppxxS1IcTFQ96/sKxtPwopJP8jwK2vHHWPTj27q3a7V/wBIrFqrgmbBuaOw2VolOeCQEIAUk60vZ/Guj5bDkjqVo5AtHBGVJ2TUPtVGuLo7cV+bUm5T0tTUg+SfJLiiSlGuj+o66SdOBBMeXlYAxXLsDIEG5LETXE1mK/RFM+a3PR6S257ekpAAOxsny/GvuyPXrhSO2qPDwpJmhIIblTLokocX/SlobHiP8B444Fc3LUYFTqRk02gQaHHCfFMaI6+4n5J8ip5xairsDogdDod7cccD/9k=" alt="Players">
+    </div>
+    <span class="nav-tab-label">Players</span>
+  </button>
+  <button class="nav-tab" id="nav-collection" onclick="window.switchTab('collection')">
+    <div class="nav-tab-icon">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAAAAAAAAAAAMFBAf/xAAvEAABAgQFAQUJAQAAAAAAAAABAgQDBQYRAAcSEyEVCBQWMUEYIjI0V1iVptLT/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/APNqOo2mWGTVI1IrJud5izKerfKdxGb93CDMQY+3DTpgJULKAJGrm4VyRwmnTZB9oNW/lpp/ljEkE/ntP9kVTyQzqZSlyqvDBVGZOlwFlBYBRQVIIOm4Bt5XAxXxFC8HdU9p+ret9P7x0jusx+Z29Xd97c0/H7mu1vXywGlWNG0y/wAmquqROTc7y6mUiWxU0iPH7uKHgjR9uInTHSkWSCCdPNynkDhTGRP59Pag7IqXk+nUymzlNeCEmM9dLjrCAwJCQpZJ03JNvK5OGA5MvZlQM7yOc5f1bWcWlHUKpROITgymK9RGQW2zoAhm4INySbelr3NoeA8lvr3+oPP6wwwF8wplQMlyNbUBSVZxardRalM4iuBKYrJEFAbbOgiIeSTYgi/re1hdhhgP/9k=" alt="Collection">
+    </div>
+    <span class="nav-tab-label">Collection</span>
+  </button>
+  <button class="nav-tab" id="nav-graded" onclick="window.switchTab('graded')">
+    <div class="nav-tab-icon">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAAAAAAAAAAAYDCAf/xAApEAABAQcEAQQDAQAAAAAAAAABAgQFBxESEyEAAwYVFBYXQUgIh8Ui/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/APCIfcOh57TNMQIgNfKSzl+hzMzM4xsBaV2LxWs72CCDLEpS+Z4qfQEJur7X0VH/AK+x5HldWy2rVNVyumVNOapylnU39Of2D/P10Q/HHyXkn5Gcjcr0fEW3O5GjxeobHE07mw7NqljCt64tQKRNaQkUDKyoHJ0HOUQuHQ89pmaIEP2vlIZw/S5mlmfg2CtS7F4LQdnAAAlmc5/Esta/Tn9g/wA/TQZQ95jD32naYfxAY+UhnD9D5ZmlxnYK1LsWShY3sAACeJzn8S/1U+voS9V1XrWP/X2PH8XtGWzappt0VSppxTKUsaaaCWiFzGHntMzQ/h+ycpLOX6Xy0tL8OwFpXYshCBs4IIM8ylL5nhppoP/Z" alt="Graded">
+    </div>
+    <span class="nav-tab-label">Graded</span>
+  </button>
+</nav> id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
 <!-- ============================================================
      CARD DETAIL SHEET
@@ -1053,6 +1248,9 @@ function checkReady() {
       document.getElementById('detail-view').style.display = 'flex';
       document.getElementById('detail-view').classList.add('tp-no-player');
     }
+    // Refresh whichever tab is currently visible
+    if (currentTab === 'collection') renderCollection();
+    if (currentTab === 'graded')     renderGraded();
   }
 }
 function renderGallery() {
@@ -1512,6 +1710,153 @@ window.onpopstate = (e) => {
     }
   });
 })();
+
+/* ================================================================
+   TAB NAVIGATION
+   ================================================================ */
+let currentTab = 'players';
+
+window.switchTab = (tab) => {
+  if (tab === currentTab) return;
+  currentTab = tab;
+
+  // Update nav tab active states
+  ['players','collection','graded'].forEach(t => {
+    document.getElementById('nav-' + t)?.classList.toggle('active', t === tab);
+  });
+
+  // Show/hide views — only gallery and the two new views are tab-switched
+  // detail-view is a sub-view of players; don't touch it here
+  const galleryEl    = document.getElementById('gallery-view');
+  const collectionEl = document.getElementById('collection-view');
+  const gradedEl     = document.getElementById('graded-view');
+
+  galleryEl.style.display    = tab === 'players'    ? 'flex' : 'none';
+  collectionEl.classList.toggle('active', tab === 'collection');
+  gradedEl.classList.toggle('active',     tab === 'graded');
+
+  if (tab === 'collection') renderCollection();
+  if (tab === 'graded')     renderGraded();
+};
+
+/* ================================================================
+   COLLECTION VIEW RENDER
+   Owned cards only, grouped by Year, sorted by Set then Number
+   ================================================================ */
+function renderCollection() {
+  const owned = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true");
+
+  document.getElementById('collectionCounter').innerText = owned.length;
+
+  // Sort: Year → Set → Number
+  const sorted = [...owned].sort((a, b) => {
+    const yA = (a.Year || "").toString(), yB = (b.Year || "").toString();
+    if (yA !== yB) return yA.localeCompare(yB);
+    const sA = (a.Set || "").toLowerCase(), sB = (b.Set || "").toLowerCase();
+    if (sA !== sB) return sA.localeCompare(sB);
+    return (a.Number || "").toString().localeCompare((b.Number || "").toString(), undefined, { numeric: true });
+  });
+
+  // Group by Year
+  const groups = {};
+  sorted.forEach(c => {
+    const y = c.Year || "Unknown";
+    if (!groups[y]) groups[y] = [];
+    groups[y].push(c);
+  });
+
+  const body = document.getElementById('collectionScrollBody');
+  body.innerHTML = Object.entries(groups).map(([year, cards]) => `
+    <div class="year-group-header">${year}<span>${cards.length} card${cards.length !== 1 ? 's' : ''}</span></div>
+    ${cards.map(c => {
+      const player = ALL_PLAYERS.find(p => p.id === c.Player);
+      const co = c["Grading Company"] || "", gr = c.Grade || "";
+      const isRC   = c.RC   === true || c.RC   === "true";
+      const isAuto = c.Auto === true || c.Auto === "true";
+      const gradeBadge = (co && co !== "Raw") ? `<span class="badge-grade">${co} ${gr}</span>` : '';
+      const rcBadge    = isRC   ? `<span class="badge-rc">RC</span>` : '';
+      const autoBadge  = isAuto ? `<span class="badge-auto">AUTO</span>` : '';
+      const hasBadges  = gradeBadge || rcBadge || autoBadge;
+      return `<div class="collection-card-item" onclick="window.openCardFromCollection('${c.id}')">
+        <img class="collection-thumb" src="${getCleanImg(c['App Image'])}">
+        <div class="collection-info">
+          <div class="collection-set">${c.Set || 'Unknown Set'}</div>
+          <div class="collection-meta">${player?.Player || c.Player} · #${c.Number || 'N/A'}</div>
+          ${hasBadges ? `<div class="collection-badges">${gradeBadge}${rcBadge}${autoBadge}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  `).join('');
+
+  if (sorted.length === 0) {
+    body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;opacity:0.35;gap:12px;text-align:center;padding:32px;">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 7H4V9h11v2zm0-4H4V5h11v2zm5 8H4v-2h16v2zm0-4h-3V9h3v2z"/></svg>
+      <p style="font-size:14px;font-weight:600;">No owned cards yet</p>
+    </div>`;
+  }
+}
+
+/* Open a card from the collection/graded view — goes to player detail + opens card sheet */
+window.openCardFromCollection = (cardId) => {
+  const c = ALL_CARDS.find(x => x.id === cardId);
+  if (!c) return;
+  const player = ALL_PLAYERS.find(p => p.id === c.Player);
+  if (!player) return;
+
+  // Switch to players tab first, then open the player detail + card
+  window.switchTab('players');
+  window.openDetail(player.id);
+  // Small delay so detail view transition completes before opening sheet
+  setTimeout(() => window.handleCardTap(cardId), isWideLayout() ? 0 : 350);
+};
+
+/* ================================================================
+   GRADED VIEW RENDER
+   All graded cards (any grading company ≠ Raw), sorted by company > grade desc > year
+   ================================================================ */
+function renderGraded() {
+  const graded = ALL_CARDS.filter(c =>
+    c["Grading Company"] && c["Grading Company"] !== "Raw"
+  ).sort((a, b) => {
+    const coA = (a["Grading Company"] || "").toLowerCase(), coB = (b["Grading Company"] || "").toLowerCase();
+    if (coA !== coB) return coA.localeCompare(coB);
+    const grA = parseFloat(a.Grade) || 0, grB = parseFloat(b.Grade) || 0;
+    if (grB !== grA) return grB - grA; // higher grade first
+    return (a.Year || "").toString().localeCompare((b.Year || "").toString());
+  });
+
+  document.getElementById('gradedCounter').innerText = graded.length;
+
+  const body = document.getElementById('gradedScrollBody');
+
+  if (graded.length === 0) {
+    body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;opacity:0.35;gap:12px;text-align:center;padding:32px;">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      <p style="font-size:14px;font-weight:600;">No graded cards yet</p>
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = graded.map(c => {
+    const player = ALL_PLAYERS.find(p => p.id === c.Player);
+    const co = c["Grading Company"] || "";
+    const gr = c.Grade || "";
+    const isRC   = c.RC   === true || c.RC   === "true";
+    const isAuto = c.Auto === true || c.Auto === "true";
+    return `<div class="graded-card-item" onclick="window.openCardFromCollection('${c.id}')">
+      <img class="graded-thumb" src="${getCleanImg(c['App Image'])}">
+      <div class="graded-info">
+        <div class="graded-title">${c.Year} ${c.Set || ''}</div>
+        <div class="graded-player">${player?.Player || c.Player}</div>
+        <div class="graded-meta">#${c.Number || 'N/A'}${isRC ? ' · <span class="badge-rc" style="display:inline;">RC</span>' : ''}${isAuto ? ' · <span class="badge-auto" style="display:inline;">AUTO</span>' : ''}</div>
+      </div>
+      <div class="grade-badge-large">
+        <span class="co">${co}</span>
+        <span class="gr">${gr}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
 </script>
 </body>
 </html>
