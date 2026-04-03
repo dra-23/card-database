@@ -59,7 +59,12 @@
   --nav-height: 80px;
   --nav-height-safe: calc(96px + env(safe-area-inset-bottom));
 }
+/* Full bleed — html bg matches the top-bar colour so status bar blends seamlessly */
+html { background: #c2caf0; }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
+/* Extend surface-1 behind the system status bar and gesture bar */
+body { background: var(--md-surface-1); }
+#app-shell { background: var(--md-surface); }
 
 /* ================================================================
    MATERIAL 3 FIELDS
@@ -84,6 +89,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   height: 100dvh;
   width: 100vw;
   overflow: hidden;
+  background: var(--md-surface-1); /* fills safe-area gaps at edges */
 }
 
 /* ================================================================
@@ -130,7 +136,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 }
 .rail-item .rail-label { font-size: 10px; font-weight: 600; font-family: 'Google Sans', sans-serif; }
 .rail-item:hover { background: rgba(0,0,0,0.06); }
-.rail-item.active { background: var(--md-surface-2); color: var(--md-primary); }
+.rail-item.active { background: var(--md-surface-2); color: var(--md-on-surface); }
 .rail-item svg { flex-shrink: 0; }
 
 /* ================================================================
@@ -288,16 +294,17 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: #fff;
-  color: var(--md-surface-1);
+  background: var(--md-surface-2);
+  color: var(--md-on-surface-variant);
   border: none;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   z-index: 30;
-  transition: transform 0.15s;
+  transition: transform 0.15s, background 0.2s;
 }
+.wide-fab:hover { background: var(--md-surface-1); color: var(--md-on-surface); }
 .wide-fab:active { transform: scale(0.93); }
 
 @media (min-width: 840px) {
@@ -570,7 +577,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
         <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
         <!-- Wide FAB: tablet/desktop only -->
         <button class="wide-fab" onclick="window.openCardForm(null,'player')" title="Add card">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span class="material-symbols-outlined" style="font-size:26px;">add</span>
         </button>
       </div>
 
@@ -605,7 +612,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
         </div>
         <!-- Wide FAB: tablet/desktop only -->
         <button class="wide-fab" onclick="window.openCardForm(null,'collection')" title="Add card">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span class="material-symbols-outlined" style="font-size:26px;">add</span>
         </button>
       </div>
 
@@ -669,7 +676,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
 <!-- FLOATING ADD FAB (mobile — player detail & collection pages) -->
 <button id="floating-fab" onclick="window.floatingFabTap()">
-  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+  <span class="material-symbols-outlined" style="font-size:28px;">add</span>
 </button>
 
 <!-- SCRIM -->
