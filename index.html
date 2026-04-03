@@ -134,16 +134,14 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .rail-item svg { flex-shrink: 0; }
 
 /* ================================================================
-   FLOATING TOOLBAR — mobile (< 840px) — M3 Expressive pill
+   FLOATING TOOLBAR — mobile (< 840px) — compact icon-only pill
    ================================================================ */
 #nav-bar {
   position: fixed;
   bottom: calc(20px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  /* width fits content, constrained */
   width: auto;
-  max-width: calc(100vw - 48px);
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(24px) saturate(1.8);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
@@ -151,7 +149,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 8px;
+  padding: 8px;
   gap: 4px;
   z-index: 200;
   box-shadow:
@@ -159,13 +157,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1);
 }
 .nav-item {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 0;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -174,34 +172,40 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   border-radius: 32px;
   transition: background 0.2s, color 0.2s;
   height: 52px;
-  width: 64px;
+  width: 52px;
   flex-shrink: 0;
-  position: relative;
 }
-/* Active item: solid filled pill */
 .nav-item.active {
   background: var(--md-surface-1);
   color: var(--md-on-surface);
-  width: auto;
-  padding: 0 20px;
-  gap: 8px;
 }
-.nav-item .nav-label {
-  font-size: 14px;
-  font-weight: 700;
-  font-family: 'Google Sans', sans-serif;
-  max-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  opacity: 0;
-  transition: max-width 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0), opacity 0.2s;
-}
-.nav-item.active .nav-label {
-  max-width: 120px;
-  opacity: 1;
-}
-.nav-item svg { flex-shrink: 0; transition: color 0.2s; }
+/* Labels hidden — icon-only toolbar */
+.nav-item .nav-label { display: none; }
 .nav-item:not(.active):active { background: rgba(0,0,0,0.06); }
+
+/* ================================================================
+   FLOATING ADD FAB — appears to right of toolbar on detail/collection
+   ================================================================ */
+#floating-fab {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 24px;
+  width: 64px;
+  height: 68px;
+  border-radius: 20px;
+  background: var(--md-surface-1);
+  color: #fff;
+  display: none; /* shown only on player-detail and collection pages */
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(232, 25, 44, 0.35);
+  z-index: 200;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1), opacity 0.2s;
+}
+#floating-fab.visible { display: flex; }
+#floating-fab:active { transform: scale(0.93); }
 
 /* ================================================================
    PAGE CONTAINER — wraps all 3 views
@@ -388,6 +392,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 
   #nav-bar { display: none; }
   #nav-rail { display: flex; }
+  #floating-fab { display: none !important; }
 
   .view {
     padding-bottom: 0 !important;
@@ -517,9 +522,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
           <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
         </div>
         <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
-        <button class="fab" onclick="window.openCardForm()">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </button>
       </div>
 
       <!-- TWO-PANE inline card detail -->
@@ -605,6 +607,11 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </button>
 </nav>
 
+<!-- FLOATING ADD FAB (mobile — player detail & collection pages) -->
+<button id="floating-fab" onclick="window.floatingFabTap()">
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+</button>
+
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
@@ -655,7 +662,10 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
         <div style="flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center;">
           <input type="file" id="f_fileInput" accept="image/*" style="display:none;" onchange="window.handleFileSelect(this)">
           <button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none; padding:12px; font-size:13px;" onclick="document.getElementById('f_fileInput').click()">📷 Select Photo</button>
-          <div class="m3-field read-only" style="height:48px;"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly style="font-size:14px; padding-top:20px;"></div>
+          <div class="m3-field" id="f_player_field" style="height:48px;">
+            <label class="m3-label">Player</label>
+            <select id="f_player" class="m3-select" style="font-size:14px; padding-top:20px;"></select>
+          </div>
         </div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
@@ -798,6 +808,28 @@ function yearSortKey(year) {
 /* ================================================================
    NAVIGATION
    ================================================================ */
+function updateFloatingFab(page) {
+  if (isWideLayout()) return;
+  const fab = document.getElementById('floating-fab');
+  /* Show FAB on collection page; on players page it's shown when a player is open */
+  if (page === 'collection') {
+    fab.classList.add('visible');
+  } else {
+    /* Hide unless we're on a player detail — handled by openDetail/closeDetail */
+    if (page !== 'players' || !window.selectedPlayer) fab.classList.remove('visible');
+  }
+}
+
+window.floatingFabTap = function() {
+  /* Called from the floating FAB — context determines behaviour */
+  if (currentPage === 'collection') {
+    window.openCardForm(null, 'collection');
+  } else {
+    /* Players detail page */
+    window.openCardForm(null, 'player');
+  }
+};
+
 window.switchPage = function(page) {
   /* On mobile, if switching away from detail, hide it */
   if (!isWideLayout() && page !== 'players') {
@@ -806,6 +838,7 @@ window.switchPage = function(page) {
       document.getElementById('detail-view').style.display = 'none';
       document.getElementById('detail-view').classList.remove('active');
     }
+    window.selectedPlayer = null;
   }
 
   currentPage = page;
@@ -830,6 +863,7 @@ window.switchPage = function(page) {
     document.getElementById('rail-graded').classList.add('active');
     renderGradedView();
   }
+  updateFloatingFab(page);
 };
 
 /* ================================================================
@@ -1085,10 +1119,13 @@ function closeCardSheet(ctx) {
   sheet.classList.remove('open');
   sheet.style.transform = '';
   document.getElementById('globalScrim').style.display = 'none';
-  /* Restore floating toolbar */
+  /* Restore floating toolbar and FAB */
   const nb = document.getElementById('nav-bar');
   nb.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
   nb.style.transform = 'translateX(-50%) translateY(0)';
+  const ffab = document.getElementById('floating-fab');
+  ffab.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
+  ffab.style.transform = 'translateY(0)';
   if (history.state?.v === 'card') history.back();
 }
 
@@ -1170,6 +1207,8 @@ window.openDetail = (id) => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('detail-view').style.display = 'flex';
     document.getElementById('detail-view').classList.add('active');
+    /* Show the floating FAB */
+    document.getElementById('floating-fab').classList.add('visible');
     setTimeout(() => {}, 10);
     history.pushState({ v: 'detail', p: id }, '');
   } else {
@@ -1185,6 +1224,8 @@ window.closeDetail = () => {
   document.getElementById('detail-view').classList.remove('active');
   document.getElementById('detail-view').style.display = '';
   window.selectedPlayer = null;
+  /* Hide the floating FAB */
+  document.getElementById('floating-fab').classList.remove('visible');
   /* Re-show the gallery */
   document.getElementById('gallery-view').classList.add('active');
   if (history.state?.v === 'detail') history.back();
@@ -1426,9 +1467,11 @@ window.handleCardTap = (id, ctx) => {
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
     sheet.style.transform = ''; sheet.classList.add('open');
     document.getElementById('globalScrim').style.display = 'block';
-    /* Hide floating toolbar while sheet is open */
+    /* Hide floating toolbar and FAB while sheet is open */
     document.getElementById('nav-bar').style.transform = 'translateX(-50%) translateY(calc(100% + 32px))';
     document.getElementById('nav-bar').style.transition = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)';
+    document.getElementById('floating-fab').style.transform = 'translateY(calc(100% + 32px))';
+    document.getElementById('floating-fab').style.transition = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)';
     history.pushState({ v: 'card', id, ctx }, '');
   }
 };
@@ -1441,10 +1484,13 @@ window.closeAll = () => {
     s.classList.remove('open'); s.style.transform = '';
   });
   document.getElementById('globalScrim').style.display = 'none';
-  /* Restore floating toolbar */
+  /* Restore floating toolbar and FAB */
   const nb = document.getElementById('nav-bar');
   nb.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
   nb.style.transform = 'translateX(-50%) translateY(0)';
+  const ffab = document.getElementById('floating-fab');
+  ffab.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
+  ffab.style.transform = 'translateY(0)';
   if (history.state?.v === 'card') history.back();
 };
 
@@ -1461,22 +1507,52 @@ function setFormFlag(flag, active) {
 }
 window.toggleFormFlag = (flag) => { setFormFlag(flag, document.getElementById(flag === 'rc' ? 'f_rc' : 'f_auto').value !== "true"); };
 
-window.openCardForm = (cardId = null) => {
-  /* Determine player context for the form */
-  let contextPlayer = window.selectedPlayer;
-  if (!contextPlayer && cardId) {
+window.openCardForm = (cardId = null, formCtx = null) => {
+  /* formCtx: 'player' (locked to selectedPlayer), 'collection' (free dropdown), null = infer */
+  const ctx = formCtx || (window.selectedPlayer ? 'player' : 'collection');
+
+  /* When editing, find the card's player */
+  let contextPlayer = null;
+  if (cardId) {
     const c = ALL_CARDS.find(x => x.id === cardId);
     if (c) contextPlayer = ALL_PLAYERS.find(p => p.id === c.Player);
+  } else if (ctx === 'player') {
+    contextPlayer = window.selectedPlayer;
   }
 
   const isEdit = !!cardId;
   document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
   document.getElementById('f_cardId').value = cardId || "";
-  document.getElementById('f_player').value = contextPlayer ? (contextPlayer.Player || contextPlayer.id) : "";
   document.getElementById('btnSaveCard').innerText = isEdit ? "Save Card" : "Mark Sleevd";
 
-  const playerTeams = contextPlayer ? [...new Set(ALL_CARDS.filter(c => c.Player === contextPlayer.id).map(c => c.Team).filter(Boolean))] : [];
-  document.getElementById('f_team').innerHTML = playerTeams.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="">(New Team...)</option>';
+  /* Build player dropdown — always a select now */
+  const playerSel = document.getElementById('f_player');
+  const sortedPlayers = [...ALL_PLAYERS].sort((a,b) => (a.Player||a.id).localeCompare(b.Player||b.id));
+  playerSel.innerHTML = sortedPlayers.map(p =>
+    `<option value="${p.id}">${p.Player||p.id}</option>`
+  ).join('');
+
+  if (ctx === 'player' && contextPlayer) {
+    playerSel.value = contextPlayer.id;
+    playerSel.disabled = true;
+    document.getElementById('f_player_field').classList.add('read-only');
+  } else {
+    playerSel.disabled = false;
+    document.getElementById('f_player_field').classList.remove('read-only');
+    if (contextPlayer) playerSel.value = contextPlayer.id;
+    else if (sortedPlayers.length) playerSel.value = sortedPlayers[0].id;
+  }
+
+  /* Refresh teams whenever player changes */
+  function refreshTeams() {
+    const pid = document.getElementById('f_player').value;
+    const teams = [...new Set(ALL_CARDS.filter(c => c.Player === pid).map(c => c.Team).filter(Boolean))];
+    document.getElementById('f_team').innerHTML =
+      teams.map(t => `<option value="${t}">${t}</option>`).join('') +
+      '<option value="">(New Team...)</option>';
+  }
+  playerSel.onchange = refreshTeams;
+  refreshTeams();
 
   if (isEdit) {
     const c = ALL_CARDS.find(x => x.id === cardId);
@@ -1492,13 +1568,21 @@ window.openCardForm = (cardId = null) => {
     document.getElementById('f_url').value          = c["Card Information"]||"";
     setFormFlag('rc',   c.RC===true||c.RC==="true");
     setFormFlag('auto', c.Auto===true||c.Auto==="true");
-    if (c['App Image']) { document.getElementById('f_imagePreview').src = getCleanImg(c['App Image']); document.getElementById('f_imagePreview').style.display = 'block'; document.getElementById('previewPlaceholder').style.display = 'none'; }
+    if (c['App Image']) {
+      document.getElementById('f_imagePreview').src = getCleanImg(c['App Image']);
+      document.getElementById('f_imagePreview').style.display = 'block';
+      document.getElementById('previewPlaceholder').style.display = 'none';
+    }
   } else {
     ['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => document.getElementById(id).value = "");
-    document.getElementById('f_sport').value = contextPlayer?.Sport||"";
-    document.getElementById('f_grading').value = "Raw"; document.getElementById('f_grade').value = "N/A";
-    setFormFlag('rc', false); setFormFlag('auto', false);
-    document.getElementById('f_imagePreview').style.display = 'none'; document.getElementById('previewPlaceholder').style.display = 'block';
+    document.getElementById('f_sport').value = (ctx === 'player' && contextPlayer) ? (contextPlayer.Sport||"") : "";
+    document.getElementById('f_grading').value = "Raw";
+    document.getElementById('f_grade').value = "N/A";
+    setFormFlag('rc', false);
+    setFormFlag('auto', false);
+    document.getElementById('f_imagePreview').style.display = 'none';
+    document.getElementById('previewPlaceholder').style.display = 'block';
+    document.getElementById('f_fileInput').value = '';
   }
   document.getElementById('cardFormSheet').classList.add('open');
   document.getElementById('globalScrim').style.display = 'block';
@@ -1514,10 +1598,8 @@ window.saveCard = async () => {
     imageUrl = await window.st.getDownloadURL(snapshot.ref);
   }
 
-  /* Find player id from form */
-  const playerName = document.getElementById('f_player').value;
-  const playerObj = ALL_PLAYERS.find(p => (p.Player||p.id) === playerName) || window.selectedPlayer;
-  const playerId = playerObj ? playerObj.id : playerName;
+  /* Player id now comes directly from the select value (which holds the Firestore doc id) */
+  const playerId = document.getElementById('f_player').value;
 
   const cardData = {
     Player: playerId,
@@ -1641,7 +1723,11 @@ window.onpopstate = (e) => {
   window.openOverflowMenu = (cardId, anchorBtn) => openMenu(cardId, anchorBtn);
   window.openRowMenu = (cardId, anchorBtn) => openMenu(cardId, anchorBtn);
 
-  document.getElementById('omEdit').addEventListener('click', () => { closeMenu(); window.openCardForm(_activeCardId); });
+  document.getElementById('omEdit').addEventListener('click', () => {
+    closeMenu();
+    /* Pass null context — openCardForm will infer from the card's player */
+    window.openCardForm(_activeCardId, null);
+  });
 
   document.getElementById('omChangeImage').addEventListener('click', () => { closeMenu(); imgInput.value = ''; imgInput.click(); });
   imgInput.addEventListener('change', async () => {
