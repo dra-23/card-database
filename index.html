@@ -194,36 +194,7 @@ body { background: var(--md-surface-1); }
 .collapsible-header.collapsed { max-height: 0; }
 @media (min-width: 840px) {
   .collapsible-header.collapsed { max-height: 380px !important; }
-  #detailCompactBar { display: none !important; }
 }
-
-#detailCompactBar {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px 8px 12px;
-  background: var(--md-surface);
-  border-bottom: 1px solid var(--md-surface-2);
-  flex-shrink: 0;
-  z-index: 20;
-}
-#detailCompactBar .compact-back {
-  width: 36px; height: 36px; border-radius: 12px;
-  border: none; background: var(--md-surface-2); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--md-on-surface); flex-shrink: 0;
-}
-#detailCompactBar .compact-name {
-  font-family: 'Google Sans Display'; font-size: 17px; font-weight: 700;
-  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#detailCompactBar .compact-search {
-  flex: 1; height: 36px; border-radius: 18px; border: none;
-  background: var(--md-surface-2); padding: 0 12px;
-  font-family: 'Google Sans', sans-serif; font-size: 14px;
-  color: var(--md-on-surface); outline: none;
-}
-#detailCompactBar .compact-search:focus { box-shadow: 0 0 0 2px var(--md-primary); }
 
 /* ================================================================
    GRID & TILES
@@ -398,8 +369,7 @@ body { background: var(--md-surface-1); }
   gap: 4px;
   z-index: 200;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.14),
-    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.6);
   /* toolbar itself doesn't translate during page swipe */
@@ -455,7 +425,7 @@ body { background: var(--md-surface-1); }
   right: 24px;
   width: 64px; height: 68px;
   border-radius: 20px;
-  background: #fff; color: var(--md-surface-1);
+  background: #fff; color: #000;
   display: none;
   align-items: center; justify-content: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
@@ -647,13 +617,6 @@ body { background: var(--md-surface-1); }
     <!-- Detail view — overlays the track as a full-screen push on mobile -->
     <div class="view" id="detail-view" style="position:absolute; inset:0; display:none; z-index:50;">
       <div class="master-col">
-        <div id="detailCompactBar">
-          <button class="compact-back" onclick="window.closeDetail()">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </button>
-          <span class="compact-name" id="compactPlayerName"></span>
-          <input class="compact-search" type="text" placeholder="Search…" oninput="window.updateCardSearch(this.value)" id="compactSearchInput">
-        </div>
         <div id="detail-view-empty">
           <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           <p>Select a player to browse their cards</p>
@@ -671,11 +634,11 @@ body { background: var(--md-surface-1); }
               <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
             </div>
           </div>
-          <div class="search-filter-row">
-            <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-            <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-            <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
-          </div>
+        </div>
+        <div class="search-filter-row">
+          <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+          <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+          <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
         </div>
         <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
         <button class="wide-fab" onclick="window.openCardForm(null,'player')" title="Add card">
@@ -1224,21 +1187,16 @@ function initScrollHide() {
 
   const detailEl = document.getElementById('detailScrollBody');
   const detailHdr = document.getElementById('detailHeader');
-  const compactBar = document.getElementById('detailCompactBar');
-  if (detailEl && detailHdr && compactBar) {
-    let lastY = 0;
+  if (detailEl && detailHdr) {
     detailEl.addEventListener('scroll', () => {
       if (isWideLayout()) return;
       const y = detailEl.scrollTop;
       const threshold = 180;
       if (y > threshold) {
         detailHdr.classList.add('collapsed');
-        compactBar.style.display = 'flex';
       } else {
         detailHdr.classList.remove('collapsed');
-        compactBar.style.display = 'none';
       }
-      lastY = y;
     }, { passive: true });
   }
 }
@@ -1564,13 +1522,10 @@ window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
   const playerDisplayName = window.selectedPlayer.Player || window.selectedPlayer.id;
   document.getElementById('playerName').innerText = playerDisplayName;
-  document.getElementById('compactPlayerName').innerText = playerDisplayName;
   document.getElementById('playerBanner').src = getCleanImg(window.selectedPlayer['Banner_Image']);
   document.getElementById('playerThumb').src  = getCleanImg(window.selectedPlayer['Main Image']);
   cardSearchQuery = "";
   document.getElementById('cardSearchInput').value = "";
-  document.getElementById('compactSearchInput').value = "";
-  document.getElementById('detailCompactBar').style.display = 'none';
   document.getElementById('detailHeader').classList.remove('collapsed');
 
   if (isWideLayout()) {
