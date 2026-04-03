@@ -243,9 +243,26 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 /* ================================================================
    TOP BAR
    ================================================================ */
-.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
+.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
+
+/* Collapsible header wrapper — wraps top-bar + search-filter-row together */
+.collapsible-header {
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 200px;
+}
+/* Detail header is taller (banner + avatar + search row) */
+#detailHeader { max-height: 380px; }
+.collapsible-header.collapsed {
+  max-height: 0;
+}
+/* Never collapse on wide layout */
+@media (min-width: 840px) {
+  .collapsible-header.collapsed { max-height: 380px !important; }
+}
 
 /* ================================================================
    GRID & TILES
@@ -261,8 +278,31 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
 /* ================================================================
-   SCROLL BODY
+   WIDE FAB — tablet/desktop add card button (in master-col)
    ================================================================ */
+.wide-fab {
+  display: none; /* hidden on mobile */
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--md-surface-1);
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  z-index: 30;
+  transition: transform 0.15s;
+}
+.wide-fab:active { transform: scale(0.93); }
+
+@media (min-width: 840px) {
+  .wide-fab { display: flex; }
+}
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: var(--nav-height-safe); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
@@ -487,14 +527,16 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
          PLAYERS / GALLERY VIEW
          ============================================================ -->
     <div class="view active" id="gallery-view">
-      <div class="top-bar">
-        <span class="brand">sleevd</span>
-        <div class="total-count-pill" id="totalOwnedCounter">0</div>
-        <button class="icon-btn" onclick="window.openPlayerForm()">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        </button>
+      <div class="collapsible-header" id="galleryHeader">
+        <div class="top-bar">
+          <span class="brand">sleevd</span>
+          <div class="total-count-pill" id="totalOwnedCounter">0</div>
+          <button class="icon-btn" onclick="window.openPlayerForm()">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
+      <div class="scroll-body" id="galleryScrollBody"><div class="player-grid" id="playerGrid"></div></div>
     </div>
 
     <!-- ============================================================
@@ -506,24 +548,30 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
           <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           <p>Select a player to browse their cards</p>
         </div>
-        <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
-          <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
-          <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-          <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
-        </div>
-        <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-          <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-          <div style="padding-bottom:8px;">
-            <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
-            <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+        <div class="collapsible-header" id="detailHeader">
+          <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
+            <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
+            <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
+            <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+          </div>
+          <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+            <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="padding-bottom:8px;">
+              <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
+              <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+            </div>
+          </div>
+          <div class="search-filter-row">
+            <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+            <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+            <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
           </div>
         </div>
-        <div class="search-filter-row">
-          <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-          <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-          <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
-        </div>
         <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
+        <!-- Wide FAB: tablet/desktop only -->
+        <button class="wide-fab" onclick="window.openCardForm(null,'player')" title="Add card">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </button>
       </div>
 
       <!-- TWO-PANE inline card detail -->
@@ -541,16 +589,24 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
          ============================================================ -->
     <div class="view" id="collection-view">
       <div class="master-col" style="height:100%;">
-        <div class="top-bar">
-          <span class="brand">Collection</span>
-          <div class="total-count-pill" id="collectionOwnedCounter">0</div>
-        </div>
-        <div class="search-filter-row">
-          <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set..." oninput="window.updateCollSearch(this.value)">
+        <div class="collapsible-header" id="collectionHeader">
+          <div class="top-bar">
+            <span class="brand">Collection</span>
+            <div class="total-count-pill" id="collectionOwnedCounter">0</div>
+          </div>
+          <div class="search-filter-row">
+            <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set..." oninput="window.updateCollSearch(this.value)">
+            <div id="chipCollWishlist" class="filter-chip" onclick="window.toggleCollChip('wishlist')">Wishlist</div>
+            <div id="chipCollGraded" class="filter-chip" onclick="window.toggleCollChip('graded')">Graded</div>
+          </div>
         </div>
         <div class="scroll-body" id="collectionScrollBody">
           <div id="collectionList"></div>
         </div>
+        <!-- Wide FAB: tablet/desktop only -->
+        <button class="wide-fab" onclick="window.openCardForm(null,'collection')" title="Add card">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </button>
       </div>
 
       <!-- TWO-PANE inline -->
@@ -568,12 +624,14 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
          ============================================================ -->
     <div class="view" id="graded-view">
       <div class="master-col" style="height:100%;">
-        <div class="top-bar">
-          <span class="brand">Graded</span>
-          <div class="total-count-pill" id="gradedCounter">0</div>
-        </div>
-        <div class="search-filter-row">
-          <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set..." oninput="window.updateGradedSearch(this.value)">
+        <div class="collapsible-header" id="gradedHeader">
+          <div class="top-bar">
+            <span class="brand">Graded</span>
+            <div class="total-count-pill" id="gradedCounter">0</div>
+          </div>
+          <div class="search-filter-row">
+            <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set..." oninput="window.updateGradedSearch(this.value)">
+          </div>
         </div>
         <div class="scroll-body" id="gradedScrollBody" style="padding: 8px 16px;">
           <div id="gradedList"></div>
@@ -760,6 +818,7 @@ let currentCardId = null;
 let currentPage = 'players';
 let collSearchQuery = "";
 let gradedSearchQuery = "";
+let collShowGradedOnly = false, collShowWishlistOnly = false;
 
 /* Context for each sheet — tracks which "surface" is active */
 let activeCardContext = 'player';   // 'player' | 'collection' | 'graded'
@@ -891,6 +950,7 @@ window.startApp = function() {
   initGradeDropdown();
   initSheetGestures();
   initInlinePanelSwipe();
+  initScrollHide();
 };
 
 function initGradeDropdown() {
@@ -902,6 +962,52 @@ function initGradeDropdown() {
   }
   sel.innerHTML = html;
 }
+
+/* ================================================================
+   SCROLL-HIDE HEADERS
+   ================================================================ */
+function initScrollHide() {
+  const pairs = [
+    { scrollId: 'galleryScrollBody',    headerId: 'galleryHeader'    },
+    { scrollId: 'detailScrollBody',     headerId: 'detailHeader'     },
+    { scrollId: 'collectionScrollBody', headerId: 'collectionHeader' },
+    { scrollId: 'gradedScrollBody',     headerId: 'gradedHeader'     },
+  ];
+  pairs.forEach(({ scrollId, headerId }) => {
+    const el = document.getElementById(scrollId);
+    const hdr = document.getElementById(headerId);
+    if (!el || !hdr) return;
+    let lastY = 0;
+    el.addEventListener('scroll', () => {
+      const y = el.scrollTop;
+      /* Always show header when near top */
+      if (y < 40) {
+        hdr.classList.remove('collapsed');
+      } else if (y > lastY + 8) {
+        /* Scrolling down — hide */
+        hdr.classList.add('collapsed');
+      } else if (y < lastY - 8) {
+        /* Scrolling up — show */
+        hdr.classList.remove('collapsed');
+      }
+      lastY = y;
+    }, { passive: true });
+  });
+}
+
+/* ================================================================
+   COLLECTION FILTER CHIPS
+   ================================================================ */
+window.toggleCollChip = (type) => {
+  if (type === 'wishlist') {
+    collShowWishlistOnly = !collShowWishlistOnly;
+    document.getElementById('chipCollWishlist').classList.toggle('active', collShowWishlistOnly);
+  } else {
+    collShowGradedOnly = !collShowGradedOnly;
+    document.getElementById('chipCollGraded').classList.toggle('active', collShowGradedOnly);
+  }
+  renderCollectionView();
+};
 
 /* ================================================================
    CARD PANEL RENDER (shared)
@@ -1293,6 +1399,15 @@ function renderCollectionView() {
   if (!cardsLoaded) return;
 
   let cards = ALL_CARDS.filter(c => c.Owned===true||c.Owned==="true");
+
+  /* Wishlist chip on collection = show UN-owned cards instead */
+  if (collShowWishlistOnly) {
+    cards = ALL_CARDS.filter(c => !(c.Owned===true||c.Owned==="true"));
+  }
+  if (collShowGradedOnly) {
+    cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
+  }
+
   if (collSearchQuery) {
     const q = collSearchQuery.toLowerCase();
     cards = cards.filter(c =>
