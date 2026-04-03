@@ -193,12 +193,12 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   width: 64px;
   height: 68px;
   border-radius: 20px;
-  background: var(--md-surface-1);
-  color: #fff;
-  display: none; /* shown only on player-detail and collection pages */
+  background: #fff;
+  color: var(--md-surface-1);
+  display: none;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(232, 25, 44, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   z-index: 200;
   border: none;
   cursor: pointer;
@@ -338,6 +338,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 #cardDetailSheet { z-index: 1100; }
 #collectionCardSheet { z-index: 1100; }
 #gradedCardSheet { z-index: 1100; }
+#cardFormSheet { z-index: 1200; }
+#playerFormSheet { z-index: 1200; }
 #swipeHint { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.15s; z-index: 10; font-size: 13px; font-weight: 700; color: var(--md-on-surface); background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); white-space: nowrap; left: 16px; }
 #swipeHintRight { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.15s; z-index: 10; font-size: 13px; font-weight: 700; color: var(--md-on-surface); background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); right: 16px; left: auto; white-space: nowrap; }
 #cardDetailPanel, #collectionCardPanel, #gradedCardPanel { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 24px 24px; will-change: transform; }
@@ -894,7 +896,10 @@ window.startApp = function() {
 function initGradeDropdown() {
   const sel = document.getElementById('f_grade');
   let html = '<option value="N/A">N/A</option>';
-  for (let i = 10; i >= 1; i -= 0.5) html += `<option value="${i.toFixed(1)}">${i.toFixed(1)}</option>`;
+  for (let i = 10; i >= 1; i -= 0.5) {
+    const val = Number.isInteger(i) ? String(i) : i.toFixed(1);
+    html += `<option value="${val}">${val}</option>`;
+  }
   sel.innerHTML = html;
 }
 
@@ -1528,19 +1533,27 @@ window.openCardForm = (cardId = null, formCtx = null) => {
   /* Build player dropdown — always a select now */
   const playerSel = document.getElementById('f_player');
   const sortedPlayers = [...ALL_PLAYERS].sort((a,b) => (a.Player||a.id).localeCompare(b.Player||b.id));
-  playerSel.innerHTML = sortedPlayers.map(p =>
+  /* Add a blank "Select player..." option for collection/new cards */
+  const blankOpt = ctx === 'collection' && !isEdit ? '<option value="">Select player...</option>' : '';
+  playerSel.innerHTML = blankOpt + sortedPlayers.map(p =>
     `<option value="${p.id}">${p.Player||p.id}</option>`
   ).join('');
 
   if (ctx === 'player' && contextPlayer) {
+    /* Lock to current player */
     playerSel.value = contextPlayer.id;
     playerSel.disabled = true;
     document.getElementById('f_player_field').classList.add('read-only');
-  } else {
+  } else if (isEdit && contextPlayer) {
+    /* Editing — pre-select the card's player, keep enabled */
+    playerSel.value = contextPlayer.id;
     playerSel.disabled = false;
     document.getElementById('f_player_field').classList.remove('read-only');
-    if (contextPlayer) playerSel.value = contextPlayer.id;
-    else if (sortedPlayers.length) playerSel.value = sortedPlayers[0].id;
+  } else {
+    /* Collection new card — no pre-selection */
+    playerSel.value = '';
+    playerSel.disabled = false;
+    document.getElementById('f_player_field').classList.remove('read-only');
   }
 
   /* Refresh teams whenever player changes */
@@ -1575,6 +1588,7 @@ window.openCardForm = (cardId = null, formCtx = null) => {
     }
   } else {
     ['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => document.getElementById(id).value = "");
+    /* Only pre-fill sport when locked to a specific player */
     document.getElementById('f_sport').value = (ctx === 'player' && contextPlayer) ? (contextPlayer.Sport||"") : "";
     document.getElementById('f_grading').value = "Raw";
     document.getElementById('f_grade').value = "N/A";
@@ -1585,7 +1599,11 @@ window.openCardForm = (cardId = null, formCtx = null) => {
     document.getElementById('f_fileInput').value = '';
   }
   document.getElementById('cardFormSheet').classList.add('open');
-  document.getElementById('globalScrim').style.display = 'block';
+  const scrim = document.getElementById('globalScrim');
+  scrim.style.zIndex = '1150'; /* above card detail sheets (1100) but below form (1200) */
+  scrim.style.display = 'block';
+  /* Close form (not card sheet) when scrim tapped */
+  scrim.onclick = () => window.closeAllForms();
 };
 
 window.saveCard = async () => {
@@ -1638,8 +1656,19 @@ window.savePlayer = async () => {
    SHARED HELPERS
    ================================================================ */
 window.closeAllForms = () => {
-  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
-  document.getElementById('globalScrim').style.display = 'none';
+  document.querySelectorAll('#cardFormSheet, #playerFormSheet').forEach(s => s.classList.remove('open'));
+  const scrim = document.getElementById('globalScrim');
+  /* If a card detail sheet is still open, keep scrim visible at base z-index */
+  const cardSheetOpen = ['cardDetailSheet','collectionCardSheet','gradedCardSheet']
+    .some(id => document.getElementById(id).classList.contains('open'));
+  if (cardSheetOpen) {
+    scrim.style.zIndex = '900';
+    scrim.onclick = () => window.closeAllForms();
+  } else {
+    scrim.style.display = 'none';
+    scrim.style.zIndex = '900';
+    scrim.onclick = () => window.closeAllForms();
+  }
 };
 window.handleFileSelect = (input) => {
   const file = input.files[0];
