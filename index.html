@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#c2caf0">
 <title>sleevd</title>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { 
@@ -56,7 +57,7 @@
   --md-outline: #74777F;
   --soft-red: #EF5350;
   --nav-height: 80px;
-  --nav-height-safe: calc(80px + env(safe-area-inset-bottom));
+  --nav-height-safe: calc(96px + env(safe-area-inset-bottom));
 }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
@@ -104,47 +105,103 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   font-family: 'Google Sans Display'; font-size: 13px; font-weight: 700;
   color: var(--md-on-surface); margin-bottom: 16px; letter-spacing: -0.3px;
 }
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'liga';
+  flex-shrink: 0;
+  user-select: none;
+}
 .rail-item {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   width: 64px; height: 56px; border-radius: 16px; border: none;
   background: transparent; cursor: pointer; gap: 4px;
   transition: background 0.2s; color: var(--md-on-surface-variant);
 }
-.rail-item span { font-size: 10px; font-weight: 600; }
+.rail-item .rail-label { font-size: 10px; font-weight: 600; font-family: 'Google Sans', sans-serif; }
 .rail-item:hover { background: rgba(0,0,0,0.06); }
 .rail-item.active { background: var(--md-surface-2); color: var(--md-primary); }
-.rail-item.active span { color: var(--md-primary); }
 .rail-item svg { flex-shrink: 0; }
 
 /* ================================================================
-   BOTTOM NAV BAR — mobile (< 840px) — M3 style
+   FLOATING TOOLBAR — mobile (< 840px) — M3 Expressive pill
    ================================================================ */
 #nav-bar {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: var(--nav-height-safe);
-  background: var(--md-surface-1);
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  /* width fits content, constrained */
+  width: auto;
+  max-width: calc(100vw - 48px);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border-radius: 40px;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-around;
-  padding-top: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 8px;
+  gap: 4px;
   z-index: 200;
-  border-top: 1px solid rgba(0,0,0,0.06);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.14),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 .nav-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; flex: 1; border: none; background: transparent; cursor: pointer;
-  color: var(--md-on-surface-variant); padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--md-on-surface-variant);
+  padding: 0;
+  border-radius: 32px;
+  transition: background 0.2s, color 0.2s;
+  height: 52px;
+  width: 64px;
+  flex-shrink: 0;
+  position: relative;
 }
-.nav-item .nav-indicator {
-  width: 64px; height: 32px; border-radius: 16px; background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
+/* Active item: solid filled pill */
+.nav-item.active {
+  background: var(--md-surface-1);
+  color: var(--md-on-surface);
+  width: auto;
+  padding: 0 20px;
+  gap: 8px;
 }
-.nav-item.active .nav-indicator { background: var(--md-surface-2); }
-.nav-item span { font-size: 12px; font-weight: 600; }
-.nav-item.active { color: var(--md-primary); }
-.nav-item.active span { color: var(--md-primary); }
+.nav-item .nav-label {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Google Sans', sans-serif;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: max-width 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0), opacity 0.2s;
+}
+.nav-item.active .nav-label {
+  max-width: 120px;
+  opacity: 1;
+}
+.nav-item svg { flex-shrink: 0; transition: color 0.2s; }
+.nav-item:not(.active):active { background: rgba(0,0,0,0.06); }
 
 /* ================================================================
    PAGE CONTAINER — wraps all 3 views
@@ -400,25 +457,16 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   <nav id="nav-rail">
     <div class="rail-brand">sleevd</div>
     <button class="rail-item active" id="rail-players" onclick="window.switchPage('players')">
-      <!-- Cards Stack icon -->
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
-      </svg>
-      <span>Players</span>
+      <span class="material-symbols-outlined">cards_stack</span>
+      <span class="rail-label">Players</span>
     </button>
     <button class="rail-item" id="rail-collection" onclick="window.switchPage('collection')">
-      <!-- Inventory 2 icon -->
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3z"/>
-      </svg>
-      <span>Collection</span>
+      <span class="material-symbols-outlined">inventory_2</span>
+      <span class="rail-label">Collection</span>
     </button>
     <button class="rail-item" id="rail-graded" onclick="window.switchPage('graded')">
-      <!-- G Mobiledata Badge style -->
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14H9V7h2v8zm4 0h-2v-4h-2v-2h2V7h2v8z"/>
-      </svg>
-      <span>Graded</span>
+      <span class="material-symbols-outlined">g_mobiledata_badge</span>
+      <span class="rail-label">Graded</span>
     </button>
   </nav>
 
@@ -538,34 +586,19 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   </div><!-- /page-container -->
 </div><!-- /app-shell -->
 
-<!-- BOTTOM NAV BAR (mobile) -->
+<!-- FLOATING TOOLBAR (mobile) -->
 <nav id="nav-bar">
   <button class="nav-item active" id="nav-players" onclick="window.switchPage('players')">
-    <div class="nav-indicator">
-      <!-- Cards Stack -->
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
-      </svg>
-    </div>
-    <span>Players</span>
+    <span class="material-symbols-outlined">cards_stack</span>
+    <span class="nav-label">Players</span>
   </button>
   <button class="nav-item" id="nav-collection" onclick="window.switchPage('collection')">
-    <div class="nav-indicator">
-      <!-- Inventory 2 -->
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3z"/>
-      </svg>
-    </div>
-    <span>Collection</span>
+    <span class="material-symbols-outlined">inventory_2</span>
+    <span class="nav-label">Collection</span>
   </button>
   <button class="nav-item" id="nav-graded" onclick="window.switchPage('graded')">
-    <div class="nav-indicator">
-      <!-- G Mobiledata Badge / Shield -->
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14H9V7h2v8zm4 0h-2v-4h-2v-2h2V7h2v8z"/>
-      </svg>
-    </div>
-    <span>Graded</span>
+    <span class="material-symbols-outlined">g_mobiledata_badge</span>
+    <span class="nav-label">Graded</span>
   </button>
 </nav>
 
@@ -1049,6 +1082,10 @@ function closeCardSheet(ctx) {
   sheet.classList.remove('open');
   sheet.style.transform = '';
   document.getElementById('globalScrim').style.display = 'none';
+  /* Restore floating toolbar */
+  const nb = document.getElementById('nav-bar');
+  nb.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
+  nb.style.transform = 'translateX(-50%) translateY(0)';
   if (history.state?.v === 'card') history.back();
 }
 
@@ -1386,6 +1423,9 @@ window.handleCardTap = (id, ctx) => {
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
     sheet.style.transform = ''; sheet.classList.add('open');
     document.getElementById('globalScrim').style.display = 'block';
+    /* Hide floating toolbar while sheet is open */
+    document.getElementById('nav-bar').style.transform = 'translateX(-50%) translateY(calc(100% + 32px))';
+    document.getElementById('nav-bar').style.transition = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)';
     history.pushState({ v: 'card', id, ctx }, '');
   }
 };
@@ -1398,6 +1438,10 @@ window.closeAll = () => {
     s.classList.remove('open'); s.style.transform = '';
   });
   document.getElementById('globalScrim').style.display = 'none';
+  /* Restore floating toolbar */
+  const nb = document.getElementById('nav-bar');
+  nb.style.transition = 'transform 0.35s cubic-bezier(0.05, 0.7, 0.1, 1)';
+  nb.style.transform = 'translateX(-50%) translateY(0)';
   if (history.state?.v === 'card') history.back();
 };
 
