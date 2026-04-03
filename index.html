@@ -55,65 +55,141 @@
   --md-on-surface-variant: #44474E;
   --md-outline: #74777F;
   --soft-red: #EF5350;
+  --nav-height: 80px;
+  --nav-height-safe: calc(80px + env(safe-area-inset-bottom));
 }
 html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--md-surface); color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; }
 
-/* Material 3 Filled Text Field Styles */
+/* ================================================================
+   MATERIAL 3 FIELDS
+   ================================================================ */
 .m3-field {
+  position: relative; display: flex; flex-direction: column;
+  background: #F0F0F0; border-radius: 4px 4px 0 0; height: 56px; width: 100%;
+  border-bottom: 1px solid var(--md-outline); transition: background 0.2s;
+}
+.m3-field:focus-within { background: #E8E8E8; border-bottom: 2px solid var(--md-primary); }
+.m3-label { position: absolute; top: 8px; left: 16px; font-size: 12px; font-weight: 500; color: var(--md-on-surface-variant); pointer-events: none; }
+.m3-field:focus-within .m3-label { color: var(--md-primary); }
+.m3-input, .m3-select { border: none; background: transparent; padding: 24px 16px 8px 16px; font-family: 'Roboto', sans-serif; font-size: 16px; color: var(--md-on-surface); width: 100%; outline: none; appearance: none; }
+.m3-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2344474E'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 24px; }
+.m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
+
+/* ================================================================
+   APP SHELL — root layout adapts between mobile and wide
+   ================================================================ */
+#app-shell {
+  display: flex;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ================================================================
+   NAVIGATION RAIL — tablet/desktop (≥840px)
+   ================================================================ */
+#nav-rail {
+  display: none;
+  flex-direction: column;
+  width: 80px;
+  background: var(--md-surface-1);
+  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-bottom: 12px;
+  flex-shrink: 0;
+  z-index: 50;
+  align-items: center;
+  gap: 4px;
+}
+#nav-rail .rail-brand {
+  font-family: 'Google Sans Display'; font-size: 13px; font-weight: 700;
+  color: var(--md-on-surface); margin-bottom: 16px; letter-spacing: -0.3px;
+}
+.rail-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 64px; height: 56px; border-radius: 16px; border: none;
+  background: transparent; cursor: pointer; gap: 4px;
+  transition: background 0.2s; color: var(--md-on-surface-variant);
+}
+.rail-item span { font-size: 10px; font-weight: 600; }
+.rail-item:hover { background: rgba(0,0,0,0.06); }
+.rail-item.active { background: var(--md-surface-2); color: var(--md-primary); }
+.rail-item.active span { color: var(--md-primary); }
+.rail-item svg { flex-shrink: 0; }
+
+/* ================================================================
+   BOTTOM NAV BAR — mobile (< 840px) — M3 style
+   ================================================================ */
+#nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-height-safe);
+  background: var(--md-surface-1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 12px;
+  z-index: 200;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; flex: 1; border: none; background: transparent; cursor: pointer;
+  color: var(--md-on-surface-variant); padding: 0;
+}
+.nav-item .nav-indicator {
+  width: 64px; height: 32px; border-radius: 16px; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.nav-item.active .nav-indicator { background: var(--md-surface-2); }
+.nav-item span { font-size: 12px; font-weight: 600; }
+.nav-item.active { color: var(--md-primary); }
+.nav-item.active span { color: var(--md-primary); }
+
+/* ================================================================
+   PAGE CONTAINER — wraps all 3 views
+   ================================================================ */
+#page-container {
+  flex: 1;
+  min-width: 0;
+  height: 100dvh;
+  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
-  background: #F0F0F0;
-  border-radius: 4px 4px 0 0;
-  height: 56px;
-  width: 100%;
-  border-bottom: 1px solid var(--md-outline);
-  transition: background 0.2s;
 }
-.m3-field:focus-within { background: #E8E8E8; border-bottom: 2px solid var(--md-primary); }
-.m3-label {
-  position: absolute;
-  top: 8px;
-  left: 16px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--md-on-surface-variant);
-  pointer-events: none;
-}
-.m3-field:focus-within .m3-label { color: var(--md-primary); }
-.m3-input, .m3-select {
-  border: none;
-  background: transparent;
-  padding: 24px 16px 8px 16px;
-  font-family: 'Roboto', sans-serif;
-  font-size: 16px;
-  color: var(--md-on-surface);
-  width: 100%;
-  outline: none;
-  appearance: none;
-}
-.m3-select {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2344474E'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 24px;
-}
-.m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
 
-/* Layout & Views */
-.view { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--md-surface); transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1.0); padding-top: env(safe-area-inset-top); }
-#gallery-view { z-index: 5; display: flex; }
-#detail-view { z-index: 50; display: none; transform: translateX(100%); flex-direction: row; } 
-#detail-view.active { display: flex; transform: translateX(0); }
-.scroll-body { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
-.scroll-body::-webkit-scrollbar { display: none; }
-.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; }
+/* ================================================================
+   VIEWS
+   ================================================================ */
+.view {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--md-surface);
+  padding-top: env(safe-area-inset-top);
+  /* Mobile: leave room for bottom nav */
+  padding-bottom: var(--nav-height-safe);
+}
+.view.active { display: flex; }
+
+/* ================================================================
+   GALLERY / PLAYERS VIEW
+   ================================================================ */
+#gallery-view { z-index: 5; }
+#detail-view  { z-index: 50; padding-bottom: var(--nav-height-safe); }
+#collection-view { z-index: 5; }
+#graded-view  { z-index: 5; }
+
+/* ================================================================
+   TOP BAR
+   ================================================================ */
 .top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 
-/* Grid & Tiles */
+/* ================================================================
+   GRID & TILES
+   ================================================================ */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
 .player-grid.loaded { opacity: 1; }
 .player-tile { border-radius: 24px; overflow: hidden; background: var(--md-surface-2); position: relative; aspect-ratio: 3/4; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -124,445 +200,417 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .sport-badge-overlay { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 10; }
 .sport-icon { background: rgba(255,255,255,0.3); backdrop-filter: blur(8px); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
-/* Buttons */
-.fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
+/* ================================================================
+   SCROLL BODY
+   ================================================================ */
+.scroll-body { flex: 1; overflow-y: auto; }
+.scroll-body::-webkit-scrollbar { display: none; }
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+.fab { position: absolute; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 20px; background: var(--md-surface-1); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 60; border: none; cursor: pointer; }
 .expressive-btn { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .icon-btn { background: transparent; border: none; color: var(--md-on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-/* =====================================================
-   SHEET — card detail bottom sheet
-   ===================================================== */
-.sheet {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: #fff;
-  border-radius: 32px 32px 0 0;
-  z-index: 1000;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1);
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-}
+/* ================================================================
+   SHEET
+   ================================================================ */
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
 .sheet.open { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; touch-action: pan-y; }
 
-/* =====================================================
-   TWO-PANE LAYOUT — tablet & desktop (≥840px)
-   ===================================================== */
-@media (min-width: 840px) {
-
-  html, body { display: flex; flex-direction: row; overflow: hidden; height: 100dvh; }
-
-  /* Override .view's position:fixed so both panes join the flex row */
-  #gallery-view {
-    position: relative !important;
-    inset: auto !important;
-    width: 340px !important;
-    flex-shrink: 0;
-    height: 100dvh;
-    border-right: 1px solid var(--md-surface-2);
-    z-index: 5;
-    transform: none !important;
-    display: flex !important;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  #detail-view {
-    position: relative !important;
-    inset: auto !important;
-    flex: 1 !important;
-    width: 0 !important; /* flex:1 will expand it */
-    height: 100dvh;
-    transform: none !important;
-    display: flex !important;
-    flex-direction: row !important;
-    z-index: 5;
-    overflow: hidden;
-  }
-
-  /* Narrower player tiles in 340px column */
-  .player-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  }
-
-  /* Back button hidden — no navigation needed */
-  #detail-view .back-btn { display: none; }
-
-  /* FAB anchored to right pane */
-  .fab { position: absolute !important; }
-
-  /* Hide the bottom sheet — use inline panel instead */
-  #cardDetailSheet { display: none !important; }
-
-  /* Middle column: player header + card list */
-  #detail-view .master-col {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* Right column: inline card detail */
-  #twoPane-cardDetail {
-    width: 380px;
-    flex-shrink: 0;
-    height: 100%;
-    overflow-y: auto;
-    border-left: 1px solid var(--md-surface-2);
-    background: var(--md-surface);
-    display: flex !important;
-    flex-direction: column;
-  }
-  #twoPane-cardDetail::-webkit-scrollbar { display: none; }
-
-  #twoPane-cardDetail .tp-empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.35;
-    gap: 12px;
-    padding: 32px;
-    text-align: center;
-  }
-  #twoPane-cardDetail .tp-empty p { font-size: 14px; font-weight: 600; }
-
-  #twoPane-panel {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
-    will-change: transform;
-  }
-  #twoPane-panel::-webkit-scrollbar { display: none; }
-  #twoPane-panel.animating {
-    transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
-  /* Selected card row highlight */
-  .card-item.tp-selected {
-    border-color: var(--md-surface-1);
-    background: #e8ecff;
-  }
-
-  /* Empty state when no player selected */
-  #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
-  #detail-view.tp-no-player #detail-view-empty { display: flex !important; }
-}
-
-/* twoPane-cardDetail hidden on mobile */
-#twoPane-cardDetail { display: none; }
-
-/* Wide-layout empty state element */
-#detail-view-empty {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  opacity: 0.32;
-  gap: 14px;
-  text-align: center;
-  padding: 32px;
-}
-#detail-view-empty p { font-size: 15px; font-weight: 600; }
-
-/* The single scrollable panel inside the card detail sheet */
-#cardDetailPanel {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 24px 24px;
-  /* JS sets translateX during horizontal swipe */
-  will-change: transform;
-  /* No CSS transition by default — JS adds/removes a transition class */
-}
-#cardDetailPanel.animating {
-  transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Swipe nav indicator pills that appear during drag */
-#swipeHint {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 10;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--md-on-surface);
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
-  padding: 8px 14px;
-  border-radius: 20px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-  white-space: nowrap;
-}
-#swipeHint.visible { opacity: 1; }
-#swipeHint.left  { left: 16px; }
-#swipeHint.right { right: 16px; left: auto; }
-
-/* Detail Items */
-.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
-.card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
-
-/* Middle info column — fills available space */
-.card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.card-info-row1 { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-info-row2 { font-size: 12px; opacity: 0.6; }
-/* Badge tray — 3rd row, wraps naturally */
-.card-badge-tray { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; align-items: center; }
-
-/* Grading badge (existing, now in tray) */
-.badge-grade { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; border: 1.5px solid var(--md-surface-1); white-space: nowrap; }
-/* RC badge */
-.badge-rc { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-/* AUTO badge */
-.badge-auto { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-
-/* Row 3-dot menu button */
-.card-row-menu-btn {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--md-on-surface-variant);
-  opacity: 0.55;
-}
-.card-row-menu-btn:active { background: rgba(0,0,0,0.07); opacity: 1; }
-
-/* Green "Mark Sleevd" item in overflow menu */
-.overflow-menu-item.sleevd-action { color: #2E7D32; }
-.overflow-menu-item.sleevd-action svg { opacity: 1; }
+/* ================================================================
+   DETAIL VIEW — player page
+   ================================================================ */
+.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; overflow: hidden; }
 .back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; }
 .status-toggle-btn { position: relative; width: 48px; height: 28px; background: var(--md-outline); border-radius: 20px; cursor: pointer; border: none; transition: background 0.3s ease; display: flex; align-items: center; padding: 0 4px; }
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
 .status-toggle-btn.sleevd::after { transform: translateX(20px); }
+.card-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; margin-bottom: 8px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
 .card-item.not-owned { opacity: 0.5; border-style: dashed; }
-.player-tile:active { transform: scale(0.96); transition: transform 0.1s ease; }
+.card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.card-info-row1 { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-info-row2 { font-size: 12px; opacity: 0.6; }
+.card-badge-tray { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; align-items: center; }
+.badge-grade { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; border: 1.5px solid var(--md-surface-1); white-space: nowrap; }
+.badge-rc { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-auto { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.card-row-menu-btn { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; }
+.card-row-menu-btn:active { background: rgba(0,0,0,0.07); opacity: 1; }
 
-/* Search / filter row */
-.search-filter-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--md-surface);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  width: 100%;
-  overflow-x: hidden;
-}
-.search-input-expressive {
-  flex: 1; 
-  min-width: 120px;
-  height: 48px;
-  border-radius: 24px;
-  border: none;
-  background: var(--md-surface-2);
-  padding: 0 16px;
-  font-family: 'Google Sans', sans-serif;
-  font-size: 15px;
-  color: var(--md-on-surface);
-  outline: none;
-}
+/* ================================================================
+   SEARCH / FILTER ROW
+   ================================================================ */
+.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; overflow-x: hidden; }
+.search-input-expressive { flex: 1; min-width: 120px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); padding: 0 16px; font-family: 'Google Sans', sans-serif; font-size: 15px; color: var(--md-on-surface); outline: none; }
 .search-input-expressive::placeholder { color: var(--md-outline); opacity: 0.7; }
 .search-input-expressive:focus { box-shadow: 0 0 0 2px var(--md-primary); }
-.filter-chip {
-  flex-shrink: 0; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid var(--md-outline);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--md-on-surface);
-  cursor: pointer;
-  transition: 0.2s;
-  user-select: none;
-  white-space: nowrap;
-}
+.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--md-outline); background: transparent; font-size: 14px; font-weight: 500; color: var(--md-on-surface); cursor: pointer; transition: 0.2s; user-select: none; white-space: nowrap; }
 .filter-chip:active { background: rgba(0,0,0,0.05); }
 .filter-chip.active { background: var(--md-surface-2); border-color: var(--md-surface-2); color: var(--md-primary); font-weight: 700; }
-.scroll-body::-webkit-scrollbar { width: 4px; }
-.scroll-body::-webkit-scrollbar-thumb { background: var(--md-surface-2); border-radius: 10px; }
 .button-row-split a { text-decoration: none; flex: 1; }
 .button-row-split { display: flex; gap: 12px; margin-top: 20px; }
+.player-tile:active { transform: scale(0.96); transition: transform 0.1s ease; }
 
-/* 3-dot overflow menu */
-.overflow-menu-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  flex-shrink: 0;
-}
+/* ================================================================
+   OVERFLOW MENU
+   ================================================================ */
+.overflow-menu-btn { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 20; box-shadow: 0 2px 8px rgba(0,0,0,0.10); flex-shrink: 0; }
 .overflow-menu-btn:active { background: rgba(240,240,240,0.95); }
-
-.overflow-menu-popup {
-  position: fixed;
-  top: 0; left: 0; /* set by JS */
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  z-index: 2000;
-  min-width: 210px;
-  overflow: hidden;
-  transform-origin: top right;
-  transform: scale(0.85);
-  opacity: 0;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.14s ease;
-  pointer-events: none;
-}
-.overflow-menu-popup.open {
-  transform: scale(1);
-  opacity: 1;
-  pointer-events: auto;
-}
-.overflow-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 15px 20px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--md-on-surface);
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  font-family: 'Google Sans', sans-serif;
-}
+.overflow-menu-popup { position: fixed; top: 0; left: 0; background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 2000; min-width: 210px; overflow: hidden; transform-origin: top right; transform: scale(0.85); opacity: 0; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.14s ease; pointer-events: none; }
+.overflow-menu-popup.open { transform: scale(1); opacity: 1; pointer-events: auto; }
+.overflow-menu-item { display: flex; align-items: center; gap: 16px; padding: 15px 20px; font-size: 15px; font-weight: 500; color: var(--md-on-surface); cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; font-family: 'Google Sans', sans-serif; }
 .overflow-menu-item:active { background: var(--md-surface-2); }
 .overflow-menu-item.destructive { color: var(--soft-red); }
 .overflow-menu-item svg { flex-shrink: 0; opacity: 0.75; }
 .overflow-menu-item.destructive svg { opacity: 1; }
+.overflow-menu-item.sleevd-action { color: #2E7D32; }
+.overflow-menu-item.sleevd-action svg { opacity: 1; }
+
+/* ================================================================
+   CARD DETAIL PANEL (sheet & inline)
+   ================================================================ */
+#cardDetailSheet { z-index: 1100; }
+#collectionCardSheet { z-index: 1100; }
+#gradedCardSheet { z-index: 1100; }
+#swipeHint { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.15s; z-index: 10; font-size: 13px; font-weight: 700; color: var(--md-on-surface); background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); white-space: nowrap; left: 16px; }
+#swipeHintRight { position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.15s; z-index: 10; font-size: 13px; font-weight: 700; color: var(--md-on-surface); background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); right: 16px; left: auto; white-space: nowrap; }
+#cardDetailPanel, #collectionCardPanel, #gradedCardPanel { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 24px 24px; will-change: transform; }
+#cardDetailPanel.animating, #collectionCardPanel.animating, #gradedCardPanel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+
+/* ================================================================
+   COLLECTION VIEW — year group headers
+   ================================================================ */
+.year-group-header {
+  padding: 18px 16px 8px;
+  font-family: 'Google Sans Display';
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--md-on-surface);
+  position: sticky;
+  top: 0;
+  background: var(--md-surface);
+  z-index: 10;
+  border-bottom: 1px solid var(--md-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; }
+.collection-card-list { padding: 8px 16px; }
+
+/* ================================================================
+   GRADED VIEW — bigger rows
+   ================================================================ */
+.graded-card-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px; border-radius: 24px; margin-bottom: 12px;
+  background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent;
+}
+.graded-card-item:active { opacity: 0.8; }
+.graded-thumb { width: 72px; height: 100px; border-radius: 12px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.graded-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.graded-info-name { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.graded-info-set { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.graded-info-detail { font-size: 12px; opacity: 0.6; }
+.graded-grade-badge {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--md-surface-1); border-radius: 14px; padding: 10px 14px; gap: 2px; min-width: 56px;
+}
+.graded-grade-badge .grade-co { font-size: 10px; font-weight: 800; opacity: 0.7; }
+.graded-grade-badge .grade-num { font-size: 22px; font-weight: 700; line-height: 1; }
+
+/* ================================================================
+   TWO-PANE (≥840px)
+   ================================================================ */
+@media (min-width: 840px) {
+
+  #nav-bar { display: none; }
+  #nav-rail { display: flex; }
+
+  .view {
+    padding-bottom: 0 !important;
+  }
+
+  /* Detail view uses flex-row for two-pane */
+  #detail-view {
+    flex-direction: row !important;
+  }
+
+  /* Gallery */
+  .player-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+
+  #detail-view .back-btn { display: none; }
+  #cardDetailSheet { display: none !important; }
+  #twoPane-cardDetail { display: flex !important; }
+
+  #detail-view .master-col { flex: 1; min-width: 0; }
+  #twoPane-cardDetail { width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); display: flex !important; flex-direction: column; }
+  #twoPane-cardDetail::-webkit-scrollbar { display: none; }
+  #twoPane-cardDetail .tp-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.35; gap: 12px; padding: 32px; text-align: center; }
+  #twoPane-cardDetail .tp-empty p { font-size: 14px; font-weight: 600; }
+  #twoPane-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
+  #twoPane-panel::-webkit-scrollbar { display: none; }
+  #twoPane-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .card-item.tp-selected { border-color: var(--md-surface-1); background: #e8ecff; }
+  #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
+  #detail-view.tp-no-player #detail-view-empty { display: flex !important; }
+
+  /* Collection two-pane */
+  #collection-view { flex-direction: row !important; }
+  #collection-view .master-col { flex: 1; min-width: 0; }
+  #collectionCardSheet { display: none !important; }
+  #twoPane-collectionDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
+  #twoPane-collectionDetail::-webkit-scrollbar { display: none; }
+  #twoPane-coll-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
+  #twoPane-coll-panel::-webkit-scrollbar { display: none; }
+  #twoPane-coll-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+
+  /* Graded two-pane */
+  #graded-view { flex-direction: row !important; }
+  #graded-view .master-col { flex: 1; min-width: 0; }
+  #gradedCardSheet { display: none !important; }
+  #twoPane-gradedDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
+  #twoPane-gradedDetail::-webkit-scrollbar { display: none; }
+  #twoPane-grad-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
+  #twoPane-grad-panel::-webkit-scrollbar { display: none; }
+  #twoPane-grad-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+}
+
+/* Hidden on mobile */
+#twoPane-cardDetail, #twoPane-collectionDetail, #twoPane-gradedDetail { display: none; }
+
+#detail-view-empty { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; opacity: 0.32; gap: 14px; text-align: center; padding: 32px; }
+#detail-view-empty p { font-size: 15px; font-weight: 600; }
 </style>
 </head>
 <body>
 
-<div class="view" id="gallery-view">
-  <div class="top-bar">
-    <span class="brand">sleevd</span>
-    <div class="total-count-pill" id="totalOwnedCounter">0</div>
-    <button class="icon-btn" onclick="window.openPlayerForm()">
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </button>
-  </div>
-  <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
-</div>
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div id="app-shell">
 
-<div class="view" id="detail-view">
-  <div class="master-col">
-    <!-- Wide-mode empty state: shown before any player is selected -->
-    <div id="detail-view-empty">
-      <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-      <p>Select a player to browse their cards</p>
+  <!-- NAVIGATION RAIL (tablet/desktop) -->
+  <nav id="nav-rail">
+    <div class="rail-brand">sleevd</div>
+    <button class="rail-item active" id="rail-players" onclick="window.switchPage('players')">
+      <!-- Cards Stack icon -->
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+      </svg>
+      <span>Players</span>
+    </button>
+    <button class="rail-item" id="rail-collection" onclick="window.switchPage('collection')">
+      <!-- Inventory 2 icon -->
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3z"/>
+      </svg>
+      <span>Collection</span>
+    </button>
+    <button class="rail-item" id="rail-graded" onclick="window.switchPage('graded')">
+      <!-- G Mobiledata Badge style -->
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14H9V7h2v8zm4 0h-2v-4h-2v-2h2V7h2v8z"/>
+      </svg>
+      <span>Graded</span>
+    </button>
+  </nav>
+
+  <!-- PAGE CONTAINER -->
+  <div id="page-container">
+
+    <!-- ============================================================
+         PLAYERS / GALLERY VIEW
+         ============================================================ -->
+    <div class="view active" id="gallery-view">
+      <div class="top-bar">
+        <span class="brand">sleevd</span>
+        <div class="total-count-pill" id="totalOwnedCounter">0</div>
+        <button class="icon-btn" onclick="window.openPlayerForm()">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </button>
+      </div>
+      <div class="scroll-body"><div class="player-grid" id="playerGrid"></div></div>
     </div>
-    <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
-      <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
-      <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-      <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
-    </div>
-    <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-      <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-      <div style="padding-bottom:8px;">
-        <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
-        <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+
+    <!-- ============================================================
+         DETAIL VIEW (player cards)
+         ============================================================ -->
+    <div class="view" id="detail-view">
+      <div class="master-col">
+        <div id="detail-view-empty">
+          <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <p>Select a player to browse their cards</p>
+        </div>
+        <div style="height: 160px; position: relative; flex-shrink: 0; background: var(--md-surface-1);">
+          <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
+          <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
+          <button class="back-btn" onclick="window.closeDetail()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+        </div>
+        <div style="margin-top:-50px; padding: 0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+          <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <div style="padding-bottom:8px;">
+            <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
+            <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+          </div>
+        </div>
+        <div class="search-filter-row">
+          <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
+          <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
+          <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
+        </div>
+        <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
+        <button class="fab" onclick="window.openCardForm()">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </button>
+      </div>
+
+      <!-- TWO-PANE inline card detail -->
+      <div id="twoPane-cardDetail">
+        <div class="tp-empty" id="twoPane-empty">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          <p>Select a card to view details</p>
+        </div>
+        <div id="twoPane-panel" style="display:none;"></div>
       </div>
     </div>
-    <div class="search-filter-row">
-      <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards..." oninput="window.updateCardSearch(this.value)">
-      <div id="chipWishlist" class="filter-chip" onclick="window.toggleFilterChip('wishlist')">Wishlist</div>
-      <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
-    </div>
-    <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
-    
-    <button class="fab" onclick="window.openCardForm()">
-      <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-    </button>
-  </div>
 
-  <!-- TWO-PANE: inline card detail panel (only visible at ≥840px) -->
-  <div id="twoPane-cardDetail">
-    <div class="tp-empty" id="twoPane-empty">
-      <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-      <p>Select a card to view details</p>
-    </div>
-    <div id="twoPane-panel" style="display:none;"></div>
-  </div>
-</div>
+    <!-- ============================================================
+         COLLECTION VIEW
+         ============================================================ -->
+    <div class="view" id="collection-view">
+      <div class="master-col" style="height:100%;">
+        <div class="top-bar">
+          <span class="brand">Collection</span>
+          <div class="total-count-pill" id="collectionOwnedCounter">0</div>
+        </div>
+        <div class="search-filter-row">
+          <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set..." oninput="window.updateCollSearch(this.value)">
+        </div>
+        <div class="scroll-body" id="collectionScrollBody">
+          <div id="collectionList"></div>
+        </div>
+      </div>
 
+      <!-- TWO-PANE inline -->
+      <div id="twoPane-collectionDetail">
+        <div class="tp-empty" id="twoPane-coll-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.35; gap:12px; padding:32px; text-align:center;">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z"/></svg>
+          <p style="font-size:14px; font-weight:600;">Select a card to view details</p>
+        </div>
+        <div id="twoPane-coll-panel" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         GRADED VIEW
+         ============================================================ -->
+    <div class="view" id="graded-view">
+      <div class="master-col" style="height:100%;">
+        <div class="top-bar">
+          <span class="brand">Graded</span>
+          <div class="total-count-pill" id="gradedCounter">0</div>
+        </div>
+        <div class="search-filter-row">
+          <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set..." oninput="window.updateGradedSearch(this.value)">
+        </div>
+        <div class="scroll-body" id="gradedScrollBody" style="padding: 8px 16px;">
+          <div id="gradedList"></div>
+        </div>
+      </div>
+
+      <!-- TWO-PANE inline -->
+      <div id="twoPane-gradedDetail">
+        <div class="tp-empty" id="twoPane-grad-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.35; gap:12px; padding:32px; text-align:center;">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          <p style="font-size:14px; font-weight:600;">Select a card to view details</p>
+        </div>
+        <div id="twoPane-grad-panel" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div><!-- /page-container -->
+</div><!-- /app-shell -->
+
+<!-- BOTTOM NAV BAR (mobile) -->
+<nav id="nav-bar">
+  <button class="nav-item active" id="nav-players" onclick="window.switchPage('players')">
+    <div class="nav-indicator">
+      <!-- Cards Stack -->
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+      </svg>
+    </div>
+    <span>Players</span>
+  </button>
+  <button class="nav-item" id="nav-collection" onclick="window.switchPage('collection')">
+    <div class="nav-indicator">
+      <!-- Inventory 2 -->
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3z"/>
+      </svg>
+    </div>
+    <span>Collection</span>
+  </button>
+  <button class="nav-item" id="nav-graded" onclick="window.switchPage('graded')">
+    <div class="nav-indicator">
+      <!-- G Mobiledata Badge / Shield -->
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14H9V7h2v8zm4 0h-2v-4h-2v-2h2V7h2v8z"/>
+      </svg>
+    </div>
+    <span>Graded</span>
+  </button>
+</nav>
+
+<!-- SCRIM -->
 <div class="scrim" id="globalScrim" onclick="window.closeAllForms()" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; z-index:900;"></div>
 
 <!-- ============================================================
-     CARD DETAIL SHEET
-     Structure: sheet > handle + [viewport with single panel]
-     The sheet itself translates vertically (dismiss gesture).
-     The panel inside translates horizontally (card navigation).
+     PLAYER CARD DETAIL SHEET (mobile only)
      ============================================================ -->
 <div class="sheet" id="cardDetailSheet">
   <div class="sheet-handle"></div>
-  <!-- swipe hint indicators, positioned relative to the sheet -->
-  <div id="swipeHint" class="left">← prev</div>
-  <div id="swipeHintRight" style="
-    position: absolute; top: 50%; transform: translateY(-50%);
-    pointer-events: none; display: flex; align-items: center; gap: 6px;
-    opacity: 0; transition: opacity 0.15s; z-index: 10;
-    font-size: 13px; font-weight: 700; color: var(--md-on-surface);
-    background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
-    padding: 8px 14px; border-radius: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-    right: 16px; left: auto; white-space: nowrap;">next →</div>
-  <!-- single scrollable content panel -->
+  <div id="swipeHint">← prev</div>
+  <div id="swipeHintRight">next →</div>
   <div id="cardDetailPanel"></div>
 </div>
 
+<!-- ============================================================
+     COLLECTION CARD DETAIL SHEET (mobile only)
+     ============================================================ -->
+<div class="sheet" id="collectionCardSheet">
+  <div class="sheet-handle"></div>
+  <div id="swipeHintColl" style="position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 0.15s; z-index:10; font-size:13px; font-weight:700; color:var(--md-on-surface); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.12); white-space:nowrap; left:16px;">← prev</div>
+  <div id="swipeHintCollRight" style="position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 0.15s; z-index:10; font-size:13px; font-weight:700; color:var(--md-on-surface); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.12); white-space:nowrap; right:16px; left:auto;">next →</div>
+  <div id="collectionCardPanel"></div>
+</div>
+
+<!-- ============================================================
+     GRADED CARD DETAIL SHEET (mobile only)
+     ============================================================ -->
+<div class="sheet" id="gradedCardSheet">
+  <div class="sheet-handle"></div>
+  <div id="swipeHintGrad" style="position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 0.15s; z-index:10; font-size:13px; font-weight:700; color:var(--md-on-surface); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.12); white-space:nowrap; left:16px;">← prev</div>
+  <div id="swipeHintGradRight" style="position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 0.15s; z-index:10; font-size:13px; font-weight:700; color:var(--md-on-surface); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.12); white-space:nowrap; right:16px; left:auto;">next →</div>
+  <div id="gradedCardPanel"></div>
+</div>
+
+<!-- ============================================================
+     CARD FORM SHEET
+     ============================================================ -->
 <div class="sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body">
     <h2 id="cardFormTitle" style="margin-bottom:20px; font-family:'Google Sans Display';">Add Card</h2>
     <input type="hidden" id="f_cardId">
-    
     <div style="display:flex; flex-direction:column; gap:16px;">
-
-      <!-- Smaller image preview: horizontal layout, fixed height -->
       <div style="display:flex; gap:12px; align-items:stretch;">
         <div id="imagePreviewContainer" style="width:90px; height:120px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
           <span id="previewPlaceholder" style="font-size:10px; color:var(--md-outline); text-align:center; padding:4px;">No<br>Image</span>
@@ -574,15 +622,12 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
           <div class="m3-field read-only" style="height:48px;"><label class="m3-label">Player</label><input type="text" id="f_player" class="m3-input" readonly style="font-size:14px; padding-top:20px;"></div>
         </div>
       </div>
-
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field"><label class="m3-label">Year</label><input type="text" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
         <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input" placeholder="e.g. MJ-23"></div>
       </div>
-
       <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input"></div>
-      
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field"><label class="m3-label">Sport</label>
           <select id="f_sport" class="m3-select">
@@ -597,7 +642,6 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
         </div>
         <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
       </div>
-
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field">
           <label class="m3-label">Grading Co.</label>
@@ -611,42 +655,29 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
         </div>
         <div class="m3-field"><label class="m3-label">Grade</label><select id="f_grade" class="m3-select"></select></div>
       </div>
-      
       <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" id="f_price" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
-
-      <!-- RC / Auto flags -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_rc_btn" onclick="window.toggleFormFlag('rc')"
-                style="height:56px; border-radius:12px; border:2px solid var(--md-outline);
-                       background:transparent; font-family:'Google Sans',sans-serif;
-                       font-size:14px; font-weight:700; cursor:pointer; transition:0.2s;
-                       display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#E8192C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">RC</span>
-          Rookie Card
+        <button type="button" id="f_rc_btn" onclick="window.toggleFormFlag('rc')" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#E8192C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">RC</span>Rookie Card
         </button>
-        <button type="button" id="f_auto_btn" onclick="window.toggleFormFlag('auto')"
-                style="height:56px; border-radius:12px; border:2px solid var(--md-outline);
-                       background:transparent; font-family:'Google Sans',sans-serif;
-                       font-size:14px; font-weight:700; cursor:pointer; transition:0.2s;
-                       display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#B8860B; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">AUTO</span>
-          Autograph
+        <button type="button" id="f_auto_btn" onclick="window.toggleFormFlag('auto')" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#B8860B; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">AUTO</span>Autograph
         </button>
       </div>
       <input type="hidden" id="f_rc" value="false">
       <input type="hidden" id="f_auto" value="false">
-
-      <!-- Save / Cancel row -->
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;" onclick="window.closeAllForms()">Cancel</button>
         <button class="expressive-btn" id="btnSaveCard" style="background:var(--md-primary); color:white; flex:1; height:56px; border-radius:28px;" onclick="window.saveCard()">Save Card</button>
       </div>
-
     </div>
   </div>
 </div>
 
+<!-- ============================================================
+     PLAYER FORM SHEET
+     ============================================================ -->
 <div class="sheet" id="playerFormSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body">
@@ -678,22 +709,19 @@ let ALL_PLAYERS = [], ALL_CARDS = [], selectedPlayer = null;
 let showGradedOnly = false, showWishlistOnly = false, cardSearchQuery = "";
 let playersLoaded = false, cardsLoaded = false;
 let currentCardId = null;
+let currentPage = 'players';
+let collSearchQuery = "";
+let gradedSearchQuery = "";
+
+/* Context for each sheet — tracks which "surface" is active */
+let activeCardContext = 'player';   // 'player' | 'collection' | 'graded'
 
 const SPORT_ICONS = { Basketball: '🏀', Football: '🏈', Baseball: '⚾', Golf: '⛳' };
 
 /* ================================================================
-   SWIPE STATE  — clean, isolated object
+   SWIPE STATE
    ================================================================ */
-const swipe = {
-  active:    false,   // a gesture is in progress
-  locked:    null,    // 'horizontal' | 'vertical' | null
-  startX:    0,
-  startY:    0,
-  lastX:     0,
-  lastY:     0,
-  sheetBaseY: 0,      // sheet's translateY when touch started (for vertical dismiss)
-  animating: false,   // mid-transition — ignore new gestures
-};
+const swipe = { active: false, locked: null, startX: 0, startY: 0, lastX: 0, lastY: 0, sheetBaseY: 0, animating: false };
 
 /* ================================================================
    HELPERS
@@ -709,25 +737,72 @@ function getCleanImg(url) {
   }
   return u;
 }
-
 function setTranslate(el, x, y) {
-  el.style.transform = (x !== null && y !== null) ? `translate(${x}px, ${y}px)`
-                      : (x !== null) ? `translateX(${x}px)`
-                      : `translateY(${y}px)`;
+  el.style.transform = (x !== null && y !== null) ? `translate(${x}px,${y}px)` : (x !== null) ? `translateX(${x}px)` : `translateY(${y}px)`;
+}
+function getSheetTranslateY(sheet) {
+  return new DOMMatrix(getComputedStyle(sheet).transform).m42;
+}
+function isWideLayout() {
+  return window.matchMedia('(min-width: 840px)').matches;
 }
 
-function getSheetTranslateY(sheet) {
-  const t = new DOMMatrix(getComputedStyle(sheet).transform);
-  return t.m42; // translateY
+/* ================================================================
+   YEAR SORT KEY — normalise "1991-92" → "1991" for grouping
+   Groups "1991" and "1991-92" together under "1991"
+   ================================================================ */
+function yearSortKey(year) {
+  if (!year) return "0000";
+  const s = year.toString().trim();
+  /* Extract the first 4-digit year */
+  const m = s.match(/(\d{4})/);
+  return m ? m[1] : s;
 }
+
+/* ================================================================
+   NAVIGATION
+   ================================================================ */
+window.switchPage = function(page) {
+  /* On mobile, if switching away from detail, hide it */
+  if (!isWideLayout() && page !== 'players') {
+    if (document.getElementById('detail-view').classList.contains('active') ||
+        document.getElementById('detail-view').style.display !== 'none') {
+      document.getElementById('detail-view').style.display = 'none';
+      document.getElementById('detail-view').classList.remove('active');
+    }
+  }
+
+  currentPage = page;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+  /* nav bar items */
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.rail-item').forEach(n => n.classList.remove('active'));
+
+  if (page === 'players') {
+    document.getElementById('gallery-view').classList.add('active');
+    document.getElementById('nav-players').classList.add('active');
+    document.getElementById('rail-players').classList.add('active');
+  } else if (page === 'collection') {
+    document.getElementById('collection-view').classList.add('active');
+    document.getElementById('nav-collection').classList.add('active');
+    document.getElementById('rail-collection').classList.add('active');
+    renderCollectionView();
+  } else if (page === 'graded') {
+    document.getElementById('graded-view').classList.add('active');
+    document.getElementById('nav-graded').classList.add('active');
+    document.getElementById('rail-graded').classList.add('active');
+    renderGradedView();
+  }
+};
 
 /* ================================================================
    APP BOOT
    ================================================================ */
 window.startApp = function() {
   const { onSnapshot, collection } = window.fs;
-  onSnapshot(collection(window.db, "Players"), snap => { 
-    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
+  onSnapshot(collection(window.db, "Players"), snap => {
+    ALL_PLAYERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     playersLoaded = true; checkReady();
   });
   onSnapshot(collection(window.db, "Cards"), snap => {
@@ -737,6 +812,9 @@ window.startApp = function() {
     cardsLoaded = true; checkReady();
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
     if (window.currentCardId) refreshCurrentCardPanel(window.currentCardId);
+    /* re-render active views */
+    if (currentPage === 'collection') renderCollectionView();
+    if (currentPage === 'graded') renderGradedView();
   });
   initGradeDropdown();
   initSheetGestures();
@@ -751,22 +829,27 @@ function initGradeDropdown() {
 }
 
 /* ================================================================
-   CARD PANEL RENDER
+   CARD PANEL RENDER (shared)
    ================================================================ */
-
-/* Core rendering function — writes into any target element */
-function renderCardPanelInto(targetEl, cardId, translateX) {
+function renderCardPanelInto(targetEl, cardId, context, translateX) {
   const c = ALL_CARDS.find(x => x.id === cardId);
   if (!c) return;
 
-  const isOwned = (c.Owned === true || c.Owned === "true");
-  const seq = window.cardSequence || [];
+  /* Sequence depends on context */
+  let seq = [];
+  if (context === 'player') seq = window.cardSequence || [];
+  else if (context === 'collection') seq = window.collCardSequence || [];
+  else if (context === 'graded') seq = window.gradedCardSequence || [];
+
   const idx = seq.indexOf(cardId);
   const hasPrev = idx > 0;
   const hasNext = idx < seq.length - 1;
 
+  const playerObj = ALL_PLAYERS.find(p => p.id === c.Player);
+  const playerName = playerObj ? (playerObj.Player || playerObj.id) : (c.Player || '');
+
   const ebUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(
-    c.Year + ' ' + c.Set + ' ' + (window.selectedPlayer?.Player || '') + ' #' + c.Number + ' sold'
+    c.Year + ' ' + c.Set + ' ' + playerName + ' #' + c.Number + ' sold'
   )}&LH_Sold=1&LH_Complete=1`;
   const tcdbUrl = c["Card Information"] ||
     `https://www.tcdb.com/Search.cfm?SearchSource=Global&q=${encodeURIComponent(c.Year + ' ' + c.Set)}`;
@@ -779,265 +862,211 @@ function renderCardPanelInto(targetEl, cardId, translateX) {
   }
 
   targetEl.innerHTML = `
-    <!-- 3-dot overflow menu button — anchored top-right of the panel -->
     <div style="position:relative;">
       <img src="${getCleanImg(c['App Image'])}" 
            style="width:100%; border-radius:24px; margin-bottom:24px; max-height:350px; object-fit:contain; background:#f9f9f9; display:block;">
       <button class="overflow-menu-btn" onclick="window.openOverflowMenu('${c.id}', this)" aria-label="More options">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-          <circle cx="12" cy="5"  r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+          <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
         </svg>
       </button>
     </div>
-
-    <!-- nav hint row -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; min-height:24px;">
-      <span style="font-size:12px; font-weight:600; opacity:${hasPrev?0.45:0}; pointer-events:none;">← ${hasPrev ? (ALL_CARDS.find(x=>x.id===seq[idx-1])?.Year + ' ' + (ALL_CARDS.find(x=>x.id===seq[idx-1])?.Set||'')) : ''}</span>
+      <span style="font-size:12px; font-weight:600; opacity:${hasPrev?0.45:0}; pointer-events:none;">← ${hasPrev ? ((ALL_CARDS.find(x=>x.id===seq[idx-1])?.Year||'') + ' ' + (ALL_CARDS.find(x=>x.id===seq[idx-1])?.Set||'')) : ''}</span>
       <span style="font-size:11px; font-weight:600; opacity:0.35;">${idx+1} / ${seq.length}</span>
-      <span style="font-size:12px; font-weight:600; opacity:${hasNext?0.45:0}; pointer-events:none;">${hasNext ? (ALL_CARDS.find(x=>x.id===seq[idx+1])?.Year + ' ' + (ALL_CARDS.find(x=>x.id===seq[idx+1])?.Set||'')) : ''} →</span>
+      <span style="font-size:12px; font-weight:600; opacity:${hasNext?0.45:0}; pointer-events:none;">${hasNext ? ((ALL_CARDS.find(x=>x.id===seq[idx+1])?.Year||'') + ' ' + (ALL_CARDS.find(x=>x.id===seq[idx+1])?.Set||'')) : ''} →</span>
     </div>
-
+    ${context !== 'player' ? `<div style="font-size:13px; font-weight:600; opacity:0.55; margin-bottom:4px;">${playerName}</div>` : ''}
     <div style="margin-top:8px; margin-bottom:20px;">
       <h1 style="font-family:'Google Sans Display'; font-size:24px;">${c.Year} ${c.Set}</h1>
     </div>
-
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;
-                background:var(--md-surface-2); padding:16px; border-radius:20px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; background:var(--md-surface-2); padding:16px; border-radius:20px;">
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Number</div><div style="font-weight:700;">#${c.Number||'N/A'}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Grade</div>
            <div style="font-weight:700;">${(c["Grading Company"] && c["Grading Company"] !== "Raw") ? c["Grading Company"] + ' ' + c.Grade : "Raw"}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Manufacturer</div><div style="font-weight:700;">${c.Manufacturer||'N/A'}</div></div>
       <div><div style="font-size:10px; font-weight:700; opacity:0.6;">Price</div><div style="font-weight:700;">${c.Price?'$'+c.Price:'N/A'}</div></div>
     </div>
-
     <div class="button-row-split">
-      <a href="${ebUrl}" target="_blank">
-        <button class="expressive-btn" style="background:#0064D2; color:white; width:100%;">eBay Sold</button>
-      </a>
-      <a href="${tcdbUrl}" target="_blank">
-        <button class="expressive-btn" style="background:#FF8200; color:white; width:100%;">TCDB.com</button>
-      </a>
+      <a href="${ebUrl}" target="_blank"><button class="expressive-btn" style="background:#0064D2; color:white; width:100%;">eBay Sold</button></a>
+      <a href="${tcdbUrl}" target="_blank"><button class="expressive-btn" style="background:#FF8200; color:white; width:100%;">TCDB.com</button></a>
     </div>`;
 }
 
-/* Mobile sheet panel — delegates to core */
-function renderCardPanel(cardId, translateX) {
-  renderCardPanelInto(document.getElementById('cardDetailPanel'), cardId, translateX);
-}
-
-/* Refresh whichever panel surface is active */
+/* Refresh active panel for a given card */
 function refreshCurrentCardPanel(cardId) {
-  if (isWideLayout()) {
+  if (activeCardContext === 'player' && isWideLayout()) {
     const panel = document.getElementById('twoPane-panel');
-    if (panel.style.display !== 'none' && window.currentCardId === cardId) {
-      renderCardPanelInto(panel, cardId);
-    }
-  } else {
-    if (window.currentCardId === cardId) renderCardPanel(cardId);
+    if (panel.style.display !== 'none' && window.currentCardId === cardId)
+      renderCardPanelInto(panel, cardId, 'player');
+  } else if (activeCardContext === 'player') {
+    if (window.currentCardId === cardId) renderCardPanelInto(document.getElementById('cardDetailPanel'), cardId, 'player');
+  } else if (activeCardContext === 'collection') {
+    const target = isWideLayout()
+      ? document.getElementById('twoPane-coll-panel')
+      : document.getElementById('collectionCardPanel');
+    if (window.currentCardId === cardId) renderCardPanelInto(target, cardId, 'collection');
+  } else if (activeCardContext === 'graded') {
+    const target = isWideLayout()
+      ? document.getElementById('twoPane-grad-panel')
+      : document.getElementById('gradedCardPanel');
+    if (window.currentCardId === cardId) renderCardPanelInto(target, cardId, 'graded');
   }
 }
 
-/* navigate to adjacent card with a slide animation */
-function navigateCard(direction) {
+/* Navigate card within context */
+function navigateCard(direction, context) {
   if (swipe.animating) return;
-  const seq = window.cardSequence || [];
+  let seq = [];
+  if (context === 'player') seq = window.cardSequence || [];
+  else if (context === 'collection') seq = window.collCardSequence || [];
+  else if (context === 'graded') seq = window.gradedCardSequence || [];
+
   const idx = seq.indexOf(window.currentCardId);
   const nextIdx = direction === 'next' ? idx + 1 : idx - 1;
   if (nextIdx < 0 || nextIdx >= seq.length) return;
-
   const nextId = seq[nextIdx];
   const W = window.innerWidth;
-  const panel = isWideLayout()
-    ? document.getElementById('twoPane-panel')
-    : document.getElementById('cardDetailPanel');
+
+  let panel;
+  if (context === 'player') {
+    panel = isWideLayout() ? document.getElementById('twoPane-panel') : document.getElementById('cardDetailPanel');
+  } else if (context === 'collection') {
+    panel = isWideLayout() ? document.getElementById('twoPane-coll-panel') : document.getElementById('collectionCardPanel');
+  } else {
+    panel = isWideLayout() ? document.getElementById('twoPane-grad-panel') : document.getElementById('gradedCardPanel');
+  }
 
   swipe.animating = true;
-
   panel.classList.add('animating');
   setTranslate(panel, direction === 'next' ? -W : W, null);
 
   setTimeout(() => {
     window.currentCardId = nextId;
-    // Update selected highlight in wide mode
-    if (isWideLayout()) {
+    if (isWideLayout() && context === 'player') {
       document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
       const rowEl = document.querySelector(`.card-item[onclick*="${nextId}"]`);
       if (rowEl) rowEl.classList.add('tp-selected');
-      renderCardPanelInto(panel, nextId, direction === 'next' ? W : -W);
-    } else {
-      renderCardPanel(nextId, direction === 'next' ? W : -W);
     }
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        panel.classList.add('animating');
-        panel.style.transform = 'translateX(0)';
-        setTimeout(() => {
-          panel.classList.remove('animating');
-          swipe.animating = false;
-        }, 320);
-      });
-    });
+    renderCardPanelInto(panel, nextId, context, direction === 'next' ? W : -W);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      panel.classList.add('animating');
+      panel.style.transform = 'translateX(0)';
+      setTimeout(() => { panel.classList.remove('animating'); swipe.animating = false; }, 320);
+    }));
   }, 280);
 }
 
 /* ================================================================
-   GESTURE SYSTEM — card detail sheet
+   GESTURE SYSTEM — generic sheet gesture factory
    ================================================================ */
-function initSheetGestures() {
-  const sheet   = document.getElementById('cardDetailSheet');
-  const panel   = document.getElementById('cardDetailPanel');
-  const hintL   = document.getElementById('swipeHint');       // left arrow
-  const hintR   = document.getElementById('swipeHintRight'); // right arrow
+function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName) {
+  const sheet = document.getElementById(sheetId);
+  const panel = document.getElementById(panelId);
+  const hintL = document.getElementById(hintLId);
+  const hintR = document.getElementById(hintRId);
+  if (!sheet || !panel) return;
 
-  /* ----- touchstart ----- */
+  const st = { active: false, locked: null, startX: 0, startY: 0, lastX: 0, lastY: 0, sheetBaseY: 0 };
+
   sheet.addEventListener('touchstart', (e) => {
     if (swipe.animating) return;
     const t = e.touches[0];
-    swipe.active    = true;
-    swipe.locked    = null;
-    swipe.startX    = t.clientX;
-    swipe.startY    = t.clientY;
-    swipe.lastX     = t.clientX;
-    swipe.lastY     = t.clientY;
-    swipe.sheetBaseY = getSheetTranslateY(sheet);
+    st.active = true; st.locked = null;
+    st.startX = t.clientX; st.startY = t.clientY;
+    st.lastX = t.clientX; st.lastY = t.clientY;
+    st.sheetBaseY = getSheetTranslateY(sheet);
     panel.classList.remove('animating');
     sheet.style.transition = 'none';
   }, { passive: true });
 
-  /* ----- touchmove ----- */
   sheet.addEventListener('touchmove', (e) => {
-    if (!swipe.active || swipe.animating) return;
-    const t    = e.touches[0];
-    const dx   = t.clientX - swipe.startX;
-    const dy   = t.clientY - swipe.startY;
-    swipe.lastX = t.clientX;
-    swipe.lastY = t.clientY;
+    if (!st.active || swipe.animating) return;
+    const t = e.touches[0];
+    const dx = t.clientX - st.startX, dy = t.clientY - st.startY;
+    st.lastX = t.clientX; st.lastY = t.clientY;
 
-    /* Lock gesture axis once we're confident (10 px threshold) */
-    if (!swipe.locked) {
-      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        swipe.locked = 'horizontal';
-      } else if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.5) {
-        swipe.locked = 'vertical';
-      } else {
-        return; // not yet decided — don't preventDefault
-      }
+    if (!st.locked) {
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) st.locked = 'horizontal';
+      else if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.5) st.locked = 'vertical';
+      else return;
     }
-
-    if (swipe.locked === 'horizontal') {
+    if (st.locked === 'horizontal') {
       if (e.cancelable) e.preventDefault();
-
-      // Rubber-band at edges
-      const seq = window.cardSequence || [];
+      let seq = ctxName === 'player' ? (window.cardSequence||[]) : ctxName === 'collection' ? (window.collCardSequence||[]) : (window.gradedCardSequence||[]);
       const idx = seq.indexOf(window.currentCardId);
-      const atStart = idx === 0;
-      const atEnd   = idx === seq.length - 1;
-
+      const atStart = idx === 0, atEnd = idx === seq.length - 1;
       let resistance = 1;
       if ((dx > 0 && atStart) || (dx < 0 && atEnd)) resistance = 0.2;
-
-      const visualDx = dx * resistance;
-      setTranslate(panel, visualDx, null);
-
-      // Show directional hints
-      const showLeft  = dx > 40 && !atStart;
-      const showRight = dx < -40 && !atEnd;
-      hintL.style.opacity = showLeft  ? '1' : '0';
-      hintR.style.opacity = showRight ? '1' : '0';
-
-    } else if (swipe.locked === 'vertical') {
+      setTranslate(panel, dx * resistance, null);
+      if (hintL) hintL.style.opacity = (dx > 40 && !atStart) ? '1' : '0';
+      if (hintR) hintR.style.opacity = (dx < -40 && !atEnd) ? '1' : '0';
+    } else if (st.locked === 'vertical') {
       if (e.cancelable) e.preventDefault();
-      const clampedDy = Math.max(0, dy); // only allow downward dismiss
-      setTranslate(sheet, null, clampedDy);
+      setTranslate(sheet, null, Math.max(0, dy));
     }
   }, { passive: false });
 
-  /* ----- touchend ----- */
   sheet.addEventListener('touchend', () => {
-    if (!swipe.active) return;
-    swipe.active = false;
-    hintL.style.opacity = '0';
-    hintR.style.opacity = '0';
-
-    const dx = swipe.lastX - swipe.startX;
-    const dy = swipe.lastY - swipe.startY;
-
-    if (swipe.locked === 'horizontal') {
-      const W         = window.innerWidth;
-      const threshold = W * 0.30; // 30% of screen width to commit
-      const seq       = window.cardSequence || [];
-      const idx       = seq.indexOf(window.currentCardId);
-
-      if (dx < -threshold && idx < seq.length - 1) {
-        // committed → next
-        navigateCard('next');
-      } else if (dx > threshold && idx > 0) {
-        // committed → prev
-        navigateCard('prev');
-      } else {
-        // snap back
-        panel.classList.add('animating');
-        panel.style.transform = 'translateX(0)';
-        setTimeout(() => panel.classList.remove('animating'), 320);
-      }
-
-    } else if (swipe.locked === 'vertical') {
+    if (!st.active) return;
+    st.active = false;
+    if (hintL) hintL.style.opacity = '0';
+    if (hintR) hintR.style.opacity = '0';
+    const dx = st.lastX - st.startX, dy = st.lastY - st.startY;
+    if (st.locked === 'horizontal') {
+      const W = window.innerWidth;
+      let seq = ctxName === 'player' ? (window.cardSequence||[]) : ctxName === 'collection' ? (window.collCardSequence||[]) : (window.gradedCardSequence||[]);
+      const idx = seq.indexOf(window.currentCardId);
+      if (dx < -W * 0.30 && idx < seq.length - 1) navigateCard('next', ctxName);
+      else if (dx > W * 0.30 && idx > 0) navigateCard('prev', ctxName);
+      else { panel.classList.add('animating'); panel.style.transform = 'translateX(0)'; setTimeout(() => panel.classList.remove('animating'), 320); }
+    } else if (st.locked === 'vertical') {
       sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
-      if (dy > 150) {
-        window.closeAll();
-      } else {
-        sheet.style.transform = 'translateY(0)';
-      }
+      if (dy > 150) closeCardSheet(ctxName);
+      else sheet.style.transform = 'translateY(0)';
     } else {
-      // Gesture never locked — restore to clean state
       panel.style.transform = '';
       sheet.style.transform = sheet.classList.contains('open') ? 'translateY(0)' : 'translateY(100%)';
     }
-
-    swipe.locked = null;
+    st.locked = null;
   });
 
-  /* cancel = treat like touchend */
   sheet.addEventListener('touchcancel', () => {
-    swipe.active = false;
-    swipe.locked = null;
-    hintL.style.opacity = '0';
-    hintR.style.opacity = '0';
-    panel.classList.add('animating');
-    panel.style.transform = 'translateX(0)';
+    st.active = false; st.locked = null;
+    if (hintL) hintL.style.opacity = '0';
+    if (hintR) hintR.style.opacity = '0';
+    panel.classList.add('animating'); panel.style.transform = 'translateX(0)';
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
-    sheet.style.transform  = sheet.classList.contains('open') ? 'translateY(0)' : 'translateY(100%)';
+    sheet.style.transform = sheet.classList.contains('open') ? 'translateY(0)' : 'translateY(100%)';
     setTimeout(() => panel.classList.remove('animating'), 320);
   }, { passive: true });
 }
 
-/* Horizontal swipe on the inline two-pane panel (tablet / Fold touch) */
+function closeCardSheet(ctx) {
+  let sheetId = ctx === 'player' ? 'cardDetailSheet' : ctx === 'collection' ? 'collectionCardSheet' : 'gradedCardSheet';
+  const sheet = document.getElementById(sheetId);
+  sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
+  sheet.classList.remove('open');
+  sheet.style.transform = '';
+  document.getElementById('globalScrim').style.display = 'none';
+  if (history.state?.v === 'card') history.back();
+}
+
+function initSheetGestures() {
+  attachSheetGestures('cardDetailSheet', 'cardDetailPanel', 'swipeHint', 'swipeHintRight', 'player');
+  attachSheetGestures('collectionCardSheet', 'collectionCardPanel', 'swipeHintColl', 'swipeHintCollRight', 'collection');
+  attachSheetGestures('gradedCardSheet', 'gradedCardPanel', 'swipeHintGrad', 'swipeHintGradRight', 'graded');
+}
+
 function initInlinePanelSwipe() {
-  const tpDetail = document.getElementById('twoPane-cardDetail');
-  let tpStartX = 0, tpLastX = 0, tpActive = false;
-
-  tpDetail.addEventListener('touchstart', (e) => {
-    if (!window.currentCardId) return;
-    tpStartX = e.touches[0].clientX;
-    tpLastX  = tpStartX;
-    tpActive = true;
-  }, { passive: true });
-
-  tpDetail.addEventListener('touchmove', (e) => {
-    if (!tpActive) return;
-    tpLastX = e.touches[0].clientX;
-    const dx = tpLastX - tpStartX;
-    if (Math.abs(dx) > 10 && e.cancelable) e.preventDefault();
-  }, { passive: false });
-
-  tpDetail.addEventListener('touchend', () => {
-    if (!tpActive) return;
-    tpActive = false;
-    const dx = tpLastX - tpStartX;
-    const threshold = 80;
-    if (dx < -threshold) navigateCard('next');
-    else if (dx > threshold) navigateCard('prev');
+  ['twoPane-cardDetail','twoPane-collectionDetail','twoPane-gradedDetail'].forEach((id, i) => {
+    const ctx = ['player','collection','graded'][i];
+    const el = document.getElementById(id);
+    if (!el) return;
+    let startX = 0, lastX = 0, active = false;
+    el.addEventListener('touchstart', (e) => { if (!window.currentCardId) return; startX = e.touches[0].clientX; lastX = startX; active = true; }, { passive: true });
+    el.addEventListener('touchmove', (e) => { if (!active) return; lastX = e.touches[0].clientX; if (Math.abs(lastX - startX) > 10 && e.cancelable) e.preventDefault(); }, { passive: false });
+    el.addEventListener('touchend', () => { if (!active) return; active = false; const dx = lastX - startX; if (dx < -80) navigateCard('next', ctx); else if (dx > 80) navigateCard('prev', ctx); });
   });
 }
 
@@ -1048,9 +1077,7 @@ function checkReady() {
   if (playersLoaded && cardsLoaded) {
     renderGallery();
     document.getElementById('playerGrid').classList.add('loaded');
-    // In wide layout, detail-view is always shown; show placeholder state
     if (isWideLayout()) {
-      document.getElementById('detail-view').style.display = 'flex';
       document.getElementById('detail-view').classList.add('tp-no-player');
     }
   }
@@ -1058,27 +1085,26 @@ function checkReady() {
 function renderGallery() {
   const grid = document.getElementById('playerGrid');
   const sorted = [...ALL_PLAYERS].sort((a, b) => {
-    const oa = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned === true || c.Owned === "true")).length;
-    const ob = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned === true || c.Owned === "true")).length;
+    const oa = ALL_CARDS.filter(c => c.Player === a.id && (c.Owned===true||c.Owned==="true")).length;
+    const ob = ALL_CARDS.filter(c => c.Player === b.id && (c.Owned===true||c.Owned==="true")).length;
     return (ob - oa) || a.id.localeCompare(b.id);
   });
   grid.innerHTML = sorted.map(p => {
     const pC = ALL_CARDS.filter(c => c.Player === p.id);
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))]
-      .map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('');
-    return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g, "\\'")}')">
+    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))].map(s => `<div class="sport-icon">${SPORT_ICONS[s]||'🏐'}</div>`).join('');
+    return `<div class="player-tile" onclick="window.openDetail('${p.id.replace(/'/g,"\\'")}')" >
       <div class="sport-badge-overlay">${icons}</div>
       <img class="tile-img" src="${getCleanImg(p['Main Image'])}">
       <div class="tile-text-bar">
-        <div class="tile-title">${p.Player || p.id}</div>
-        <div class="tile-subtitle">${pC.filter(c => c.Owned === true || c.Owned === "true").length} owned</div>
+        <div class="tile-title">${p.Player||p.id}</div>
+        <div class="tile-subtitle">${pC.filter(c=>c.Owned===true||c.Owned==="true").length} owned</div>
       </div>
     </div>`;
   }).join('');
 }
 
 /* ================================================================
-   DETAIL VIEW
+   PLAYER DETAIL VIEW
    ================================================================ */
 window.openDetail = (id) => {
   window.selectedPlayer = ALL_PLAYERS.find(p => p.id === id);
@@ -1088,7 +1114,6 @@ window.openDetail = (id) => {
   cardSearchQuery = "";
   document.getElementById('cardSearchInput').value = "";
 
-  // Reset card detail pane when switching players
   if (isWideLayout()) {
     window.currentCardId = null;
     document.getElementById('detail-view').classList.remove('tp-no-player');
@@ -1101,125 +1126,280 @@ window.openDetail = (id) => {
   renderDetail(window.selectedPlayer);
 
   if (!isWideLayout()) {
+    /* Switch to players page if not already there */
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('detail-view').style.display = 'flex';
-    setTimeout(() => document.getElementById('detail-view').classList.add('active'), 10);
+    document.getElementById('detail-view').classList.add('active');
+    setTimeout(() => {}, 10);
     history.pushState({ v: 'detail', p: id }, '');
+  } else {
+    /* In wide mode just ensure detail-view is active as the right pane content */
+    if (currentPage !== 'players') window.switchPage('players');
+    document.getElementById('detail-view').classList.add('active');
+    document.getElementById('gallery-view').classList.add('active');
   }
-  // In wide mode detail-view is always visible — just update content
 };
 
 window.closeDetail = () => {
-  if (isWideLayout()) return; // no navigation in wide mode
+  if (isWideLayout()) return;
   document.getElementById('detail-view').classList.remove('active');
-  setTimeout(() => { document.getElementById('detail-view').style.display = 'none'; }, 300);
+  document.getElementById('detail-view').style.display = '';
   window.selectedPlayer = null;
+  /* Re-show the gallery */
+  document.getElementById('gallery-view').classList.add('active');
   if (history.state?.v === 'detail') history.back();
 };
 
 window.toggleFilterChip = (type) => {
   if (type === 'wishlist') { showWishlistOnly = !showWishlistOnly; document.getElementById('chipWishlist').classList.toggle('active', showWishlistOnly); }
-  else                     { showGradedOnly   = !showGradedOnly;   document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
+  else { showGradedOnly = !showGradedOnly; document.getElementById('chipGraded').classList.toggle('active', showGradedOnly); }
   renderDetail(window.selectedPlayer);
 };
 
 function renderDetail(player) {
   let cards = ALL_CARDS.filter(c => c.Player === player.id).sort((a, b) => {
-    const yA = (a.Year || "").toString(), yB = (b.Year || "").toString();
+    const yA = yearSortKey(a.Year), yB = yearSortKey(b.Year);
     if (yA !== yB) return yA.localeCompare(yB);
-    const sA = (a.Set || "").toLowerCase(), sB = (b.Set || "").toLowerCase();
+    const sA = (a.Set||"").toLowerCase(), sB = (b.Set||"").toLowerCase();
     if (sA !== sB) return sA.localeCompare(sB);
-    return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0);
+    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
   });
   if (cardSearchQuery) {
     const q = cardSearchQuery.toLowerCase();
-    cards = cards.filter(c =>
-      (c.Year || "").toString().toLowerCase().includes(q) ||
-      (c.Set  || "").toLowerCase().includes(q));
+    cards = cards.filter(c => (c.Year||"").toString().toLowerCase().includes(q) || (c.Set||"").toLowerCase().includes(q));
   }
-  if (showGradedOnly)   cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
-  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned === true || c.Owned === "true"));
+  if (showGradedOnly) cards = cards.filter(c => c["Grading Company"] && c["Grading Company"] !== "Raw");
+  if (showWishlistOnly) cards = cards.filter(c => !(c.Owned===true||c.Owned==="true"));
 
   window.cardSequence = cards.map(c => c.id);
-  document.getElementById('playerDetailCount').innerText =
-    `${cards.filter(c => c.Owned === true || c.Owned === "true").length} Owned`;
+  document.getElementById('playerDetailCount').innerText = `${cards.filter(c=>c.Owned===true||c.Owned==="true").length} Owned`;
+  document.getElementById('cardList').innerHTML = cards.map(c => buildCardRow(c, 'player')).join('');
+}
 
-  document.getElementById('cardList').innerHTML = cards.map(c => {
-    const owned = (c.Owned === true || c.Owned === "true");
-    const co = c["Grading Company"] || "", gr = c.Grade || "";
-    const isRC   = c.RC   === true || c.RC   === "true";
-    const isAuto = c.Auto === true || c.Auto === "true";
-    const gradeBadge = (co && co !== "Raw") ? `<span class="badge-grade">${co} ${gr}</span>` : '';
-    const rcBadge    = isRC   ? `<span class="badge-rc">RC</span>`     : '';
-    const autoBadge  = isAuto ? `<span class="badge-auto">AUTO</span>` : '';
-    const hasBadges  = gradeBadge || rcBadge || autoBadge;
-    return `<div class="card-item ${!owned ? 'not-owned' : ''}" onclick="window.handleCardTap('${c.id}')">
-      <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
-      <div class="card-info">
-        <div class="card-info-row1">${c.Year} ${c.Set || ''}</div>
-        <div class="card-info-row2">#${c.Number || 'N/A'}</div>
-        ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}</div>` : ''}
+function buildCardRow(c, ctx) {
+  const owned = (c.Owned===true||c.Owned==="true");
+  const co = c["Grading Company"]||"", gr = c.Grade||"";
+  const isRC   = c.RC   === true || c.RC   === "true";
+  const isAuto = c.Auto === true || c.Auto === "true";
+  const gradeBadge = (co && co !== "Raw") ? `<span class="badge-grade">${co} ${gr}</span>` : '';
+  const rcBadge    = isRC   ? `<span class="badge-rc">RC</span>` : '';
+  const autoBadge  = isAuto ? `<span class="badge-auto">AUTO</span>` : '';
+  const hasBadges  = gradeBadge || rcBadge || autoBadge;
+  return `<div class="card-item ${!owned?'not-owned':''}" onclick="window.handleCardTap('${c.id}','${ctx}')">
+    <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
+    <div class="card-info">
+      <div class="card-info-row1">${c.Year} ${c.Set||''}</div>
+      <div class="card-info-row2">#${c.Number||'N/A'}</div>
+      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}</div>` : ''}
+    </div>
+    <button class="card-row-menu-btn" onclick="event.stopPropagation(); window.openRowMenu('${c.id}', this)" aria-label="Card options">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+    </button>
+  </div>`;
+}
+
+/* ================================================================
+   COLLECTION VIEW
+   ================================================================ */
+window.updateCollSearch = function(v) { collSearchQuery = v; renderCollectionView(); };
+
+function renderCollectionView() {
+  if (!cardsLoaded) return;
+
+  let cards = ALL_CARDS.filter(c => c.Owned===true||c.Owned==="true");
+  if (collSearchQuery) {
+    const q = collSearchQuery.toLowerCase();
+    cards = cards.filter(c =>
+      (c.Year||"").toString().toLowerCase().includes(q) ||
+      (c.Set||"").toLowerCase().includes(q) ||
+      (c.Manufacturer||"").toLowerCase().includes(q) ||
+      (c.Player||"").toLowerCase().includes(q)
+    );
+  }
+
+  /* Sort: base year key asc, then set asc, then number asc */
+  cards.sort((a, b) => {
+    const yA = yearSortKey(a.Year), yB = yearSortKey(b.Year);
+    if (yA !== yB) return yA.localeCompare(yB);
+    /* Within same base year, sort raw year string so "1991" comes before "1991-92" */
+    const rA = (a.Year||"").toString(), rB = (b.Year||"").toString();
+    if (rA !== rB) return rA.localeCompare(rB);
+    const sA = (a.Set||"").toLowerCase(), sB = (b.Set||"").toLowerCase();
+    if (sA !== sB) return sA.localeCompare(sB);
+    return (parseInt(a.Number)||0) - (parseInt(b.Number)||0);
+  });
+
+  document.getElementById('collectionOwnedCounter').innerText = cards.length;
+
+  /* Group by base year key */
+  const groups = new Map();
+  cards.forEach(c => {
+    const key = yearSortKey(c.Year);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(c);
+  });
+
+  window.collCardSequence = cards.map(c => c.id);
+
+  let html = '';
+  groups.forEach((groupCards, yearKey) => {
+    /* Display label: if all cards share the same raw year string, use that; else show range */
+    const rawYears = [...new Set(groupCards.map(c => (c.Year||"").toString()))].sort();
+    const displayYear = rawYears.length === 1 ? rawYears[0] : rawYears.join(' · ');
+    html += `<div class="year-group-header">${displayYear}<span class="year-count">${groupCards.filter(c=>c.Owned===true||c.Owned==="true").length} cards</span></div>`;
+    html += '<div class="collection-card-list">';
+    groupCards.forEach(c => { html += buildCollectionRow(c); });
+    html += '</div>';
+  });
+
+  if (!html) html = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">📦</div><div style="font-weight:700;">No cards found</div></div>`;
+  document.getElementById('collectionList').innerHTML = html;
+}
+
+function buildCollectionRow(c) {
+  const playerObj = ALL_PLAYERS.find(p => p.id === c.Player);
+  const playerName = playerObj ? (playerObj.Player||playerObj.id) : (c.Player||'');
+  const co = c["Grading Company"]||"", gr = c.Grade||"";
+  const isRC   = c.RC   === true || c.RC   === "true";
+  const isAuto = c.Auto === true || c.Auto === "true";
+  const gradeBadge = (co && co !== "Raw") ? `<span class="badge-grade">${co} ${gr}</span>` : '';
+  const rcBadge    = isRC   ? `<span class="badge-rc">RC</span>` : '';
+  const autoBadge  = isAuto ? `<span class="badge-auto">AUTO</span>` : '';
+  const hasBadges  = gradeBadge || rcBadge || autoBadge;
+  return `<div class="card-item" onclick="window.handleCardTap('${c.id}','collection')">
+    <img class="card-thumb" src="${getCleanImg(c['App Image'])}">
+    <div class="card-info">
+      <div class="card-info-row1">${c.Set||''} #${c.Number||'N/A'}</div>
+      <div class="card-info-row2">${playerName}</div>
+      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}</div>` : ''}
+    </div>
+    <button class="card-row-menu-btn" onclick="event.stopPropagation(); window.openRowMenu('${c.id}', this)" aria-label="Card options">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+    </button>
+  </div>`;
+}
+
+/* ================================================================
+   GRADED VIEW
+   ================================================================ */
+window.updateGradedSearch = function(v) { gradedSearchQuery = v; renderGradedView(); };
+
+function renderGradedView() {
+  if (!cardsLoaded) return;
+
+  let cards = ALL_CARDS.filter(c => {
+    const co = c["Grading Company"];
+    return co && co !== "Raw" && co !== "";
+  });
+  if (gradedSearchQuery) {
+    const q = gradedSearchQuery.toLowerCase();
+    cards = cards.filter(c =>
+      (c.Year||"").toString().toLowerCase().includes(q) ||
+      (c.Set||"").toLowerCase().includes(q) ||
+      (c.Player||"").toLowerCase().includes(q) ||
+      (c["Grading Company"]||"").toLowerCase().includes(q)
+    );
+  }
+
+  /* Sort by grade desc, then player name, then year */
+  cards.sort((a, b) => {
+    const gA = parseFloat(a.Grade)||0, gB = parseFloat(b.Grade)||0;
+    if (gB !== gA) return gB - gA;
+    const pA = (ALL_PLAYERS.find(p=>p.id===a.Player)?.Player||a.Player||"").toLowerCase();
+    const pB = (ALL_PLAYERS.find(p=>p.id===b.Player)?.Player||b.Player||"").toLowerCase();
+    if (pA !== pB) return pA.localeCompare(pB);
+    return yearSortKey(a.Year).localeCompare(yearSortKey(b.Year));
+  });
+
+  document.getElementById('gradedCounter').innerText = cards.length;
+  window.gradedCardSequence = cards.map(c => c.id);
+
+  const html = cards.map(c => buildGradedRow(c)).join('');
+  document.getElementById('gradedList').innerHTML = html ||
+    `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">🏆</div><div style="font-weight:700;">No graded cards found</div></div>`;
+}
+
+function buildGradedRow(c) {
+  const playerObj = ALL_PLAYERS.find(p => p.id === c.Player);
+  const playerName = playerObj ? (playerObj.Player||playerObj.id) : (c.Player||'');
+  const co = c["Grading Company"]||"";
+  const gr = c.Grade||"";
+  const isRC   = c.RC   === true || c.RC   === "true";
+  const isAuto = c.Auto === true || c.Auto === "true";
+  const owned  = c.Owned===true||c.Owned==="true";
+
+  return `<div class="graded-card-item ${!owned?'not-owned':''}" onclick="window.handleCardTap('${c.id}','graded')">
+    <img class="graded-thumb" src="${getCleanImg(c['App Image'])}">
+    <div class="graded-info">
+      <div class="graded-info-name">${playerName}</div>
+      <div class="graded-info-set">${c.Year} ${c.Set||''}</div>
+      <div class="graded-info-detail">#${c.Number||'N/A'} · ${c.Manufacturer||'N/A'}</div>
+      <div class="card-badge-tray" style="margin-top:6px;">
+        ${isRC   ? '<span class="badge-rc">RC</span>' : ''}
+        ${isAuto ? '<span class="badge-auto">AUTO</span>' : ''}
       </div>
-      <button class="card-row-menu-btn" onclick="event.stopPropagation(); window.openRowMenu('${c.id}', this)" aria-label="Card options">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
-        </svg>
-      </button>
-    </div>`;
-  }).join('');
+    </div>
+    <div class="graded-grade-badge">
+      <div class="grade-co">${co}</div>
+      <div class="grade-num">${gr}</div>
+    </div>
+  </div>`;
 }
 
 /* ================================================================
-   LAYOUT MODE DETECTION
+   CARD TAP
    ================================================================ */
-function isWideLayout() {
-  return window.matchMedia('(min-width: 840px)').matches;
-}
-
-/* ================================================================
-   CARD TAP / OPEN / CLOSE
-   ================================================================ */
-window.handleCardTap = (id) => {
+window.handleCardTap = (id, ctx) => {
   window.currentCardId = id;
+  activeCardContext = ctx || 'player';
 
   if (isWideLayout()) {
-    // Two-pane: render into inline panel, highlight selected row
-    document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
-    const rowEl = document.querySelector(`.card-item[onclick*="${id}"]`);
-    if (rowEl) rowEl.classList.add('tp-selected');
-
-    const emptyEl = document.getElementById('twoPane-empty');
-    const panel   = document.getElementById('twoPane-panel');
-    emptyEl.style.display = 'none';
-    panel.style.display   = 'block';
-    panel.classList.remove('animating');
-    panel.style.transform = '';
-    renderCardPanelInto(panel, id);
+    if (ctx === 'player') {
+      document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+      const rowEl = document.querySelector(`.card-item[onclick*="${id}"]`);
+      if (rowEl) rowEl.classList.add('tp-selected');
+      const emptyEl = document.getElementById('twoPane-empty');
+      const panel = document.getElementById('twoPane-panel');
+      emptyEl.style.display = 'none'; panel.style.display = 'block';
+      panel.classList.remove('animating'); panel.style.transform = '';
+      renderCardPanelInto(panel, id, 'player');
+    } else if (ctx === 'collection') {
+      const emptyEl = document.getElementById('twoPane-coll-empty');
+      const panel = document.getElementById('twoPane-coll-panel');
+      emptyEl.style.display = 'none'; panel.style.display = 'block';
+      panel.classList.remove('animating'); panel.style.transform = '';
+      renderCardPanelInto(panel, id, 'collection');
+    } else {
+      const emptyEl = document.getElementById('twoPane-grad-empty');
+      const panel = document.getElementById('twoPane-grad-panel');
+      emptyEl.style.display = 'none'; panel.style.display = 'block';
+      panel.classList.remove('animating'); panel.style.transform = '';
+      renderCardPanelInto(panel, id, 'graded');
+    }
   } else {
-    // Mobile: bottom sheet
-    const panel = document.getElementById('cardDetailPanel');
-    panel.classList.remove('animating');
-    panel.style.transform = '';
-    renderCardPanel(id);
-    const sheet = document.getElementById('cardDetailSheet');
+    let sheetId = ctx === 'player' ? 'cardDetailSheet' : ctx === 'collection' ? 'collectionCardSheet' : 'gradedCardSheet';
+    let panelId = ctx === 'player' ? 'cardDetailPanel' : ctx === 'collection' ? 'collectionCardPanel' : 'gradedCardPanel';
+    const panel = document.getElementById(panelId);
+    panel.classList.remove('animating'); panel.style.transform = '';
+    renderCardPanelInto(panel, id, ctx);
+    const sheet = document.getElementById(sheetId);
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
-    sheet.style.transform  = '';
-    sheet.classList.add('open');
+    sheet.style.transform = ''; sheet.classList.add('open');
     document.getElementById('globalScrim').style.display = 'block';
-    history.pushState({ v: 'card', id }, '');
+    history.pushState({ v: 'card', id, ctx }, '');
   }
 };
 
 window.closeAll = () => {
-  if (isWideLayout()) return; // no sheet to close in wide mode
-  const sheet = document.getElementById('cardDetailSheet');
-  sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
-  sheet.classList.remove('open');
-  sheet.style.transform  = '';
+  if (isWideLayout()) return;
+  ['cardDetailSheet','collectionCardSheet','gradedCardSheet'].forEach(id => {
+    const s = document.getElementById(id);
+    s.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    s.classList.remove('open'); s.style.transform = '';
+  });
   document.getElementById('globalScrim').style.display = 'none';
   if (history.state?.v === 'card') history.back();
 };
-
-// ownership toggling handled by overflow menu
 
 /* ================================================================
    CARD FORM
@@ -1229,129 +1409,99 @@ function setFormFlag(flag, active) {
   const btnId    = flag === 'rc' ? 'f_rc_btn' : 'f_auto_btn';
   document.getElementById(hiddenId).value = active ? "true" : "false";
   const btn = document.getElementById(btnId);
-  if (active) {
-    btn.style.background    = flag === 'rc' ? 'rgba(232,25,44,0.08)' : 'rgba(184,134,11,0.10)';
-    btn.style.borderColor   = flag === 'rc' ? '#E8192C' : '#B8860B';
-    btn.style.color         = flag === 'rc' ? '#E8192C' : '#B8860B';
-  } else {
-    btn.style.background  = 'transparent';
-    btn.style.borderColor = 'var(--md-outline)';
-    btn.style.color       = 'var(--md-on-surface)';
-  }
+  if (active) { btn.style.background = flag === 'rc' ? 'rgba(232,25,44,0.08)' : 'rgba(184,134,11,0.10)'; btn.style.borderColor = flag === 'rc' ? '#E8192C' : '#B8860B'; btn.style.color = flag === 'rc' ? '#E8192C' : '#B8860B'; }
+  else { btn.style.background = 'transparent'; btn.style.borderColor = 'var(--md-outline)'; btn.style.color = 'var(--md-on-surface)'; }
 }
-window.toggleFormFlag = (flag) => {
-  const hiddenId = flag === 'rc' ? 'f_rc' : 'f_auto';
-  const current  = document.getElementById(hiddenId).value === "true";
-  setFormFlag(flag, !current);
-};
+window.toggleFormFlag = (flag) => { setFormFlag(flag, document.getElementById(flag === 'rc' ? 'f_rc' : 'f_auto').value !== "true"); };
+
 window.openCardForm = (cardId = null) => {
+  /* Determine player context for the form */
+  let contextPlayer = window.selectedPlayer;
+  if (!contextPlayer && cardId) {
+    const c = ALL_CARDS.find(x => x.id === cardId);
+    if (c) contextPlayer = ALL_PLAYERS.find(p => p.id === c.Player);
+  }
+
   const isEdit = !!cardId;
   document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
-  document.getElementById('f_cardId').value  = cardId || "";
-  document.getElementById('f_player').value  = window.selectedPlayer.Player || window.selectedPlayer.id;
-  // Save button label: "Save Card" when editing, "Mark Sleevd" for new cards
+  document.getElementById('f_cardId').value = cardId || "";
+  document.getElementById('f_player').value = contextPlayer ? (contextPlayer.Player || contextPlayer.id) : "";
   document.getElementById('btnSaveCard').innerText = isEdit ? "Save Card" : "Mark Sleevd";
 
-  const playerTeams = [...new Set(
-    ALL_CARDS.filter(c => c.Player === window.selectedPlayer.id).map(c => c.Team).filter(Boolean)
-  )];
-  document.getElementById('f_team').innerHTML =
-    playerTeams.map(t => `<option value="${t}">${t}</option>`).join('') +
-    '<option value="">(New Team...)</option>';
+  const playerTeams = contextPlayer ? [...new Set(ALL_CARDS.filter(c => c.Player === contextPlayer.id).map(c => c.Team).filter(Boolean))] : [];
+  document.getElementById('f_team').innerHTML = playerTeams.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="">(New Team...)</option>';
 
   if (isEdit) {
     const c = ALL_CARDS.find(x => x.id === cardId);
-    document.getElementById('f_year').value         = c.Year || "";
-    document.getElementById('f_set').value          = c.Set || "";
-    document.getElementById('f_number').value       = c.Number || "";
-    document.getElementById('f_manufacturer').value = c.Manufacturer || "";
-    document.getElementById('f_sport').value        = c.Sport || "";
-    document.getElementById('f_team').value         = c.Team || "";
-    document.getElementById('f_grading').value      = c["Grading Company"] || "Raw";
-    document.getElementById('f_grade').value        = c.Grade || "N/A";
-    document.getElementById('f_price').value        = c.Price || "";
-    document.getElementById('f_url').value          = c["Card Information"] || "";
-    // RC / Auto flags
-    setFormFlag('rc',   c.RC   === true || c.RC   === "true");
-    setFormFlag('auto', c.Auto === true || c.Auto === "true");
-    if (c['App Image']) {
-      document.getElementById('f_imagePreview').src          = getCleanImg(c['App Image']);
-      document.getElementById('f_imagePreview').style.display = 'block';
-      document.getElementById('previewPlaceholder').style.display = 'none';
-    }
+    document.getElementById('f_year').value         = c.Year||"";
+    document.getElementById('f_set').value          = c.Set||"";
+    document.getElementById('f_number').value       = c.Number||"";
+    document.getElementById('f_manufacturer').value = c.Manufacturer||"";
+    document.getElementById('f_sport').value        = c.Sport||"";
+    document.getElementById('f_team').value         = c.Team||"";
+    document.getElementById('f_grading').value      = c["Grading Company"]||"Raw";
+    document.getElementById('f_grade').value        = c.Grade||"N/A";
+    document.getElementById('f_price').value        = c.Price||"";
+    document.getElementById('f_url').value          = c["Card Information"]||"";
+    setFormFlag('rc',   c.RC===true||c.RC==="true");
+    setFormFlag('auto', c.Auto===true||c.Auto==="true");
+    if (c['App Image']) { document.getElementById('f_imagePreview').src = getCleanImg(c['App Image']); document.getElementById('f_imagePreview').style.display = 'block'; document.getElementById('previewPlaceholder').style.display = 'none'; }
   } else {
     ['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => document.getElementById(id).value = "");
-    document.getElementById('f_sport').value   = window.selectedPlayer.Sport || "";
-    document.getElementById('f_grading').value = "Raw";
-    document.getElementById('f_grade').value   = "N/A";
-    setFormFlag('rc',   false);
-    setFormFlag('auto', false);
-    document.getElementById('f_imagePreview').style.display     = 'none';
-    document.getElementById('previewPlaceholder').style.display = 'block';
+    document.getElementById('f_sport').value = contextPlayer?.Sport||"";
+    document.getElementById('f_grading').value = "Raw"; document.getElementById('f_grade').value = "N/A";
+    setFormFlag('rc', false); setFormFlag('auto', false);
+    document.getElementById('f_imagePreview').style.display = 'none'; document.getElementById('previewPlaceholder').style.display = 'block';
   }
   document.getElementById('cardFormSheet').classList.add('open');
   document.getElementById('globalScrim').style.display = 'block';
 };
 
 window.saveCard = async () => {
-  const id   = document.getElementById('f_cardId').value;
+  const id = document.getElementById('f_cardId').value;
   const file = document.getElementById('f_fileInput').files[0];
-  let imageUrl = id ? (ALL_CARDS.find(x => x.id === id)['App Image'] || "") : "";
-
+  let imageUrl = id ? (ALL_CARDS.find(x => x.id === id)?.['App Image']||"") : "";
   if (file) {
     const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
-    const snapshot   = await window.st.uploadBytes(storageRef, file);
+    const snapshot = await window.st.uploadBytes(storageRef, file);
     imageUrl = await window.st.getDownloadURL(snapshot.ref);
   }
 
+  /* Find player id from form */
+  const playerName = document.getElementById('f_player').value;
+  const playerObj = ALL_PLAYERS.find(p => (p.Player||p.id) === playerName) || window.selectedPlayer;
+  const playerId = playerObj ? playerObj.id : playerName;
+
   const cardData = {
-    Player: window.selectedPlayer.id,
-    Year:   document.getElementById('f_year').value,
-    Set:    document.getElementById('f_set').value,
+    Player: playerId,
+    Year: document.getElementById('f_year').value,
+    Set: document.getElementById('f_set').value,
     Number: document.getElementById('f_number').value,
     Manufacturer: document.getElementById('f_manufacturer').value,
-    Sport:  document.getElementById('f_sport').value,
-    Team:   document.getElementById('f_team').value,
+    Sport: document.getElementById('f_sport').value,
+    Team: document.getElementById('f_team').value,
     "Grading Company": document.getElementById('f_grading').value,
-    Grade:  document.getElementById('f_grade').value,
-    Price:  document.getElementById('f_price').value,
+    Grade: document.getElementById('f_grade').value,
+    Price: document.getElementById('f_price').value,
     "Card Information": document.getElementById('f_url').value,
     "App Image": imageUrl,
-    RC:   document.getElementById('f_rc').value   === "true",
+    RC:   document.getElementById('f_rc').value === "true",
     Auto: document.getElementById('f_auto').value === "true",
-    Owned:  id ? ALL_CARDS.find(x => x.id === id).Owned : true
+    Owned: id ? ALL_CARDS.find(x => x.id === id)?.Owned : true
   };
-
   if (id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true });
-  else     await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData);
+  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData);
   window.closeAllForms();
-};
-
-window.deleteCard = async () => {
-  const id = document.getElementById('f_cardId').value;
-  if (id && confirm("Delete?")) {
-    await window.fs.deleteDoc(window.fs.doc(window.db, "Cards", id));
-    window.closeAllForms();
-    window.closeAll();
-  }
 };
 
 /* ================================================================
    PLAYER FORM
    ================================================================ */
-window.openPlayerForm = () => {
-  document.getElementById('playerFormSheet').classList.add('open');
-  document.getElementById('globalScrim').style.display = 'block';
-};
+window.openPlayerForm = () => { document.getElementById('playerFormSheet').classList.add('open'); document.getElementById('globalScrim').style.display = 'block'; };
 window.savePlayer = async () => {
   const name = document.getElementById('pf_name').value.trim();
   if (!name) return;
-  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), {
-    Player: name,
-    Sport:  document.getElementById('pf_sport').value,
-    "Main Image":    document.getElementById('pf_mainImg').value,
-    "Banner_Image":  document.getElementById('pf_bannerImg').value
-  });
+  await window.fs.setDoc(window.fs.doc(window.db, "Players", name), { Player: name, Sport: document.getElementById('pf_sport').value, "Main Image": document.getElementById('pf_mainImg').value, "Banner_Image": document.getElementById('pf_bannerImg').value });
   window.closeAllForms();
 };
 
@@ -1362,20 +1512,14 @@ window.closeAllForms = () => {
   document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
   document.getElementById('globalScrim').style.display = 'none';
 };
-
 window.handleFileSelect = (input) => {
   const file = input.files[0];
   if (file) {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      document.getElementById('f_imagePreview').src           = e.target.result;
-      document.getElementById('f_imagePreview').style.display = 'block';
-      document.getElementById('previewPlaceholder').style.display = 'none';
-    };
+    reader.onload = (e) => { document.getElementById('f_imagePreview').src = e.target.result; document.getElementById('f_imagePreview').style.display = 'block'; document.getElementById('previewPlaceholder').style.display = 'none'; };
     reader.readAsDataURL(file);
   }
 };
-
 window.updateCardSearch = (v) => { cardSearchQuery = v; renderDetail(window.selectedPlayer); };
 
 /* ================================================================
@@ -1385,9 +1529,9 @@ window.onpopstate = (e) => {
   if (document.getElementById('cardFormSheet').classList.contains('open') ||
       document.getElementById('playerFormSheet').classList.contains('open')) {
     window.closeAllForms();
-  } else if (document.getElementById('cardDetailSheet').classList.contains('open')) {
+  } else if (['cardDetailSheet','collectionCardSheet','gradedCardSheet'].some(id => document.getElementById(id).classList.contains('open'))) {
     window.closeAll();
-  } else if (e.state?.v !== 'detail' && window.selectedPlayer) {
+  } else if (e.state?.v !== 'detail' && window.selectedPlayer && !isWideLayout()) {
     window.closeDetail();
   }
 };
@@ -1395,8 +1539,7 @@ window.onpopstate = (e) => {
 /* ================================================================
    OVERFLOW MENU (3-dot)
    ================================================================ */
-(function () {
-  // Create the popup DOM once
+(function() {
   const popup = document.createElement('div');
   popup.id = 'overflowMenuPopup';
   popup.className = 'overflow-menu-popup';
@@ -1415,102 +1558,67 @@ window.onpopstate = (e) => {
     </button>`;
   document.body.appendChild(popup);
 
-  // Hidden file input reused for "Change Image"
   const imgInput = document.createElement('input');
-  imgInput.type = 'file';
-  imgInput.accept = 'image/*';
-  imgInput.style.display = 'none';
-  imgInput.id = 'omImageInput';
+  imgInput.type = 'file'; imgInput.accept = 'image/*'; imgInput.style.display = 'none'; imgInput.id = 'omImageInput';
   document.body.appendChild(imgInput);
 
   let _activeCardId = null;
 
-  function closeMenu() {
-    popup.classList.remove('open');
-  }
+  function closeMenu() { popup.classList.remove('open'); }
 
   function openMenu(cardId, anchorBtn) {
     _activeCardId = cardId;
     const c = ALL_CARDS.find(x => x.id === cardId);
-    const isOwned = c && (c.Owned === true || c.Owned === "true");
-
-    const toggleBtn  = document.getElementById('omToggleOwned');
+    const isOwned = c && (c.Owned===true||c.Owned==="true");
+    const toggleBtn = document.getElementById('omToggleOwned');
     const toggleIcon = document.getElementById('omToggleIcon');
     const toggleLabel = document.getElementById('omOwnedLabel');
-
     if (isOwned) {
-      // "Mark Unsleevd" — neutral/destructive style
-      toggleBtn.className  = 'overflow-menu-item destructive';
+      toggleBtn.className = 'overflow-menu-item destructive';
       toggleIcon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>';
       toggleLabel.textContent = 'Mark Unsleevd';
     } else {
-      // "Mark Sleevd" — green
-      toggleBtn.className  = 'overflow-menu-item sleevd-action';
+      toggleBtn.className = 'overflow-menu-item sleevd-action';
       toggleIcon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>';
       toggleLabel.textContent = 'Mark Sleevd';
     }
-
-    // Position popup near anchor, staying within viewport
     const rect = anchorBtn.getBoundingClientRect();
     const popupW = 220;
-    let left = rect.right - popupW;
-    let top  = rect.bottom + 6;
+    let left = rect.right - popupW, top = rect.bottom + 6;
     if (left < 8) left = 8;
     if (top + 190 > window.innerHeight) top = rect.top - 190;
-    popup.style.left = left + 'px';
-    popup.style.top  = top  + 'px';
+    popup.style.left = left + 'px'; popup.style.top = top + 'px';
     popup.classList.add('open');
   }
 
-  // Called from the card detail sheet's ⋮ button
   window.openOverflowMenu = (cardId, anchorBtn) => openMenu(cardId, anchorBtn);
-
-  // Called from each row's ⋮ button
   window.openRowMenu = (cardId, anchorBtn) => openMenu(cardId, anchorBtn);
 
-  // Edit
-  document.getElementById('omEdit').addEventListener('click', () => {
-    closeMenu();
-    window.openCardForm(_activeCardId);
-  });
+  document.getElementById('omEdit').addEventListener('click', () => { closeMenu(); window.openCardForm(_activeCardId); });
 
-  // Change Image
-  document.getElementById('omChangeImage').addEventListener('click', () => {
-    closeMenu();
-    imgInput.value = '';
-    imgInput.click();
-  });
+  document.getElementById('omChangeImage').addEventListener('click', () => { closeMenu(); imgInput.value = ''; imgInput.click(); });
   imgInput.addEventListener('change', async () => {
     const file = imgInput.files[0];
     if (!file || !_activeCardId) return;
     const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
-    const snapshot   = await window.st.uploadBytes(storageRef, file);
-    const url        = await window.st.getDownloadURL(snapshot.ref);
+    const snapshot = await window.st.uploadBytes(storageRef, file);
+    const url = await window.st.getDownloadURL(snapshot.ref);
     await window.fs.setDoc(window.fs.doc(window.db, "Cards", _activeCardId), { "App Image": url }, { merge: true });
-    // Re-render whichever surface is visible
     refreshCurrentCardPanel(_activeCardId);
   });
 
-  // Toggle Owned
   document.getElementById('omToggleOwned').addEventListener('click', async () => {
-    const id = _activeCardId;
-    closeMenu();
-    const c = ALL_CARDS.find(x => x.id === id);
-    if (!c) return;
-    const owned = (c.Owned === true || c.Owned === "true");
+    const id = _activeCardId; closeMenu();
+    const c = ALL_CARDS.find(x => x.id === id); if (!c) return;
+    const owned = (c.Owned===true||c.Owned==="true");
     await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), { Owned: !owned }, { merge: true });
-    // Update card panel if it's the open one in the sheet
     refreshCurrentCardPanel(id);
-    // Re-render the list too (ownership state affects row styling)
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
+    if (currentPage === 'collection') renderCollectionView();
+    if (currentPage === 'graded') renderGradedView();
   });
 
-  // Close on outside tap
-  document.addEventListener('pointerdown', (e) => {
-    if (popup.classList.contains('open') && !popup.contains(e.target)) {
-      closeMenu();
-    }
-  });
+  document.addEventListener('pointerdown', (e) => { if (popup.classList.contains('open') && !popup.contains(e.target)) closeMenu(); });
 })();
 </script>
 </body>
