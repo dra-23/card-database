@@ -582,6 +582,9 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 <!-- Fills the status-bar area with the app's surface colour, eliminating
      the 1px divider line Chrome on Android draws in standalone PWA mode -->
 <div id="status-bar-fill" style="position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--md-surface-1);z-index:9999;pointer-events:none;"></div>
+<!-- Fills the gesture-bar area so the app bleeds seamlessly into the
+     bottom of the screen in Android standalone PWA mode -->
+<div id="gesture-bar-fill" style="position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom);background:var(--md-surface-1);z-index:9999;pointer-events:none;"></div>
 
 <div id="app-shell">
 
