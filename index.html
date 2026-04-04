@@ -1424,39 +1424,6 @@ function initScrollHide() {
     }, { passive: true });
   });
 
-  const detailEl   = document.getElementById('detailScrollBody');
-  const detailWrap = document.getElementById('detailHeaderWrap');
-  if (detailEl && detailWrap) {
-    let lastY = 0, ticking = false, hideTimer = null;
-    detailEl.addEventListener('scroll', () => {
-      if (isWideLayout() || ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = detailEl.scrollTop;
-        const dy = y - lastY;
-        if (y < 40) {
-          detailWrap.classList.remove('collapsed');
-          clearTimeout(hideTimer);
-        } else if (dy > 12) {
-          clearTimeout(hideTimer);
-          detailWrap.classList.add('collapsed');
-        } else if (dy < -12) {
-          clearTimeout(hideTimer);
-          detailWrap.classList.remove('collapsed');
-        } else if (dy > 4) {
-          clearTimeout(hideTimer);
-          hideTimer = setTimeout(() => detailWrap.classList.add('collapsed'), 80);
-        } else if (dy < -4) {
-          clearTimeout(hideTimer);
-          detailWrap.classList.remove('collapsed');
-        }
-        lastY = y;
-        ticking = false;
-      });
-    }, { passive: true });
-  }
-}
-
   /* Detail view: velocity-based collapse matching the other views */
   const detailEl   = document.getElementById('detailScrollBody');
   const detailWrap = document.getElementById('detailHeaderWrap');
