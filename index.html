@@ -1602,75 +1602,81 @@ function initSheetGestures() {
 
 /* ----------------------------------------------------------------
    Swipe-down-to-dismiss for form sheets.
-   Only activates when the scrollable body is at the very top,
-   so normal upward scrolling still works.
+   Gesture is attached to the HANDLE AREA only — the sheet-body
+   keeps normal touch-action:pan-y so buttons always fire clicks.
+   Also detects a drag starting at the very top of the scroll body.
    ---------------------------------------------------------------- */
 function attachFormDismissGesture(sheetId, dismissFn) {
-  const sheet = document.getElementById(sheetId);
+  const sheet  = document.getElementById(sheetId);
   if (!sheet) return;
-  const body  = sheet.querySelector('.sheet-body');
+  const handle = sheet.querySelector('.sheet-handle');
+  const body   = sheet.querySelector('.sheet-body');
 
-  const fs = { active: false, startY: 0, lastY: 0, locked: null };
+  /* Shared drag state */
+  const fs = { active: false, startY: 0, lastY: 0, startedOnHandle: false };
 
-  sheet.addEventListener('touchstart', (e) => {
+  function onStart(clientY, fromHandle) {
     if (!sheet.classList.contains('open')) return;
-    const t = e.touches[0];
-    fs.active  = true;
-    fs.locked  = null;
-    fs.startY  = t.clientY;
-    fs.lastY   = t.clientY;
+    fs.active          = true;
+    fs.startedOnHandle = fromHandle;
+    fs.startY          = clientY;
+    fs.lastY           = clientY;
     sheet.style.transition = 'none';
-  }, { passive: true });
-
-  sheet.addEventListener('touchmove', (e) => {
+  }
+  function onMove(clientY) {
     if (!fs.active) return;
-    const t  = e.touches[0];
-    const dy = t.clientY - fs.startY;
-    const dx = Math.abs(t.clientX - (e.touches[0] ? e.touches[0].clientX : 0));
-    fs.lastY = t.clientY;
-
-    /* Lock direction on first decisive movement */
-    if (!fs.locked) {
-      if (Math.abs(dy) > 8) fs.locked = dy > 0 ? 'down' : 'up';
-      else return;
-    }
-
-    /* Only drag-to-dismiss when pulling DOWN from the top of the scroll */
+    fs.lastY    = clientY;
+    const dy    = clientY - fs.startY;
     const atTop = !body || body.scrollTop <= 0;
-    if (fs.locked === 'down' && atTop) {
-      if (e.cancelable) e.preventDefault();
-      /* Rubber-band: full drag near top, reduce resistance further down */
-      const drag = Math.max(0, dy);
-      const dampened = drag < 80 ? drag : 80 + (drag - 80) * 0.4;
-      sheet.style.transform = `translateY(${dampened}px)`;
-    } else if (fs.locked === 'up') {
-      /* User is scrolling up inside the form — restore sheet position */
-      sheet.style.transition = 'transform 0.2s ease';
-      sheet.style.transform  = 'translateY(0)';
-    }
-  }, { passive: false });
 
+    /* Only drag down, and only when handle-initiated OR body is at top */
+    if (dy > 0 && (fs.startedOnHandle || atTop)) {
+      const dampened = dy < 80 ? dy : 80 + (dy - 80) * 0.35;
+      sheet.style.transform = `translateY(${dampened}px)`;
+    } else if (dy <= 0) {
+      /* Scrolling up inside form — snap sheet back instantly */
+      sheet.style.transform = 'translateY(0)';
+    }
+  }
   function onEnd() {
     if (!fs.active) return;
     fs.active = false;
-    const dy = fs.lastY - fs.startY;
+    const dy    = fs.lastY - fs.startY;
     const atTop = !body || body.scrollTop <= 0;
 
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
 
-    if (dy > 120 && atTop) {
-      /* Threshold met — dismiss */
+    if (dy > 110 && (fs.startedOnHandle || atTop)) {
       sheet.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        dismissFn();
-        sheet.style.transform = '';
-      }, 320);
+      setTimeout(() => { dismissFn(); sheet.style.transform = ''; }, 320);
     } else {
-      /* Snap back */
       sheet.style.transform = 'translateY(0)';
     }
-    fs.locked = null;
   }
+
+  /* Touch on the handle — immediate, no direction check needed */
+  if (handle) {
+    handle.addEventListener('touchstart', e => {
+      onStart(e.touches[0].clientY, true);
+    }, { passive: true });
+  }
+
+  /* Touch on the body — only capture if at very top of scroll */
+  if (body) {
+    body.addEventListener('touchstart', e => {
+      if (body.scrollTop <= 0) onStart(e.touches[0].clientY, false);
+    }, { passive: true });
+  }
+
+  /* Move and end listen on the sheet so the gesture tracks even if
+     the finger drifts outside the handle */
+  sheet.addEventListener('touchmove', e => {
+    if (!fs.active) return;
+    const dy    = e.touches[0].clientY - fs.startY;
+    const atTop = !body || body.scrollTop <= 0;
+    if (dy > 0 && (fs.startedOnHandle || atTop) && e.cancelable) e.preventDefault();
+    onMove(e.touches[0].clientY);
+  }, { passive: false });
 
   sheet.addEventListener('touchend',    onEnd, { passive: true });
   sheet.addEventListener('touchcancel', onEnd, { passive: true });
@@ -2181,35 +2187,45 @@ window.openCardForm = (cardId = null, formCtx = null) => {
 };
 
 window.saveCard = async () => {
-  const id = document.getElementById('f_cardId').value;
-  const file = document.getElementById('f_fileInput').files[0];
-  let imageUrl = id ? (ALL_CARDS.find(x => x.id === id)?.['App Image']||"") : "";
-  if (file) {
-    const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
-    const snapshot = await window.st.uploadBytes(storageRef, file);
-    imageUrl = await window.st.getDownloadURL(snapshot.ref);
+  const btn = document.getElementById('btnSaveCard');
+  btn.disabled = true;
+  btn.innerText = 'Saving…';
+
+  try {
+    const id = document.getElementById('f_cardId').value;
+    const file = document.getElementById('f_fileInput').files[0];
+    let imageUrl = id ? (ALL_CARDS.find(x => x.id === id)?.['App Image']||"") : "";
+    if (file) {
+      const storageRef = window.st.ref(window.storage, `cards/${Date.now()}_${file.name}`);
+      const snapshot = await window.st.uploadBytes(storageRef, file);
+      imageUrl = await window.st.getDownloadURL(snapshot.ref);
+    }
+    const playerId = document.getElementById('f_player').value;
+    const cardData = {
+      Player: playerId,
+      Year: document.getElementById('f_year').value,
+      Set: document.getElementById('f_set').value,
+      Number: document.getElementById('f_number').value,
+      Manufacturer: document.getElementById('f_manufacturer').value,
+      Sport: document.getElementById('f_sport').value,
+      Team: document.getElementById('f_team').value,
+      "Grading Company": document.getElementById('f_grading').value,
+      Grade: document.getElementById('f_grade').value,
+      Price: document.getElementById('f_price').value,
+      "Card Information": document.getElementById('f_url').value,
+      "App Image": imageUrl,
+      RC:   document.getElementById('f_rc').value === "true",
+      Auto: document.getElementById('f_auto').value === "true",
+      Owned: id ? ALL_CARDS.find(x => x.id === id)?.Owned : true
+    };
+    if (id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true });
+    else    await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData);
+    window.closeAllForms();
+  } catch(e) {
+    console.error(e);
+    btn.disabled = false;
+    btn.innerText = 'Save Card';
   }
-  const playerId = document.getElementById('f_player').value;
-  const cardData = {
-    Player: playerId,
-    Year: document.getElementById('f_year').value,
-    Set: document.getElementById('f_set').value,
-    Number: document.getElementById('f_number').value,
-    Manufacturer: document.getElementById('f_manufacturer').value,
-    Sport: document.getElementById('f_sport').value,
-    Team: document.getElementById('f_team').value,
-    "Grading Company": document.getElementById('f_grading').value,
-    Grade: document.getElementById('f_grade').value,
-    Price: document.getElementById('f_price').value,
-    "Card Information": document.getElementById('f_url').value,
-    "App Image": imageUrl,
-    RC:   document.getElementById('f_rc').value === "true",
-    Auto: document.getElementById('f_auto').value === "true",
-    Owned: id ? ALL_CARDS.find(x => x.id === id)?.Owned : true
-  };
-  if (id) await window.fs.setDoc(window.fs.doc(window.db, "Cards", id), cardData, { merge: true });
-  else await window.fs.addDoc(window.fs.collection(window.db, "Cards"), cardData);
-  window.closeAllForms();
 };
 
 /* ================================================================
@@ -2227,18 +2243,26 @@ window.savePlayer = async () => {
    SHARED HELPERS
    ================================================================ */
 window.closeAllForms = () => {
-  document.querySelectorAll('#cardFormSheet, #playerFormSheet').forEach(s => s.classList.remove('open'));
+  ['#cardFormSheet', '#playerFormSheet'].forEach(sel => {
+    const s = document.querySelector(sel);
+    if (!s || !s.classList.contains('open')) return;
+    s.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    s.style.transform  = 'translateY(100%)';
+    setTimeout(() => {
+      s.classList.remove('open');
+      s.style.transform = '';
+    }, 340);
+  });
   const scrim = document.getElementById('globalScrim');
   const cardSheetOpen = ['cardDetailSheet','collectionCardSheet','gradedCardSheet']
     .some(id => document.getElementById(id).classList.contains('open'));
   if (cardSheetOpen) {
     scrim.style.zIndex = '900';
-    scrim.onclick = () => window.closeAllForms();
   } else {
-    scrim.style.display = 'none';
-    scrim.style.zIndex = '900';
-    scrim.onclick = () => window.closeAllForms();
+    scrim.style.display  = 'none';
+    scrim.style.zIndex   = '900';
   }
+  scrim.onclick = () => window.closeAllForms();
 };
 window.handleFileSelect = (input) => {
   const file = input.files[0];
