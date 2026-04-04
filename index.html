@@ -168,7 +168,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--md-surface-1);
+  background: var(--md-surface);
   padding-top: env(safe-area-inset-top);
 }
 
@@ -185,13 +185,61 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 .collapsible-header {
   flex-shrink: 0;
   overflow: hidden;
-  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-  max-height: 200px;
+  /* GPU-composited collapse: translate up + fade out, no max-height jank */
+  will-change: transform, opacity;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity   0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0s;
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  /* Reserve natural height so layout doesn't jump on first render */
 }
-#detailHeader { max-height: 380px; }
-.collapsible-header.collapsed { max-height: 0; }
+.collapsible-header.collapsed {
+  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden;
+  /* Collapse the space — use margin-top to pull content up */
+  margin-bottom: 0;
+  /* Remove from flow while hidden */
+  pointer-events: none;
+}
+/* Wrap each collapsible-header in a clip container so translateY
+   slides out of view rather than over content */
+.collapsible-header-wrap {
+  flex-shrink: 0;
+  overflow: hidden;
+  /* Height collapses smoothly via grid trick */
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.collapsible-header-wrap.collapsed {
+  grid-template-rows: 0fr;
+}
+.collapsible-header-wrap > .collapsible-header {
+  min-height: 0;
+  overflow: hidden;
+  /* Reset individual transition — wrap handles the space collapse */
+  transition:
+    opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  opacity: 1;
+}
+.collapsible-header-wrap.collapsed > .collapsible-header {
+  transform: translateY(-8px);
+  opacity: 0;
+  pointer-events: none;
+}
 @media (min-width: 840px) {
-  .collapsible-header.collapsed { max-height: 380px !important; }
+  .collapsible-header-wrap.collapsed { grid-template-rows: 1fr !important; }
+  .collapsible-header-wrap.collapsed > .collapsible-header {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 }
 
 /* ================================================================
@@ -567,7 +615,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <!-- SLOT 0: Players / Gallery -->
       <div class="page-slot active" id="slot-players">
         <div class="view" id="gallery-view">
-          <div class="collapsible-header" id="galleryHeader">
+          <div class="collapsible-header-wrap" id="galleryHeaderWrap"><div class="collapsible-header" id="galleryHeader">
             <div class="top-bar">
               <span class="brand">sleevd</span>
               <div class="total-count-pill" id="totalOwnedCounter">0</div>
@@ -575,7 +623,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
               </button>
             </div>
-          </div>
+          </div></div>
           <div class="scroll-body" id="galleryScrollBody"><div class="player-grid" id="playerGrid"></div></div>
         </div>
       </div>
@@ -584,7 +632,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <div class="page-slot" id="slot-collection">
         <div class="view" id="collection-view">
           <div class="master-col" style="height:100%;">
-            <div class="collapsible-header" id="collectionHeader">
+            <div class="collapsible-header-wrap" id="collectionHeaderWrap"><div class="collapsible-header" id="collectionHeader">
               <div class="top-bar">
                 <span class="brand">Collection</span>
                 <div class="total-count-pill" id="collectionOwnedCounter">0</div>
@@ -594,7 +642,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
                 <div id="chipCollWishlist" class="filter-chip" onclick="window.toggleCollChip('wishlist')">Wishlist</div>
                 <div id="chipCollGraded" class="filter-chip" onclick="window.toggleCollChip('graded')">Graded</div>
               </div>
-            </div>
+            </div></div>
             <div class="scroll-body" id="collectionScrollBody">
               <div id="collectionList"></div>
             </div>
@@ -617,7 +665,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
       <div class="page-slot" id="slot-graded">
         <div class="view" id="graded-view">
           <div class="master-col" style="height:100%;">
-            <div class="collapsible-header" id="gradedHeader">
+            <div class="collapsible-header-wrap" id="gradedHeaderWrap"><div class="collapsible-header" id="gradedHeader">
               <div class="top-bar">
                 <span class="brand">Graded</span>
                 <div class="total-count-pill" id="gradedCounter">0</div>
@@ -625,7 +673,7 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
               <div class="search-filter-row">
                 <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set..." oninput="window.updateGradedSearch(this.value)">
               </div>
-            </div>
+            </div></div>
             <div class="scroll-body" id="gradedScrollBody">
               <div class="graded-grid" id="gradedList"></div>
             </div>
@@ -1263,36 +1311,46 @@ function initFastScroll(scrollEl, barEl) {
 
 function initScrollHide() {
   const pairs = [
-    { scrollId: 'galleryScrollBody',    headerId: 'galleryHeader'    },
-    { scrollId: 'collectionScrollBody', headerId: 'collectionHeader' },
-    { scrollId: 'gradedScrollBody',     headerId: 'gradedHeader'     },
+    { scrollId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
+    { scrollId: 'collectionScrollBody', wrapId: 'collectionHeaderWrap' },
+    { scrollId: 'gradedScrollBody',     wrapId: 'gradedHeaderWrap'     },
   ];
-  pairs.forEach(({ scrollId, headerId }) => {
-    const el = document.getElementById(scrollId);
-    const hdr = document.getElementById(headerId);
-    if (!el || !hdr) return;
+  pairs.forEach(({ scrollId, wrapId }) => {
+    const el   = document.getElementById(scrollId);
+    const wrap = document.getElementById(wrapId);
+    if (!el || !wrap) return;
     let lastY = 0;
+    let ticking = false;
     el.addEventListener('scroll', () => {
-      const y = el.scrollTop;
-      if (y < 40) hdr.classList.remove('collapsed');
-      else if (y > lastY + 8) hdr.classList.add('collapsed');
-      else if (y < lastY - 8) hdr.classList.remove('collapsed');
-      lastY = y;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = el.scrollTop;
+        if (y < 40)            wrap.classList.remove('collapsed');
+        else if (y > lastY + 6) wrap.classList.add('collapsed');
+        else if (y < lastY - 6) wrap.classList.remove('collapsed');
+        lastY = y;
+        ticking = false;
+      });
     }, { passive: true });
   });
 
-  const detailEl = document.getElementById('detailScrollBody');
+  const detailEl  = document.getElementById('detailScrollBody');
   const detailHdr = document.getElementById('detailHeader');
   if (detailEl && detailHdr) {
+    let lastY = 0;
+    let ticking = false;
     detailEl.addEventListener('scroll', () => {
-      if (isWideLayout()) return;
-      const y = detailEl.scrollTop;
-      const threshold = 180;
-      if (y > threshold) {
-        detailHdr.classList.add('collapsed');
-      } else {
-        detailHdr.classList.remove('collapsed');
-      }
+      if (isWideLayout() || ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = detailEl.scrollTop;
+        const threshold = 180;
+        if (y > threshold) detailHdr.classList.add('collapsed');
+        else               detailHdr.classList.remove('collapsed');
+        lastY = y;
+        ticking = false;
+      });
     }, { passive: true });
   }
 }
