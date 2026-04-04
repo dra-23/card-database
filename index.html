@@ -622,14 +622,7 @@ html, body {
 <!-- Fills the gesture-bar area so the app bleeds seamlessly into the
      bottom of the screen in Android standalone PWA mode -->
 <div id="app-shell">
-  <!-- GLOBAL TOP BAR (desktop only) -->
-  <div id="top-bar-global" style="display:none; align-items:center; height:56px; background:var(--md-surface-1); padding:0 24px 0 16px; flex-shrink:0; width:100%; padding-top:env(safe-area-inset-top);">
-    <span class="brand" style="font-size:22px; flex:1;">sleevd</span>
-    <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
-    <button class="icon-btn" onclick="window.openPlayerForm()">
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </button>
-  </div>
+  
   <!-- NAVIGATION RAIL (tablet/desktop) -->
   <nav id="nav-rail">
     <div class="rail-brand">sleevd</div>
@@ -652,7 +645,7 @@ html, body {
 
   <!-- GLOBAL TOP BAR (desktop only) -->
   <div id="top-bar-global" style="display:none; align-items:center; height:56px; background:var(--md-surface-1); padding:0 24px 0 16px; flex-shrink:0; width:100%; padding-top:env(safe-area-inset-top);">
-    <span class="brand" style="font-size:22px; flex:1;">sleevd</span>
+    <span id="topBarTitle" class="brand" style="font-size:22px; flex:1;">sleevd</span>
     <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
     <button class="icon-btn" onclick="window.openPlayerForm()">
       <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -1146,7 +1139,24 @@ function initPageSwipe() {
    PAGE NAVIGATION — shared logic for tap + swipe
    ================================================================ */
 function _commitPageSwitch(page, idx) {
+  // Update global top bar title, pill, and add button
+  if (isWideLayout()) {
+    const titleEl = document.getElementById('topBarTitle');
+    const pillEl  = document.getElementById('totalOwnedCounterGlobal');
+    const addBtn  = document.querySelector('#top-bar-global .icon-btn');
+    if (titleEl) {
+      titleEl.innerText = page === 'players' ? 'sleevd' : page === 'collection' ? 'Collection' : 'Graded';
+    }
+    if (pillEl) {
+      if (page === 'players')    pillEl.innerText = document.getElementById('totalOwnedCounter').innerText;
+      if (page === 'collection') pillEl.innerText = document.getElementById('collectionOwnedCounter').innerText;
+      if (page === 'graded')     pillEl.innerText = document.getElementById('gradedCounter').innerText;
+    }
+    if (addBtn) addBtn.style.display = page === 'players' ? 'flex' : 'none';
+  }
+
   currentPage = page;
+  // ... rest of function unchanged
 
   /* Update active classes on nav items and rail */
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
