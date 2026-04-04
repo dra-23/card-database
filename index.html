@@ -226,6 +226,8 @@ html, body {
   grid-template-rows: 1fr;
   will-change: grid-template-rows;
   transition: grid-template-rows 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 .collapsible-header-wrap.collapsed {
   grid-template-rows: 0fr;
@@ -1393,20 +1395,67 @@ function initScrollHide() {
     const el   = document.getElementById(scrollId);
     const wrap = document.getElementById(wrapId);
     if (!el || !wrap) return;
-    let lastY = 0, ticking = false;
+    let lastY = 0, ticking = false, hideTimer = null;
     el.addEventListener('scroll', () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         const y = el.scrollTop;
-        if (y < 40)             wrap.classList.remove('collapsed');
-        else if (y > lastY + 6) wrap.classList.add('collapsed');
-        else if (y < lastY - 6) wrap.classList.remove('collapsed');
+        const dy = y - lastY;
+        if (y < 40) {
+          wrap.classList.remove('collapsed');
+          clearTimeout(hideTimer);
+        } else if (dy > 12) {
+          clearTimeout(hideTimer);
+          wrap.classList.add('collapsed');
+        } else if (dy < -12) {
+          clearTimeout(hideTimer);
+          wrap.classList.remove('collapsed');
+        } else if (dy > 4) {
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => wrap.classList.add('collapsed'), 80);
+        } else if (dy < -4) {
+          clearTimeout(hideTimer);
+          wrap.classList.remove('collapsed');
+        }
         lastY = y;
         ticking = false;
       });
     }, { passive: true });
   });
+
+  const detailEl   = document.getElementById('detailScrollBody');
+  const detailWrap = document.getElementById('detailHeaderWrap');
+  if (detailEl && detailWrap) {
+    let lastY = 0, ticking = false, hideTimer = null;
+    detailEl.addEventListener('scroll', () => {
+      if (isWideLayout() || ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = detailEl.scrollTop;
+        const dy = y - lastY;
+        if (y < 40) {
+          detailWrap.classList.remove('collapsed');
+          clearTimeout(hideTimer);
+        } else if (dy > 12) {
+          clearTimeout(hideTimer);
+          detailWrap.classList.add('collapsed');
+        } else if (dy < -12) {
+          clearTimeout(hideTimer);
+          detailWrap.classList.remove('collapsed');
+        } else if (dy > 4) {
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => detailWrap.classList.add('collapsed'), 80);
+        } else if (dy < -4) {
+          clearTimeout(hideTimer);
+          detailWrap.classList.remove('collapsed');
+        }
+        lastY = y;
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+}
 
   /* Detail view: velocity-based collapse matching the other views */
   const detailEl   = document.getElementById('detailScrollBody');
