@@ -558,7 +558,7 @@ html, body {
   .page-slot { display: none; width: 100%; }
   .page-slot.active { display: flex; flex-direction: column; }
   /*  slot uses row layout (gallery list + detail pane side-by-side) */
-  #slot-.active { flex-direction: row; }
+  #slot-players.active { flex-direction: row; }
 
   .view {
     padding-bottom: 0 !important;
@@ -626,10 +626,10 @@ html, body {
   <!-- NAVIGATION RAIL (tablet/desktop) -->
   <nav id="nav-rail">
     <div class="rail-brand">sleevd</div>
-    <button class="rail-item active" id="rail-" onclick="window.switchPage('')">
-      <span class="material-symbols-outlined">cards_stack</span>
-      <span class="rail-label"></span>
-    </button>
+    <button class="rail-item active" id="rail-players" onclick="window.switchPage('players')">
+  <span class="material-symbols-outlined">cards_stack</span>
+  <span class="rail-label">Players</span>
+</button>
     <button class="rail-item" id="rail-collection" onclick="window.switchPage('collection')">
       <span class="material-symbols-outlined">inventory_2</span>
       <span class="rail-label">Collection</span>
@@ -659,8 +659,8 @@ html, body {
     <div id="page-track">
 
       <!-- SLOT 0:  / Gallery -->
-      <div class="page-slot active" id="slot-">
-        <div class="view" id="gallery-view">
+  <div class="page-slot active" id="slot-players">
+    <div class="view" id="gallery-view">
           <div class="collapsible-header-wrap" id="galleryHeaderWrap"><div class="collapsible-header" id="galleryHeader">
             <div class="top-bar">
               <span class="brand">Players</span>
@@ -1281,12 +1281,11 @@ window.startApp = function() {
   });
   onSnapshot(collection(window.db, "Cards"), snap => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
- const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
-document.getElementById('totalOwnedCounter').innerText = ownedCount;
 const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
-document.getElementById('totalOwnedCounter').innerText = ownedCount;
-const globalPill = document.getElementById('totalOwnedCounterGlobal');
-if (globalPill) globalPill.innerText = ownedCount;    cardsLoaded = true; checkReady();
+    document.getElementById('totalOwnedCounter').innerText = ownedCount;
+    const globalPill = document.getElementById('totalOwnedCounterGlobal');
+    if (globalPill) globalPill.innerText = ownedCount;
+    cardsLoaded = true; checkReady();
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
     if (window.currentCardId) refreshCurrentCardPanel(window.currentCardId);
     if (currentPage === 'collection') renderCollectionView();
@@ -1302,7 +1301,8 @@ if (globalPill) globalPill.innerText = ownedCount;    cardsLoaded = true; checkR
   requestAnimationFrame(() => initPageSwipe());
 
   /* Set initial slot active class */
-  document.getElementById('slot-players').classList.add('active');
+  const slotPlayers = document.getElementById('slot-players');
+if (slotPlayers) slotPlayers.classList.add('active');
 };
 
 function initGradeDropdown() {
