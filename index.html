@@ -303,7 +303,16 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
    ================================================================ */
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
 .sheet.open { transform: translateY(0); }
-.sheet-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
+.sheet-handle {
+  width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px;
+  margin: 12px auto 8px;
+  flex-shrink: 0;
+  /* Larger touch target — invisible padding above */
+  padding-top: 10px; box-sizing: content-box;
+  cursor: grab;
+  touch-action: none; /* handle grabs drag immediately */
+}
+.sheet-handle:active { cursor: grabbing; background: #c8c8c8; }
 .sheet-body { padding: 0 24px 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; touch-action: pan-y; }
 
 /* ================================================================
@@ -1587,6 +1596,84 @@ function initSheetGestures() {
   attachSheetGestures('cardDetailSheet', 'cardDetailPanel', 'swipeHint', 'swipeHintRight', 'player');
   attachSheetGestures('collectionCardSheet', 'collectionCardPanel', 'swipeHintColl', 'swipeHintCollRight', 'collection');
   attachSheetGestures('gradedCardSheet', 'gradedCardPanel', 'swipeHintGrad', 'swipeHintGradRight', 'graded');
+  attachFormDismissGesture('cardFormSheet',   window.closeAllForms);
+  attachFormDismissGesture('playerFormSheet', window.closeAllForms);
+}
+
+/* ----------------------------------------------------------------
+   Swipe-down-to-dismiss for form sheets.
+   Only activates when the scrollable body is at the very top,
+   so normal upward scrolling still works.
+   ---------------------------------------------------------------- */
+function attachFormDismissGesture(sheetId, dismissFn) {
+  const sheet = document.getElementById(sheetId);
+  if (!sheet) return;
+  const body  = sheet.querySelector('.sheet-body');
+
+  const fs = { active: false, startY: 0, lastY: 0, locked: null };
+
+  sheet.addEventListener('touchstart', (e) => {
+    if (!sheet.classList.contains('open')) return;
+    const t = e.touches[0];
+    fs.active  = true;
+    fs.locked  = null;
+    fs.startY  = t.clientY;
+    fs.lastY   = t.clientY;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+
+  sheet.addEventListener('touchmove', (e) => {
+    if (!fs.active) return;
+    const t  = e.touches[0];
+    const dy = t.clientY - fs.startY;
+    const dx = Math.abs(t.clientX - (e.touches[0] ? e.touches[0].clientX : 0));
+    fs.lastY = t.clientY;
+
+    /* Lock direction on first decisive movement */
+    if (!fs.locked) {
+      if (Math.abs(dy) > 8) fs.locked = dy > 0 ? 'down' : 'up';
+      else return;
+    }
+
+    /* Only drag-to-dismiss when pulling DOWN from the top of the scroll */
+    const atTop = !body || body.scrollTop <= 0;
+    if (fs.locked === 'down' && atTop) {
+      if (e.cancelable) e.preventDefault();
+      /* Rubber-band: full drag near top, reduce resistance further down */
+      const drag = Math.max(0, dy);
+      const dampened = drag < 80 ? drag : 80 + (drag - 80) * 0.4;
+      sheet.style.transform = `translateY(${dampened}px)`;
+    } else if (fs.locked === 'up') {
+      /* User is scrolling up inside the form — restore sheet position */
+      sheet.style.transition = 'transform 0.2s ease';
+      sheet.style.transform  = 'translateY(0)';
+    }
+  }, { passive: false });
+
+  function onEnd() {
+    if (!fs.active) return;
+    fs.active = false;
+    const dy = fs.lastY - fs.startY;
+    const atTop = !body || body.scrollTop <= 0;
+
+    sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
+
+    if (dy > 120 && atTop) {
+      /* Threshold met — dismiss */
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        dismissFn();
+        sheet.style.transform = '';
+      }, 320);
+    } else {
+      /* Snap back */
+      sheet.style.transform = 'translateY(0)';
+    }
+    fs.locked = null;
+  }
+
+  sheet.addEventListener('touchend',    onEnd, { passive: true });
+  sheet.addEventListener('touchcancel', onEnd, { passive: true });
 }
 
 function initInlinePanelSwipe() {
