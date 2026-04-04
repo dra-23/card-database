@@ -214,7 +214,8 @@ html, body {
 /* ================================================================
    TOP BAR
    ================================================================ */
-.top-bar { display: flex; align-items: center; padding: 0 16px; height: 75px; flex-shrink: 0; background: var(--md-surface-1); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
+
+.top-bar { display: flex; align-items: center; padding: 0 16px; height: 56px; flex-shrink: 0; background: var(--md-surface-1); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
 .brand { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; flex: 1; }
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 
@@ -539,7 +540,11 @@ html, body {
   #nav-bar { display: none; }
   #nav-rail { display: flex; }
   #floating-fab { display: none !important; }
-
+  #app-shell { flex-direction: column; }
+  #top-bar-global { display: flex; }
+  #gallery-view .top-bar,
+  #collection-view .top-bar,
+  #graded-view .top-bar { display: none; }
   /* On wide layout, disable the page track swipe */
   #page-track {
     width: 100% !important;
@@ -616,7 +621,14 @@ html, body {
 <!-- Fills the gesture-bar area so the app bleeds seamlessly into the
      bottom of the screen in Android standalone PWA mode -->
 <div id="app-shell">
-
+  <!-- GLOBAL TOP BAR (desktop only) -->
+  <div id="top-bar-global" style="display:none; align-items:center; height:56px; background:var(--md-surface-1); padding:0 24px 0 16px; flex-shrink:0; width:100%; padding-top:env(safe-area-inset-top);">
+    <span class="brand" style="font-size:22px; flex:1;">sleevd</span>
+    <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
+    <button class="icon-btn" onclick="window.openPlayerForm()">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </button>
+  </div>
   <!-- NAVIGATION RAIL (tablet/desktop) -->
   <nav id="nav-rail">
     <div class="rail-brand">sleevd</div>
@@ -1239,8 +1251,9 @@ window.startApp = function() {
   });
   onSnapshot(collection(window.db, "Cards"), snap => {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('totalOwnedCounter').innerText =
-      ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
+ const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
+document.getElementById('totalOwnedCounter').innerText = ownedCount;
+document.getElementById('totalOwnedCounterGlobal').innerText = ownedCount;
     cardsLoaded = true; checkReady();
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
     if (window.currentCardId) refreshCurrentCardPanel(window.currentCardId);
