@@ -240,8 +240,10 @@ html, body {
   transition:
     opacity   0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform: translateY(0);
+  transform: translateY(0) translateZ(0);
   opacity: 1;
+  backface-visibility: hidden;
+  isolation: isolate;
 }
 .collapsible-header-wrap.collapsed > .collapsible-header {
   transform: translateY(-8px);
@@ -424,6 +426,9 @@ html, body {
   background: var(--md-surface); z-index: 10;
   border-bottom: 1px solid var(--md-surface-2);
   display: flex; align-items: center; justify-content: space-between;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
 }
 .year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; }
 .collection-card-list { padding: 8px 16px; }
