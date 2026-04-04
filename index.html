@@ -1184,9 +1184,13 @@ function _commitPageSwitch(page, idx) {
 }
 
 window.switchPage = function(page) {
-  /* On mobile, if we're in a player detail, go back first */
-  if (!isWideLayout() && detailIsOpen()) {
-    closeDetailSilent();
+  if (page !== 'players') {
+    /* Leaving players — close detail on any layout */
+    if (isWideLayout() && window.selectedPlayer) {
+      window.closeDetail();
+    } else if (!isWideLayout() && detailIsOpen()) {
+      closeDetailSilent();
+    }
   }
 
   const idx = PAGE_NAMES.indexOf(page);
