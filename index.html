@@ -291,7 +291,7 @@ html, body {
 .wide-fab:active { transform: scale(0.93); }
 @media (min-width: 840px) { .wide-fab { display: flex; } }
 
-.scroll-body { flex: 1; overflow-y: auto; padding-bottom: 16px; }
+.scroll-body { flex: 1; overflow-y: auto; padding-bottom: 16px; contain: strict; }
 .scroll-body::-webkit-scrollbar { display: none; }
 
 /* ================================================================
@@ -353,8 +353,7 @@ html, body {
 /* ================================================================
    DETAIL VIEW — player page
    ================================================================ */
-.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; overflow: hidden; }
-.back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; }
+.master-col { width: 100%; display: flex; flex-direction: column; background: var(--md-surface); position: relative; overflow: hidden; contain: layout style; }.back-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--md-on-surface); border: none; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 14px; cursor: pointer; }
 .status-toggle-btn { position: relative; width: 48px; height: 28px; background: var(--md-outline); border-radius: 20px; cursor: pointer; border: none; transition: background 0.3s ease; display: flex; align-items: center; padding: 0 4px; }
 .status-toggle-btn::after { content: ''; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.3s ease; }
 .status-toggle-btn.sleevd { background: var(--md-surface-1); }
