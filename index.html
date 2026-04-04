@@ -1283,8 +1283,10 @@ window.startApp = function() {
     ALL_CARDS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
  const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
 document.getElementById('totalOwnedCounter').innerText = ownedCount;
-document.getElementById('totalOwnedCounterGlobal').innerText = ownedCount;
-    cardsLoaded = true; checkReady();
+const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true").length;
+document.getElementById('totalOwnedCounter').innerText = ownedCount;
+const globalPill = document.getElementById('totalOwnedCounterGlobal');
+if (globalPill) globalPill.innerText = ownedCount;    cardsLoaded = true; checkReady();
     if (window.selectedPlayer) renderDetail(window.selectedPlayer);
     if (window.currentCardId) refreshCurrentCardPanel(window.currentCardId);
     if (currentPage === 'collection') renderCollectionView();
@@ -1783,10 +1785,11 @@ function checkReady() {
     document.getElementById('playerGrid').classList.add('loaded');
     if (isWideLayout()) {
       /* Show detail pane immediately in wide mode (empty state) */
-      const dv   = document.getElementById('detail-view');
-      const slot  = document.getElementById('slot-players');
-      const gv    = document.getElementById('gallery-view');
-      if (dv.parentElement !== slot) slot.appendChild(dv);
+const dv   = document.getElementById('detail-view');
+const slot  = document.getElementById('slot-players');
+const gv    = document.getElementById('gallery-view');
+if (!slot || !dv || !gv) return;
+if (dv.parentElement !== slot) slot.appendChild(dv);
       gv.style.width = '300px';
       gv.style.minWidth = '300px';
       gv.style.maxWidth = '300px';
