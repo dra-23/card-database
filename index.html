@@ -522,6 +522,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   /* Only the active page-slot is shown on desktop */
   .page-slot { display: none; width: 100%; }
   .page-slot.active { display: flex; flex-direction: column; }
+  /* Players slot uses row layout (gallery list + detail pane side-by-side) */
+  #slot-players.active { flex-direction: row; }
 
   .view {
     padding-bottom: 0 !important;
@@ -1715,8 +1717,6 @@ function checkReady() {
       const slot  = document.getElementById('slot-players');
       const gv    = document.getElementById('gallery-view');
       if (dv.parentElement !== slot) slot.appendChild(dv);
-      slot.style.display = 'flex';
-      slot.style.flexDirection = 'row';
       gv.style.width = '300px';
       gv.style.minWidth = '300px';
       gv.style.maxWidth = '300px';
