@@ -538,10 +538,11 @@ html, body {
 @media (min-width: 840px) {
 
   #nav-bar { display: none; }
-  #nav-rail { display: flex; }
+  #nav-rail { display: flex; padding-top: 12px; }
   #floating-fab { display: none !important; }
-  #app-shell { flex-direction: column; }
   #top-bar-global { display: flex; }
+  #right-column { display: flex; }
+  #page-container { height: auto; flex: 1; }
   #gallery-view .top-bar,
   #collection-view .top-bar,
   #graded-view .top-bar { display: none; }
@@ -645,6 +646,18 @@ html, body {
       <span class="rail-label">Graded</span>
     </button>
   </nav>
+
+<!-- RIGHT COLUMN -->
+  <div id="right-column" style="flex:1; min-width:0; display:flex; flex-direction:column; height:100dvh; overflow:hidden;">
+
+  <!-- GLOBAL TOP BAR (desktop only) -->
+  <div id="top-bar-global" style="display:none; align-items:center; height:56px; background:var(--md-surface-1); padding:0 24px 0 16px; flex-shrink:0; width:100%; padding-top:env(safe-area-inset-top);">
+    <span class="brand" style="font-size:22px; flex:1;">sleevd</span>
+    <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
+    <button class="icon-btn" onclick="window.openPlayerForm()">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </button>
+  </div>
 
   <!-- PAGE CONTAINER -->
   <div id="page-container">
@@ -773,6 +786,7 @@ html, body {
     </div><!-- /detail-view -->
 
   </div><!-- /page-container -->
+  </div><!-- /right-column -->
 </div><!-- /app-shell -->
 
 <!-- FLOATING TOOLBAR (mobile) -->
