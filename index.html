@@ -557,8 +557,8 @@ html, body {
   /* Only the active page-slot is shown on desktop */
   .page-slot { display: none; width: 100%; }
   .page-slot.active { display: flex; flex-direction: column; }
-  /* Players slot uses row layout (gallery list + detail pane side-by-side) */
-  #slot-players.active { flex-direction: row; }
+  /*  slot uses row layout (gallery list + detail pane side-by-side) */
+  #slot-.active { flex-direction: row; }
 
   .view {
     padding-bottom: 0 !important;
@@ -626,9 +626,9 @@ html, body {
   <!-- NAVIGATION RAIL (tablet/desktop) -->
   <nav id="nav-rail">
     <div class="rail-brand">sleevd</div>
-    <button class="rail-item active" id="rail-players" onclick="window.switchPage('players')">
+    <button class="rail-item active" id="rail-" onclick="window.switchPage('')">
       <span class="material-symbols-outlined">cards_stack</span>
-      <span class="rail-label">Players</span>
+      <span class="rail-label"></span>
     </button>
     <button class="rail-item" id="rail-collection" onclick="window.switchPage('collection')">
       <span class="material-symbols-outlined">inventory_2</span>
@@ -658,11 +658,12 @@ html, body {
     <!-- SWIPEABLE TRACK — holds all 3 top-level pages -->
     <div id="page-track">
 
-      <!-- SLOT 0: Players / Gallery -->
-      <div class="page-slot active" id="slot-players">
+      <!-- SLOT 0:  / Gallery -->
+      <div class="page-slot active" id="slot-">
         <div class="view" id="gallery-view">
           <div class="collapsible-header-wrap" id="galleryHeaderWrap"><div class="collapsible-header" id="galleryHeader">
             <div class="top-bar">
+              <img src="https://raw.githubusercontent.com/dra-23/card-database/main/header.svg" style="height:32px; width:auto; flex:1;">
               <span class="brand">Players</span>
               <div class="total-count-pill" id="totalOwnedCounter">0</div>
               <button class="icon-btn" onclick="window.openPlayerForm()">
@@ -680,6 +681,7 @@ html, body {
           <div class="master-col" style="height:100%;">
             <div class="collapsible-header-wrap" id="collectionHeaderWrap"><div class="collapsible-header" id="collectionHeader">
               <div class="top-bar">
+                <img src="https://raw.githubusercontent.com/dra-23/card-database/main/header.svg" style="height:32px; width:auto; flex:1;">
                 <span class="brand">Collection</span>
                 <div class="total-count-pill" id="collectionOwnedCounter">0</div>
               </div>
@@ -713,6 +715,7 @@ html, body {
           <div class="master-col" style="height:100%;">
             <div class="collapsible-header-wrap" id="gradedHeaderWrap"><div class="collapsible-header" id="gradedHeader">
               <div class="top-bar">
+                <img src="https://raw.githubusercontent.com/dra-23/card-database/main/header.svg" style="height:32px; width:auto; flex:1;">
                 <span class="brand">Graded</span>
                 <div class="total-count-pill" id="gradedCounter">0</div>
               </div>
