@@ -194,7 +194,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   flex-shrink: 0;
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: grid-template-rows;
+  transition: grid-template-rows 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .collapsible-header-wrap.collapsed {
   grid-template-rows: 0fr;
@@ -205,13 +206,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   overflow: hidden;
   will-change: transform, opacity;
   transition:
-    opacity   0.22s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity   0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateY(0);
   opacity: 1;
 }
 .collapsible-header-wrap.collapsed > .collapsible-header {
-  transform: translateY(-6px);
+  transform: translateY(-8px);
   opacity: 0;
   pointer-events: none;
 }
@@ -521,6 +522,8 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
   /* Only the active page-slot is shown on desktop */
   .page-slot { display: none; width: 100%; }
   .page-slot.active { display: flex; flex-direction: column; }
+  /* Players slot uses row layout (gallery list + detail pane side-by-side) */
+  #slot-players.active { flex-direction: row; }
 
   .view {
     padding-bottom: 0 !important;
@@ -578,6 +581,13 @@ html, body { height: 100dvh; width: 100vw; overflow: hidden; background: var(--m
 <!-- ============================================================
      APP SHELL
      ============================================================ -->
+<!-- Fills the status-bar area with the app's surface colour, eliminating
+     the 1px divider line Chrome on Android draws in standalone PWA mode -->
+<div id="status-bar-fill" style="position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--md-surface-1);z-index:9999;pointer-events:none;"></div>
+<!-- Fills the gesture-bar area so the app bleeds seamlessly into the
+     bottom of the screen in Android standalone PWA mode -->
+<div id="gesture-bar-fill" style="position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom);background:var(--md-surface-1);z-index:9999;pointer-events:none;"></div>
+
 <div id="app-shell">
 
   <!-- NAVIGATION RAIL (tablet/desktop) -->
@@ -1326,7 +1336,7 @@ function initScrollHide() {
     }, { passive: true });
   });
 
-  /* Detail view: collapse the header+search together via the wrap */
+  /* Detail view: velocity-based collapse matching the other views */
   const detailEl   = document.getElementById('detailScrollBody');
   const detailWrap = document.getElementById('detailHeaderWrap');
   if (detailEl && detailWrap) {
@@ -1336,9 +1346,9 @@ function initScrollHide() {
       ticking = true;
       requestAnimationFrame(() => {
         const y = detailEl.scrollTop;
-        if (y > 200)            detailWrap.classList.add('collapsed');
+        if (y < 40)             detailWrap.classList.remove('collapsed');
+        else if (y > lastY + 6) detailWrap.classList.add('collapsed');
         else if (y < lastY - 6) detailWrap.classList.remove('collapsed');
-        else if (y < 40)        detailWrap.classList.remove('collapsed');
         lastY = y;
         ticking = false;
       });
@@ -1707,8 +1717,6 @@ function checkReady() {
       const slot  = document.getElementById('slot-players');
       const gv    = document.getElementById('gallery-view');
       if (dv.parentElement !== slot) slot.appendChild(dv);
-      slot.style.display = 'flex';
-      slot.style.flexDirection = 'row';
       gv.style.width = '300px';
       gv.style.minWidth = '300px';
       gv.style.maxWidth = '300px';
@@ -2116,7 +2124,9 @@ window.openCardForm = (cardId = null, formCtx = null) => {
   const isEdit = !!cardId;
   document.getElementById('cardFormTitle').innerText = isEdit ? "Edit Card" : "Add Card";
   document.getElementById('f_cardId').value = cardId || "";
-  document.getElementById('btnSaveCard').innerText = isEdit ? "Save Card" : "Mark Sleevd";
+  const _saveBtn = document.getElementById('btnSaveCard');
+  _saveBtn.disabled = false;
+  _saveBtn.innerText = isEdit ? "Save Card" : "Mark Sleevd";
 
   const playerSel = document.getElementById('f_player');
   const sortedPlayers = [...ALL_PLAYERS].sort((a,b) => (a.Player||a.id).localeCompare(b.Player||b.id));
