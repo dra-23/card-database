@@ -550,7 +550,7 @@ html, body {
 /* ================================================================
    TABLET & DESKTOP LAYOUT (≥840px)
    ================================================================ */
-@media (min-width: 840px) {
+@media (min-width: 600px) {
   #app-shell { flex-direction: column; }
   #app-body { flex: 1; min-height: 0; overflow: hidden; }
   #nav-bar { display: none; }
@@ -596,6 +596,7 @@ html, body {
   #twoPane-gradedDetail { 
     display: flex !important; 
     width: 380px; 
+    max-width: 45%;
     flex-shrink: 0; 
     height: 100%; 
     overflow-y: auto; 
@@ -1258,7 +1259,7 @@ function getSheetTranslateY(sheet) {
 function isWideLayout() {
   return window.matchMedia('(min-width: 840px)').matches;
 }
-function isThreePaneLayout() { return window.innerWidth >= 840; }
+function isThreePaneLayout() { return window.innerWidth >= 600; }
 function yearSortKey(year) {
   if (!year) return "0000";
   const s = year.toString().trim();
