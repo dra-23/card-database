@@ -771,7 +771,7 @@ html, body {
             <div id="chipGraded" class="filter-chip" onclick="window.toggleFilterChip('graded')">Graded</div>
           </div>
         </div></div>
-        <div class="scroll-body" id="detailScrollBody" style="padding:0 16px;"><div id="cardList"></div></div>
+        <div class="scroll-body" id="detailScrollBody"><div id="cardList"></div></div>
         <div class="fast-scroll-bar" id="detailFastScroll"><div class="fast-scroll-thumb"></div></div>
         <button class="wide-fab" onclick="window.openCardForm(null,'player')" title="Add card">
           <span class="material-symbols-outlined" style="font-size:26px;">add</span>
@@ -1806,6 +1806,7 @@ function checkReady() {
   if (playersLoaded && cardsLoaded) {
     renderGallery();
     document.getElementById('playerGrid').classList.add('loaded');
+    updateFloatingFab(currentPage || 'players');
     if (isWideLayout()) {
       /* Show detail pane immediately in wide mode (empty state) */
 const dv   = document.getElementById('detail-view');
