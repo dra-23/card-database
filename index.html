@@ -546,8 +546,10 @@ html, body {
 /* ================================================================
    TWO-PANE (≥840px)
    ================================================================ */
+/* ================================================================
+   TABLET & DESKTOP LAYOUT (≥840px)
+   ================================================================ */
 @media (min-width: 840px) {
-
   #app-shell { flex-direction: column; }
   #app-body { flex: 1; min-height: 0; overflow: hidden; }
   #nav-bar { display: none; }
@@ -556,10 +558,8 @@ html, body {
   #top-bar-global { display: flex !important; }
   #right-column { display: flex; flex: 1; min-width: 0; }
   #page-container { height: auto; flex: 1; }
-  #gallery-view .top-bar,
-  #collection-view .top-bar,
-  #graded-view .top-bar { display: none; }
-  /* On wide layout, disable the page track swipe */
+
+  /* Disable mobile swipe track */
   #page-track {
     width: 100% !important;
     transform: none !important;
@@ -567,64 +567,43 @@ html, body {
     flex-direction: row !important;
     height: 100%;
   }
-  /* Only the active page-slot is shown on desktop */
-  .page-slot { display: none; width: 100%; }
-  .page-slot.active { display: flex; flex-direction: column; }
-  /*  slot uses row layout (gallery list + detail pane side-by-side) */
-  #slot-players.active { flex-direction: row; }
 
-  .view {
-    padding-bottom: 0 !important;
+  /* Show only the active top-level slot */
+  .page-slot { display: none; width: 100%; height: 100%; }
+  .page-slot.active { display: flex; }
+
+  /* 3-PANE LOGIC: Force the detail panes to show side-by-side */
+  #slot-players.active, 
+  #collection-view, 
+  #graded-view,
+  #detail-view { 
+    display: flex !important; 
+    flex-direction: row !important; 
   }
-  .scroll-body { padding-bottom: 0 !important; }
-  .fab { bottom: 24px !important; }
 
-  #detail-view { flex-direction: row !important; }
+  /* Master Column (The List) grows to fill space */
+  .master-col { flex: 1; min-width: 0; height: 100%; }
 
-  .player-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  /* Detail Panes (The 3rd Pane) fix at 380px */
+  #twoPane-cardDetail, 
+  #twoPane-collectionDetail, 
+  #twoPane-gradedDetail { 
+    display: flex !important; 
+    width: 380px; 
+    flex-shrink: 0; 
+    height: 100%; 
+    border-left: 1px solid var(--md-surface-2); 
+    background: var(--md-surface); 
+    flex-direction: column; 
+  }
 
-  #detail-view .master-col { flex: 1; min-width: 0; }
-}
-
-/* Three-pane layout — only when viewport is wide enough to avoid cramp */
-@media (min-width: 840px) {
+  /* Hide mobile-only elements */
   #detail-view .back-btn { display: none; }
-  #cardDetailSheet { display: none !important; }
-  #twoPane-cardDetail { display: flex !important; }
-  #twoPane-cardDetail { width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
-  #twoPane-cardDetail::-webkit-scrollbar { display: none; }
-  #twoPane-cardDetail .tp-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.35; gap: 12px; padding: 32px; text-align: center; }
-  #twoPane-cardDetail .tp-empty p { font-size: 14px; font-weight: 600; }
-  #twoPane-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
-  #twoPane-panel::-webkit-scrollbar { display: none; }
-  #twoPane-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  .card-item.tp-selected { border-color: var(--md-surface-1); background: #e8ecff; }
-  #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
-  #detail-view.tp-no-player #detail-view-empty { display: flex !important; }
+  #cardDetailSheet, #collectionCardSheet, #gradedCardSheet { display: none !important; }
 
-  #collection-view { flex-direction: row !important; }
-  #collection-view .master-col { flex: 1; min-width: 0; }
-  #collectionCardSheet { display: none !important; }
-  #twoPane-collectionDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
-  #twoPane-collectionDetail::-webkit-scrollbar { display: none; }
-  #twoPane-coll-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
-  #twoPane-coll-panel::-webkit-scrollbar { display: none; }
-  #twoPane-coll-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-
-  #graded-view { flex-direction: row !important; }
-  #graded-view .master-col { flex: 1; min-width: 0; }
-  #gradedCardSheet { display: none !important; }
-  #twoPane-gradedDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
-  #twoPane-gradedDetail::-webkit-scrollbar { display: none; }
-  #twoPane-grad-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
-  #twoPane-grad-panel::-webkit-scrollbar { display: none; }
-  #twoPane-grad-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  /* Adjust Gallery Width specifically for the 3-pane look */
+  #gallery-view { width: 300px; min-width: 300px; border-right: 1px solid var(--md-surface-2); }
 }
-
-#twoPane-cardDetail, #twoPane-collectionDetail, #twoPane-gradedDetail { display: none; }
-
-#detail-view-empty { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; opacity: 0.32; gap: 14px; text-align: center; padding: 32px; }
-#detail-view-empty p { font-size: 15px; font-weight: 600; }
 </style>
 </head>
 <body>
