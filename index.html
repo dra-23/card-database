@@ -123,7 +123,7 @@ html, body {
 #nav-rail {
   display: none;
   flex-direction: column;
-  width: 80px;
+  width: 104px;
   background: var(--md-surface-1);
   padding-top: calc(12px + env(safe-area-inset-top));
   padding-bottom: 12px;
@@ -146,7 +146,7 @@ html, body {
 }
 .rail-item {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 64px; height: 56px; border-radius: 16px; border: none;
+  width: calc(100% - 16px); height: 56px; border-radius: 20px; border: none;
   background: transparent; cursor: pointer; gap: 4px;
   transition: background 0.2s; color: var(--md-on-surface-variant);
 }
@@ -582,12 +582,15 @@ html, body {
 
   .player-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 
+  #detail-view .master-col { flex: 1; min-width: 0; }
+}
+
+/* Three-pane layout — only when viewport is wide enough to avoid cramp */
+@media (min-width: 1280px) {
   #detail-view .back-btn { display: none; }
   #cardDetailSheet { display: none !important; }
   #twoPane-cardDetail { display: flex !important; }
-
-  #detail-view .master-col { flex: 1; min-width: 0; }
-  #twoPane-cardDetail { width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); display: flex !important; flex-direction: column; }
+  #twoPane-cardDetail { width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
   #twoPane-cardDetail::-webkit-scrollbar { display: none; }
   #twoPane-cardDetail .tp-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.35; gap: 12px; padding: 32px; text-align: center; }
   #twoPane-cardDetail .tp-empty p { font-size: 14px; font-weight: 600; }
@@ -656,7 +659,7 @@ html, body {
   <div id="right-column" style="flex:1; min-width:0; display:flex; flex-direction:column; height:100dvh; overflow:hidden;">
 
   <!-- GLOBAL TOP BAR (desktop only) -->
-  <div id="top-bar-global" style="display:none; align-items:center; height:56px; background:var(--md-surface-1); padding:0 24px 0 16px; flex-shrink:0; width:100%; padding-top:env(safe-area-inset-top);">
+  <div id="top-bar-global" style="display:none; align-items:center; height:64px; background:var(--md-surface-1); padding:0 24px 0 16px; flex-shrink:0; width:100%; padding-top:env(safe-area-inset-top); border-bottom:1px solid rgba(0,0,0,0.07);">
     <span id="topBarTitle" class="brand" style="font-size:22px; flex:1;">sleevd</span>
     <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
   </div>
@@ -1249,6 +1252,7 @@ function getSheetTranslateY(sheet) {
 function isWideLayout() {
   return window.matchMedia('(min-width: 840px)').matches;
 }
+function isThreePaneLayout() { return window.innerWidth >= 1280; }
 function yearSortKey(year) {
   if (!year) return "0000";
   const s = year.toString().trim();
@@ -1534,19 +1538,19 @@ function renderCardPanelInto(targetEl, cardId, context, translateX) {
 }
 
 function refreshCurrentCardPanel(cardId) {
-  if (activeCardContext === 'player' && isWideLayout()) {
+  if (activeCardContext === 'player' && isThreePaneLayout()) {
     const panel = document.getElementById('twoPane-panel');
     if (panel.style.display !== 'none' && window.currentCardId === cardId)
       renderCardPanelInto(panel, cardId, 'player');
   } else if (activeCardContext === 'player') {
     if (window.currentCardId === cardId) renderCardPanelInto(document.getElementById('cardDetailPanel'), cardId, 'player');
   } else if (activeCardContext === 'collection') {
-    const target = isWideLayout()
+    const target = isThreePaneLayout()
       ? document.getElementById('twoPane-coll-panel')
       : document.getElementById('collectionCardPanel');
     if (window.currentCardId === cardId) renderCardPanelInto(target, cardId, 'collection');
   } else if (activeCardContext === 'graded') {
-    const target = isWideLayout()
+    const target = isThreePaneLayout()
       ? document.getElementById('twoPane-grad-panel')
       : document.getElementById('gradedCardPanel');
     if (window.currentCardId === cardId) renderCardPanelInto(target, cardId, 'graded');
@@ -1569,11 +1573,11 @@ function navigateCard(direction, context) {
 
   let panel;
   if (context === 'player') {
-    panel = isWideLayout() ? document.getElementById('twoPane-panel') : document.getElementById('cardDetailPanel');
+    panel = isThreePaneLayout() ? document.getElementById('twoPane-panel') : document.getElementById('cardDetailPanel');
   } else if (context === 'collection') {
-    panel = isWideLayout() ? document.getElementById('twoPane-coll-panel') : document.getElementById('collectionCardPanel');
+    panel = isThreePaneLayout() ? document.getElementById('twoPane-coll-panel') : document.getElementById('collectionCardPanel');
   } else {
-    panel = isWideLayout() ? document.getElementById('twoPane-grad-panel') : document.getElementById('gradedCardPanel');
+    panel = isThreePaneLayout() ? document.getElementById('twoPane-grad-panel') : document.getElementById('gradedCardPanel');
   }
 
   swipe.animating = true;
@@ -1582,7 +1586,7 @@ function navigateCard(direction, context) {
 
   setTimeout(() => {
     window.currentCardId = nextId;
-    if (isWideLayout() && context === 'player') {
+    if (isThreePaneLayout() && context === 'player') {
       document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
       const rowEl = document.querySelector(`.card-item[onclick*="${nextId}"]`);
       if (rowEl) rowEl.classList.add('tp-selected');
@@ -2172,7 +2176,7 @@ window.handleCardTap = (id, ctx) => {
   window.currentCardId = id;
   activeCardContext = ctx || 'player';
 
-  if (isWideLayout()) {
+  if (isThreePaneLayout()) {
     if (ctx === 'player') {
       document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
       const rowEl = document.querySelector(`.card-item[onclick*="${id}"]`);
