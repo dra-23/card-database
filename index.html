@@ -597,7 +597,6 @@ html, body {
   #twoPane-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
   #twoPane-panel::-webkit-scrollbar { display: none; }
   #twoPane-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  .card-item.tp-selected { border-color: var(--md-surface-1); background: #e8ecff; }
   #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
   #detail-view.tp-no-player #detail-view-empty { display: flex !important; }
 }
@@ -624,6 +623,10 @@ html, body {
 }
 
 #twoPane-cardDetail, #twoPane-collectionDetail, #twoPane-gradedDetail { display: none; }
+
+/* Selected row / tile in wide layout — blue-purple tint, no red */
+.card-item.tp-selected { border-color: #b6bef8; background: #e8ecff; }
+.graded-tile.tp-selected { outline: 3px solid #b6bef8; outline-offset: -3px; }
 
 #detail-view-empty { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; opacity: 0.32; gap: 14px; text-align: center; padding: 32px; }
 #detail-view-empty p { font-size: 15px; font-weight: 600; }
@@ -1440,6 +1443,9 @@ const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true")
   const slotPlayers = document.getElementById('slot-players');
   if (slotPlayers) slotPlayers.classList.add('active');
 
+  /* Long-press context menu on card rows and graded tiles */
+  initCardLongPress();
+
   /* ── Adaptive layout: re-apply when crossing the wide/mobile threshold ── */
   _wideQuery.addEventListener('change', (e) => {
     requestAnimationFrame(() => {
@@ -1451,6 +1457,67 @@ const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true")
     });
   });
 };
+
+/* ================================================================
+   LONG-PRESS CONTEXT MENU — card rows & graded tiles
+   ================================================================ */
+function initCardLongPress() {
+  const LONG_PRESS_MS = 450;
+  /* Containers where card rows / graded tiles live (use event delegation) */
+  const containers = [
+    { id: 'cardList',       selector: '.card-item',    idAttr: 'onclick', ctx: 'player'     },
+    { id: 'collectionList', selector: '.card-item',    idAttr: 'onclick', ctx: 'collection' },
+    { id: 'gradedList',     selector: '.graded-tile',  idAttr: 'onclick', ctx: 'graded'     },
+  ];
+
+  containers.forEach(({ id, selector, idAttr }) => {
+    const container = document.getElementById(id);
+    if (!container) return;
+
+    let timer = null;
+    let startX = 0, startY = 0;
+    let fired = false;
+
+    container.addEventListener('touchstart', (e) => {
+      const row = e.target.closest(selector);
+      if (!row) return;
+      /* Don't trigger if the tap is on the 3-dot button itself */
+      if (e.target.closest('.card-row-menu-btn')) return;
+
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY;
+      fired = false;
+
+      timer = setTimeout(() => {
+        fired = true;
+        /* Extract card id from the onclick attribute */
+        const onclick = row.getAttribute('onclick') || '';
+        const m = onclick.match(/handleCardTap\('([^']+)'/);
+        if (!m) return;
+        const cardId = m[1];
+        if (navigator.vibrate) navigator.vibrate(50);
+        window.cardLongPress(cardId, t.clientX, t.clientY);
+      }, LONG_PRESS_MS);
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+      if (!timer) return;
+      const t = e.touches[0];
+      if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) {
+        clearTimeout(timer); timer = null;
+      }
+    }, { passive: true });
+
+    const cancel = () => { clearTimeout(timer); timer = null; };
+    container.addEventListener('touchend',    cancel, { passive: true });
+    container.addEventListener('touchcancel', cancel, { passive: true });
+
+    /* Suppress the click that follows a long-press touchend */
+    container.addEventListener('click', (e) => {
+      if (fired) { e.stopImmediatePropagation(); fired = false; }
+    }, true);
+  });
+}
 
 function initGradeDropdown() {
   const sel = document.getElementById('f_grade');
@@ -1494,12 +1561,18 @@ function initFastScroll(scrollEl, barEl) {
     thumb.style.top = ((scrollTop / (scrollHeight - clientHeight)) * track) + 'px';
   }
 
+  let _lastHapticScrollTop = -999;
   function moveDrag(clientY) {
     const thumbH = thumb.offsetHeight;
     const track = barH - thumbH;
     const relY = Math.max(0, Math.min(clientY - barTop - thumbH / 2, track));
     const { scrollHeight, clientHeight } = scrollEl;
     scrollEl.scrollTop = (relY / track) * (scrollHeight - clientHeight);
+    /* Haptic tick every ~80px of scrolled content */
+    if (navigator.vibrate && Math.abs(scrollEl.scrollTop - _lastHapticScrollTop) >= 80) {
+      navigator.vibrate(4);
+      _lastHapticScrollTop = scrollEl.scrollTop;
+    }
   }
 
   scrollEl.addEventListener('scroll', updateThumb, { passive: true });
@@ -1507,7 +1580,9 @@ function initFastScroll(scrollEl, barEl) {
 
   thumb.addEventListener('touchstart', e => {
     dragging = true; reposition();
+    _lastHapticScrollTop = scrollEl.scrollTop;
     barEl.classList.add('dragging');
+    if (navigator.vibrate) navigator.vibrate(10); /* start feedback */
     e.preventDefault(); e.stopPropagation();
   }, { passive: false });
 
@@ -1724,6 +1799,14 @@ function navigateCard(direction, context) {
       document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
       const rowEl = document.querySelector(`.card-item[onclick*="${nextId}"]`);
       if (rowEl) rowEl.classList.add('tp-selected');
+    } else if (isWideLayout() && context === 'collection') {
+      document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+      const rowEl = document.querySelector(`#collectionList .card-item[onclick*="${nextId}"]`);
+      if (rowEl) rowEl.classList.add('tp-selected');
+    } else if (isWideLayout() && context === 'graded') {
+      document.querySelectorAll('.graded-tile.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+      const tileEl = document.querySelector(`#gradedList .graded-tile[onclick*="${nextId}"]`);
+      if (tileEl) tileEl.classList.add('tp-selected');
     }
     renderCardPanelInto(panel, nextId, context, direction === 'next' ? W : -W);
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -2308,12 +2391,18 @@ window.handleCardTap = (id, ctx) => {
       panel.classList.remove('animating'); panel.style.transform = '';
       renderCardPanelInto(panel, id, 'player');
     } else if (ctx === 'collection') {
+      document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+      const rowEl = document.querySelector(`#collectionList .card-item[onclick*="${id}"]`);
+      if (rowEl) rowEl.classList.add('tp-selected');
       const emptyEl = document.getElementById('twoPane-coll-empty');
       const panel = document.getElementById('twoPane-coll-panel');
       emptyEl.style.display = 'none'; panel.style.display = 'block';
       panel.classList.remove('animating'); panel.style.transform = '';
       renderCardPanelInto(panel, id, 'collection');
     } else {
+      document.querySelectorAll('.graded-tile.tp-selected').forEach(el => el.classList.remove('tp-selected'));
+      const tileEl = document.querySelector(`#gradedList .graded-tile[onclick*="${id}"]`);
+      if (tileEl) tileEl.classList.add('tp-selected');
       const emptyEl = document.getElementById('twoPane-grad-empty');
       const panel = document.getElementById('twoPane-grad-panel');
       emptyEl.style.display = 'none'; panel.style.display = 'block';
@@ -2585,7 +2674,9 @@ window.onpopstate = (e) => {
 
   function closeMenu() { popup.classList.remove('open'); }
 
-  function openMenu(cardId, anchorBtn) {
+  /* openMenu(cardId, anchorBtnOrNull, clientX?, clientY?)
+     anchorBtn can be null when called from a long-press touch event */
+  function openMenu(cardId, anchorBtn, clientX, clientY) {
     _activeCardId = cardId;
     const c = ALL_CARDS.find(x => x.id === cardId);
     const isOwned = c && (c.Owned===true||c.Owned==="true");
@@ -2601,17 +2692,32 @@ window.onpopstate = (e) => {
       toggleIcon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>';
       toggleLabel.textContent = 'Mark Sleevd';
     }
-    const rect = anchorBtn.getBoundingClientRect();
     const popupW = 220;
-    let left = rect.right - popupW, top = rect.bottom + 6;
-    if (left < 8) left = 8;
-    if (top + 190 > window.innerHeight) top = rect.top - 190;
+    let left, top;
+    if (clientX !== undefined) {
+      /* Positioned at touch point */
+      left = Math.min(clientX - 10, window.innerWidth - popupW - 8);
+      if (left < 8) left = 8;
+      top = clientY + 8;
+      if (top + 200 > window.innerHeight) top = clientY - 200;
+    } else {
+      const rect = anchorBtn.getBoundingClientRect();
+      left = rect.right - popupW;
+      if (left < 8) left = 8;
+      top = rect.bottom + 6;
+      if (top + 190 > window.innerHeight) top = rect.top - 190;
+    }
     popup.style.left = left + 'px'; popup.style.top = top + 'px';
     popup.classList.add('open');
   }
 
   window.openOverflowMenu = (cardId, anchorBtn) => openMenu(cardId, anchorBtn);
   window.openRowMenu = (cardId, anchorBtn) => openMenu(cardId, anchorBtn);
+  /* Called from long-press on any card row/tile */
+  window.cardLongPress = (cardId, clientX, clientY) => {
+    if (navigator.vibrate) navigator.vibrate(50);
+    openMenu(cardId, null, clientX, clientY);
+  };
 
   document.getElementById('omEdit').addEventListener('click', () => {
     closeMenu();
