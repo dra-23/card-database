@@ -974,8 +974,23 @@ const swipe = { active: false, locked: null, startX: 0, startY: 0, lastX: 0, las
 /* ================================================================
    PAGE SWIPE — horizontal swipe between the 3 top-level pages
    ================================================================ */
+let _pageSwipeInited = false;
 function initPageSwipe() {
   if (isWideLayout()) return;
+
+  /* Already initialized — just re-snap the track position */
+  if (_pageSwipeInited) {
+    const track = document.getElementById('page-track');
+    if (track) {
+      const vw = window.innerWidth;
+      const idx = PAGE_NAMES.indexOf(currentPage || 'players');
+      track.style.transition = 'none';
+      track.style.transform = `translateX(${-Math.max(0,idx) * vw}px)`;
+    }
+    if (window._snapIndicator) window._snapIndicator(PAGE_NAMES.indexOf(currentPage || 'players'));
+    return;
+  }
+  _pageSwipeInited = true;
 
   const track = document.getElementById('page-track');
   const indicator = document.getElementById('nav-indicator');
@@ -1015,9 +1030,10 @@ function initPageSwipe() {
     snapIndicator(currentPageIndex);
   });
 
-  /* Initialize positions */
-  setTrackX(0, 0);
-  snapIndicator(0);
+  /* Initialize positions — use currentPageIndex so a resize from wide→mobile
+     lands on the page the user was already viewing */
+  setTrackX(currentPageIndex, 0);
+  snapIndicator(currentPageIndex);
 
   /* ---- Touch handling ---- */
   let ps = {
@@ -1249,10 +1265,114 @@ function setTranslate(el, x, y) {
 function getSheetTranslateY(sheet) {
   return new DOMMatrix(getComputedStyle(sheet).transform).m42;
 }
-function isWideLayout() {
-  return window.matchMedia('(min-width: 840px)').matches;
+/* Cached media query objects — use these everywhere for consistency */
+const _wideQuery      = window.matchMedia('(min-width: 840px)');
+const _threePaneQuery = window.matchMedia('(min-width: 1280px)');
+function isWideLayout()      { return _wideQuery.matches; }
+function isThreePaneLayout() { return _threePaneQuery.matches; }
+
+/* ================================================================
+   ADAPTIVE LAYOUT — applied whenever the wide/mobile threshold is crossed
+   ================================================================ */
+function _applyWideLayout() {
+  /* Move detail-view into slot-players and lay it out side-by-side */
+  const dv   = document.getElementById('detail-view');
+  const slot = document.getElementById('slot-players');
+  const gv   = document.getElementById('gallery-view');
+  if (!dv || !slot || !gv) return;
+  if (dv.parentElement !== slot) slot.appendChild(dv);
+  gv.style.width = '300px';
+  gv.style.minWidth = '300px';
+  gv.style.maxWidth = '300px';
+  gv.style.flexShrink = '0';
+  gv.style.borderRight = '1px solid var(--md-surface-2)';
+  dv.style.display = 'flex';
+  dv.style.flexDirection = 'row';
+  dv.style.flex = '1';
+  dv.style.minWidth = '0';
+  dv.style.position = '';
+  dv.style.inset = '';
+  dv.style.zIndex = '';
+  if (window.selectedPlayer) {
+    dv.classList.remove('tp-no-player');
+  } else {
+    dv.classList.add('tp-no-player');
+    document.getElementById('twoPane-empty').style.display = 'flex';
+    document.getElementById('twoPane-panel').style.display = 'none';
+  }
+  /* Ensure the active page slot is shown */
+  _commitPageSwitch(currentPage || 'players', PAGE_NAMES.indexOf(currentPage || 'players'));
+  updateFloatingFab(currentPage || 'players');
 }
-function isThreePaneLayout() { return window.innerWidth >= 1280; }
+
+function _applyMobileLayout() {
+  /* Close any open card detail sheets silently */
+  ['cardDetailSheet','collectionCardSheet','gradedCardSheet'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s && s.classList.contains('open')) {
+      s.classList.remove('open');
+      s.style.transform = '';
+    }
+  });
+  const scrim = document.getElementById('globalScrim');
+  if (scrim) scrim.style.display = 'none';
+
+  /* Reset gallery-view inline styles */
+  const gv = document.getElementById('gallery-view');
+  if (gv) {
+    gv.style.width = '';
+    gv.style.minWidth = '';
+    gv.style.maxWidth = '';
+    gv.style.flexShrink = '';
+    gv.style.borderRight = '';
+  }
+
+  /* Move detail-view back to page-container */
+  const dv = document.getElementById('detail-view');
+  const pc = document.getElementById('page-container');
+  if (dv && pc && dv.parentElement !== pc) pc.appendChild(dv);
+
+  /* Reset slot-players inline styles */
+  const slot = document.getElementById('slot-players');
+  if (slot) { slot.style.display = ''; slot.style.flexDirection = ''; }
+
+  /* Reset detail-view styles for mobile overlay */
+  if (dv) {
+    dv.classList.remove('tp-no-player');
+    if (window.selectedPlayer) {
+      dv.style.display = 'flex';
+      dv.style.flexDirection = 'column';
+    } else {
+      dv.style.display = 'none';
+    }
+    dv.style.flex = '';
+    dv.style.minWidth = '';
+    dv.style.position = 'absolute';
+    dv.style.inset = '0';
+    dv.style.zIndex = '50';
+  }
+
+  /* Reset nav bar + FAB transforms that may have been shifted by sheet open */
+  const nb = document.getElementById('nav-bar');
+  if (nb) { nb.style.transition = 'none'; nb.style.transform = 'translateX(-50%) translateY(0)'; }
+  const ffab = document.getElementById('floating-fab');
+  if (ffab) { ffab.style.transition = 'none'; ffab.style.transform = 'translateY(0)'; }
+
+  /* Re-initialize page swipe if not yet done (e.g. app loaded in wide mode) */
+  initPageSwipe();
+
+  /* Snap track to current page */
+  const track = document.getElementById('page-track');
+  if (track) {
+    const vw = window.innerWidth;
+    const idx = PAGE_NAMES.indexOf(currentPage || 'players');
+    track.style.transition = 'none';
+    track.style.transform = `translateX(${-Math.max(0,idx) * vw}px)`;
+  }
+  if (window._snapIndicator) window._snapIndicator(PAGE_NAMES.indexOf(currentPage || 'players'));
+
+  updateFloatingFab(currentPage || 'players');
+}
 function yearSortKey(year) {
   if (!year) return "0000";
   const s = year.toString().trim();
@@ -1315,7 +1435,18 @@ const ownedCount = ALL_CARDS.filter(c => c.Owned === true || c.Owned === "true")
 
   /* Set initial slot active class */
   const slotPlayers = document.getElementById('slot-players');
-if (slotPlayers) slotPlayers.classList.add('active');
+  if (slotPlayers) slotPlayers.classList.add('active');
+
+  /* ── Adaptive layout: re-apply when crossing the wide/mobile threshold ── */
+  _wideQuery.addEventListener('change', (e) => {
+    requestAnimationFrame(() => {
+      if (e.matches) {
+        _applyWideLayout();
+      } else {
+        _applyMobileLayout();
+      }
+    });
+  });
 };
 
 function initGradeDropdown() {
@@ -1812,22 +1943,7 @@ function checkReady() {
     document.getElementById('playerGrid').classList.add('loaded');
     updateFloatingFab(currentPage || 'players');
     if (isWideLayout()) {
-      /* Show detail pane immediately in wide mode (empty state) */
-const dv   = document.getElementById('detail-view');
-const slot  = document.getElementById('slot-players');
-const gv    = document.getElementById('gallery-view');
-if (!slot || !dv || !gv) return;
-if (dv.parentElement !== slot) slot.appendChild(dv);
-      gv.style.width = '300px';
-      gv.style.minWidth = '300px';
-      gv.style.maxWidth = '300px';
-      gv.style.flexShrink = '0';
-      gv.style.borderRight = '1px solid var(--md-surface-2)';
-      dv.style.display = 'flex';
-      dv.style.flexDirection = 'row';
-      dv.style.flex = '1';
-      dv.style.minWidth = '0';
-      document.getElementById('detail-view').classList.add('tp-no-player');
+      _applyWideLayout();
     }
   }
 }
