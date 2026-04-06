@@ -87,8 +87,10 @@ html, body {
   position: relative;
   display: flex;
   flex-direction: column;
-  /* This allows the background to bleed under the gesture bar */
-  background: #c2caf0; 
+  background: #c2caf0;
+  /* pan-y: browser owns vertical scroll, JS owns horizontal — removes the
+     direction-lock delay that caused resistance on outer pages */
+  touch-action: pan-y;
 }
 
 /* ================================================================
@@ -224,42 +226,23 @@ html, body {
   flex-shrink: 0;
   display: grid;
   grid-template-rows: 1fr;
-  /* No transition by default — collapse is instant to avoid layout-thrash
-     during fast scroll. The .expanding class is added by JS only on reveal. */
+  /* Both collapse and expand are instant — grid-template-rows transitions
+     cause layout recalculation every frame which produces visible jank. */
 }
 .collapsible-header-wrap.collapsed {
   grid-template-rows: 0fr;
 }
-/* Smooth expand only (JS adds .expanding before removing .collapsed) */
-.collapsible-header-wrap.expanding {
-  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-/* Inner header — fade/slide on expand; instant on collapse */
 .collapsible-header {
   min-height: 0;
   overflow: hidden;
-  transform: translateY(0) translateZ(0);
-  opacity: 1;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-}
-.collapsible-header-wrap.expanding > .collapsible-header {
-  transition:
-    opacity   0.22s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .collapsible-header-wrap.collapsed > .collapsible-header {
-  transform: translateY(-6px) translateZ(0);
-  opacity: 0;
   pointer-events: none;
 }
 @media (min-width: 768px) {
+  /* On wide layout the header is always visible — undo any collapse */
   .collapsible-header-wrap.collapsed { grid-template-rows: 1fr !important; }
-  .collapsible-header-wrap.collapsed > .collapsible-header {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
+  .collapsible-header-wrap.collapsed > .collapsible-header { pointer-events: auto !important; }
 }
 
 /* ================================================================
@@ -1067,10 +1050,13 @@ function initPageSwipe() {
   document.getElementById('page-container').addEventListener('touchstart', (e) => {
     if (isWideLayout() || anySheetOpen()) return;
     if (e.touches.length !== 1) return;
-    /* Clear any lingering snap transition so the track follows the finger
-       immediately — without this, the previous transition creates resistance */
+    /* Abort any in-progress snap animation so the finger is in control
+       immediately. setTrackX/snapIndicator pin it to the page position first
+       so there's no mid-animation jump when transition is cleared. */
     track.style.transition = 'none';
     indicator.style.transition = 'none';
+    setTrackX(currentPageIndex, 0);
+    snapIndicator(currentPageIndex);
     const t = e.touches[0];
     ps.active    = true;
     ps.locked    = null;
@@ -1612,18 +1598,8 @@ function initFastScroll(scrollEl, barEl) {
   setTimeout(() => { reposition(); updateThumb(); }, 300);
 }
 
-/* Collapse instantly (no jank). Expand smoothly via .expanding class. */
-function collapseHeader(wrap) {
-  wrap.classList.remove('expanding');
-  wrap.classList.add('collapsed');
-}
-function expandHeader(wrap) {
-  if (!wrap.classList.contains('collapsed')) return; // already visible
-  wrap.classList.add('expanding');
-  wrap.classList.remove('collapsed');
-  /* Remove .expanding after transition completes */
-  wrap.addEventListener('transitionend', () => wrap.classList.remove('expanding'), { once: true });
-}
+function collapseHeader(wrap) { wrap.classList.add('collapsed'); }
+function expandHeader(wrap)   { wrap.classList.remove('collapsed'); }
 
 function initScrollHide() {
   /* COLLAPSE_THRESHOLD: how far down (px) before header hides */
