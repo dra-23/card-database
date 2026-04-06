@@ -88,9 +88,6 @@ html, body {
   display: flex;
   flex-direction: column;
   background: #c2caf0;
-  /* pan-y: browser owns vertical scroll, JS owns horizontal — removes the
-     direction-lock delay that caused resistance on outer pages */
-  touch-action: pan-y;
 }
 
 /* ================================================================
@@ -1050,13 +1047,6 @@ function initPageSwipe() {
   document.getElementById('page-container').addEventListener('touchstart', (e) => {
     if (isWideLayout() || anySheetOpen()) return;
     if (e.touches.length !== 1) return;
-    /* Abort any in-progress snap animation so the finger is in control
-       immediately. setTrackX/snapIndicator pin it to the page position first
-       so there's no mid-animation jump when transition is cleared. */
-    track.style.transition = 'none';
-    indicator.style.transition = 'none';
-    setTrackX(currentPageIndex, 0);
-    snapIndicator(currentPageIndex);
     const t = e.touches[0];
     ps.active    = true;
     ps.locked    = null;
