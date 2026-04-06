@@ -224,29 +224,32 @@ html, body {
   flex-shrink: 0;
   display: grid;
   grid-template-rows: 1fr;
-  will-change: grid-template-rows;
-  transition: grid-template-rows 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  /* No transition by default — collapse is instant to avoid layout-thrash
+     during fast scroll. The .expanding class is added by JS only on reveal. */
 }
 .collapsible-header-wrap.collapsed {
   grid-template-rows: 0fr;
 }
-/* Inner header — fades + slides, no layout thrash */
+/* Smooth expand only (JS adds .expanding before removing .collapsed) */
+.collapsible-header-wrap.expanding {
+  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Inner header — fade/slide on expand; instant on collapse */
 .collapsible-header {
   min-height: 0;
   overflow: hidden;
-  will-change: transform, opacity;
-  transition:
-    opacity   0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateY(0) translateZ(0);
   opacity: 1;
+  will-change: transform, opacity;
   backface-visibility: hidden;
-  isolation: isolate;
+}
+.collapsible-header-wrap.expanding > .collapsible-header {
+  transition:
+    opacity   0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .collapsible-header-wrap.collapsed > .collapsible-header {
-  transform: translateY(-8px);
+  transform: translateY(-6px) translateZ(0);
   opacity: 0;
   pointer-events: none;
 }
@@ -1062,8 +1065,12 @@ function initPageSwipe() {
   }
 
   document.getElementById('page-container').addEventListener('touchstart', (e) => {
-  if (isWideLayout() || anySheetOpen()) return;
+    if (isWideLayout() || anySheetOpen()) return;
     if (e.touches.length !== 1) return;
+    /* Clear any lingering snap transition so the track follows the finger
+       immediately — without this, the previous transition creates resistance */
+    track.style.transition = 'none';
+    indicator.style.transition = 'none';
     const t = e.touches[0];
     ps.active    = true;
     ps.locked    = null;
@@ -1605,7 +1612,25 @@ function initFastScroll(scrollEl, barEl) {
   setTimeout(() => { reposition(); updateThumb(); }, 300);
 }
 
+/* Collapse instantly (no jank). Expand smoothly via .expanding class. */
+function collapseHeader(wrap) {
+  wrap.classList.remove('expanding');
+  wrap.classList.add('collapsed');
+}
+function expandHeader(wrap) {
+  if (!wrap.classList.contains('collapsed')) return; // already visible
+  wrap.classList.add('expanding');
+  wrap.classList.remove('collapsed');
+  /* Remove .expanding after transition completes */
+  wrap.addEventListener('transitionend', () => wrap.classList.remove('expanding'), { once: true });
+}
+
 function initScrollHide() {
+  /* COLLAPSE_THRESHOLD: how far down (px) before header hides */
+  const COLLAPSE_THRESHOLD = 30;
+  /* REVEAL_THRESHOLD: how close to top (px) before header shows again */
+  const REVEAL_THRESHOLD = 8;
+
   const pairs = [
     { scrollId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
     { scrollId: 'collectionScrollBody', wrapId: 'collectionHeaderWrap' },
@@ -1615,49 +1640,36 @@ function initScrollHide() {
     const el   = document.getElementById(scrollId);
     const wrap = document.getElementById(wrapId);
     if (!el || !wrap) return;
-    let lastY = 0, ticking = false, hideTimer = null;
+    let ticking = false;
     el.addEventListener('scroll', () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         const y = el.scrollTop;
-        const dy = y - lastY;
-        if (y < 40) {
-          wrap.classList.remove('collapsed');
-          clearTimeout(hideTimer);
-        } else if (dy > 12) {
-          clearTimeout(hideTimer);
-          wrap.classList.add('collapsed');
-        } else if (dy < -12) {
-          clearTimeout(hideTimer);
-          wrap.classList.remove('collapsed');
-        } else if (dy > 4) {
-          clearTimeout(hideTimer);
-          hideTimer = setTimeout(() => wrap.classList.add('collapsed'), 80);
-        } else if (dy < -4) {
-          clearTimeout(hideTimer);
-          wrap.classList.remove('collapsed');
+        if (y <= REVEAL_THRESHOLD) {
+          /* Back at top — reveal header with smooth animation */
+          expandHeader(wrap);
+        } else if (y > COLLAPSE_THRESHOLD) {
+          /* Scrolled down enough — hide instantly */
+          collapseHeader(wrap);
         }
-        lastY = y;
         ticking = false;
       });
     }, { passive: true });
   });
 
-  /* Detail view: velocity-based collapse matching the other views */
+  /* Detail view — same rules, skip on wide layout where header is always visible */
   const detailEl   = document.getElementById('detailScrollBody');
   const detailWrap = document.getElementById('detailHeaderWrap');
   if (detailEl && detailWrap) {
-    let lastY = 0, ticking = false;
+    let ticking = false;
     detailEl.addEventListener('scroll', () => {
       if (isWideLayout() || ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         const y = detailEl.scrollTop;
-        if (y < 40)             detailWrap.classList.remove('collapsed');
-        else if (y > lastY + 6) detailWrap.classList.add('collapsed');
-        else if (y < lastY - 6) detailWrap.classList.remove('collapsed');
-        lastY = y;
+        if (y <= REVEAL_THRESHOLD)     expandHeader(detailWrap);
+        else if (y > COLLAPSE_THRESHOLD) collapseHeader(detailWrap);
         ticking = false;
       });
     }, { passive: true });
