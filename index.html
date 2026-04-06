@@ -585,7 +585,7 @@ html, body {
   #detail-view .master-col { flex: 1; min-width: 0; }
 }
 
-/* Three-pane layout — only when viewport is wide enough to avoid cramp */
+/* Players 3-pane (gallery | player detail | card detail) — needs more room */
 @media (min-width: 1280px) {
   #detail-view .back-btn { display: none; }
   #cardDetailSheet { display: none !important; }
@@ -600,7 +600,10 @@ html, body {
   .card-item.tp-selected { border-color: var(--md-surface-1); background: #e8ecff; }
   #detail-view.tp-no-player .master-col > *:not(#detail-view-empty) { display: none !important; }
   #detail-view.tp-no-player #detail-view-empty { display: flex !important; }
+}
 
+/* Collection & Graded 2-pane (list | card detail) — active at wide layout */
+@media (min-width: 840px) {
   #collection-view { flex-direction: row !important; }
   #collection-view .master-col { flex: 1; min-width: 0; }
   #collectionCardSheet { display: none !important; }
@@ -1676,12 +1679,12 @@ function refreshCurrentCardPanel(cardId) {
   } else if (activeCardContext === 'player') {
     if (window.currentCardId === cardId) renderCardPanelInto(document.getElementById('cardDetailPanel'), cardId, 'player');
   } else if (activeCardContext === 'collection') {
-    const target = isThreePaneLayout()
+    const target = isWideLayout()
       ? document.getElementById('twoPane-coll-panel')
       : document.getElementById('collectionCardPanel');
     if (window.currentCardId === cardId) renderCardPanelInto(target, cardId, 'collection');
   } else if (activeCardContext === 'graded') {
-    const target = isThreePaneLayout()
+    const target = isWideLayout()
       ? document.getElementById('twoPane-grad-panel')
       : document.getElementById('gradedCardPanel');
     if (window.currentCardId === cardId) renderCardPanelInto(target, cardId, 'graded');
@@ -1706,9 +1709,9 @@ function navigateCard(direction, context) {
   if (context === 'player') {
     panel = isThreePaneLayout() ? document.getElementById('twoPane-panel') : document.getElementById('cardDetailPanel');
   } else if (context === 'collection') {
-    panel = isThreePaneLayout() ? document.getElementById('twoPane-coll-panel') : document.getElementById('collectionCardPanel');
+    panel = isWideLayout() ? document.getElementById('twoPane-coll-panel') : document.getElementById('collectionCardPanel');
   } else {
-    panel = isThreePaneLayout() ? document.getElementById('twoPane-grad-panel') : document.getElementById('gradedCardPanel');
+    panel = isWideLayout() ? document.getElementById('twoPane-grad-panel') : document.getElementById('gradedCardPanel');
   }
 
   swipe.animating = true;
@@ -2292,7 +2295,9 @@ window.handleCardTap = (id, ctx) => {
   window.currentCardId = id;
   activeCardContext = ctx || 'player';
 
-  if (isThreePaneLayout()) {
+  /* Use inline panel for: player at ≥1280px, collection/graded at ≥840px */
+  const useInlinePanel = ctx === 'player' ? isThreePaneLayout() : isWideLayout();
+  if (useInlinePanel) {
     if (ctx === 'player') {
       document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'));
       const rowEl = document.querySelector(`.card-item[onclick*="${id}"]`);
