@@ -118,7 +118,7 @@ html, body {
 }
 
 /* ================================================================
-   NAVIGATION RAIL — tablet/desktop (≥840px)
+   NAVIGATION RAIL — tablet/desktop (≥768px)
    ================================================================ */
 #nav-rail {
   display: none;
@@ -250,7 +250,7 @@ html, body {
   opacity: 0;
   pointer-events: none;
 }
-@media (min-width: 840px) {
+@media (min-width: 768px) {
   .collapsible-header-wrap.collapsed { grid-template-rows: 1fr !important; }
   .collapsible-header-wrap.collapsed > .collapsible-header {
     transform: translateY(0) !important;
@@ -289,7 +289,7 @@ html, body {
 }
 .wide-fab:hover { background: var(--md-surface-1); color: var(--md-on-surface); }
 .wide-fab:active { transform: scale(0.93); }
-@media (min-width: 840px) { .wide-fab { display: flex; } }
+@media (min-width: 768px) { .wide-fab { display: flex; } }
 
 .scroll-body { flex: 1; overflow-y: auto; padding-bottom: 16px; }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -545,9 +545,9 @@ html, body {
 #floating-fab:active { transform: scale(0.93); }
 
 /* ================================================================
-   TWO-PANE (≥840px)
+   TWO-PANE (≥768px)
    ================================================================ */
-@media (min-width: 840px) {
+@media (min-width: 768px) {
 
   #nav-bar { display: none; }
   #nav-rail { display: flex; padding-top: 12px; }
@@ -603,7 +603,7 @@ html, body {
 }
 
 /* Collection & Graded 2-pane (list | card detail) — active at wide layout */
-@media (min-width: 840px) {
+@media (min-width: 768px) {
   #collection-view { flex-direction: row !important; }
   #collection-view .master-col { flex: 1; min-width: 0; }
   #collectionCardSheet { display: none !important; }
@@ -1269,7 +1269,7 @@ function getSheetTranslateY(sheet) {
   return new DOMMatrix(getComputedStyle(sheet).transform).m42;
 }
 /* Cached media query objects — use these everywhere for consistency */
-const _wideQuery      = window.matchMedia('(min-width: 840px)');
+const _wideQuery      = window.matchMedia('(min-width: 768px)');
 const _threePaneQuery = window.matchMedia('(min-width: 1280px)');
 function isWideLayout()      { return _wideQuery.matches; }
 function isThreePaneLayout() { return _threePaneQuery.matches; }
@@ -2295,7 +2295,7 @@ window.handleCardTap = (id, ctx) => {
   window.currentCardId = id;
   activeCardContext = ctx || 'player';
 
-  /* Use inline panel for: player at ≥1280px, collection/graded at ≥840px */
+  /* Use inline panel for: player at ≥1280px, collection/graded at ≥768px */
   const useInlinePanel = ctx === 'player' ? isThreePaneLayout() : isWideLayout();
   if (useInlinePanel) {
     if (ctx === 'player') {
