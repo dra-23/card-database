@@ -321,6 +321,10 @@ html, body {
    ================================================================ */
 .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 32px 32px 0 0; z-index: 1000; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); }
 .sheet.open { transform: translateY(0); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
+@media (min-width: 768px) {
+  .sheet { left: 50%; right: auto; width: 100%; max-width: 560px; transform: translateX(-50%) translateY(100%); border-radius: 28px; bottom: 24px; }
+  .sheet.open { transform: translateX(-50%) translateY(0); box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+}
 .sheet-handle {
   width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px;
   margin: 12px auto 8px;
@@ -1254,6 +1258,10 @@ function setTranslate(el, x, y) {
 function getSheetTranslateY(sheet) {
   return new DOMMatrix(getComputedStyle(sheet).transform).m42;
 }
+function sheetTransformY(px) {
+  const y = typeof px === 'number' ? `${px}px` : px;
+  return isWideLayout() ? `translateX(-50%) translateY(${y})` : `translateY(${y})`;
+}
 /* Cached media query objects — use these everywhere for consistency */
 const _wideQuery      = window.matchMedia('(min-width: 768px)');
 const _threePaneQuery = window.matchMedia('(min-width: 1280px)');
@@ -1841,7 +1849,7 @@ function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName) {
       if (hintR) hintR.style.opacity = (dx < -40 && !atEnd) ? '1' : '0';
     } else if (st.locked === 'vertical') {
       if (e.cancelable) e.preventDefault();
-      setTranslate(sheet, null, Math.max(0, dy));
+      sheet.style.transform = sheetTransformY(Math.max(0, dy));
     }
   }, { passive: false });
 
@@ -1861,10 +1869,10 @@ function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName) {
     } else if (st.locked === 'vertical') {
       sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
       if (dy > 150) closeCardSheet(ctxName);
-      else sheet.style.transform = 'translateY(0)';
+      else sheet.style.transform = sheetTransformY(0);
     } else {
       panel.style.transform = '';
-      sheet.style.transform = sheet.classList.contains('open') ? 'translateY(0)' : 'translateY(100%)';
+      sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0) : sheetTransformY('100%');
     }
     st.locked = null;
   });
@@ -1875,7 +1883,7 @@ function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName) {
     if (hintR) hintR.style.opacity = '0';
     panel.classList.add('animating'); panel.style.transform = 'translateX(0)';
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
-    sheet.style.transform = sheet.classList.contains('open') ? 'translateY(0)' : 'translateY(100%)';
+    sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0) : sheetTransformY('100%');
     setTimeout(() => panel.classList.remove('animating'), 320);
   }, { passive: true });
 }
@@ -1936,10 +1944,10 @@ function attachFormDismissGesture(sheetId, dismissFn) {
     /* Only drag down, and only when handle-initiated OR body is at top */
     if (dy > 0 && (fs.startedOnHandle || atTop)) {
       const dampened = dy < 80 ? dy : 80 + (dy - 80) * 0.35;
-      sheet.style.transform = `translateY(${dampened}px)`;
+      sheet.style.transform = sheetTransformY(dampened);
     } else if (dy <= 0) {
       /* Scrolling up inside form — snap sheet back instantly */
-      sheet.style.transform = 'translateY(0)';
+      sheet.style.transform = sheetTransformY(0);
     }
   }
   function onEnd() {
@@ -1951,10 +1959,10 @@ function attachFormDismissGesture(sheetId, dismissFn) {
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)';
 
     if (dy > 110 && (fs.startedOnHandle || atTop)) {
-      sheet.style.transform = 'translateY(100%)';
+      sheet.style.transform = sheetTransformY('100%');
       setTimeout(() => { dismissFn(); sheet.style.transform = ''; }, 320);
     } else {
-      sheet.style.transform = 'translateY(0)';
+      sheet.style.transform = sheetTransformY(0);
     }
   }
 
