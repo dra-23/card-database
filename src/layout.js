@@ -210,6 +210,10 @@ export function initPageSwipe() {
 
   container.addEventListener('touchstart', e => {
     if (document.querySelector('.sheet.open')) return
+    // Sync pageIdx with actual current page (e.g. after navigating to stats via button)
+    pageIdx = PAGE_NAMES.indexOf(currentPage || 'players')
+    // Stats page is not swipe-navigable
+    if (pageIdx === PAGE_NAMES.indexOf('stats')) return
     sx = e.touches[0].clientX; sy = e.touches[0].clientY
     lx = sx; locked = null; active = true
     track.classList.add('dragging')

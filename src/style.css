@@ -454,13 +454,9 @@ html, body {
 .stats-content { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .stat-card { background: var(--md-surface-2); border-radius: 24px; padding: 20px; }
 .stat-card-title { font-family: 'Google Sans Display'; font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; }
-.stat-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 10px; }
-.stat-summary-card { background: #fff; border-radius: 20px; padding: 14px 10px; text-align: center; }
-.stat-summary-num { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; line-height: 1; }
-.stat-summary-label { font-size: 11px; color: var(--md-on-surface-variant); font-weight: 600; margin-top: 4px; }
 .stat-badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .stat-badge-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; background: #fff; border-radius: 16px; }
-.stat-badge-chip { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.stat-badge-chip { background: #E8192C; color: #fff; font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; letter-spacing: 0.3px; white-space: nowrap; }
 .stat-badge-count { font-family: 'Google Sans Display'; font-size: 24px; font-weight: 700; line-height: 1; color: var(--badge-color, #E8192C); }
 .stat-badge-label { font-size: 10px; font-weight: 600; color: var(--md-on-surface-variant); }
 .chart-container { position: relative; }

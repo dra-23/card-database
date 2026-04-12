@@ -55,24 +55,31 @@ export function renderStats() {
   document.getElementById('statsContent').innerHTML = `
     <div class="stats-content">
 
-      <!-- Summary cards -->
-      <div class="stat-summary-row">
-        <div class="stat-summary-card">
-          <div class="stat-summary-num">${owned.length}</div>
-          <div class="stat-summary-label">Owned</div>
+      <!-- Summary row — styled like badge breakdown -->
+      <div class="stat-card">
+        <div class="stat-badge-grid">
+          <div class="stat-badge-item" style="--badge-color:#3D5AFE;">
+            <span class="stat-badge-chip" style="background:#3D5AFE;">OWNED</span>
+            <div class="stat-badge-count">${owned.length}</div>
+            <div class="stat-badge-label">In Collection</div>
+          </div>
+          <div class="stat-badge-item" style="--badge-color:${C_SILVER};">
+            <span class="stat-badge-chip" style="background:${C_SILVER};">WANT</span>
+            <div class="stat-badge-count">${wishlist.length}</div>
+            <div class="stat-badge-label">Wishlist</div>
+          </div>
+          <div class="stat-badge-item" style="--badge-color:${C_GREEN};">
+            <span class="stat-badge-chip" style="background:${C_GREEN};">GRADED</span>
+            <div class="stat-badge-count">${graded.length}</div>
+            <div class="stat-badge-label">Graded</div>
+          </div>
+          ${totalValue > 0 ? `
+          <div class="stat-badge-item" style="--badge-color:${C_GOLD};">
+            <span class="stat-badge-chip" style="background:${C_GOLD};">PAID</span>
+            <div class="stat-badge-count" style="font-size:18px;">$${totalValue % 1 === 0 ? totalValue : totalValue.toFixed(0)}</div>
+            <div class="stat-badge-label">Total Paid</div>
+          </div>` : ''}
         </div>
-        <div class="stat-summary-card">
-          <div class="stat-summary-num">${wishlist.length}</div>
-          <div class="stat-summary-label">Wishlist</div>
-        </div>
-        <div class="stat-summary-card">
-          <div class="stat-summary-num">${graded.length}</div>
-          <div class="stat-summary-label">Graded</div>
-        </div>
-        ${totalValue > 0 ? `<div class="stat-summary-card">
-          <div class="stat-summary-num">$${totalValue % 1 === 0 ? totalValue : totalValue.toFixed(2)}</div>
-          <div class="stat-summary-label">Paid</div>
-        </div>` : ''}
       </div>
 
       <!-- Badge Breakdown -->
@@ -106,7 +113,7 @@ export function renderStats() {
       <!-- By Sport -->
       <div class="stat-card">
         <div class="stat-card-title">Owned by Sport</div>
-        <div class="chart-container" style="max-height:220px;"><canvas id="chartSport"></canvas></div>
+        <div class="chart-container" style="height:180px;"><canvas id="chartSport"></canvas></div>
       </div>
 
       <!-- Top Players -->
@@ -147,8 +154,8 @@ export function renderStats() {
         }],
       },
       options: {
-        plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } },
-        maintainAspectRatio: true,
+        plugins: { legend: { position: 'left', labels: { padding: 14, font: { size: 12 }, boxWidth: 12, boxHeight: 12 } } },
+        maintainAspectRatio: false,
         cutout: '65%',
       },
     })
