@@ -161,10 +161,12 @@ export async function saveCard() {
       RC:       document.getElementById('f_rc').value       === 'true',
       Auto:     document.getElementById('f_auto').value     === 'true',
       Mem:      document.getElementById('f_mem').value      === 'true',
-      Patch:    deleteField(),
       Numbered: document.getElementById('f_numbered').value === 'true',
       Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : true,
     }
+
+    // deleteField() is only valid in setDoc/updateDoc, not addDoc
+    if (id) cardData.Patch = deleteField()
 
     if (id) await setDoc(doc(db, 'Cards', id), cardData, { merge: true })
     else    await addDoc(collection(db, 'Cards'), cardData)
