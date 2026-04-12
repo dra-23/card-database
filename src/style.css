@@ -118,13 +118,14 @@ html, body {
 .total-count-pill { background: var(--md-surface-2); padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 800; color: var(--md-on-surface); margin-right: 8px; }
 
 /* Collapsible header grid trick */
-.collapsible-header-wrap { flex-shrink: 0; display: grid; grid-template-rows: 1fr; }
+.collapsible-header-wrap { flex-shrink: 0; display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.28s cubic-bezier(0.4,0,0.2,1); }
 .collapsible-header-wrap.collapsed { grid-template-rows: 0fr; }
-.collapsible-header { min-height: 0; overflow: hidden; }
-.collapsible-header-wrap.collapsed > .collapsible-header { pointer-events: none; }
+.collapsible-header { min-height: 0; overflow: hidden; transition: opacity 0.2s ease; }
+.collapsible-header-wrap:not(.collapsed) > .collapsible-header { opacity: 1; }
+.collapsible-header-wrap.collapsed > .collapsible-header { pointer-events: none; opacity: 0; }
 @media (min-width: 768px) {
   .collapsible-header-wrap.collapsed { grid-template-rows: 1fr !important; }
-  .collapsible-header-wrap.collapsed > .collapsible-header { pointer-events: auto !important; }
+  .collapsible-header-wrap.collapsed > .collapsible-header { pointer-events: auto !important; opacity: 1; }
 }
 
 /* ================================================================

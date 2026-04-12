@@ -13,6 +13,13 @@ export function buildCardDetailHTML(card, ctx) {
   const gradeStr  = (co && co !== 'Raw') ? `${co} ${gr}` : ''
   const owned     = isOwned(card)
   const url       = card['Card Information'] || ''
+  const parallel  = card.Parallel || ''
+  const serial    = card.Serial || card['Serial Number'] || ''
+  const notes     = card.Notes || ''
+  const ebayQ     = encodeURIComponent([card.Year, card.Set, playerName, card.Number ? `#${card.Number}` : '', parallel].filter(Boolean).join(' ').trim())
+  const tcdbQ     = encodeURIComponent([card.Year, card.Set, playerName].filter(Boolean).join(' ').trim())
+  const ebayUrl   = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Sold=1&LH_Complete=1`
+  const tcdbUrl   = `https://www.tcdb.com/Search.cfm?q=${tcdbQ}`
 
   return `
     <div class="card-detail-image-wrap">
@@ -41,16 +48,36 @@ export function buildCardDetailHTML(card, ctx) {
           <div class="card-detail-stat-label">Price Paid</div>
           <div class="card-detail-stat-val">${card.Price ? '$' + card.Price : '—'}</div>
         </div>
+        ${parallel ? `<div class="card-detail-stat">
+          <div class="card-detail-stat-label">Parallel</div>
+          <div class="card-detail-stat-val">${parallel}</div>
+        </div>` : ''}
+        ${serial ? `<div class="card-detail-stat">
+          <div class="card-detail-stat-label">Serial</div>
+          <div class="card-detail-stat-val">${serial}</div>
+        </div>` : ''}
       </div>
-      ${(card.RC === true || card.RC === 'true') ? `<div><span class="badge-rc" style="font-size:12px; padding:4px 12px;">ROOKIE CARD</span></div>` : ''}
-      ${(card.Auto === true || card.Auto === 'true') ? `<div><span class="badge-auto" style="font-size:12px; padding:4px 12px;">AUTOGRAPH</span></div>` : ''}
+      ${(card.RC === true || card.RC === 'true') || (card.Auto === true || card.Auto === 'true') ? `
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        ${(card.RC === true || card.RC === 'true') ? `<span class="badge-rc" style="font-size:12px; padding:4px 12px;">ROOKIE CARD</span>` : ''}
+        ${(card.Auto === true || card.Auto === 'true') ? `<span class="badge-auto" style="font-size:12px; padding:4px 12px;">AUTOGRAPH</span>` : ''}
+      </div>` : ''}
+      ${notes ? `<div style="background:var(--md-surface-2); border-radius:12px; padding:12px 14px; font-size:14px; color:var(--md-on-surface-variant);">${notes}</div>` : ''}
       <div style="display:flex; align-items:center; justify-content:space-between; background:var(--md-surface-2); border-radius:16px; padding:14px 16px;">
         <span style="font-size:15px; font-weight:700;">${owned ? 'In collection' : 'On wishlist'}</span>
         <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
       </div>
+      <div style="display:flex; gap:8px;">
+        <a href="${ebayUrl}" target="_blank" rel="noopener" style="flex:1;">
+          <button class="expressive-btn" style="background:#0064d2; color:#fff; box-shadow:none; height:52px; border-radius:24px; width:100%; font-weight:700;">eBay Sold ↗</button>
+        </a>
+        <a href="${tcdbUrl}" target="_blank" rel="noopener" style="flex:1;">
+          <button class="expressive-btn" style="background:#e07020; color:#fff; box-shadow:none; height:52px; border-radius:24px; width:100%; font-weight:700;">TCDB ↗</button>
+        </a>
+      </div>
       <div class="button-row-split">
         <button class="expressive-btn" data-card-edit="${escapeAttr(card.id)}" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); height:52px; border-radius:24px;">Edit</button>
-        ${url ? `<a href="${url}" target="_blank" rel="noopener" style="flex:1;"><button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none; height:52px; border-radius:24px; width:100%;">Info ↗</button></a>` : ''}
+        ${url ? `<a href="${url}" target="_blank" rel="noopener" style="flex:1;"><button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none; height:52px; border-radius:24px; width:100%;">Card Info ↗</button></a>` : ''}
       </div>
     </div>
   `

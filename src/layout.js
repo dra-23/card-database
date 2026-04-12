@@ -1,4 +1,4 @@
-import { currentPage, setCurrentPage, selectedPlayer } from './state.js'
+import { currentPage, setCurrentPage, selectedPlayer, emit } from './state.js'
 
 export const PAGE_NAMES = ['players', 'collection', 'graded', 'stats']
 const NAV_BTN_W = 52, NAV_GAP = 4, NAV_PAD = 8
@@ -253,6 +253,7 @@ export function initPageSwipe() {
     _updateNavActive(page)
     _updateFloatingFab(page)
     if (window._snapIndicator) window._snapIndicator(pageIdx)
+    emit('page:changed', page)
   }
 
   container.addEventListener('touchend', endSwipe, { passive: true })

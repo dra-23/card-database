@@ -60,6 +60,11 @@ function startApp() {
     if (state.currentPage === 'stats')      renderStats()
   })
   state.on('data:ready', onDataReady)
+  state.on('page:changed', page => {
+    if (page === 'collection') renderCollectionView()
+    if (page === 'graded')     renderGradedView()
+    if (page === 'stats')      renderStats()
+  })
 
   // Overlays & dynamic elements
   createOverflowMenu()
