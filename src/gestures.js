@@ -52,10 +52,8 @@ export function closeCardSheets() {
   })
   const scrim = document.getElementById('globalScrim')
   if (scrim) scrim.style.display = 'none'
-  const nb   = document.getElementById('nav-bar')
-  const ffab = document.getElementById('floating-fab')
-  if (nb)   { nb.style.transition = 'transform 0.35s cubic-bezier(0.05,0.7,0.1,1)'; nb.style.transform = 'translateX(-50%) translateY(0)' }
-  if (ffab) { ffab.style.transition = 'transform 0.35s cubic-bezier(0.05,0.7,0.1,1)'; ffab.style.transform = 'translateY(0)' }
+  const nb = document.getElementById('nav-bar')
+  if (nb) { nb.style.transition = 'transform 0.35s cubic-bezier(0.05,0.7,0.1,1)'; nb.style.transform = 'translateX(-50%) translateY(0)' }
   if (history.state?.v === 'card') history.back()
 }
 

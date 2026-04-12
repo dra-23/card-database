@@ -129,19 +129,27 @@ export function _updateNavActive(page) {
   document.querySelectorAll('.rail-item[data-page]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.page === page)
   })
+  // Hide indicator when on stats (no stats nav item on mobile)
+  const indicator = document.getElementById('nav-indicator')
+  if (indicator) indicator.style.opacity = page === 'stats' ? '0' : '1'
 }
 
 export function _updateFloatingFab(page) {
   const fab = document.getElementById('floating-fab')
+  const sep = document.getElementById('nav-fab-sep')
   if (!fab) return
-  if (isWideLayout()) { fab.style.display = 'none'; return }
-  // Only show FAB on players page (gallery) and when in player detail
-  if (page === 'players' && selectedPlayer) {
+  if (isWideLayout()) {
+    fab.style.display = 'none'
+    if (sep) sep.style.display = 'none'
+    return
+  }
+  const show = (page === 'players' && !!selectedPlayer) || page === 'collection'
+  if (show) {
     fab.classList.add('visible')
-  } else if (page === 'players' || page === 'collection' || page === 'graded') {
-    fab.classList.remove('visible')
+    if (sep) sep.style.display = 'block'
   } else {
     fab.classList.remove('visible')
+    if (sep) sep.style.display = 'none'
   }
 }
 

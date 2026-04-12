@@ -73,6 +73,9 @@ function appShellHTML() {
                 <div class="top-bar">
                   <span class="brand">Players</span>
                   <div class="total-count-pill" id="totalOwnedCounter">0</div>
+                  <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
+                    <span class="material-symbols-outlined">bar_chart</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -94,6 +97,9 @@ function appShellHTML() {
                   <div class="top-bar">
                     <span class="brand">Collection</span>
                     <div class="total-count-pill" id="collectionOwnedCounter">0</div>
+                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
+                      <span class="material-symbols-outlined">bar_chart</span>
+                    </button>
                   </div>
                   <div class="search-filter-row">
                     <div class="search-wrap">
@@ -134,6 +140,9 @@ function appShellHTML() {
                   <div class="top-bar">
                     <span class="brand">Graded</span>
                     <div class="total-count-pill" id="gradedCounter">0</div>
+                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
+                      <span class="material-symbols-outlined">bar_chart</span>
+                    </button>
                   </div>
                   <div class="search-filter-row">
                     <div class="search-wrap">
@@ -192,6 +201,9 @@ function appShellHTML() {
                 <button class="back-btn" id="backBtn">
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
+                <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                  <span class="material-symbols-outlined">bar_chart</span>
+                </button>
               </div>
               <div style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
@@ -231,31 +243,23 @@ function appShellHTML() {
   </div><!-- /right-column -->
 </div><!-- /app-shell -->
 
-<!-- MOBILE NAV BAR -->
+<!-- MOBILE NAV BAR (3 pages + inline FAB) -->
 <nav id="nav-bar">
   <div id="nav-indicator"></div>
   <button class="nav-item active" id="nav-players"    data-page="players">
     <span class="material-symbols-outlined">cards_stack</span>
-    <span class="nav-label">Players</span>
   </button>
   <button class="nav-item" id="nav-collection" data-page="collection">
     <span class="material-symbols-outlined">inventory_2</span>
-    <span class="nav-label">Collection</span>
   </button>
   <button class="nav-item" id="nav-graded"    data-page="graded">
     <span class="material-symbols-outlined">g_mobiledata_badge</span>
-    <span class="nav-label">Graded</span>
   </button>
-  <button class="nav-item" id="nav-stats"     data-page="stats">
-    <span class="material-symbols-outlined">bar_chart</span>
-    <span class="nav-label">Stats</span>
+  <div id="nav-fab-sep"></div>
+  <button id="floating-fab">
+    <span class="material-symbols-outlined" style="font-size:24px;">add</span>
   </button>
 </nav>
-
-<!-- FLOATING ADD FAB (mobile) -->
-<button id="floating-fab">
-  <span class="material-symbols-outlined" style="font-size:28px;">add</span>
-</button>
 
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim"></div>
@@ -343,8 +347,18 @@ function appShellHTML() {
           <span style="background:#B8860B; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">AUTO</span>Autograph
         </button>
       </div>
-      <input type="hidden" id="f_rc"   value="false">
-      <input type="hidden" id="f_auto" value="false">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <button type="button" id="f_patch_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#1565C0; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">PATCH</span>Patch
+        </button>
+        <button type="button" id="f_numbered_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#78909C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">#'d</span>Numbered
+        </button>
+      </div>
+      <input type="hidden" id="f_rc"       value="false">
+      <input type="hidden" id="f_auto"     value="false">
+      <input type="hidden" id="f_patch"    value="false">
+      <input type="hidden" id="f_numbered" value="false">
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>
         <button class="expressive-btn" id="btnSaveCard" style="background:var(--md-primary); color:white; flex:1; height:56px; border-radius:28px;">Save Card</button>

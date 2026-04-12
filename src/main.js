@@ -84,7 +84,6 @@ function startApp() {
   attachFormDismissGesture('cardFormSheet',   closeAllForms)
   attachFormDismissGesture('playerFormSheet', closeAllForms)
 
-  initScrollHide()
   initFastScroll(document.getElementById('detailScrollBody'),     document.getElementById('detailFastScroll'))
   initFastScroll(document.getElementById('collectionScrollBody'), document.getElementById('collFastScroll'))
   initCardListDelegation()
@@ -195,8 +194,10 @@ function wireFormButtons() {
   document.getElementById('cancelCardFormBtn')?.addEventListener('click', closeAllForms)
   document.getElementById('selectPhotoBtn')?.addEventListener('click', () => document.getElementById('f_fileInput').click())
   document.getElementById('f_fileInput')?.addEventListener('change', e => handleFileSelect(e.target))
-  document.getElementById('f_rc_btn')?.addEventListener('click',   () => setFormFlag('rc',   document.getElementById('f_rc').value !== 'true'))
-  document.getElementById('f_auto_btn')?.addEventListener('click', () => setFormFlag('auto', document.getElementById('f_auto').value !== 'true'))
+  document.getElementById('f_rc_btn')?.addEventListener('click',       () => setFormFlag('rc',       document.getElementById('f_rc').value       !== 'true'))
+  document.getElementById('f_auto_btn')?.addEventListener('click',     () => setFormFlag('auto',     document.getElementById('f_auto').value     !== 'true'))
+  document.getElementById('f_patch_btn')?.addEventListener('click',    () => setFormFlag('patch',    document.getElementById('f_patch').value    !== 'true'))
+  document.getElementById('f_numbered_btn')?.addEventListener('click', () => setFormFlag('numbered', document.getElementById('f_numbered').value !== 'true'))
 }
 
 // ── Wire search inputs ─────────────────────────────────────────────────────

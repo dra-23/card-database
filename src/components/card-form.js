@@ -15,22 +15,27 @@ export function initGradeDropdown() {
   sel.innerHTML = html
 }
 
-// ── Toggle RC / Auto buttons ───────────────────────────────────────────────
+// ── Toggle badge flag buttons ──────────────────────────────────────────────
+const FLAG_STYLES = {
+  rc:       { hidden: 'f_rc',       btn: 'f_rc_btn',       bg: 'rgba(232,25,44,0.08)',  border: '#E8192C', color: '#E8192C' },
+  auto:     { hidden: 'f_auto',     btn: 'f_auto_btn',     bg: 'rgba(184,134,11,0.10)', border: '#B8860B', color: '#B8860B' },
+  patch:    { hidden: 'f_patch',    btn: 'f_patch_btn',    bg: 'rgba(21,101,192,0.08)', border: '#1565C0', color: '#1565C0' },
+  numbered: { hidden: 'f_numbered', btn: 'f_numbered_btn', bg: 'rgba(96,125,139,0.10)', border: '#607D8B', color: '#607D8B' },
+}
 export function setFormFlag(flag, active) {
-  const hiddenId = flag === 'rc' ? 'f_rc' : 'f_auto'
-  const btnId    = flag === 'rc' ? 'f_rc_btn' : 'f_auto_btn'
-  const hidden   = document.getElementById(hiddenId)
-  const btn      = document.getElementById(btnId)
+  const cfg = FLAG_STYLES[flag]; if (!cfg) return
+  const hidden = document.getElementById(cfg.hidden)
+  const btn    = document.getElementById(cfg.btn)
   if (!hidden || !btn) return
   hidden.value = active ? 'true' : 'false'
   if (active) {
-    btn.style.background   = flag === 'rc' ? 'rgba(232,25,44,0.08)' : 'rgba(184,134,11,0.10)'
-    btn.style.borderColor  = flag === 'rc' ? '#E8192C' : '#B8860B'
-    btn.style.color        = flag === 'rc' ? '#E8192C' : '#B8860B'
+    btn.style.background  = cfg.bg
+    btn.style.borderColor = cfg.border
+    btn.style.color       = cfg.color
   } else {
-    btn.style.background   = 'transparent'
-    btn.style.borderColor  = 'var(--md-outline)'
-    btn.style.color        = 'var(--md-on-surface)'
+    btn.style.background  = 'transparent'
+    btn.style.borderColor = 'var(--md-outline)'
+    btn.style.color       = 'var(--md-on-surface)'
   }
 }
 
@@ -95,8 +100,10 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_grade').value        = c.Grade || 'N/A'
     document.getElementById('f_price').value        = c.Price || ''
     document.getElementById('f_url').value          = c['Card Information'] || ''
-    setFormFlag('rc',   c.RC   === true || c.RC   === 'true')
-    setFormFlag('auto', c.Auto === true || c.Auto === 'true')
+    setFormFlag('rc',       c.RC       === true || c.RC       === 'true')
+    setFormFlag('auto',     c.Auto     === true || c.Auto     === 'true')
+    setFormFlag('patch',    c.Patch    === true || c.Patch    === 'true')
+    setFormFlag('numbered', c.Numbered === true || c.Numbered === 'true')
     if (c['App Image']) {
       document.getElementById('f_imagePreview').src   = c['App Image']
       document.getElementById('f_imagePreview').style.display     = 'block'
@@ -108,6 +115,7 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_grading').value = 'Raw'
     document.getElementById('f_grade').value   = 'N/A'
     setFormFlag('rc', false); setFormFlag('auto', false)
+    setFormFlag('patch', false); setFormFlag('numbered', false)
     document.getElementById('f_imagePreview').style.display     = 'none'
     document.getElementById('previewPlaceholder').style.display = 'block'
     document.getElementById('f_fileInput').value = ''
@@ -150,8 +158,10 @@ export async function saveCard() {
       Price:            document.getElementById('f_price').value,
       'Card Information': document.getElementById('f_url').value,
       'App Image':      imageUrl,
-      RC:   document.getElementById('f_rc').value   === 'true',
-      Auto: document.getElementById('f_auto').value === 'true',
+      RC:       document.getElementById('f_rc').value       === 'true',
+      Auto:     document.getElementById('f_auto').value     === 'true',
+      Patch:    document.getElementById('f_patch').value    === 'true',
+      Numbered: document.getElementById('f_numbered').value === 'true',
       Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : true,
     }
 

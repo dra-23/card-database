@@ -231,9 +231,11 @@ html, body {
 .card-info-row1 { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-info-row2 { font-size: 12px; opacity: 0.6; }
 .card-badge-tray { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; align-items: center; }
-.badge-grade { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; border: 1.5px solid var(--md-surface-1); white-space: nowrap; }
-.badge-rc   { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-auto { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-grade    { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; border: 1.5px solid var(--md-surface-1); white-space: nowrap; }
+.badge-rc       { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-auto     { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-patch    { background: #1565C0; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-numbered { background: #78909C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
 .card-row-menu-btn { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; }
 .card-row-menu-btn:active { background: rgba(0,0,0,0.07); opacity: 1; }
 
@@ -302,17 +304,30 @@ html, body {
 .nav-label { display: none; }
 
 /* ================================================================
-   FLOATING FAB (mobile)
+   FLOATING FAB (inside nav bar on mobile)
    ================================================================ */
 #floating-fab {
-  position: fixed; bottom: calc(var(--nav-height-safe) + 16px); right: 24px;
-  width: 64px; height: 64px; border-radius: 20px;
-  background: var(--md-surface-1); color: var(--md-on-surface);
+  width: 52px; height: 52px; border-radius: 28px;
+  background: var(--md-primary); color: #fff;
   display: none; align-items: center; justify-content: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 150; border: none; cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1);
+  border: none; cursor: pointer; position: relative; z-index: 1;
+  flex-shrink: 0;
 }
 #floating-fab.visible { display: flex; }
+#nav-fab-sep {
+  display: none; width: 1px; height: 28px;
+  background: rgba(0,0,0,0.12); margin: 0 4px;
+  flex-shrink: 0; align-self: center; border-radius: 1px;
+}
+
+/* Stats icon in page top bars (mobile only) */
+.top-bar-icon-btn {
+  width: 40px; height: 40px; border-radius: 20px; border: none; flex-shrink: 0;
+  background: transparent; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--md-on-surface-variant); margin-left: 4px;
+}
+.top-bar-icon-btn:active { background: var(--md-surface-2); }
+@media (min-width: 768px) { .top-bar-icon-btn { display: none; } }
 
 /* ================================================================
    SCRIM

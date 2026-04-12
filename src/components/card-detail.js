@@ -16,8 +16,10 @@ export function buildCardDetailHTML(card, ctx) {
   const parallel    = card.Parallel || ''
   const serial      = card.Serial || card['Serial Number'] || ''
   const notes       = card.Notes || ''
-  const isRC        = card.RC === true || card.RC === 'true'
-  const isAuto      = card.Auto === true || card.Auto === 'true'
+  const isRC        = card.RC       === true || card.RC       === 'true'
+  const isAuto      = card.Auto     === true || card.Auto     === 'true'
+  const isPatch     = card.Patch    === true || card.Patch    === 'true'
+  const isNumbered  = card.Numbered === true || card.Numbered === 'true'
   const ebayQ       = encodeURIComponent([card.Year, card.Set, playerName, card.Number ? `#${card.Number}` : '', parallel].filter(Boolean).join(' ').trim())
   const ebayUrl     = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Sold=1&LH_Complete=1`
   const tcdbUrl     = url  // Card Information field IS the TCDB link
@@ -41,9 +43,11 @@ export function buildCardDetailHTML(card, ctx) {
           <div class="cd-year-set">${card.Year || ''} ${card.Set || ''} #${card.Number || 'N/A'}</div>
           <div class="cd-player">${playerName}</div>
           <div class="cd-badge-row">
-            ${gradeStr ? `<span class="badge-grade">${gradeStr}</span>` : ''}
-            ${isRC     ? `<span class="badge-rc">ROOKIE</span>`         : ''}
-            ${isAuto   ? `<span class="badge-auto">AUTO</span>`         : ''}
+            ${gradeStr   ? `<span class="badge-grade">${gradeStr}</span>`   : ''}
+            ${isRC       ? `<span class="badge-rc">ROOKIE</span>`           : ''}
+            ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
+            ${isPatch    ? `<span class="badge-patch">PATCH</span>`         : ''}
+            ${isNumbered ? `<span class="badge-numbered">#'d</span>`        : ''}
           </div>
         </div>
         <button class="cd-menu-btn" data-card-menu="${escapeAttr(card.id)}" aria-label="Card options">
@@ -154,10 +158,8 @@ export function handleCardTap(cardId, ctx) {
 
     const scrim  = document.getElementById('globalScrim')
     const nb     = document.getElementById('nav-bar')
-    const ffab   = document.getElementById('floating-fab')
     if (scrim) scrim.style.display = 'block'
     if (nb)    { nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px))'; nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)' }
-    if (ffab)  { ffab.style.transform = 'translateY(calc(100% + 32px))'; ffab.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)' }
 
     history.pushState({ v: 'card', id: cardId, ctx }, '')
   }
@@ -217,6 +219,5 @@ export function closeCardSheet(ctx) {
   const nb   = document.getElementById('nav-bar')
   const ffab = document.getElementById('floating-fab')
   if (nb)   { nb.style.transition = 'transform 0.35s cubic-bezier(0.05,0.7,0.1,1)'; nb.style.transform = 'translateX(-50%) translateY(0)' }
-  if (ffab) { ffab.style.transition = 'transform 0.35s cubic-bezier(0.05,0.7,0.1,1)'; ffab.style.transform = 'translateY(0)' }
   if (history.state?.v === 'card') history.back()
 }
