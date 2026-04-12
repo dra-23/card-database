@@ -19,9 +19,8 @@ export function buildCardDetailHTML(card, ctx) {
   const isRC        = card.RC === true || card.RC === 'true'
   const isAuto      = card.Auto === true || card.Auto === 'true'
   const ebayQ       = encodeURIComponent([card.Year, card.Set, playerName, card.Number ? `#${card.Number}` : '', parallel].filter(Boolean).join(' ').trim())
-  const tcdbQ       = encodeURIComponent([card.Year, card.Set, playerName].filter(Boolean).join(' ').trim())
   const ebayUrl     = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Sold=1&LH_Complete=1`
-  const tcdbUrl     = `https://www.tcdb.com/Search.cfm?q=${tcdbQ}`
+  const tcdbUrl     = url  // Card Information field IS the TCDB link
 
   const stats = [
     ['Manufacturer', card.Manufacturer],
@@ -39,10 +38,9 @@ export function buildCardDetailHTML(card, ctx) {
     <div class="cd-body">
       <div class="cd-header">
         <div class="cd-header-info">
-          <div class="cd-year-set">${card.Year || ''} ${card.Set || ''}</div>
+          <div class="cd-year-set">${card.Year || ''} ${card.Set || ''} #${card.Number || 'N/A'}</div>
           <div class="cd-player">${playerName}</div>
           <div class="cd-badge-row">
-            <span class="cd-number-tag">#${card.Number || 'N/A'}</span>
             ${gradeStr ? `<span class="badge-grade">${gradeStr}</span>` : ''}
             ${isRC     ? `<span class="badge-rc">ROOKIE</span>`         : ''}
             ${isAuto   ? `<span class="badge-auto">AUTO</span>`         : ''}
@@ -69,11 +67,8 @@ export function buildCardDetailHTML(card, ctx) {
         <a href="${ebayUrl}" target="_blank" rel="noopener" class="cd-ext-link">
           <button class="cd-ext-btn cd-btn-ebay">eBay Sold ↗</button>
         </a>
-        <a href="${tcdbUrl}" target="_blank" rel="noopener" class="cd-ext-link">
+        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" class="cd-ext-link">
           <button class="cd-ext-btn cd-btn-tcdb">TCDB ↗</button>
-        </a>
-        ${url ? `<a href="${url}" target="_blank" rel="noopener" class="cd-ext-link">
-          <button class="cd-ext-btn cd-btn-info">Card Info ↗</button>
         </a>` : ''}
       </div>
     </div>

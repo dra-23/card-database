@@ -256,7 +256,7 @@ html, body {
 /* ================================================================
    YEAR GROUP HEADERS
    ================================================================ */
-.year-group-header { padding: 18px 16px 8px; font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); background: var(--md-surface); border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; }
+.year-group-header { padding: 18px 16px 8px; font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; }
 .year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; }
 .collection-card-list { padding: 8px 16px; }
 
@@ -348,8 +348,8 @@ html, body {
 
 .cd-header { display: flex; align-items: flex-start; gap: 12px; }
 .cd-header-info { flex: 1; min-width: 0; }
-.cd-year-set { font-size: 11px; font-weight: 700; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 5px; }
-.cd-player { font-family: 'Google Sans Display'; font-size: 26px; font-weight: 700; line-height: 1.1; margin-bottom: 9px; word-break: break-word; }
+.cd-year-set { font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; line-height: 1.15; margin-bottom: 4px; word-break: break-word; }
+.cd-player { font-size: 15px; font-weight: 600; color: var(--md-on-surface-variant); margin-bottom: 9px; }
 .cd-badge-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .cd-number-tag { font-size: 12px; font-weight: 600; color: var(--md-on-surface-variant); }
 .cd-badge-row .badge-grade { font-size: 11px; padding: 3px 9px; }

@@ -204,7 +204,6 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
 export function initScrollHide() {
   const pairs = [
     { bodyId: 'detailScrollBody',     wrapId: 'detailHeaderWrap'     },
-    { bodyId: 'collectionScrollBody', wrapId: 'collectionHeaderWrap' },
     { bodyId: 'gradedScrollBody',     wrapId: 'gradedHeaderWrap'     },
     { bodyId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
     { bodyId: 'statsScrollBody',      wrapId: 'statsHeaderWrap'      },
