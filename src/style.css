@@ -298,8 +298,7 @@ html, body {
   font-family: 'Google Sans', sans-serif;
 }
 .nav-item.active { color: var(--md-on-surface); }
-.nav-label { font-size: 0; font-weight: 600; transition: font-size 0.2s, margin-top 0.2s; }
-.nav-item.active .nav-label { font-size: 10px; margin-top: 2px; }
+.nav-label { display: none; }
 
 /* ================================================================
    FLOATING FAB (mobile)
