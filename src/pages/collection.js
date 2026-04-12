@@ -4,11 +4,14 @@ import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
 export function renderCollectionView() {
   if (!state.cardsLoaded) return
 
+  // 1. Filter
   let cards = state.collShowWishlistOnly
     ? state.ALL_CARDS.filter(c => !isOwned(c))
     : state.ALL_CARDS.filter(c => isOwned(c))
 
-  if (state.collShowGradedOnly) cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
+  if (state.collShowGradedOnly) {
+    cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
+  }
 
   if (state.collSearchQuery) {
     const q = state.collSearchQuery.toLowerCase()
@@ -20,14 +23,15 @@ export function renderCollectionView() {
     )
   }
 
+  // 2. Sort by active chip
   const sortBy = state.collSortBy || 'year'
 
   if (sortBy === 'sport') {
     cards.sort((a, b) => {
       const sA = (a.Sport || '').toLowerCase(), sB = (b.Sport || '').toLowerCase()
       if (sA !== sB) return sA.localeCompare(sB)
-      const yA = a.Year?.toString() || '', yB = b.Year?.toString() || ''
-      if (yA !== yB) return yA.localeCompare(yB)
+      const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
+      if (yA !== yB) return yA - yB
       const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
       if (setA !== setB) return setA.localeCompare(setB)
       return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
@@ -39,14 +43,12 @@ export function renderCollectionView() {
       return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
     })
   } else if (sortBy === 'number') {
-    cards.sort((a, b) => {
-      return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
-    })
+    cards.sort((a, b) => (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0))
   } else {
-    // Default: year
+    // Default: year (strict numeric)
     cards.sort((a, b) => {
-      const yA = a.Year?.toString() || '', yB = b.Year?.toString() || ''
-      if (yA !== yB) return yA.localeCompare(yB)
+      const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
+      if (yA !== yB) return yA - yB
       const sA = (a.Set || '').toLowerCase(), sB = (b.Set || '').toLowerCase()
       if (sA !== sB) return sA.localeCompare(sB)
       return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
@@ -58,28 +60,82 @@ export function renderCollectionView() {
 
   state.setCollCardSequence(cards.map(c => c.id))
 
-  // Build groups based on sort mode
+  const container = document.getElementById('collectionList')
+  if (!container) return
+  container.innerHTML = ''
+
+  // 3. Group by sort mode
   const groups = new Map()
   cards.forEach(c => {
-    let key = ''
+    let key
     if (sortBy === 'sport')  key = c.Sport || '(Unknown Sport)'
     else if (sortBy === 'set') key = c.Set || '(Unknown Set)'
     else if (sortBy === 'number') key = 'All Cards'
-    else key = c.Year?.toString() || ''
+    else key = c.Year?.toString() || 'Unknown'
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(c)
   })
 
-  let html = ''
-  groups.forEach((groupCards, groupKey) => {
-    const ownedInGroup = groupCards.filter(c => isOwned(c)).length
-    html += `<div class="year-group-header">${groupKey}<span class="year-count">${ownedInGroup} cards</span></div><div class="collection-card-list">`
-    groupCards.forEach(c => { html += buildCollectionRow(c) })
-    html += '</div>'
-  })
+  if (groups.size === 0) {
+    container.innerHTML = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">📦</div><div style="font-weight:700;">No cards found</div></div>`
+    return
+  }
 
-  if (!html) html = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">📦</div><div style="font-weight:700;">No cards found</div></div>`
-  document.getElementById('collectionList').innerHTML = html
+  const groupKeys = Array.from(groups.keys())
+  let currentGroupIdx = 0
+
+  // 4. Virtualized rendering — load groups on demand as user scrolls
+  function renderNextGroup() {
+    if (currentGroupIdx >= groupKeys.length) return
+
+    const key = groupKeys[currentGroupIdx]
+    const groupCards = groups.get(key)
+    const fragment = document.createDocumentFragment()
+
+    const header = document.createElement('div')
+    header.className = 'year-group-header'
+    const ownedCount = groupCards.filter(c => isOwned(c)).length
+    header.innerHTML = `${key} <span class="year-count">${ownedCount} cards</span>`
+    fragment.appendChild(header)
+
+    const listDiv = document.createElement('div')
+    listDiv.className = 'collection-card-list'
+    groupCards.forEach(card => {
+      const wrapper = document.createElement('div')
+      wrapper.innerHTML = buildCollectionRow(card)
+      listDiv.appendChild(wrapper.firstElementChild)
+    })
+    fragment.appendChild(listDiv)
+
+    const oldSentinel = document.getElementById('collection-sentinel')
+    if (oldSentinel) oldSentinel.remove()
+
+    container.appendChild(fragment)
+    currentGroupIdx++
+
+    if (currentGroupIdx < groupKeys.length) createSentinel()
+  }
+
+  function createSentinel() {
+    const sentinel = document.createElement('div')
+    sentinel.id = 'collection-sentinel'
+    sentinel.style.cssText = 'height: 100px; width: 100%;'
+    container.appendChild(sentinel)
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        observer.disconnect()
+        renderNextGroup()
+      }
+    }, {
+      root: document.getElementById('collectionScrollBody'),
+      rootMargin: '800px',
+    })
+
+    observer.observe(sentinel)
+  }
+
+  renderNextGroup()
 }
 
 function buildCollectionRow(c) {
@@ -99,7 +155,7 @@ function buildCollectionRow(c) {
   const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
-    <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="">
+    <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy" decoding="async">
     <div class="card-info">
       <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
       <div class="card-info-row2">${playerName}</div>

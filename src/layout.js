@@ -39,42 +39,35 @@ export function _applyWideLayout() {
 }
 
 export function _applyMobileLayout() {
-  // Close any open sheets
   document.querySelectorAll('.sheet.open').forEach(s => {
     s.style.transition = 'none'
     s.classList.remove('open')
     s.style.transform = ''
   })
 
-  // Reset gallery styles
   const gv = document.getElementById('gallery-view')
   if (gv) {
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
     gv.style.flexShrink = ''; gv.style.borderRight = ''
   }
 
-  // Move detail-view back to page-container
   const dv  = document.getElementById('detail-view')
   const pc  = document.getElementById('page-container')
   if (dv && pc && dv.parentElement !== pc) pc.appendChild(dv)
 
-  // Reset slot-players
   const slot = document.getElementById('slot-players')
   if (slot) { slot.style.display = ''; slot.style.flexDirection = '' }
 
-  // Reset detail-view for mobile
   if (dv) {
     dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
     dv.style.position = 'absolute'; dv.style.inset = '0'; dv.style.zIndex = ''
   }
 
-  // Reset nav bar & FAB transforms
   const nb = document.getElementById('nav-bar')
   if (nb) { nb.style.transition = 'none'; nb.style.transform = 'translateX(-50%)' }
   const ffab = document.getElementById('floating-fab')
   if (ffab) { ffab.style.transition = 'none'; ffab.style.transform = '' }
 
-  // Re-init page swipe
   _pageSwipeInited = false
   initPageSwipe()
   requestAnimationFrame(() => {
@@ -100,7 +93,6 @@ export function switchPage(page) {
 
 export function _commitPageSwitch(page, idx) {
   if (isWideLayout()) {
-    // On wide layout, hide/show page slots directly
     PAGE_NAMES.forEach((p, i) => {
       const slot = document.getElementById(`slot-${p}`)
       if (!slot) return
@@ -121,15 +113,12 @@ export function _commitPageSwitch(page, idx) {
 }
 
 export function _updateNavActive(page) {
-  // Mobile nav
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.page === page)
   })
-  // Rail nav
   document.querySelectorAll('.rail-item[data-page]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.page === page)
   })
-  // Hide indicator when on stats (no stats nav item on mobile)
   const indicator = document.getElementById('nav-indicator')
   if (indicator) indicator.style.opacity = page === 'stats' ? '0' : '1'
 }
@@ -138,17 +127,22 @@ export function _updateFloatingFab(page) {
   const fab = document.getElementById('floating-fab')
   const sep = document.getElementById('nav-fab-sep')
   if (!fab) return
+
   if (isWideLayout()) {
     fab.style.display = 'none'
     if (sep) sep.style.display = 'none'
     return
   }
+
   const show = (page === 'players' && !!selectedPlayer) || page === 'collection'
+
   if (show) {
     fab.classList.add('visible')
+    fab.style.display = 'flex'
     if (sep) sep.style.display = 'block'
   } else {
     fab.classList.remove('visible')
+    fab.style.display = 'none'
     if (sep) sep.style.display = 'none'
   }
 }
@@ -158,7 +152,6 @@ let _pageSwipeInited = false
 
 export function initPageSwipe() {
   if (isWideLayout()) {
-    // Wide layout: show/hide slots, not swipe
     PAGE_NAMES.forEach(p => {
       const slot = document.getElementById(`slot-${p}`)
       if (slot) slot.style.display = (p === (currentPage || 'players')) ? '' : 'none'
@@ -179,7 +172,6 @@ export function initPageSwipe() {
   }
   _pageSwipeInited = true
 
-  // Make sure all slots visible on mobile
   PAGE_NAMES.forEach(p => {
     const slot = document.getElementById(`slot-${p}`)
     if (slot) slot.style.display = ''
@@ -192,14 +184,17 @@ export function initPageSwipe() {
 
   function indicatorLeft(idx) { return NAV_PAD + idx * (NAV_BTN_W + NAV_GAP) }
 
+  // Wrapped in rAF for smoother animation
   function setTrack(idx, frac = 0) {
     const vw = window.innerWidth
-    track.style.transform = `translateX(${-(idx + frac) * vw}px)`
-    if (indicator) {
-      const base = indicatorLeft(idx)
-      const next = indicatorLeft(idx + Math.sign(frac))
-      indicator.style.left = (base + (next - base) * Math.abs(frac)) + 'px'
-    }
+    requestAnimationFrame(() => {
+      track.style.transform = `translateX(${-(idx + frac) * vw}px)`
+      if (indicator) {
+        const base = indicatorLeft(idx)
+        const next = indicatorLeft(idx + Math.sign(frac))
+        indicator.style.left = (base + (next - base) * Math.abs(frac)) + 'px'
+      }
+    })
   }
 
   window._snapIndicator = (idx) => {
@@ -214,14 +209,11 @@ export function initPageSwipe() {
   let sx = 0, sy = 0, lx = 0, pageIdx = idx0, locked = null, active = false
 
   container.addEventListener('touchstart', e => {
-    // Don't intercept if in a sheet
     if (document.querySelector('.sheet.open')) return
-    // Don't intercept if touch is on detail-view (mobile overlay)
-    const dv = document.getElementById('detail-view')
-    if (dv && dv.style.display !== 'none' && dv.contains(e.target)) return
     sx = e.touches[0].clientX; sy = e.touches[0].clientY
     lx = sx; locked = null; active = true
     track.classList.add('dragging')
+    track.style.transition = 'none'
     if (indicator) indicator.classList.add('dragging')
   }, { passive: true })
 
@@ -250,12 +242,23 @@ export function initPageSwipe() {
     if (indicator) indicator.classList.remove('dragging')
     track.style.transition = ''
     if (indicator) { indicator.style.transition = '' }
+
     if (locked !== 'h') return
+
     const dx = lx - sx
     const threshold = window.innerWidth * 0.25
-    if (dx < -threshold && pageIdx < PAGE_NAMES.length - 2) pageIdx++
-    else if (dx > threshold && pageIdx > 0) pageIdx--
+
+    // Cap at index 2 — stats page (index 3) not reachable by swipe
+    let newIdx = pageIdx
+    if (dx < -threshold && pageIdx < PAGE_NAMES.length - 2) newIdx++
+    else if (dx > threshold && pageIdx > 0) newIdx--
+
+    pageIdx = newIdx
     const page = PAGE_NAMES[pageIdx]
+
+    // Close player detail when leaving players page
+    if (pageIdx !== 0 && window.closeDetail) window.closeDetail()
+
     setCurrentPage(page)
     setTrack(pageIdx)
     _updateNavActive(page)
