@@ -29,10 +29,10 @@ export function renderCollectionView() {
   const subSort = (a, b) => {
     const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
     if (yA !== yB) return yA - yB
-    const spA = (a.Sport || '').toLowerCase(), spB = (b.Sport || '').toLowerCase()
-    if (spA !== spB) return spA.localeCompare(spB)
     const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
     if (setA !== setB) return setA.localeCompare(setB)
+    const spA = (a.Sport || '').toLowerCase(), spB = (b.Sport || '').toLowerCase()
+    if (spA !== spB) return spA.localeCompare(spB)
     return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
   }
 
