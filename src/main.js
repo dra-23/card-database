@@ -196,7 +196,7 @@ function wireFormButtons() {
   document.getElementById('f_fileInput')?.addEventListener('change', e => handleFileSelect(e.target))
   document.getElementById('f_rc_btn')?.addEventListener('click',       () => setFormFlag('rc',       document.getElementById('f_rc').value       !== 'true'))
   document.getElementById('f_auto_btn')?.addEventListener('click',     () => setFormFlag('auto',     document.getElementById('f_auto').value     !== 'true'))
-  document.getElementById('f_patch_btn')?.addEventListener('click',    () => setFormFlag('patch',    document.getElementById('f_patch').value    !== 'true'))
+  document.getElementById('f_mem_btn')?.addEventListener('click',      () => setFormFlag('mem',      document.getElementById('f_mem').value      !== 'true'))
   document.getElementById('f_numbered_btn')?.addEventListener('click', () => setFormFlag('numbered', document.getElementById('f_numbered').value !== 'true'))
 }
 
@@ -235,4 +235,14 @@ function wireFilterChips() {
   bindChip('chipGraded',       () => state.setShowGradedOnly(!state.showGradedOnly),          () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) })
   bindChip('chipCollWishlist', () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), renderCollectionView)
   bindChip('chipCollGraded',   () => state.setCollShowGradedOnly(!state.collShowGradedOnly),    renderCollectionView)
+
+  // Sort chips
+  document.querySelectorAll('.sort-chip[data-sort]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'))
+      chip.classList.add('active')
+      state.setCollSortBy(chip.dataset.sort)
+      renderCollectionView()
+    })
+  })
 }

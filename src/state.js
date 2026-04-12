@@ -21,6 +21,7 @@ export let showWishlistOnly   = false
 export let collSearchQuery       = ''
 export let collShowGradedOnly    = false
 export let collShowWishlistOnly  = false
+export let collSortBy            = 'year'
 
 // Graded search
 export let gradedSearchQuery = ''
@@ -43,6 +44,7 @@ export function setShowWishlistOnly(v)  { showWishlistOnly = v }
 export function setCollSearchQuery(v)      { collSearchQuery = v }
 export function setCollShowGradedOnly(v)   { collShowGradedOnly = v }
 export function setCollShowWishlistOnly(v) { collShowWishlistOnly = v }
+export function setCollSortBy(v)           { collSortBy = v }
 
 export function setGradedSearchQuery(v) { gradedSearchQuery = v }
 

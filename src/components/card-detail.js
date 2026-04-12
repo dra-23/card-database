@@ -18,7 +18,7 @@ export function buildCardDetailHTML(card, ctx) {
   const notes       = card.Notes || ''
   const isRC        = card.RC       === true || card.RC       === 'true'
   const isAuto      = card.Auto     === true || card.Auto     === 'true'
-  const isPatch     = card.Patch    === true || card.Patch    === 'true'
+  const isMem       = card.Mem === true || card.Mem === 'true' || card.Patch === true || card.Patch === 'true'
   const isNumbered  = card.Numbered === true || card.Numbered === 'true'
   const ebayQ       = encodeURIComponent([card.Year, card.Set, playerName, card.Number ? `#${card.Number}` : '', parallel].filter(Boolean).join(' ').trim())
   const ebayUrl     = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Sold=1&LH_Complete=1`
@@ -46,7 +46,7 @@ export function buildCardDetailHTML(card, ctx) {
             ${gradeStr   ? `<span class="badge-grade">${gradeStr}</span>`   : ''}
             ${isRC       ? `<span class="badge-rc">ROOKIE</span>`           : ''}
             ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
-            ${isPatch    ? `<span class="badge-patch">PATCH</span>`         : ''}
+            ${isMem      ? `<span class="badge-mem">MEM</span>`             : ''}
             ${isNumbered ? `<span class="badge-numbered">#'d</span>`        : ''}
           </div>
         </div>
@@ -64,7 +64,7 @@ export function buildCardDetailHTML(card, ctx) {
       </div>
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
       <div class="cd-owned-row">
-        <span class="cd-owned-label">${owned ? 'In collection' : 'On wishlist'}</span>
+        <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
         <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
       </div>
       <div class="cd-action-row">

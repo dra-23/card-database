@@ -148,21 +148,21 @@ export function buildCardRow(c, ctx) {
   const co        = c['Grading Company'] || '', gr = c.Grade || ''
   const isRC       = c.RC       === true || c.RC       === 'true'
   const isAuto     = c.Auto     === true || c.Auto     === 'true'
-  const isPatch    = c.Patch    === true || c.Patch    === 'true'
+  const isMem      = c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true'
   const isNumbered = c.Numbered === true || c.Numbered === 'true'
   const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade">${co} ${gr}</span>` : ''
   const rcBadge       = isRC       ? `<span class="badge-rc">RC</span>`         : ''
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
-  const patchBadge    = isPatch    ? `<span class="badge-patch">PATCH</span>`   : ''
+  const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''
   const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d</span>` : ''
-  const hasBadges     = gradeBadge || rcBadge || autoBadge || patchBadge || numberedBadge
+  const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
     <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="">
     <div class="card-info">
       <div class="card-info-row1">${c.Year} ${c.Set || ''}</div>
       <div class="card-info-row2">#${c.Number || 'N/A'}</div>
-      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${patchBadge}${numberedBadge}</div>` : ''}
+      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
     </div>
     <button class="card-row-menu-btn" data-menu-card="${escapeAttr(c.id)}" aria-label="Card options">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>

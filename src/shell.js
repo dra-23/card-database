@@ -111,6 +111,13 @@ function appShellHTML() {
                     <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">Wishlist</div>
                     <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
                   </div>
+                  <div class="sort-chips-row">
+                    <span class="sort-label">Sort:</span>
+                    <div id="sortYear"   class="sort-chip active" data-sort="year">Year</div>
+                    <div id="sortSport"  class="sort-chip" data-sort="sport">Sport</div>
+                    <div id="sortSet"    class="sort-chip" data-sort="set">Set</div>
+                    <div id="sortNumber" class="sort-chip" data-sort="number">Number</div>
+                  </div>
                 </div>
               </div>
               <div class="scroll-body" id="collectionScrollBody">
@@ -348,8 +355,8 @@ function appShellHTML() {
         </button>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_patch_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#1565C0; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">PATCH</span>Patch
+        <button type="button" id="f_mem_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#1565C0; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">MEM</span>Memorabilia
         </button>
         <button type="button" id="f_numbered_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
           <span style="background:#78909C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">#'d</span>Numbered
@@ -357,7 +364,7 @@ function appShellHTML() {
       </div>
       <input type="hidden" id="f_rc"       value="false">
       <input type="hidden" id="f_auto"     value="false">
-      <input type="hidden" id="f_patch"    value="false">
+      <input type="hidden" id="f_mem"      value="false">
       <input type="hidden" id="f_numbered" value="false">
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>

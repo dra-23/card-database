@@ -237,7 +237,7 @@ export function initPageSwipe() {
     }
     if (locked !== 'h') return
     if (e.cancelable) e.preventDefault()
-    const atStart = pageIdx === 0, atEnd = pageIdx === PAGE_NAMES.length - 1
+    const atStart = pageIdx === 0, atEnd = pageIdx >= PAGE_NAMES.length - 2
     let frac = -dx / window.innerWidth
     if ((frac < 0 && atStart) || (frac > 0 && atEnd)) frac *= 0.2
     setTrack(pageIdx, Math.max(-1, Math.min(1, frac)))
@@ -253,7 +253,7 @@ export function initPageSwipe() {
     if (locked !== 'h') return
     const dx = lx - sx
     const threshold = window.innerWidth * 0.25
-    if (dx < -threshold && pageIdx < PAGE_NAMES.length - 1) pageIdx++
+    if (dx < -threshold && pageIdx < PAGE_NAMES.length - 2) pageIdx++
     else if (dx > threshold && pageIdx > 0) pageIdx--
     const page = PAGE_NAMES[pageIdx]
     setCurrentPage(page)

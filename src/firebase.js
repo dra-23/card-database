@@ -16,6 +16,7 @@ import {
   setDoc,
   addDoc,
   deleteDoc,
+  deleteField,
   query,
   where,
 } from 'firebase/firestore'
@@ -53,4 +54,4 @@ export async function signOutUser() {
   await signOut(auth)
 }
 
-export { onAuthStateChanged, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, query, where, ref, uploadBytes, getDownloadURL }
+export { onAuthStateChanged, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, deleteField, query, where, ref, uploadBytes, getDownloadURL }
