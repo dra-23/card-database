@@ -12,16 +12,15 @@ export function getCleanImg(url) {
   const u = url.trim()
   if (!u.startsWith('http')) return ''
 
-  // Convert Google Drive share/view links to direct image URLs
-  // Handles: /file/d/ID/view, /open?id=ID, /uc?id=ID
-  const driveFile = u.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
-  if (driveFile) return `https://drive.google.com/uc?export=view&id=${driveFile[1]}`
+  // Extract Google Drive file ID from any Drive URL format and use
+  // the lh3.googleusercontent.com direct-image endpoint (no CORS issues)
+  const driveId =
+    (u.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+     u.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/) ||
+     u.match(/drive\.google\.com\/(?:uc|thumbnail)\?.*[?&]id=([a-zA-Z0-9_-]+)/) ||
+     u.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/))?.[1]
 
-  const driveOpen = u.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/)
-  if (driveOpen) return `https://drive.google.com/uc?export=view&id=${driveOpen[1]}`
-
-  const driveUc = u.match(/drive\.google\.com\/uc\?.*id=([a-zA-Z0-9_-]+)/)
-  if (driveUc) return `https://drive.google.com/uc?export=view&id=${driveUc[1]}`
+  if (driveId) return `https://lh3.googleusercontent.com/d/${driveId}`
 
   return u
 }
