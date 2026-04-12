@@ -6,78 +6,75 @@ import { closeCardSheets } from '../gestures.js'
 
 // ── Card detail HTML ───────────────────────────────────────────────────────
 export function buildCardDetailHTML(card, ctx) {
-  const player    = state.ALL_PLAYERS.find(p => p.id === card.Player)
-  const playerName = player ? (player.Player || player.id) : (card.Player || '')
-  const co        = card['Grading Company'] || ''
-  const gr        = card.Grade || ''
-  const gradeStr  = (co && co !== 'Raw') ? `${co} ${gr}` : ''
-  const owned     = isOwned(card)
-  const url       = card['Card Information'] || ''
-  const parallel  = card.Parallel || ''
-  const serial    = card.Serial || card['Serial Number'] || ''
-  const notes     = card.Notes || ''
-  const ebayQ     = encodeURIComponent([card.Year, card.Set, playerName, card.Number ? `#${card.Number}` : '', parallel].filter(Boolean).join(' ').trim())
-  const tcdbQ     = encodeURIComponent([card.Year, card.Set, playerName].filter(Boolean).join(' ').trim())
-  const ebayUrl   = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Sold=1&LH_Complete=1`
-  const tcdbUrl   = `https://www.tcdb.com/Search.cfm?q=${tcdbQ}`
+  const player      = state.ALL_PLAYERS.find(p => p.id === card.Player)
+  const playerName  = player ? (player.Player || player.id) : (card.Player || '')
+  const co          = card['Grading Company'] || ''
+  const gr          = card.Grade || ''
+  const gradeStr    = (co && co !== 'Raw') ? `${co} ${gr}` : ''
+  const owned       = isOwned(card)
+  const url         = card['Card Information'] || ''
+  const parallel    = card.Parallel || ''
+  const serial      = card.Serial || card['Serial Number'] || ''
+  const notes       = card.Notes || ''
+  const isRC        = card.RC === true || card.RC === 'true'
+  const isAuto      = card.Auto === true || card.Auto === 'true'
+  const ebayQ       = encodeURIComponent([card.Year, card.Set, playerName, card.Number ? `#${card.Number}` : '', parallel].filter(Boolean).join(' ').trim())
+  const tcdbQ       = encodeURIComponent([card.Year, card.Set, playerName].filter(Boolean).join(' ').trim())
+  const ebayUrl     = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Sold=1&LH_Complete=1`
+  const tcdbUrl     = `https://www.tcdb.com/Search.cfm?q=${tcdbQ}`
+
+  const stats = [
+    ['Manufacturer', card.Manufacturer],
+    ['Sport',        card.Sport],
+    ['Team',         card.Team],
+    ['Price Paid',   card.Price ? `$${card.Price}` : null],
+    ...(parallel ? [['Parallel', parallel]] : []),
+    ...(serial   ? [['Serial',   serial]]   : []),
+  ]
 
   return `
-    <div class="card-detail-image-wrap">
-      <img src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}" style="max-height:380px; width:100%; object-fit:contain; background:var(--md-surface-1);">
+    <div class="cd-img-wrap">
+      <img src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
     </div>
-    <div class="card-detail-body">
-      <div>
-        <div class="card-detail-title">${card.Year || ''} ${card.Set || ''}</div>
-        <div class="card-detail-sub">${playerName} · #${card.Number || 'N/A'}</div>
-        ${gradeStr ? `<div style="margin-top:8px;"><span class="badge-grade" style="font-size:13px; padding:5px 12px;">${gradeStr}</span></div>` : ''}
+    <div class="cd-body">
+      <div class="cd-header">
+        <div class="cd-header-info">
+          <div class="cd-year-set">${card.Year || ''} ${card.Set || ''}</div>
+          <div class="cd-player">${playerName}</div>
+          <div class="cd-badge-row">
+            <span class="cd-number-tag">#${card.Number || 'N/A'}</span>
+            ${gradeStr ? `<span class="badge-grade">${gradeStr}</span>` : ''}
+            ${isRC     ? `<span class="badge-rc">ROOKIE</span>`         : ''}
+            ${isAuto   ? `<span class="badge-auto">AUTO</span>`         : ''}
+          </div>
+        </div>
+        <button class="cd-menu-btn" data-card-menu="${escapeAttr(card.id)}" aria-label="Card options">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        </button>
       </div>
-      <div class="card-detail-stat-row">
-        <div class="card-detail-stat">
-          <div class="card-detail-stat-label">Manufacturer</div>
-          <div class="card-detail-stat-val">${card.Manufacturer || '—'}</div>
-        </div>
-        <div class="card-detail-stat">
-          <div class="card-detail-stat-label">Sport</div>
-          <div class="card-detail-stat-val">${card.Sport || '—'}</div>
-        </div>
-        <div class="card-detail-stat">
-          <div class="card-detail-stat-label">Team</div>
-          <div class="card-detail-stat-val">${card.Team || '—'}</div>
-        </div>
-        <div class="card-detail-stat">
-          <div class="card-detail-stat-label">Price Paid</div>
-          <div class="card-detail-stat-val">${card.Price ? '$' + card.Price : '—'}</div>
-        </div>
-        ${parallel ? `<div class="card-detail-stat">
-          <div class="card-detail-stat-label">Parallel</div>
-          <div class="card-detail-stat-val">${parallel}</div>
-        </div>` : ''}
-        ${serial ? `<div class="card-detail-stat">
-          <div class="card-detail-stat-label">Serial</div>
-          <div class="card-detail-stat-val">${serial}</div>
-        </div>` : ''}
+      <div class="cd-divider"></div>
+      <div class="cd-stats-grid">
+        ${stats.map(([lbl, val]) => `
+          <div class="cd-stat">
+            <div class="cd-stat-lbl">${lbl}</div>
+            <div class="cd-stat-val">${val || '—'}</div>
+          </div>`).join('')}
       </div>
-      ${(card.RC === true || card.RC === 'true') || (card.Auto === true || card.Auto === 'true') ? `
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        ${(card.RC === true || card.RC === 'true') ? `<span class="badge-rc" style="font-size:12px; padding:4px 12px;">ROOKIE CARD</span>` : ''}
-        ${(card.Auto === true || card.Auto === 'true') ? `<span class="badge-auto" style="font-size:12px; padding:4px 12px;">AUTOGRAPH</span>` : ''}
-      </div>` : ''}
-      ${notes ? `<div style="background:var(--md-surface-2); border-radius:12px; padding:12px 14px; font-size:14px; color:var(--md-on-surface-variant);">${notes}</div>` : ''}
-      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--md-surface-2); border-radius:16px; padding:14px 16px;">
-        <span style="font-size:15px; font-weight:700;">${owned ? 'In collection' : 'On wishlist'}</span>
+      ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
+      <div class="cd-owned-row">
+        <span class="cd-owned-label">${owned ? 'In collection' : 'On wishlist'}</span>
         <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
       </div>
-      <div style="display:flex; gap:8px;">
-        <a href="${ebayUrl}" target="_blank" rel="noopener" style="flex:1;">
-          <button class="expressive-btn" style="background:#0064d2; color:#fff; box-shadow:none; height:52px; border-radius:24px; width:100%; font-weight:700;">eBay Sold ↗</button>
+      <div class="cd-action-row">
+        <a href="${ebayUrl}" target="_blank" rel="noopener" class="cd-ext-link">
+          <button class="cd-ext-btn cd-btn-ebay">eBay Sold ↗</button>
         </a>
-        <a href="${tcdbUrl}" target="_blank" rel="noopener" style="flex:1;">
-          <button class="expressive-btn" style="background:#e07020; color:#fff; box-shadow:none; height:52px; border-radius:24px; width:100%; font-weight:700;">TCDB ↗</button>
+        <a href="${tcdbUrl}" target="_blank" rel="noopener" class="cd-ext-link">
+          <button class="cd-ext-btn cd-btn-tcdb">TCDB ↗</button>
         </a>
-      </div>
-      <div class="button-row-split">
-        <button class="expressive-btn" data-card-edit="${escapeAttr(card.id)}" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); height:52px; border-radius:24px;">Edit</button>
-        ${url ? `<a href="${url}" target="_blank" rel="noopener" style="flex:1;"><button class="expressive-btn" style="background:var(--md-surface-1); box-shadow:none; height:52px; border-radius:24px; width:100%;">Card Info ↗</button></a>` : ''}
+        ${url ? `<a href="${url}" target="_blank" rel="noopener" class="cd-ext-link">
+          <button class="cd-ext-btn cd-btn-info">Card Info ↗</button>
+        </a>` : ''}
       </div>
     </div>
   `
@@ -96,9 +93,9 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     await setDoc(doc(db, 'Cards', cardId), { Owned: !isOwned(c) }, { merge: true })
   })
 
-  // Edit button
-  panelEl.querySelector(`[data-card-edit]`)?.addEventListener('click', () => {
-    window._openCardForm?.(cardId)
+  // 3-dot menu
+  panelEl.querySelector(`[data-card-menu]`)?.addEventListener('click', e => {
+    window._openRowMenu?.(cardId, e.currentTarget)
   })
 }
 

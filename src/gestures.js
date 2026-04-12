@@ -209,7 +209,7 @@ export function initScrollHide() {
     { bodyId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
     { bodyId: 'statsScrollBody',      wrapId: 'statsHeaderWrap'      },
   ]
-  const COLLAPSE_THRESHOLD = 30, REVEAL_THRESHOLD = 8
+  const COLLAPSE_THRESHOLD = 64, REVEAL_THRESHOLD = 24
   pairs.forEach(({ bodyId, wrapId }) => {
     const el   = document.getElementById(bodyId)
     const wrap = document.getElementById(wrapId)
