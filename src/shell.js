@@ -113,10 +113,9 @@ function appShellHTML() {
                   </div>
                   <div class="sort-chips-row">
                     <span class="sort-label">Sort:</span>
-                    <div id="sortYear"   class="sort-chip active" data-sort="year">Year</div>
-                    <div id="sortSport"  class="sort-chip" data-sort="sport">Sport</div>
-                    <div id="sortSet"    class="sort-chip" data-sort="set">Set</div>
-                    <div id="sortNumber" class="sort-chip" data-sort="number">Number</div>
+                    <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
+                    <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
+                    <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
                   </div>
                 </div>
               </div>

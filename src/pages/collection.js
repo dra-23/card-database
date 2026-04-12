@@ -23,36 +23,33 @@ export function renderCollectionView() {
     )
   }
 
-  // 2. Sort by active chip
+  // 2. Sort — primary key determined by chip, sub-order always: year → sport → set → number
   const sortBy = state.collSortBy || 'year'
+
+  const subSort = (a, b) => {
+    const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
+    if (yA !== yB) return yA - yB
+    const spA = (a.Sport || '').toLowerCase(), spB = (b.Sport || '').toLowerCase()
+    if (spA !== spB) return spA.localeCompare(spB)
+    const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
+    if (setA !== setB) return setA.localeCompare(setB)
+    return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
+  }
 
   if (sortBy === 'sport') {
     cards.sort((a, b) => {
       const sA = (a.Sport || '').toLowerCase(), sB = (b.Sport || '').toLowerCase()
       if (sA !== sB) return sA.localeCompare(sB)
-      const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
-      if (yA !== yB) return yA - yB
-      const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
-      if (setA !== setB) return setA.localeCompare(setB)
-      return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
+      return subSort(a, b)
     })
   } else if (sortBy === 'set') {
     cards.sort((a, b) => {
       const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
       if (setA !== setB) return setA.localeCompare(setB)
-      return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
+      return subSort(a, b)
     })
-  } else if (sortBy === 'number') {
-    cards.sort((a, b) => (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0))
   } else {
-    // Default: year (strict numeric)
-    cards.sort((a, b) => {
-      const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
-      if (yA !== yB) return yA - yB
-      const sA = (a.Set || '').toLowerCase(), sB = (b.Set || '').toLowerCase()
-      if (sA !== sB) return sA.localeCompare(sB)
-      return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
-    })
+    cards.sort(subSort)
   }
 
   const counterEl = document.getElementById('collectionOwnedCounter')
@@ -68,9 +65,8 @@ export function renderCollectionView() {
   const groups = new Map()
   cards.forEach(c => {
     let key
-    if (sortBy === 'sport')  key = c.Sport || '(Unknown Sport)'
+    if (sortBy === 'sport') key = c.Sport || '(Unknown Sport)'
     else if (sortBy === 'set') key = c.Set || '(Unknown Set)'
-    else if (sortBy === 'number') key = 'All Cards'
     else key = c.Year?.toString() || 'Unknown'
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(c)
