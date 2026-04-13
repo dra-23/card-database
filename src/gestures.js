@@ -178,7 +178,7 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)'
     if (dy > 110 && (fs.startedOnHandle || atTop)) {
       sheet.style.transform = sheetTransformY('100%')
-      setTimeout(() => { dismissFn(); sheet.style.transform = '' }, 320)
+      setTimeout(() => { dismissFn() }, 320)
     } else {
       sheet.style.transform = sheetTransformY(0)
     }

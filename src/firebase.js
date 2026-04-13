@@ -16,6 +16,7 @@ import {
   setDoc,
   addDoc,
   deleteDoc,
+  deleteField,
   query,
   where,
 } from 'firebase/firestore'
@@ -37,7 +38,7 @@ export const auth = getAuth(app)
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 })
-export const storage = getStorage(app)
+export const storage = getStorage(app, 'gs://sleevd-7214c.firebasestorage.app')
 
 export const googleProvider = new GoogleAuthProvider()
 
@@ -53,4 +54,4 @@ export async function signOutUser() {
   await signOut(auth)
 }
 
-export { onAuthStateChanged, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, query, where, ref, uploadBytes, getDownloadURL }
+export { onAuthStateChanged, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, deleteField, query, where, ref, uploadBytes, getDownloadURL }

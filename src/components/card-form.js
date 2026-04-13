@@ -1,4 +1,5 @@
-import { db, doc, setDoc, addDoc, collection, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
+import { db, doc, setDoc, addDoc, collection, deleteField, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
+import { auth } from '../firebase.js'
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
@@ -19,7 +20,7 @@ export function initGradeDropdown() {
 const FLAG_STYLES = {
   rc:       { hidden: 'f_rc',       btn: 'f_rc_btn',       bg: 'rgba(232,25,44,0.08)',  border: '#E8192C', color: '#E8192C' },
   auto:     { hidden: 'f_auto',     btn: 'f_auto_btn',     bg: 'rgba(184,134,11,0.10)', border: '#B8860B', color: '#B8860B' },
-  patch:    { hidden: 'f_patch',    btn: 'f_patch_btn',    bg: 'rgba(21,101,192,0.08)', border: '#1565C0', color: '#1565C0' },
+  mem:      { hidden: 'f_mem',      btn: 'f_mem_btn',      bg: 'rgba(21,101,192,0.08)', border: '#1565C0', color: '#1565C0' },
   numbered: { hidden: 'f_numbered', btn: 'f_numbered_btn', bg: 'rgba(96,125,139,0.10)', border: '#607D8B', color: '#607D8B' },
 }
 export function setFormFlag(flag, active) {
@@ -102,7 +103,7 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_url').value          = c['Card Information'] || ''
     setFormFlag('rc',       c.RC       === true || c.RC       === 'true')
     setFormFlag('auto',     c.Auto     === true || c.Auto     === 'true')
-    setFormFlag('patch',    c.Patch    === true || c.Patch    === 'true')
+    setFormFlag('mem',      c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true')
     setFormFlag('numbered', c.Numbered === true || c.Numbered === 'true')
     if (c['App Image']) {
       document.getElementById('f_imagePreview').src   = c['App Image']
@@ -115,7 +116,7 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_grading').value = 'Raw'
     document.getElementById('f_grade').value   = 'N/A'
     setFormFlag('rc', false); setFormFlag('auto', false)
-    setFormFlag('patch', false); setFormFlag('numbered', false)
+    setFormFlag('mem', false); setFormFlag('numbered', false)
     document.getElementById('f_imagePreview').style.display     = 'none'
     document.getElementById('previewPlaceholder').style.display = 'block'
     document.getElementById('f_fileInput').value = ''
@@ -139,6 +140,7 @@ export async function saveCard() {
     let imageUrl = id ? (state.ALL_CARDS.find(x => x.id === id)?.['App Image'] || '') : ''
 
     if (file) {
+      if (auth.currentUser) await auth.currentUser.getIdToken(true)
       const storageRef = ref(storage, `cards/${Date.now()}_${file.name}`)
       const snapshot   = await uploadBytes(storageRef, file)
       imageUrl         = await getDownloadURL(snapshot.ref)
@@ -160,19 +162,22 @@ export async function saveCard() {
       'App Image':      imageUrl,
       RC:       document.getElementById('f_rc').value       === 'true',
       Auto:     document.getElementById('f_auto').value     === 'true',
-      Patch:    document.getElementById('f_patch').value    === 'true',
+      Mem:      document.getElementById('f_mem').value      === 'true',
       Numbered: document.getElementById('f_numbered').value === 'true',
       Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : true,
     }
+
+    // deleteField() is only valid in setDoc/updateDoc, not addDoc
+    if (id) cardData.Patch = deleteField()
 
     if (id) await setDoc(doc(db, 'Cards', id), cardData, { merge: true })
     else    await addDoc(collection(db, 'Cards'), cardData)
 
     closeAllForms()
   } catch (e) {
-    console.error(e)
+    console.error('saveCard error:', e)
     btn.disabled = false
-    btn.innerText = 'Save Card'
+    btn.innerText = '⚠ ' + (e?.code || e?.message || 'Save failed')
   }
 }
 

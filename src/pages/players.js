@@ -50,6 +50,20 @@ export function openDetail(id) {
   document.getElementById('playerName').innerText    = player.Player || player.id
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
+
+  // Populate wide-layout hero stats
+  const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
+  const heroSleevd    = allPlayerCards.filter(c => isOwned(c)).length
+  const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
+  const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
+  const heroName = document.getElementById('playerWideHeroName')
+  if (heroName) heroName.textContent = player.Player || player.id
+  const heroS = document.getElementById('wideHeroSleevd')
+  const heroU = document.getElementById('wideHeroUnsleevd')
+  const heroG = document.getElementById('wideHeroGraded')
+  if (heroS) heroS.textContent = heroSleevd
+  if (heroU) heroU.textContent = heroUnsleevd
+  if (heroG) heroG.textContent = heroGraded
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
   const detailWrap = document.getElementById('detailHeaderWrap')
@@ -74,6 +88,10 @@ export function openDetail(id) {
     document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'))
   }
 
+  // Highlight selected player tile in gallery
+  document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
+  document.querySelector(`.player-tile[data-player-id="${player.id}"]`)?.classList.add('tile-selected')
+
   renderDetail(player)
 
   if (!isWideLayout()) {
@@ -91,6 +109,7 @@ export function closeDetail() {
   dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
   dv.style.position = 'absolute'; dv.style.inset = '0'
   state.setSelectedPlayer(null)
+  document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   if (!isWideLayout()) {
     document.getElementById('floating-fab')?.classList.remove('visible')
     if (history.state?.v === 'detail') history.back()
@@ -148,21 +167,21 @@ export function buildCardRow(c, ctx) {
   const co        = c['Grading Company'] || '', gr = c.Grade || ''
   const isRC       = c.RC       === true || c.RC       === 'true'
   const isAuto     = c.Auto     === true || c.Auto     === 'true'
-  const isPatch    = c.Patch    === true || c.Patch    === 'true'
+  const isMem      = c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true'
   const isNumbered = c.Numbered === true || c.Numbered === 'true'
   const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade">${co} ${gr}</span>` : ''
   const rcBadge       = isRC       ? `<span class="badge-rc">RC</span>`         : ''
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
-  const patchBadge    = isPatch    ? `<span class="badge-patch">PATCH</span>`   : ''
+  const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''
   const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d</span>` : ''
-  const hasBadges     = gradeBadge || rcBadge || autoBadge || patchBadge || numberedBadge
+  const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
     <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="">
     <div class="card-info">
       <div class="card-info-row1">${c.Year} ${c.Set || ''}</div>
       <div class="card-info-row2">#${c.Number || 'N/A'}</div>
-      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${patchBadge}${numberedBadge}</div>` : ''}
+      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
     </div>
     <button class="card-row-menu-btn" data-menu-card="${escapeAttr(c.id)}" aria-label="Card options">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>

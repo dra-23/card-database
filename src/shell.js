@@ -26,9 +26,18 @@ function appShellHTML() {
 
 <div id="app-shell" style="display:none;">
 
+  <!-- GLOBAL TOP BAR (spans full width on desktop) -->
+  <div id="top-bar-global">
+    <img src="/logo.png" style="width:40px; height:40px; border-radius:12px; flex-shrink:0;" onerror="this.style.display='none'">
+    <span id="topBarTitle" class="brand" style="font-size:20px; flex:1; margin-left:10px;">Players</span>
+    <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
+  </div>
+
+  <!-- CONTENT ROW: nav rail + page area -->
+  <div id="content-row">
+
   <!-- NAVIGATION RAIL (tablet/desktop ≥768px) -->
   <nav id="nav-rail">
-    <div class="rail-brand">sleevd</div>
     <button class="rail-item active" id="rail-players"    data-page="players">
       <span class="material-symbols-outlined">cards_stack</span>
       <span class="rail-label">Players</span>
@@ -52,16 +61,6 @@ function appShellHTML() {
     </button>
   </nav>
 
-  <!-- RIGHT COLUMN -->
-  <div id="right-column">
-
-    <!-- GLOBAL TOP BAR (desktop only) -->
-    <div id="top-bar-global">
-      <span id="topBarTitle" class="brand" style="font-size:22px; flex:1;">sleevd</span>
-      <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
-    </div>
-
-    <!-- PAGE CONTAINER -->
     <div id="page-container">
       <div id="page-track">
 
@@ -108,8 +107,14 @@ function appShellHTML() {
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
-                    <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">Wishlist</div>
+                    <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
                     <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
+                  </div>
+                  <div class="sort-chips-row">
+                    <span class="sort-label">Sort:</span>
+                    <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
+                    <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
+                    <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
                   </div>
                 </div>
               </div>
@@ -195,7 +200,29 @@ function appShellHTML() {
           </div>
           <div class="collapsible-header-wrap" id="detailHeaderWrap">
             <div class="collapsible-header">
-              <div style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
+
+              <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
+              <div id="playerWideHero">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                  <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                  </button>
+                  <div id="playerWideHeroName"></div>
+                </div>
+                <div class="wide-hero-stats">
+                  <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
+                  <span class="wide-hero-count" id="wideHeroSleevd">0</span>
+                  <span class="wide-hero-sep">·</span>
+                  <span class="stat-badge-chip" style="background:#78909C;">unsleevd</span>
+                  <span class="wide-hero-count" id="wideHeroUnsleevd">0</span>
+                  <span class="wide-hero-sep">·</span>
+                  <span class="stat-badge-chip" style="background:#2E7D32;">graded</span>
+                  <span class="wide-hero-count" id="wideHeroGraded">0</span>
+                </div>
+              </div>
+
+              <!-- MOBILE BANNER (hidden on desktop) -->
+              <div id="playerBannerSection" style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
                 <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
                 <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
                 <button class="back-btn" id="backBtn">
@@ -205,7 +232,9 @@ function appShellHTML() {
                   <span class="material-symbols-outlined">bar_chart</span>
                 </button>
               </div>
-              <div style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+
+              <!-- MOBILE THUMB + NAME (hidden on desktop) -->
+              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
                 <div style="padding-bottom:8px;">
                   <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
@@ -219,7 +248,7 @@ function appShellHTML() {
                     <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                   </button>
                 </div>
-                <div id="chipWishlist" class="filter-chip" data-chip="wishlist">Wishlist</div>
+                <div id="chipWishlist" class="filter-chip" data-chip="wishlist">unsleevd</div>
                 <div id="chipGraded"   class="filter-chip" data-chip="graded">Graded</div>
               </div>
             </div>
@@ -240,7 +269,8 @@ function appShellHTML() {
       </div>
 
     </div><!-- /page-container -->
-  </div><!-- /right-column -->
+
+  </div><!-- /content-row -->
 </div><!-- /app-shell -->
 
 <!-- MOBILE NAV BAR (3 pages + inline FAB) -->
@@ -348,8 +378,8 @@ function appShellHTML() {
         </button>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_patch_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#1565C0; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">PATCH</span>Patch
+        <button type="button" id="f_mem_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#1565C0; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">MEM</span>Memorabilia
         </button>
         <button type="button" id="f_numbered_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
           <span style="background:#78909C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">#'d</span>Numbered
@@ -357,7 +387,7 @@ function appShellHTML() {
       </div>
       <input type="hidden" id="f_rc"       value="false">
       <input type="hidden" id="f_auto"     value="false">
-      <input type="hidden" id="f_patch"    value="false">
+      <input type="hidden" id="f_mem"      value="false">
       <input type="hidden" id="f_numbered" value="false">
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>
