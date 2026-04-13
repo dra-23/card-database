@@ -59,12 +59,12 @@ export function renderStats() {
       <div class="stat-card">
         <div class="stat-badge-grid">
           <div class="stat-badge-item" style="--badge-color:#3D5AFE;">
-            <span class="stat-badge-chip" style="background:#3D5AFE;">OWNED</span>
+            <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
             <div class="stat-badge-count">${owned.length}</div>
             <div class="stat-badge-label">In Collection</div>
           </div>
           <div class="stat-badge-item" style="--badge-color:${C_SILVER};">
-            <span class="stat-badge-chip" style="background:${C_SILVER};">WANT</span>
+            <span class="stat-badge-chip" style="background:${C_SILVER};">unsleevd</span>
             <div class="stat-badge-count">${wishlist.length}</div>
             <div class="stat-badge-label">Wishlist</div>
           </div>

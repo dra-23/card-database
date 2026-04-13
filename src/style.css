@@ -245,10 +245,12 @@ html, body {
 .search-clear-btn { position: absolute; right: 8px; background: none; border: none; padding: 4px; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; display: none; align-items: center; justify-content: center; border-radius: 50%; }
 .search-clear-btn.visible { display: flex; }
 .search-clear-btn:active { opacity: 1; background: rgba(0,0,0,0.06); }
-.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 4px; height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--md-outline); background: transparent; font-size: 14px; font-weight: 500; color: var(--md-on-surface); cursor: pointer; transition: background 0.18s, border-color 0.18s, padding 0.18s; user-select: none; white-space: nowrap; }
-.filter-chip:active { background: rgba(0,0,0,0.06); }
-.filter-chip.active { background: var(--md-surface-1); border-color: var(--md-surface-1); color: var(--md-on-surface); font-weight: 600; padding-left: 10px; }
-.filter-chip.active::before { content: 'check'; font-family: 'Material Symbols Outlined'; font-size: 16px; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; line-height: 1; }
+.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 14px; border-radius: 20px; border: 1.5px solid var(--fc-color, #78909C); background: transparent; font-size: 12px; font-weight: 700; color: var(--fc-color, #78909C); cursor: pointer; transition: background 0.18s, color 0.18s; user-select: none; white-space: nowrap; letter-spacing: 0.2px; }
+.filter-chip:active { opacity: 0.75; }
+.filter-chip.active { background: var(--fc-color, #78909C); color: #fff; border-color: var(--fc-color, #78909C); }
+/* Per-chip brand colors */
+[data-chip="wishlist"], [data-chip="collWishlist"] { --fc-color: #78909C; }
+[data-chip="graded"],   [data-chip="collGraded"]   { --fc-color: #2E7D32; }
 .sort-chips-row { display: flex; align-items: center; gap: 6px; padding: 6px 12px 8px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
 .sort-chips-row::-webkit-scrollbar { display: none; }
 .sort-label { font-size: 12px; font-weight: 600; color: var(--md-on-surface-variant); flex-shrink: 0; }
@@ -484,7 +486,7 @@ html, body {
 .wide-hero-lbl { font-size: 10px; font-weight: 600; color: var(--md-on-surface-variant); }
 @media (min-width: 768px) {
   #playerWideHero { display: block; }
-  #playerBannerSection, #playerThumbSection { display: none; }
+  #playerBannerSection, #playerThumbSection { display: none !important; }
   /* Smaller player tiles in sidebar mode (player selected) */
   #slot-players:not(:has(#detail-view.tp-no-player)) .player-grid {
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));

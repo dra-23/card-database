@@ -107,7 +107,7 @@ function appShellHTML() {
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
-                    <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">Wishlist</div>
+                    <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
                     <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
                   </div>
                   <div class="sort-chips-row">
@@ -252,7 +252,7 @@ function appShellHTML() {
                     <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                   </button>
                 </div>
-                <div id="chipWishlist" class="filter-chip" data-chip="wishlist">Wishlist</div>
+                <div id="chipWishlist" class="filter-chip" data-chip="wishlist">unsleevd</div>
                 <div id="chipGraded"   class="filter-chip" data-chip="graded">Graded</div>
               </div>
             </div>
