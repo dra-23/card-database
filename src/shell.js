@@ -203,28 +203,21 @@ function appShellHTML() {
 
               <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
               <div id="playerWideHero">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
                   <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                   </button>
                   <div id="playerWideHeroName"></div>
                 </div>
                 <div class="wide-hero-stats">
-                  <div class="stat-badge-item" style="--badge-color:#3D5AFE;">
-                    <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
-                    <div class="stat-badge-count" id="wideHeroSleevd">0</div>
-                    <div class="stat-badge-label">In Collection</div>
-                  </div>
-                  <div class="stat-badge-item" style="--badge-color:#78909C;">
-                    <span class="stat-badge-chip" style="background:#78909C;">unsleevd</span>
-                    <div class="stat-badge-count" id="wideHeroUnsleevd">0</div>
-                    <div class="stat-badge-label">Wishlist</div>
-                  </div>
-                  <div class="stat-badge-item" style="--badge-color:#2E7D32;">
-                    <span class="stat-badge-chip" style="background:#2E7D32;">graded</span>
-                    <div class="stat-badge-count" id="wideHeroGraded">0</div>
-                    <div class="stat-badge-label">Graded</div>
-                  </div>
+                  <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
+                  <span class="wide-hero-count" id="wideHeroSleevd">0</span>
+                  <span class="wide-hero-sep">·</span>
+                  <span class="stat-badge-chip" style="background:#78909C;">unsleevd</span>
+                  <span class="wide-hero-count" id="wideHeroUnsleevd">0</span>
+                  <span class="wide-hero-sep">·</span>
+                  <span class="stat-badge-chip" style="background:#2E7D32;">graded</span>
+                  <span class="wide-hero-count" id="wideHeroGraded">0</span>
                 </div>
               </div>
 

@@ -88,6 +88,10 @@ export function openDetail(id) {
     document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'))
   }
 
+  // Highlight selected player tile in gallery
+  document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
+  document.querySelector(`.player-tile[data-player-id="${player.id}"]`)?.classList.add('tile-selected')
+
   renderDetail(player)
 
   if (!isWideLayout()) {
@@ -105,6 +109,7 @@ export function closeDetail() {
   dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
   dv.style.position = 'absolute'; dv.style.inset = '0'
   state.setSelectedPlayer(null)
+  document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   if (!isWideLayout()) {
     document.getElementById('floating-fab')?.classList.remove('visible')
     if (history.state?.v === 'detail') history.back()
