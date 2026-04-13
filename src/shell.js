@@ -28,7 +28,7 @@ function appShellHTML() {
 
   <!-- GLOBAL TOP BAR (spans full width on desktop) -->
   <div id="top-bar-global">
-    <img src="/logo.png" style="width:28px; height:28px; border-radius:9px; flex-shrink:0;" onerror="this.style.display='none'">
+    <img src="/logo.png" style="width:40px; height:40px; border-radius:12px; flex-shrink:0;" onerror="this.style.display='none'">
     <span id="topBarTitle" class="brand" style="font-size:20px; flex:1; margin-left:10px;">Players</span>
     <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
   </div>
@@ -210,17 +210,20 @@ function appShellHTML() {
                   <div id="playerWideHeroName"></div>
                 </div>
                 <div class="wide-hero-stats">
-                  <div class="wide-hero-stat">
-                    <span class="wide-hero-val" id="wideHeroSleevd">0</span>
-                    <span class="wide-hero-lbl">sleevd</span>
+                  <div class="stat-badge-item" style="--badge-color:#3D5AFE;">
+                    <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
+                    <div class="stat-badge-count" id="wideHeroSleevd">0</div>
+                    <div class="stat-badge-label">In Collection</div>
                   </div>
-                  <div class="wide-hero-stat">
-                    <span class="wide-hero-val" id="wideHeroUnsleevd">0</span>
-                    <span class="wide-hero-lbl">unsleevd</span>
+                  <div class="stat-badge-item" style="--badge-color:#78909C;">
+                    <span class="stat-badge-chip" style="background:#78909C;">unsleevd</span>
+                    <div class="stat-badge-count" id="wideHeroUnsleevd">0</div>
+                    <div class="stat-badge-label">Wishlist</div>
                   </div>
-                  <div class="wide-hero-stat">
-                    <span class="wide-hero-val" id="wideHeroGraded">0</span>
-                    <span class="wide-hero-lbl">graded</span>
+                  <div class="stat-badge-item" style="--badge-color:#2E7D32;">
+                    <span class="stat-badge-chip" style="background:#2E7D32;">graded</span>
+                    <div class="stat-badge-count" id="wideHeroGraded">0</div>
+                    <div class="stat-badge-label">Graded</div>
                   </div>
                 </div>
               </div>
