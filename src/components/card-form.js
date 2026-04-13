@@ -140,18 +140,10 @@ export async function saveCard() {
     let imageUrl = id ? (state.ALL_CARDS.find(x => x.id === id)?.['App Image'] || '') : ''
 
     if (file) {
-      // Force-refresh the auth token — a stale token causes storage/unauthorized
-      if (auth.currentUser) {
-        const token = await auth.currentUser.getIdToken(true)
-        console.log('[upload] uid:', auth.currentUser.uid, 'token prefix:', token.slice(0, 20))
-      } else {
-        console.warn('[upload] no currentUser — storage will be unauthorized')
-      }
+      if (auth.currentUser) await auth.currentUser.getIdToken(true)
       const storageRef = ref(storage, `cards/${Date.now()}_${file.name}`)
-      console.log('[upload] attempting upload to:', storageRef.fullPath)
       const snapshot   = await uploadBytes(storageRef, file)
       imageUrl         = await getDownloadURL(snapshot.ref)
-      console.log('[upload] success, url:', imageUrl.slice(0, 60))
     }
 
     const playerId = document.getElementById('f_player').value
