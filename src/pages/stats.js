@@ -110,16 +110,19 @@ export function renderStats() {
         </div>
       </div>` : ''}
 
-      <!-- By Sport -->
-      <div class="stat-card">
-        <div class="stat-card-title">Owned by Sport</div>
-        <div class="chart-container" style="height:180px;"><canvas id="chartSport"></canvas></div>
-      </div>
+      <!-- By Sport + Top Players (side-by-side on desktop) -->
+      <div class="stats-row-2col">
 
-      <!-- Top Players -->
-      <div class="stat-card">
-        <div class="stat-card-title">Top Players</div>
-        <div class="chart-container" style="max-height:320px;"><canvas id="chartTopPlayers"></canvas></div>
+        <div class="stat-card">
+          <div class="stat-card-title">Owned by Sport</div>
+          <div class="chart-container" style="height:180px;"><canvas id="chartSport"></canvas></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-title">Top Players</div>
+          <div class="chart-container" style="max-height:320px;"><canvas id="chartTopPlayers"></canvas></div>
+        </div>
+
       </div>
 
       <!-- Owned by Year -->
