@@ -183,8 +183,9 @@ function wireNavButtons() {
   document.getElementById('addCardCollFab')?.addEventListener('click', () => openCardForm(null, 'collection'))
   document.getElementById('addCardDetailFab')?.addEventListener('click', () => openCardForm(null, 'player'))
 
-  // Back button in player detail
+  // Back buttons in player detail
   document.getElementById('backBtn')?.addEventListener('click', closeDetail)
+  document.getElementById('backBtnWide')?.addEventListener('click', closeDetail)
 }
 
 // ── Wire form buttons ──────────────────────────────────────────────────────

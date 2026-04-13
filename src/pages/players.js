@@ -50,6 +50,20 @@ export function openDetail(id) {
   document.getElementById('playerName').innerText    = player.Player || player.id
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
+
+  // Populate wide-layout hero stats
+  const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
+  const heroSleevd    = allPlayerCards.filter(c => isOwned(c)).length
+  const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
+  const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
+  const heroName = document.getElementById('playerWideHeroName')
+  if (heroName) heroName.textContent = player.Player || player.id
+  const heroS = document.getElementById('wideHeroSleevd')
+  const heroU = document.getElementById('wideHeroUnsleevd')
+  const heroG = document.getElementById('wideHeroGraded')
+  if (heroS) heroS.textContent = heroSleevd
+  if (heroU) heroU.textContent = heroUnsleevd
+  if (heroG) heroG.textContent = heroGraded
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
   const detailWrap = document.getElementById('detailHeaderWrap')

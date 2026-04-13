@@ -200,7 +200,33 @@ function appShellHTML() {
           </div>
           <div class="collapsible-header-wrap" id="detailHeaderWrap">
             <div class="collapsible-header">
-              <div style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
+
+              <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
+              <div id="playerWideHero">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                  <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                  </button>
+                  <div id="playerWideHeroName"></div>
+                </div>
+                <div class="wide-hero-stats">
+                  <div class="wide-hero-stat">
+                    <span class="wide-hero-val" id="wideHeroSleevd">0</span>
+                    <span class="wide-hero-lbl">sleevd</span>
+                  </div>
+                  <div class="wide-hero-stat">
+                    <span class="wide-hero-val" id="wideHeroUnsleevd">0</span>
+                    <span class="wide-hero-lbl">unsleevd</span>
+                  </div>
+                  <div class="wide-hero-stat">
+                    <span class="wide-hero-val" id="wideHeroGraded">0</span>
+                    <span class="wide-hero-lbl">graded</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MOBILE BANNER (hidden on desktop) -->
+              <div id="playerBannerSection" style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
                 <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
                 <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
                 <button class="back-btn" id="backBtn">
@@ -210,7 +236,9 @@ function appShellHTML() {
                   <span class="material-symbols-outlined">bar_chart</span>
                 </button>
               </div>
-              <div style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+
+              <!-- MOBILE THUMB + NAME (hidden on desktop) -->
+              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
                 <div style="padding-bottom:8px;">
                   <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>

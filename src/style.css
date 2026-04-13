@@ -474,6 +474,26 @@ html, body {
 }
 
 /* ================================================================
+   PLAYER DETAIL — WIDE HERO
+   ================================================================ */
+#playerWideHero { display: none; padding: 20px 20px 16px; border-bottom: 1px solid var(--md-surface-2); }
+#playerWideHeroName { font-family: 'Google Sans Display'; font-size: 26px; font-weight: 700; color: var(--md-on-surface); margin-bottom: 14px; }
+.wide-hero-stats { display: flex; gap: 10px; }
+.wide-hero-stat { display: flex; flex-direction: column; align-items: center; flex: 1; background: var(--md-surface-2); border-radius: 16px; padding: 10px 8px; gap: 2px; }
+.wide-hero-val { font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); line-height: 1; }
+.wide-hero-lbl { font-size: 10px; font-weight: 600; color: var(--md-on-surface-variant); }
+@media (min-width: 768px) {
+  #playerWideHero { display: block; }
+  #playerBannerSection, #playerThumbSection { display: none; }
+  /* Smaller player tiles in sidebar mode (player selected) */
+  #slot-players:not(:has(#detail-view.tp-no-player)) .player-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px; padding: 8px;
+  }
+  #slot-players:not(:has(#detail-view.tp-no-player)) .player-tile { border-radius: 16px; }
+}
+
+/* ================================================================
    PLAYER EDIT SHEET (dynamically created)
    ================================================================ */
 #playerEditSheet { z-index: 1200; }
