@@ -173,9 +173,9 @@ export async function saveCard() {
 
     closeAllForms()
   } catch (e) {
-    console.error(e)
+    console.error('saveCard error:', e)
     btn.disabled = false
-    btn.innerText = 'Save Card'
+    btn.innerText = '⚠ ' + (e?.code || e?.message || 'Save failed')
   }
 }
 
