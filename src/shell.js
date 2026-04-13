@@ -26,9 +26,18 @@ function appShellHTML() {
 
 <div id="app-shell" style="display:none;">
 
+  <!-- GLOBAL TOP BAR (spans full width on desktop) -->
+  <div id="top-bar-global">
+    <img src="/logo.png" style="width:28px; height:28px; border-radius:9px; flex-shrink:0;" onerror="this.style.display='none'">
+    <span id="topBarTitle" class="brand" style="font-size:20px; flex:1; margin-left:10px;">Players</span>
+    <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
+  </div>
+
+  <!-- CONTENT ROW: nav rail + page area -->
+  <div id="content-row">
+
   <!-- NAVIGATION RAIL (tablet/desktop ≥768px) -->
   <nav id="nav-rail">
-    <div class="rail-brand">sleevd</div>
     <button class="rail-item active" id="rail-players"    data-page="players">
       <span class="material-symbols-outlined">cards_stack</span>
       <span class="rail-label">Players</span>
@@ -52,16 +61,6 @@ function appShellHTML() {
     </button>
   </nav>
 
-  <!-- RIGHT COLUMN -->
-  <div id="right-column">
-
-    <!-- GLOBAL TOP BAR (desktop only) -->
-    <div id="top-bar-global">
-      <span id="topBarTitle" class="brand" style="font-size:22px; flex:1;">sleevd</span>
-      <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
-    </div>
-
-    <!-- PAGE CONTAINER -->
     <div id="page-container">
       <div id="page-track">
 
@@ -246,7 +245,8 @@ function appShellHTML() {
       </div>
 
     </div><!-- /page-container -->
-  </div><!-- /right-column -->
+
+  </div><!-- /content-row -->
 </div><!-- /app-shell -->
 
 <!-- MOBILE NAV BAR (3 pages + inline FAB) -->

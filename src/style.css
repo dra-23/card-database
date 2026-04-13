@@ -44,7 +44,7 @@ html, body {
    APP SHELL
    ================================================================ */
 #app-shell {
-  display: flex; height: 100dvh; width: 100vw; overflow: hidden;
+  display: flex; flex-direction: column; height: 100dvh; width: 100vw; overflow: hidden;
   background: var(--md-surface-1);
 }
 
@@ -52,15 +52,10 @@ html, body {
    NAVIGATION RAIL (tablet/desktop ≥768px)
    ================================================================ */
 #nav-rail {
-  display: none; flex-direction: column; width: 104px;
+  display: none; flex-direction: column; width: 72px;
   background: var(--md-surface-1);
-  padding-top: calc(12px + env(safe-area-inset-top));
-  padding-bottom: 12px; flex-shrink: 0; z-index: 50;
-  align-items: center; gap: 4px;
-}
-#nav-rail .rail-brand {
-  font-family: 'Google Sans Display'; font-size: 13px; font-weight: 700;
-  color: var(--md-on-surface); margin-bottom: 16px; letter-spacing: -0.3px;
+  padding-top: 12px; padding-bottom: 12px; flex-shrink: 0; z-index: 50;
+  align-items: center; gap: 4px; border-right: 1px solid rgba(0,0,0,0.07);
 }
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal;
@@ -81,13 +76,13 @@ html, body {
 /* ================================================================
    RIGHT COLUMN + PAGE CONTAINER
    ================================================================ */
-#right-column { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+#content-row { flex: 1; min-height: 0; display: flex; flex-direction: row; overflow: hidden; }
 #top-bar-global {
   display: none; align-items: center; height: 64px; background: var(--md-surface-1);
-  padding: 0 24px 0 16px; flex-shrink: 0; width: 100%;
+  padding: 0 24px 0 20px; flex-shrink: 0;
   padding-top: env(safe-area-inset-top); border-bottom: 1px solid rgba(0,0,0,0.07);
 }
-#page-container { flex: 1; min-width: 0; height: 100dvh; overflow: hidden; position: relative; display: flex; flex-direction: column; background: #c2caf0; }
+#page-container { flex: 1; min-width: 0; overflow: hidden; position: relative; display: flex; flex-direction: column; background: #c2caf0; }
 
 /* ================================================================
    SWIPEABLE PAGE TRACK
@@ -187,7 +182,7 @@ html, body {
 }
 .sheet.open { transform: translateY(0); box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
 @media (min-width: 768px) {
-  .sheet { left: 50%; right: auto; width: 100%; max-width: 560px; transform: translateX(-50%) translateY(100%); border-radius: 28px; bottom: 24px; }
+  .sheet { left: 50%; right: auto; width: 100%; max-width: 560px; transform: translateX(-50%) translateY(calc(100% + 24px)); border-radius: 28px; bottom: 24px; }
   .sheet.open { transform: translateX(-50%) translateY(0); box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
 }
 .sheet-handle { width: 36px; height: 3px; background: #d0d0d0; border-radius: 10px; margin: 10px auto 6px; flex-shrink: 0; padding-top: 6px; box-sizing: content-box; cursor: grab; touch-action: none; }
@@ -420,7 +415,8 @@ html, body {
   #floating-fab { display: none !important; }
   #nav-rail { display: flex; }
   #top-bar-global { display: flex; }
-  /* Hide per-page title bar — global top bar already shows the page name */
+  /* Hide per-page title bars — global top bar shows the page name */
+  #gallery-view .collapsible-header > .top-bar,
   #collection-view .collapsible-header > .top-bar,
   #graded-view .collapsible-header > .top-bar,
   #slot-stats .collapsible-header > .top-bar { display: none; }

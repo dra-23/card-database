@@ -100,8 +100,8 @@ export function _commitPageSwitch(page, idx) {
     })
     const topBarTitle = document.getElementById('topBarTitle')
     if (topBarTitle) {
-      const titles = { players: 'sleevd', collection: 'Collection', graded: 'Graded', stats: 'Stats' }
-      topBarTitle.textContent = titles[page] || 'sleevd'
+      const titles = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Stats' }
+      topBarTitle.textContent = titles[page] || 'Players'
     }
   } else {
     const track = document.getElementById('page-track')
