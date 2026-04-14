@@ -207,21 +207,20 @@ export async function handleFileSelect(input) {
 
   setStatus('Identifying card…')
   try {
-    const raw    = await identifyCard(file)
-    const parsed = parseIdentifyResult(raw)
+    const data   = await identifyCard(file)
+    const parsed = parseIdentifyResult(data)
+
+    if (!parsed) {
+      setStatus('No card detected')
+      setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 3000)
+      return
+    }
 
     // Text fields — only fill if value returned
     if (parsed.year)         document.getElementById('f_year').value         = parsed.year
     if (parsed.set)          document.getElementById('f_set').value          = parsed.set
     if (parsed.number)       document.getElementById('f_number').value       = parsed.number
     if (parsed.manufacturer) document.getElementById('f_manufacturer').value = parsed.manufacturer
-
-    // Sport select — case-insensitive match
-    if (parsed.sport) {
-      const sportSel = document.getElementById('f_sport')
-      const match = [...sportSel.options].find(o => o.value.toLowerCase() === parsed.sport.toLowerCase())
-      if (match) sportSel.value = match.value
-    }
 
     // Player dropdown — only when not locked to a specific player
     const playerSel = document.getElementById('f_player')
@@ -236,13 +235,12 @@ export async function handleFileSelect(input) {
       }
     }
 
-    // Flag buttons
-    if (parsed.rc)       setFormFlag('rc',       true)
-    if (parsed.auto)     setFormFlag('auto',     true)
-    if (parsed.mem)      setFormFlag('mem',      true)
+    // Numbered flag
     if (parsed.numbered) setFormFlag('numbered', true)
 
-    setStatus('✓ Card identified', '#2E7D32')
+    const label = parsed.confidence === 'Low' ? '~ Card identified (low confidence)' : '✓ Card identified'
+    const color = parsed.confidence === 'Low' ? '#B8860B' : '#2E7D32'
+    setStatus(label, color)
     setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 3000)
   } catch (err) {
     console.warn('[cardsight] identify failed:', err)
