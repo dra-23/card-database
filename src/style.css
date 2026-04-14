@@ -409,9 +409,8 @@ html, body {
 #detail-view-empty p { font-size: 15px; font-weight: 600; }
 
 /* Selected row/tile in wide layout */
-.card-item.tp-selected { border-color: var(--md-primary); background: var(--md-primary); color: #fff; box-shadow: 0 4px 16px rgba(232,25,44,0.25); }
-.card-item.tp-selected .card-info-row2 { opacity: 0.75; }
-.card-item.tp-selected .card-row-menu-btn { color: #fff; }
+.card-item.tp-selected { border-color: var(--md-primary); background: var(--md-surface-2); box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+.card-item.tp-selected .card-row-menu-btn { color: var(--md-on-surface-variant); }
 .graded-tile.tp-selected { outline: 3px solid #b6bef8; outline-offset: -3px; }
 
 @media (min-width: 768px) {
