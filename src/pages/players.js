@@ -97,7 +97,7 @@ export function openDetail(id) {
   if (!isWideLayout()) {
     const dv = document.getElementById('detail-view')
     dv.style.display = 'flex'; dv.style.flexDirection = 'column'
-    document.getElementById('floating-fab')?.classList.add('visible')
+    _updateFloatingFab('players')
     history.pushState({ v: 'detail', p: id }, '')
   }
 }
@@ -112,7 +112,7 @@ export function closeDetail() {
   state.setSelectedPlayer(null)
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   if (!isWideLayout()) {
-    document.getElementById('floating-fab')?.classList.remove('visible')
+    _updateFloatingFab('players')
     if (history.state?.v === 'detail') history.back()
   } else {
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''

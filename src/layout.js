@@ -134,7 +134,7 @@ export function _updateFloatingFab(page) {
     return
   }
 
-  const show = (page === 'players' && !!selectedPlayer) || page === 'collection'
+  const show = page === 'players' || page === 'collection'
 
   if (show) {
     fab.classList.add('visible')
