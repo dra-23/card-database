@@ -3,6 +3,7 @@ import { auth } from '../firebase.js'
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
+import { identifyCard, parseIdentifyResult } from '../services/cardsight.js'
 
 // ── Grade dropdown init ────────────────────────────────────────────────────
 export function initGradeDropdown() {
@@ -181,10 +182,12 @@ export async function saveCard() {
   }
 }
 
-// ── File preview ───────────────────────────────────────────────────────────
-export function handleFileSelect(input) {
+// ── File preview + CardSight auto-identify ─────────────────────────────────
+export async function handleFileSelect(input) {
   const file = input.files[0]
   if (!file) return
+
+  // Show preview immediately
   const reader = new FileReader()
   reader.onload = e => {
     document.getElementById('f_imagePreview').src           = e.target.result
@@ -192,4 +195,58 @@ export function handleFileSelect(input) {
     document.getElementById('previewPlaceholder').style.display = 'none'
   }
   reader.readAsDataURL(file)
+
+  // Auto-identify via CardSight AI
+  const statusEl = document.getElementById('cardsightStatus')
+  function setStatus(msg, color) {
+    if (!statusEl) return
+    statusEl.textContent = msg
+    statusEl.style.color = color || 'var(--md-outline)'
+    statusEl.style.display = 'block'
+  }
+
+  setStatus('Identifying card…')
+  try {
+    const raw    = await identifyCard(file)
+    const parsed = parseIdentifyResult(raw)
+
+    // Text fields — only fill if value returned
+    if (parsed.year)         document.getElementById('f_year').value         = parsed.year
+    if (parsed.set)          document.getElementById('f_set').value          = parsed.set
+    if (parsed.number)       document.getElementById('f_number').value       = parsed.number
+    if (parsed.manufacturer) document.getElementById('f_manufacturer').value = parsed.manufacturer
+
+    // Sport select — case-insensitive match
+    if (parsed.sport) {
+      const sportSel = document.getElementById('f_sport')
+      const match = [...sportSel.options].find(o => o.value.toLowerCase() === parsed.sport.toLowerCase())
+      if (match) sportSel.value = match.value
+    }
+
+    // Player dropdown — only when not locked to a specific player
+    const playerSel = document.getElementById('f_player')
+    if (parsed.playerName && !playerSel.disabled) {
+      const q = parsed.playerName.toLowerCase()
+      const match = [...playerSel.options].find(o =>
+        o.value && (o.text.toLowerCase().includes(q) || q.includes(o.text.toLowerCase()))
+      )
+      if (match) {
+        playerSel.value = match.value
+        playerSel.dispatchEvent(new Event('change'))
+      }
+    }
+
+    // Flag buttons
+    if (parsed.rc)       setFormFlag('rc',       true)
+    if (parsed.auto)     setFormFlag('auto',     true)
+    if (parsed.mem)      setFormFlag('mem',      true)
+    if (parsed.numbered) setFormFlag('numbered', true)
+
+    setStatus('✓ Card identified', '#2E7D32')
+    setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 3000)
+  } catch (err) {
+    console.warn('[cardsight] identify failed:', err)
+    setStatus('Could not identify card')
+    setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 4000)
+  }
 }
