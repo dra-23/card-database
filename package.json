@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "cardsightai": "^3.4.1",
     "chart.js": "^4.4.8",
     "firebase": "^10.8.0"
   },

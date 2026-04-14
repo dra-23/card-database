@@ -1,32 +1,47 @@
-import CardSightAI, { getHighestConfidenceDetection } from 'cardsightai'
-
-const client = new CardSightAI({ apiKey: import.meta.env.VITE_CARDSIGHT_KEY })
+const KEY  = import.meta.env.VITE_CARDSIGHT_KEY
+const BASE = 'https://api.cardsight.ai'
 
 /**
  * Identify a card from a File object.
  * @param {File} file
- * @returns {Promise<import('cardsightai').IdentifyResult>}
+ * @returns {Promise<object>} raw API response
  */
 export async function identifyCard(file) {
-  const result = await client.identify.card(file)
-  if (!result.ok) {
-    throw new Error(result.error || result.message || `CardSight ${result.status}`)
+  const form = new FormData()
+  form.append('image', file)
+
+  const res = await fetch(`${BASE}/v1/identify/card`, {
+    method: 'POST',
+    headers: { 'X-API-Key': KEY },
+    body: form,
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || err.error || `CardSight ${res.status}`)
   }
-  return result.data
+  return res.json()
 }
 
 /**
  * Extract normalised card fields from an IdentifyResult.
- * Returns null if no detections or confidence is Low.
- * @param {import('cardsightai').IdentifyResult} data
+ * Field names sourced from the cardsightai SDK type definitions.
+ * Returns null if no detections present.
+ * @param {{ success: boolean, detections?: Array }} data
  */
 export function parseIdentifyResult(data) {
   console.log('[cardsight] response:', data)
 
-  const detection = getHighestConfidenceDetection(data)
-  if (!detection) return null
+  const detections = data?.detections
+  if (!detections?.length) return null
 
-  const { card, confidence } = detection
+  // Pick highest confidence: High > Medium > Low
+  const order = { High: 0, Medium: 1, Low: 2 }
+  const detection = [...detections].sort((a, b) =>
+    (order[a.confidence] ?? 3) - (order[b.confidence] ?? 3)
+  )[0]
+
+  const card = detection.card ?? {}
 
   return {
     playerName:   card.name         ?? '',
@@ -35,6 +50,6 @@ export function parseIdentifyResult(data) {
     number:       card.number       ?? '',
     manufacturer: card.manufacturer ?? '',
     numbered:     !!(card.parallel?.numberedTo),
-    confidence,   // 'High' | 'Medium' | 'Low'
+    confidence:   detection.confidence ?? 'Low',
   }
 }
