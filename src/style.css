@@ -219,7 +219,7 @@ html, body {
 /* ================================================================
    CARD LIST ITEMS
    ================================================================ */
-.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; cursor: pointer; border: 1.5px solid var(--md-outline); }
+.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; cursor: pointer; border: 1.5px solid var(--md-surface-1); }
 .card-item.not-owned { opacity: 0.5; border-style: dashed; }
 .card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
