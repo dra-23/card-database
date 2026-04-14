@@ -210,6 +210,8 @@ export function initPageSwipe() {
 
   container.addEventListener('touchstart', e => {
     if (document.querySelector('.sheet.open')) return
+    // Let the detail view handle its own swipe-back gesture
+    if (selectedPlayer && !isWideLayout()) return
     // Sync pageIdx with actual current page (e.g. after navigating to stats via button)
     pageIdx = PAGE_NAMES.indexOf(currentPage || 'players')
     // Stats page is not swipe-navigable

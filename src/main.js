@@ -4,7 +4,7 @@ import { renderShell } from './shell.js'
 import * as state from './state.js'
 import { PAGE_NAMES, isWideLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery } from './layout.js'
 import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
-import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation } from './pages/players.js'
+import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation, initDetailSwipeBack } from './pages/players.js'
 import { renderCollectionView } from './pages/collection.js'
 import { renderGradedView } from './pages/graded.js'
 import { renderStats } from './pages/stats.js'
@@ -86,6 +86,7 @@ function startApp() {
 
   initFastScroll(document.getElementById('detailScrollBody'),     document.getElementById('detailFastScroll'))
   initFastScroll(document.getElementById('collectionScrollBody'), document.getElementById('collFastScroll'))
+  initDetailSwipeBack()
   initCardListDelegation()
   initCardLongPress()
   initInlinePanelSwipe()
@@ -143,6 +144,7 @@ function startApp() {
   window._openRowMenu     = openRowMenu
   window._openCardForm    = openCardForm
   window._openPlayerEditMenu = openPlayerEditMenu
+  window.closeDetail      = closeDetail
 }
 
 function onDataReady() {

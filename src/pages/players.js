@@ -108,6 +108,7 @@ export function closeDetail() {
   const slot = document.getElementById('slot-players')
   dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
   dv.style.position = 'absolute'; dv.style.inset = '0'
+  dv.style.transform = ''; dv.style.transition = ''
   state.setSelectedPlayer(null)
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   if (!isWideLayout()) {
@@ -118,6 +119,56 @@ export function closeDetail() {
     gv.style.flexShrink = ''; gv.style.borderRight = ''
     slot.style.display = ''; slot.style.flexDirection = ''
   }
+}
+
+// ── Swipe-right-to-go-back gesture on mobile detail view ──────────────────
+export function initDetailSwipeBack() {
+  const dv = document.getElementById('detail-view')
+  if (!dv) return
+
+  let sx = 0, sy = 0, lx = 0, active = false, locked = null
+
+  dv.addEventListener('touchstart', e => {
+    if (isWideLayout() || !state.selectedPlayer) return
+    const t = e.touches[0]
+    sx = t.clientX; sy = t.clientY; lx = sx
+    active = true; locked = null
+  }, { passive: true })
+
+  dv.addEventListener('touchmove', e => {
+    if (!active || isWideLayout()) return
+    const t = e.touches[0]
+    lx = t.clientX
+    const dx = t.clientX - sx, dy = t.clientY - sy
+    if (!locked) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.5) locked = 'h'
+      else if (Math.abs(dy) > 8) { locked = 'v'; active = false; return }
+      else return
+    }
+    if (locked === 'h' && dx > 0) {
+      if (e.cancelable) e.preventDefault()
+      dv.style.transform = `translateX(${dx}px)`
+    }
+  }, { passive: false })
+
+  function onEnd() {
+    if (!active) return
+    active = false
+    const dx = lx - sx
+    if (locked === 'h' && dx > window.innerWidth * 0.3) {
+      dv.style.transition = 'transform 0.25s ease'
+      dv.style.transform  = `translateX(${window.innerWidth}px)`
+      setTimeout(() => closeDetail(), 230)
+    } else {
+      dv.style.transition = 'transform 0.25s ease'
+      dv.style.transform  = 'translateX(0)'
+      setTimeout(() => { dv.style.transition = ''; dv.style.transform = '' }, 250)
+    }
+    locked = null
+  }
+
+  dv.addEventListener('touchend',    onEnd, { passive: true })
+  dv.addEventListener('touchcancel', onEnd, { passive: true })
 }
 
 export function renderDetail(player) {
