@@ -219,7 +219,7 @@ html, body {
 /* ================================================================
    CARD LIST ITEMS
    ================================================================ */
-.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; }
+.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; cursor: pointer; border: 1.5px solid var(--md-outline); }
 .card-item.not-owned { opacity: 0.5; border-style: dashed; }
 .card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -409,7 +409,9 @@ html, body {
 #detail-view-empty p { font-size: 15px; font-weight: 600; }
 
 /* Selected row/tile in wide layout */
-.card-item.tp-selected { border-color: #b6bef8; background: #e8ecff; }
+.card-item.tp-selected { border-color: var(--md-primary); background: var(--md-primary); color: #fff; box-shadow: 0 4px 16px rgba(232,25,44,0.25); }
+.card-item.tp-selected .card-info-row2 { opacity: 0.75; }
+.card-item.tp-selected .card-row-menu-btn { color: #fff; }
 .graded-tile.tp-selected { outline: 3px solid #b6bef8; outline-offset: -3px; }
 
 @media (min-width: 768px) {
