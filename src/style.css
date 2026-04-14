@@ -219,7 +219,7 @@ html, body {
 /* ================================================================
    CARD LIST ITEMS
    ================================================================ */
-.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; background: var(--md-surface-2); cursor: pointer; border: 2px solid transparent; }
+.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; }
 .card-item.not-owned { opacity: 0.5; border-style: dashed; }
 .card-thumb { width: 60px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
 .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -227,10 +227,10 @@ html, body {
 .card-info-row2 { font-size: 12px; opacity: 0.6; }
 .card-badge-tray { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; align-items: center; }
 .badge-grade    { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; border: 1.5px solid var(--md-surface-1); white-space: nowrap; }
-.badge-rc       { background: rgba(232,25,44,0.10);  color: #C0001F; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-auto     { background: rgba(184,134,11,0.10); color: #8a6200; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-mem      { background: rgba(21,101,192,0.10); color: #1256a0; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-numbered { background: rgba(96,125,139,0.10); color: #546e7a; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-rc       { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-auto     { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-mem      { background: #1565C0; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-numbered { background: #78909C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
 .card-row-menu-btn { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; }
 .card-row-menu-btn:active { background: rgba(0,0,0,0.07); opacity: 1; }
 
