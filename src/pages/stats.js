@@ -120,7 +120,7 @@ export function renderStats() {
 
         <div class="stat-card">
           <div class="stat-card-title">Top Players</div>
-          <div class="chart-container" style="max-height:320px;"><canvas id="chartTopPlayers"></canvas></div>
+          <div class="chart-container" style="height:400px;"><canvas id="chartTopPlayers"></canvas></div>
         </div>
 
       </div>
@@ -128,7 +128,7 @@ export function renderStats() {
       <!-- Owned by Year -->
       <div class="stat-card">
         <div class="stat-card-title">Owned by Year</div>
-        <div class="chart-container" style="max-height:220px;"><canvas id="chartYear"></canvas></div>
+        <div class="chart-container" style="height:300px;"><canvas id="chartYear"></canvas></div>
       </div>
 
       <!-- Grade Distribution (only if graded cards exist) -->
