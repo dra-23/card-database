@@ -4,13 +4,15 @@ const BASE = 'https://api.cardsight.ai'
 /**
  * Identify a card from a File object.
  * @param {File} file
+ * @param {string} [sport] - optional sport hint, e.g. 'basketball', 'football'
  * @returns {Promise<object>} raw API response
  */
-export async function identifyCard(file) {
+export async function identifyCard(file, sport = null) {
   const form = new FormData()
   form.append('image', file)
 
-  const res = await fetch(`${BASE}/v1/identify/card`, {
+  const segment = sport ? `/${encodeURIComponent(sport.toLowerCase())}` : ''
+  const res = await fetch(`${BASE}/v1/identify/card${segment}`, {
     method: 'POST',
     headers: { 'X-API-Key': KEY },
     body: form,

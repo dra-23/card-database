@@ -207,7 +207,8 @@ export async function handleFileSelect(input) {
 
   setStatus('Identifying card…')
   try {
-    const data   = await identifyCard(file)
+    const sport  = document.getElementById('f_sport')?.value || null
+    const data   = await identifyCard(file, sport)
     const parsed = parseIdentifyResult(data)
 
     if (!parsed) {
@@ -244,7 +245,7 @@ export async function handleFileSelect(input) {
     setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 3000)
   } catch (err) {
     console.warn('[cardsight] identify failed:', err)
-    setStatus('Could not identify card')
+    setStatus(err.message || 'Could not identify card')
     setTimeout(() => { if (statusEl) statusEl.style.display = 'none' }, 4000)
   }
 }
