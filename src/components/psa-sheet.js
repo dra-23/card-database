@@ -69,11 +69,7 @@ export async function fetchAndPreviewPSA() {
     document.getElementById('psaPreviewPop').textContent   = _fetchedData.pop   ?? '—'
     document.getElementById('psaPreviewSold').textContent  = fmtSold
 
-    // Temporary debug — shows cert field names and APR sample
-    statusEl.style.color   = 'var(--md-on-surface-variant)'
-    statusEl.textContent   = `cert fields: ${_fetchedData._certKeys} | apr count: ${_fetchedData._aprCount}${_fetchedData._aprSample ? ' | ' + _fetchedData._aprSample : ''}`
-    statusEl.style.display = 'block'
-
+    statusEl.style.display = 'none'
     resultEl.style.display = 'block'
     document.getElementById('btnSavePSA').style.display = 'block'
   } catch (err) {

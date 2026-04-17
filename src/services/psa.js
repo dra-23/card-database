@@ -54,11 +54,8 @@ export async function lookupCert(certNumber) {
 
   return {
     cert,
-    grade:    certData.PSAGrade ?? certData.Grade ?? certData.GradeDescription ?? certData.CardGrade ?? null,
+    grade:    certData.CardGrade ?? certData.PSAGrade ?? certData.GradeDescription ?? null,
     pop,
     lastSold: lastSale?.SalePrice ?? lastSale?.Price ?? null,
-    _certKeys: Object.keys(certData).join(', '),
-    _aprCount: aprList.length,
-    _aprSample: lastSale ? JSON.stringify(lastSale) : null,
   }
 }
