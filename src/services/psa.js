@@ -2,7 +2,7 @@ const BASE = 'https://api.psacard.com/publicapi'
 
 async function psaFetch(path) {
   const KEY = import.meta.env.VITE_PSA_KEY
-  if (!KEY) throw new Error('PSA API key not configured')
+  if (!KEY) throw new Error('PSA API key not configured — add VITE_PSA_KEY to .env and rebuild')
   const res = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${KEY}` },
   })
@@ -22,20 +22,40 @@ export async function lookupCert(certNumber) {
     psaFetch(`/auctionprices/GetAuctionPricesByCertNumber/${cert}`),
   ])
 
-  console.log('[psa] cert:', certRes.value, 'pop:', popRes.value, 'apr:', aprRes.value)
+  // Cert is mandatory — surface its error if it failed
+  if (certRes.status === 'rejected') throw certRes.reason
 
-  const certData = certRes.value?.PSACert ?? {}
-  const popData  = popRes.value?.PSACert  ?? {}
-  const aprList  = aprRes.value?.AuctionPrices ?? []
+  const certRaw = certRes.value ?? {}
+  const popRaw  = popRes.status === 'fulfilled' ? (popRes.value ?? {}) : {}
+  const aprRaw  = aprRes.status === 'fulfilled' ? (aprRes.value ?? {}) : {}
+
+  console.log('[psa] cert:', JSON.stringify(certRaw))
+  console.log('[psa] pop:', JSON.stringify(popRaw))
+  console.log('[psa] apr:', JSON.stringify(aprRaw))
+
+  const certData = certRaw.PSACert ?? certRaw
+
+  // Population: cert endpoint often includes TotalPopulation; fall back to pop endpoint
+  const popData = popRaw.PSACert ?? popRaw
+  const pop = certData.TotalPopulation
+    ?? popData.TotalPop
+    ?? popData.TotalPopulation
+    ?? popData.Total
+    ?? popData.Pop
+    ?? null
+
+  // APR: array may be at root or under AuctionPrices key
+  const aprList = Array.isArray(aprRaw) ? aprRaw
+    : (aprRaw.AuctionPrices ?? aprRaw.PSAAuctionPrices ?? [])
 
   const lastSale = aprList.length
     ? [...aprList].sort((a, b) => new Date(b.SaleDate) - new Date(a.SaleDate))[0]
     : null
 
   return {
-    cert:     cert,
-    grade:    certData.PSAGrade ?? null,
-    pop:      popData.TotalPop ?? popData.TotalPopulation ?? popData.Total ?? null,
+    cert,
+    grade:    certData.PSAGrade ?? certData.Grade ?? null,
+    pop,
     lastSold: lastSale?.SalePrice ?? lastSale?.Price ?? null,
   }
 }
