@@ -12,6 +12,7 @@ import { handleCardTap, navigateCard, closeCardSheet, refreshCurrentCardPanel } 
 import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFlag } from './components/card-form.js'
 import { openPlayerForm, savePlayer, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
 import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
+import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
 
 // ── Render app shell HTML first ────────────────────────────────────────────
 renderShell()
@@ -83,6 +84,7 @@ function startApp() {
   attachSheetGestures('gradedCardSheet',    'gradedCardPanel',    'swipeHintGrad', 'swipeHintGradRight', 'graded')
   attachFormDismissGesture('cardFormSheet',   closeAllForms)
   attachFormDismissGesture('playerFormSheet', closeAllForms)
+  attachFormDismissGesture('psaSheet',        closePSASheet)
 
   initFastScroll(document.getElementById('detailScrollBody'),     document.getElementById('detailFastScroll'))
   initFastScroll(document.getElementById('collectionScrollBody'), document.getElementById('collFastScroll'))
@@ -113,7 +115,9 @@ function startApp() {
 
   // Back button / history
   window.addEventListener('popstate', e => {
-    if (document.getElementById('cardFormSheet').classList.contains('open') ||
+    if (document.getElementById('psaSheet').classList.contains('open')) {
+      closePSASheet()
+    } else if (document.getElementById('cardFormSheet').classList.contains('open') ||
         document.getElementById('playerFormSheet').classList.contains('open')) {
       closeAllForms()
     } else if (['cardDetailSheet','collectionCardSheet','gradedCardSheet'].some(id => document.getElementById(id).classList.contains('open'))) {
@@ -143,6 +147,7 @@ function startApp() {
   window._openRowMenu     = openRowMenu
   window._openCardForm    = openCardForm
   window._openPlayerEditMenu = openPlayerEditMenu
+  window._openPSASheet    = openPSASheet
   window.closeDetail      = closeDetail
 }
 
@@ -195,6 +200,9 @@ function wireNavButtons() {
 function wireFormButtons() {
   document.getElementById('btnSaveCard')?.addEventListener('click', saveCard)
   document.getElementById('btnSavePlayer')?.addEventListener('click', savePlayer)
+  document.getElementById('btnLookupPSA')?.addEventListener('click', fetchAndPreviewPSA)
+  document.getElementById('btnSavePSA')?.addEventListener('click', savePSAData)
+  document.getElementById('cancelPSABtn')?.addEventListener('click', closePSASheet)
   document.getElementById('cancelCardFormBtn')?.addEventListener('click', closeAllForms)
   document.getElementById('selectPhotoBtn')?.addEventListener('click', () => document.getElementById('f_fileInput').click())
   document.getElementById('f_fileInput')?.addEventListener('change', e => handleFileSelect(e.target))

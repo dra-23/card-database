@@ -33,6 +33,23 @@ export function buildCardDetailHTML(card, ctx) {
     ...(serial   ? [['Serial',   serial]]   : []),
   ]
 
+  const isGraded = co && co !== 'Raw'
+  const hasPSA   = isGraded && !!card.PSACert
+  const psaSection = isGraded ? `
+    <div class="psa-card">
+      <div class="psa-card-header">
+        <span class="psa-card-title">PSA Registry Data</span>
+        <button class="psa-edit-btn" data-psa-edit="${escapeAttr(card.id)}">${hasPSA ? 'Edit' : '+ Link'}</button>
+      </div>
+      ${hasPSA ? `
+      <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
+      <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
+      <div class="psa-stat-row"><span class="psa-stat-lbl">Last Sold (APR)</span><span class="psa-stat-val" style="color:#2E7D32;">${card.PSALastSold != null ? '$' + parseFloat(card.PSALastSold).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}</span></div>
+      <a href="https://www.psacard.com/cert/${card.PSACert}" target="_blank" rel="noopener" style="display:block;">
+        <button class="psa-registry-btn">PSA Registry ↗</button>
+      </a>` : ''}
+    </div>` : ''
+
   return `
     <div class="cd-img-wrap">
       <img src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
@@ -62,6 +79,7 @@ export function buildCardDetailHTML(card, ctx) {
             <span class="cd-stat-val">${val}</span>
           </div>`).join('')}
       </div>
+      ${psaSection}
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
       <div class="cd-owned-row">
         <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
@@ -95,6 +113,11 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   // 3-dot menu
   panelEl.querySelector(`[data-card-menu]`)?.addEventListener('click', e => {
     window._openRowMenu?.(cardId, e.currentTarget)
+  })
+
+  // PSA edit
+  panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
+    window._openPSASheet?.(cardId)
   })
 }
 
