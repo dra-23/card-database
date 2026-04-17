@@ -335,7 +335,6 @@ function appShellHTML() {
           </div>
         </div>
       </div>
-      <div id="cardsightStatus" style="display:none; font-size:12px; margin-top:-8px;"></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field"><label class="m3-label">Year</label><input type="text" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
         <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input" placeholder="e.g. MJ-23"></div>
