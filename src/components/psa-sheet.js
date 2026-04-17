@@ -61,13 +61,14 @@ export async function fetchAndPreviewPSA() {
   try {
     _fetchedData = await lookupCert(certNum)
 
-    const fmtSold = _fetchedData.lastSold != null
-      ? `$${parseFloat(_fetchedData.lastSold).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    const fmt = v => v != null
+      ? `$${parseFloat(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : '—'
 
-    document.getElementById('psaPreviewGrade').textContent = _fetchedData.grade ?? '—'
-    document.getElementById('psaPreviewPop').textContent   = _fetchedData.pop   ?? '—'
-    document.getElementById('psaPreviewSold').textContent  = fmtSold
+    document.getElementById('psaPreviewGrade').textContent = _fetchedData.grade    ?? '—'
+    document.getElementById('psaPreviewPop').textContent   = _fetchedData.pop      ?? '—'
+    document.getElementById('psaPreviewSold').textContent  = fmt(_fetchedData.lastSold)
+    document.getElementById('psaPreviewSmr').textContent   = fmt(_fetchedData.smrValue)
 
     statusEl.style.display = 'none'
     resultEl.style.display = 'block'
@@ -91,6 +92,7 @@ export async function savePSAData() {
       PSACert:     _fetchedData.cert,
       PSAPop:      _fetchedData.pop,
       PSALastSold: _fetchedData.lastSold,
+      PSASMRValue: _fetchedData.smrValue,
       PSAGrade:    _fetchedData.grade,
     }, { merge: true })
     closePSASheet()
