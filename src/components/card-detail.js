@@ -56,10 +56,10 @@ export function buildCardDetailHTML(card, ctx) {
       </div>
       <div class="cd-divider"></div>
       <div class="cd-stats-grid">
-        ${stats.map(([lbl, val]) => `
+        ${stats.filter(([, val]) => val).map(([lbl, val]) => `
           <div class="cd-stat">
-            <div class="cd-stat-lbl">${lbl}</div>
-            <div class="cd-stat-val">${val || '—'}</div>
+            <span class="cd-stat-lbl">${lbl}</span>
+            <span class="cd-stat-val">${val}</span>
           </div>`).join('')}
       </div>
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
