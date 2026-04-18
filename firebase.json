@@ -17,7 +17,7 @@
       }
     ],
     "rewrites": [
-      { "source": "/api/psa", "function": "psalookup" },
+      { "source": "/api/psa", "run": { "serviceId": "psalookup", "region": "us-central1" } },
       { "source": "**", "destination": "/index.html" }
     ]
   },

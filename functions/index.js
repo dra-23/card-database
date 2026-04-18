@@ -1,4 +1,4 @@
-const functions = require('firebase-functions')
+const { onRequest } = require('firebase-functions/v2/https')
 
 const PSA_BASE = 'https://api.psacard.com/publicapi'
 
@@ -10,7 +10,7 @@ async function psaGet(key, path) {
   return res.json()
 }
 
-exports.psalookup = functions.https.onRequest(async (req, res) => {
+exports.psalookup = onRequest({ region: 'us-central1' }, async (req, res) => {
   const cert = String(req.query.cert || '').replace(/\D/g, '')
   if (!cert) { res.status(400).json({ error: 'cert query param required' }); return }
 
