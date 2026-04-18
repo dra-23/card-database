@@ -173,6 +173,8 @@ export async function saveCard() {
     if (id) await setDoc(doc(db, 'Cards', id), cardData, { merge: true })
     else    await addDoc(collection(db, 'Cards'), cardData)
 
+    btn.disabled = false
+    btn.innerText = 'Saved!'
     closeAllForms()
   } catch (e) {
     console.error('saveCard error:', e)

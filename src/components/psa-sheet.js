@@ -16,9 +16,14 @@ export function openPSASheet(cardId) {
   document.getElementById('psaFetchStatus').style.display = 'none'
   document.getElementById('psaFetchStatus').textContent   = ''
   document.getElementById('psaFetchResult').style.display = 'none'
-  document.getElementById('btnSavePSA').style.display     = 'none'
+
+  const saveBtn = document.getElementById('btnSavePSA')
+  saveBtn.style.display = 'none'
+  saveBtn.disabled      = false
+  saveBtn.textContent   = 'Save to Card'
+
   const lookupBtn = document.getElementById('btnLookupPSA')
-  lookupBtn.disabled = false
+  lookupBtn.disabled    = false
   lookupBtn.textContent = 'Look Up'
 
   const scrim = document.getElementById('globalScrim')
@@ -95,6 +100,8 @@ export async function savePSAData() {
       PSASMRValue: _fetchedData.smrValue,
       PSAGrade:    _fetchedData.grade,
     }, { merge: true })
+    btn.disabled = false
+    btn.textContent = 'Saved!'
     closePSASheet()
   } catch (e) {
     btn.disabled = false
