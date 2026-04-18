@@ -16,6 +16,7 @@
   --co-bgs: #1e1e1e;
   --co-sgc: #edebeb;
   --co-cgc: #225a91;
+  --coll-h1: 53px;
   --nav-height: 80px;
   --nav-height-safe: calc(96px + env(safe-area-inset-bottom));
 }
@@ -270,8 +271,10 @@ html, body {
 /* ================================================================
    YEAR GROUP HEADERS
    ================================================================ */
-.year-group-header { padding: 18px 16px 8px; font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; }
-.year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; }
+.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
+.year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
+.year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }
+.year-sub-header { position: sticky; top: var(--coll-h1); background: var(--md-surface); z-index: 9; padding: 5px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); border-bottom: 1px solid var(--md-surface-2); }
 .collection-card-list { padding: 8px 16px; }
 
 /* ================================================================

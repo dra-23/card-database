@@ -1,8 +1,11 @@
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
 
-export function renderCollectionView() {
+export function renderCollectionView({ preserveScroll = false } = {}) {
   if (!state.cardsLoaded) return
+
+  const scrollEl = document.getElementById('collectionScrollBody')
+  const savedScroll = preserveScroll ? (scrollEl?.scrollTop ?? 0) : 0
 
   // 1. Filter
   let cards = state.collShowWishlistOnly
@@ -23,7 +26,7 @@ export function renderCollectionView() {
     )
   }
 
-  // 2. Sort — primary key determined by chip, sub-order always: year → sport → set → number
+  // 2. Sort — primary key determined by chip, sub-order always: year → set → number
   const sortBy = state.collSortBy || 'year'
 
   const subSort = (a, b) => {
@@ -90,17 +93,44 @@ export function renderCollectionView() {
 
     const header = document.createElement('div')
     header.className = 'year-group-header'
-    header.innerHTML = `${key} <span class="year-count">${groupCards.length} cards</span>`
+    header.innerHTML = `<span class="year-group-key">${key}</span><span class="year-count">${groupCards.length} cards</span>`
     fragment.appendChild(header)
 
-    const listDiv = document.createElement('div')
-    listDiv.className = 'collection-card-list'
-    groupCards.forEach(card => {
-      const wrapper = document.createElement('div')
-      wrapper.innerHTML = buildCollectionRow(card)
-      listDiv.appendChild(wrapper.firstElementChild)
-    })
-    fragment.appendChild(listDiv)
+    if (sortBy !== 'year') {
+      // Sub-group by year within each primary group
+      const yearGroups = new Map()
+      groupCards.forEach(c => {
+        const yr = c.Year?.toString() || 'Unknown'
+        if (!yearGroups.has(yr)) yearGroups.set(yr, [])
+        yearGroups.get(yr).push(c)
+      })
+      const showSubs = yearGroups.size > 1
+      yearGroups.forEach((yearCards, yr) => {
+        if (showSubs) {
+          const subHeader = document.createElement('div')
+          subHeader.className = 'year-sub-header'
+          subHeader.textContent = yr
+          fragment.appendChild(subHeader)
+        }
+        const listDiv = document.createElement('div')
+        listDiv.className = 'collection-card-list'
+        yearCards.forEach(card => {
+          const wrapper = document.createElement('div')
+          wrapper.innerHTML = buildCollectionRow(card)
+          listDiv.appendChild(wrapper.firstElementChild)
+        })
+        fragment.appendChild(listDiv)
+      })
+    } else {
+      const listDiv = document.createElement('div')
+      listDiv.className = 'collection-card-list'
+      groupCards.forEach(card => {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = buildCollectionRow(card)
+        listDiv.appendChild(wrapper.firstElementChild)
+      })
+      fragment.appendChild(listDiv)
+    }
 
     const oldSentinel = document.getElementById('collection-sentinel')
     if (oldSentinel) oldSentinel.remove()
@@ -131,6 +161,10 @@ export function renderCollectionView() {
   }
 
   renderNextGroup()
+
+  if (savedScroll > 0 && scrollEl) {
+    requestAnimationFrame(() => { scrollEl.scrollTop = savedScroll })
+  }
 }
 
 function buildCollectionRow(c) {

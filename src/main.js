@@ -55,7 +55,7 @@ function startApp() {
     renderGallery()
     if (state.selectedPlayer) renderDetail(state.selectedPlayer)
     refreshCurrentCardPanel(state.currentCardId)
-    if (state.currentPage === 'collection') renderCollectionView()
+    if (state.currentPage === 'collection') renderCollectionView({ preserveScroll: true })
     if (state.currentPage === 'graded')     renderGradedView()
     if (state.currentPage === 'stats')      renderStats()
   })
