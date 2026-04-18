@@ -67,7 +67,7 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
   const hintR  = document.getElementById(hintRId)
   if (!sheet || !panel) return
 
-  const st = { active: false, locked: null, startX: 0, startY: 0, lastX: 0, lastY: 0, sheetBaseY: 0 }
+  const st = { active: false, locked: null, startX: 0, startY: 0, lastX: 0, lastY: 0, sheetBaseY: 0, panelScrollTop: 0 }
 
   sheet.addEventListener('touchstart', e => {
     if (window._swipeAnimating) return
@@ -76,6 +76,7 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
     st.startX = t.clientX; st.startY = t.clientY
     st.lastX  = t.clientX; st.lastY  = t.clientY
     st.sheetBaseY = getSheetTranslateY(sheet)
+    st.panelScrollTop = panel.scrollTop
     panel.classList.remove('animating')
     sheet.style.transition = 'none'
   }, { passive: true })
@@ -87,9 +88,14 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
     st.lastX = t.clientX; st.lastY = t.clientY
 
     if (!st.locked) {
-      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) st.locked = 'horizontal'
-      else if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.5) st.locked = 'vertical'
-      else return
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        st.locked = 'horizontal'
+      } else if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+        // Only treat as dismiss if panel is at top AND user is swiping down
+        st.locked = (dy > 0 && st.panelScrollTop <= 0) ? 'vertical' : 'scroll'
+      } else {
+        return
+      }
     }
 
     if (st.locked === 'horizontal') {
@@ -106,6 +112,7 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
       if (e.cancelable) e.preventDefault()
       sheet.style.transform = sheetTransformY(Math.max(0, dy))
     }
+    // 'scroll': no preventDefault — let native scroll handle it
   }, { passive: false })
 
   sheet.addEventListener('touchend', () => {
@@ -127,6 +134,7 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
       if (dy > 150) window._closeCardSheet?.(ctxName)
       else sheet.style.transform = sheetTransformY(0)
     } else {
+      // 'scroll' or no gesture — restore transforms without interfering with scroll position
       panel.style.transform = ''
       sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0) : sheetTransformY('100%')
     }
