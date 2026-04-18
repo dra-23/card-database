@@ -142,7 +142,7 @@ function buildCollectionRow(c) {
   const isAuto      = c.Auto     === true || c.Auto     === 'true'
   const isMem       = c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true'
   const isNumbered  = c.Numbered === true || c.Numbered === 'true'
-  const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade">${co} ${gr}</span>` : ''
+  const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade" data-co="${co}">${co} ${gr}</span>` : ''
   const rcBadge       = isRC       ? `<span class="badge-rc">RC</span>`         : ''
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
   const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''

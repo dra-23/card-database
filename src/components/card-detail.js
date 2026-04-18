@@ -48,7 +48,7 @@ export function buildCardDetailHTML(card, ctx) {
     }
   })() : ''
   const psaSection = isGraded ? `
-    <div class="psa-card">
+    <div class="psa-card" data-co="${co}">
       <div class="psa-card-header">
         <span class="psa-card-title">${co} Registry Data</span>
         <button class="psa-edit-btn" data-psa-edit="${escapeAttr(card.id)}">${hasPSA ? 'Edit' : '+ Link'}</button>
@@ -71,7 +71,7 @@ export function buildCardDetailHTML(card, ctx) {
           <div class="cd-year-set">${card.Year || ''} ${card.Set || ''} #${card.Number || 'N/A'}</div>
           <div class="cd-player">${playerName}</div>
           <div class="cd-badge-row">
-            ${gradeStr   ? `<span class="badge-grade">${gradeStr}</span>`   : ''}
+            ${gradeStr   ? `<span class="badge-grade" data-co="${co}">${gradeStr}</span>`   : ''}
             ${isRC       ? `<span class="badge-rc">RC</span>`               : ''}
             ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
             ${isMem      ? `<span class="badge-mem">MEM</span>`             : ''}

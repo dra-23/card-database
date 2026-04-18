@@ -45,7 +45,7 @@ function buildGradedRow(c) {
   const owned       = isOwned(c)
   const gradeLabel  = `${co} ${gr}`.trim()
 
-  return `<div class="graded-tile ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
+  return `<div class="graded-tile ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}" data-co="${co}">
     <img class="graded-tile-img" src="${getCleanImg(c['App Image'])}" alt="">
     <div class="graded-tile-bar">
       <div class="graded-tile-grade">${gradeLabel}</div>
