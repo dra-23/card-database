@@ -1,6 +1,6 @@
 {
   "name": "sleevd-functions",
-  "engines": { "node": "18" },
+  "engines": { "node": "22" },
   "main": "index.js",
   "dependencies": {
     "firebase-functions": "^4.9.0"
