@@ -48,12 +48,11 @@ function startApp() {
   // Firestore
   state.subscribeFirestore()
   state.on('players:updated', () => {
-    if (state.playersLoaded && state.cardsLoaded) onDataReady()
     updateOwnedCount()
   })
   state.on('cards:updated', () => {
-    if (state.playersLoaded && state.cardsLoaded) onDataReady()
     updateOwnedCount()
+    renderGallery()
     if (state.selectedPlayer) renderDetail(state.selectedPlayer)
     refreshCurrentCardPanel(state.currentCardId)
     if (state.currentPage === 'collection') renderCollectionView()

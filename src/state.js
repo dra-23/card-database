@@ -74,6 +74,10 @@ export function subscribeFirestore() {
   })
 }
 
+let _ready = false
 function _checkReady() {
-  if (playersLoaded && cardsLoaded) emit('data:ready')
+  if (!_ready && playersLoaded && cardsLoaded) {
+    _ready = true
+    emit('data:ready')
+  }
 }

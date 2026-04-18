@@ -109,6 +109,7 @@ export function closeDetail() {
   dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
   dv.style.position = 'absolute'; dv.style.inset = '0'
   dv.style.transform = ''; dv.style.transition = ''
+  dv.classList.add('tp-no-player')
   state.setSelectedPlayer(null)
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   if (!isWideLayout()) {

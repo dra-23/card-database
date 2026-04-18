@@ -17,16 +17,20 @@ export function _applyWideLayout() {
   if (!dv || !slot || !gv) return
 
   if (dv.parentElement !== slot) slot.appendChild(dv)
-
-  gv.style.width = '300px'; gv.style.minWidth = '300px'; gv.style.maxWidth = '300px'
-  gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
-  dv.style.display = 'flex'; dv.style.flexDirection = 'row'
-  dv.style.flex = '1'; dv.style.minWidth = '0'
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
 
   if (selectedPlayer) {
+    slot.style.display = 'flex'; slot.style.flexDirection = 'row'
+    gv.style.width = '300px'; gv.style.minWidth = '300px'; gv.style.maxWidth = '300px'
+    gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    dv.style.display = 'flex'; dv.style.flexDirection = 'row'
+    dv.style.flex = '1'; dv.style.minWidth = '0'
     dv.classList.remove('tp-no-player')
   } else {
+    gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
+    gv.style.flexShrink = ''; gv.style.borderRight = ''
+    slot.style.display = ''; slot.style.flexDirection = ''
+    dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
     dv.classList.add('tp-no-player')
     const empty = document.getElementById('twoPane-empty')
     const panel = document.getElementById('twoPane-panel')
