@@ -104,7 +104,7 @@ export function _commitPageSwitch(page, idx) {
     })
     const topBarTitle = document.getElementById('topBarTitle')
     if (topBarTitle) {
-      const titles = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Stats' }
+      const titles = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Profile' }
       topBarTitle.textContent = titles[page] || 'Players'
     }
   } else {

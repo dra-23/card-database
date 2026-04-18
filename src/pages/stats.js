@@ -1,6 +1,7 @@
 import { Chart, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController } from 'chart.js'
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
+import { auth } from '../firebase.js'
 
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController)
 
@@ -52,7 +53,19 @@ export function renderStats() {
   _charts.forEach(ch => ch.destroy())
   _charts = []
 
+  const user = auth.currentUser
+  const photoURL    = user?.photoURL   || ''
+  const displayName = user?.displayName || 'Collector'
+  const email       = user?.email       || ''
+
   document.getElementById('statsContent').innerHTML = `
+    <div class="profile-header">
+      ${photoURL
+        ? `<img class="profile-avatar" src="${photoURL}" alt="${displayName}" referrerpolicy="no-referrer">`
+        : `<div class="profile-avatar profile-avatar-placeholder"><span class="material-symbols-outlined" style="font-size:44px;color:var(--md-on-surface-variant);">person</span></div>`}
+      <div class="profile-name">${displayName}</div>
+      ${email ? `<div class="profile-email">${email}</div>` : ''}
+    </div>
     <div class="stats-content">
 
       <!-- Summary row — styled like badge breakdown -->

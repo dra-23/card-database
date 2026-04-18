@@ -498,8 +498,13 @@ html, body {
 }
 
 /* ================================================================
-   STATS PAGE
+   PROFILE / STATS PAGE
    ================================================================ */
+.profile-header { background: var(--md-surface-1); padding: 36px 24px 28px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.profile-avatar { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid var(--md-surface); margin-bottom: 6px; background: var(--md-surface-2); }
+.profile-avatar-placeholder { display: flex; align-items: center; justify-content: center; background: var(--md-surface-2); }
+.profile-name { font-size: 22px; font-weight: 700; font-family: 'Google Sans Display'; color: var(--md-on-surface); }
+.profile-email { font-size: 14px; color: var(--md-on-surface-variant); }
 .stats-content { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .stats-row-2col { display: flex; flex-direction: column; gap: 16px; }
 .stat-card { background: var(--md-surface-2); border-radius: 24px; padding: 20px; }

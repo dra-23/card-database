@@ -51,8 +51,8 @@ function appShellHTML() {
       <span class="rail-label">Graded</span>
     </button>
     <button class="rail-item" id="rail-stats"     data-page="stats">
-      <span class="material-symbols-outlined">bar_chart</span>
-      <span class="rail-label">Stats</span>
+      <span class="material-symbols-outlined">person</span>
+      <span class="rail-label">Profile</span>
     </button>
     <div style="flex:1;"></div>
     <button id="signOutBtn" class="rail-item" title="Sign out" style="margin-top:auto; opacity:0.6;">
@@ -72,8 +72,8 @@ function appShellHTML() {
                 <div class="top-bar">
                   <span class="brand">Players</span>
                   <div class="total-count-pill" id="totalOwnedCounter">0</div>
-                  <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
-                    <span class="material-symbols-outlined">bar_chart</span>
+                  <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
+                    <span class="material-symbols-outlined">person</span>
                   </button>
                 </div>
               </div>
@@ -96,8 +96,8 @@ function appShellHTML() {
                   <div class="top-bar">
                     <span class="brand">Collection</span>
                     <div class="total-count-pill" id="collectionOwnedCounter">0</div>
-                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
-                      <span class="material-symbols-outlined">bar_chart</span>
+                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
+                      <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
                   <div class="search-filter-row">
@@ -145,8 +145,8 @@ function appShellHTML() {
                   <div class="top-bar">
                     <span class="brand">Graded</span>
                     <div class="total-count-pill" id="gradedCounter">0</div>
-                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
-                      <span class="material-symbols-outlined">bar_chart</span>
+                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
+                      <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
                   <div class="search-filter-row">
@@ -179,7 +179,10 @@ function appShellHTML() {
             <div class="collapsible-header-wrap" id="statsHeaderWrap">
               <div class="collapsible-header">
                 <div class="top-bar">
-                  <span class="brand">Stats</span>
+                  <span class="brand">Profile</span>
+                  <button class="top-bar-icon-btn" id="settingsBtn" aria-label="Settings">
+                    <span class="material-symbols-outlined">settings</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -228,8 +231,8 @@ function appShellHTML() {
                 <button class="back-btn" id="backBtn">
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
-                <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
-                  <span class="material-symbols-outlined">bar_chart</span>
+                <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                  <span class="material-symbols-outlined">person</span>
                 </button>
               </div>
 
