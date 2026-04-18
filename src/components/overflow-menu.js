@@ -1,6 +1,7 @@
 import { db, doc, setDoc, deleteDoc, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
+import { promptPrice } from './price-prompt.js'
 import { renderCardPanelInto } from './card-detail.js'
 import { openCardForm } from './card-form.js'
 
@@ -60,7 +61,13 @@ export function createOverflowMenu() {
   document.getElementById('omToggleOwned').addEventListener('click', async () => {
     const id = _activeCardId; closeMenu()
     const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
-    await setDoc(doc(db, 'Cards', id), { Owned: !isOwned(c) }, { merge: true })
+    const markingSleevd = !isOwned(c)
+    const updates = { Owned: markingSleevd }
+    if (markingSleevd) {
+      const price = await promptPrice()
+      if (price !== null) updates.Price = String(price)
+    }
+    await setDoc(doc(db, 'Cards', id), updates, { merge: true })
   })
 
   document.getElementById('omDelete').addEventListener('click', () => {

@@ -1,6 +1,7 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
+import { promptPrice } from './price-prompt.js'
 import { isWideLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
@@ -120,7 +121,13 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   panelEl.querySelector(`[data-card-toggle]`)?.addEventListener('click', async () => {
     const c = state.ALL_CARDS.find(x => x.id === cardId)
     if (!c) return
-    await setDoc(doc(db, 'Cards', cardId), { Owned: !isOwned(c) }, { merge: true })
+    const markingSleevd = !isOwned(c)
+    const updates = { Owned: markingSleevd }
+    if (markingSleevd) {
+      const price = await promptPrice()
+      if (price !== null) updates.Price = String(price)
+    }
+    await setDoc(doc(db, 'Cards', cardId), updates, { merge: true })
   })
 
   // Card details edit button
