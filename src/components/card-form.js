@@ -59,6 +59,9 @@ export function openCardForm(cardId = null, formCtx = null) {
   saveBtn.disabled = false
   saveBtn.innerText = isEdit ? 'Save Card' : 'Mark Sleevd'
 
+  const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
+  if (unsleevdBtn) { unsleevdBtn.style.display = isEdit ? 'none' : ''; unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+
   // Populate player dropdown
   const playerSel   = document.getElementById('f_player')
   const sortedPlayers = [...state.ALL_PLAYERS].sort((a, b) => (a.Player || a.id).localeCompare(b.Player || b.id))
@@ -130,9 +133,12 @@ export function openCardForm(cardId = null, formCtx = null) {
 }
 
 // ── Save card ──────────────────────────────────────────────────────────────
-export async function saveCard() {
-  const btn = document.getElementById('btnSaveCard')
-  btn.disabled = true; btn.innerText = 'Saving…'
+export async function saveCard(owned = true) {
+  const saveBtn  = document.getElementById('btnSaveCard')
+  const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
+  const btn = owned ? saveBtn : unsleevdBtn
+  if (saveBtn)    { saveBtn.disabled = true;    saveBtn.innerText    = 'Saving…' }
+  if (unsleevdBtn){ unsleevdBtn.disabled = true; unsleevdBtn.innerText = 'Saving…' }
 
   try {
     const id   = document.getElementById('f_cardId').value
@@ -164,7 +170,7 @@ export async function saveCard() {
       Auto:     document.getElementById('f_auto').value     === 'true',
       Mem:      document.getElementById('f_mem').value      === 'true',
       Numbered: document.getElementById('f_numbered').value === 'true',
-      Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : true,
+      Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : owned,
     }
 
     // deleteField() is only valid in setDoc/updateDoc, not addDoc
@@ -173,13 +179,13 @@ export async function saveCard() {
     if (id) await setDoc(doc(db, 'Cards', id), cardData, { merge: true })
     else    await addDoc(collection(db, 'Cards'), cardData)
 
-    btn.disabled = false
-    btn.innerText = 'Saved!'
+    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = 'Saved!' }
+    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
     closeAllForms()
   } catch (e) {
     console.error('saveCard error:', e)
-    btn.disabled = false
-    btn.innerText = '⚠ ' + (e?.code || e?.message || 'Save failed')
+    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = '⚠ ' + (e?.code || e?.message || 'Save failed') }
+    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
   }
 }
 

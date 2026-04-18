@@ -367,7 +367,7 @@ function appShellHTML() {
         </div>
         <div class="m3-field"><label class="m3-label">Grade</label><select id="f_grade" class="m3-select"></select></div>
       </div>
-      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" id="f_price" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" inputmode="decimal" id="f_price" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <button type="button" id="f_rc_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -391,6 +391,7 @@ function appShellHTML() {
       <input type="hidden" id="f_numbered" value="false">
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>
+        <button class="expressive-btn" id="btnMarkUnsleevd" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Mark Unsleevd</button>
         <button class="expressive-btn" id="btnSaveCard" style="background:var(--md-primary); color:white; flex:1; height:56px; border-radius:28px;">Save Card</button>
       </div>
     </div>

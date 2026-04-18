@@ -198,7 +198,8 @@ function wireNavButtons() {
 
 // ── Wire form buttons ──────────────────────────────────────────────────────
 function wireFormButtons() {
-  document.getElementById('btnSaveCard')?.addEventListener('click', saveCard)
+  document.getElementById('btnSaveCard')?.addEventListener('click', () => saveCard(true))
+  document.getElementById('btnMarkUnsleevd')?.addEventListener('click', () => saveCard(false))
   document.getElementById('btnSavePlayer')?.addEventListener('click', savePlayer)
   document.getElementById('btnLookupPSA')?.addEventListener('click', fetchAndPreviewPSA)
   document.getElementById('btnSavePSA')?.addEventListener('click', savePSAData)
