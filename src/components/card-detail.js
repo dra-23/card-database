@@ -3,6 +3,7 @@ import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
 import { isWideLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
+import { openCardForm } from './card-form.js'
 
 // ── Card detail HTML ───────────────────────────────────────────────────────
 export function buildCardDetailHTML(card, ctx) {
@@ -25,7 +26,9 @@ export function buildCardDetailHTML(card, ctx) {
   const tcdbUrl     = url  // Card Information field IS the TCDB link
 
   const stats = [
+    ['Year',         card.Year],
     ['Manufacturer', card.Manufacturer],
+    ['Card Number',  card.Number ? `#${card.Number}` : null],
     ['Sport',        card.Sport],
     ['Team',         card.Team],
     ['Price Paid',   card.Price ? `$${card.Price}` : null],
@@ -44,7 +47,7 @@ export function buildCardDetailHTML(card, ctx) {
       ${hasPSA ? `
       <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
       <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
-      <a href="https://www.psacard.com/cert/${card.PSACert}" target="_blank" rel="noopener" style="display:block;">
+      <a href="https://www.psacard.com/cert/${card.PSACert}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
         <button class="psa-registry-btn">PSA Registry ↗</button>
       </a>` : ''}
     </div>` : ''
@@ -72,25 +75,27 @@ export function buildCardDetailHTML(card, ctx) {
       </div>
       <div class="cd-divider"></div>
       <div class="cd-stats-grid">
+        <div class="cd-stats-header">
+          <span class="cd-stats-title">Card Details</span>
+          <button class="cd-stats-edit-btn" data-card-edit="${escapeAttr(card.id)}">Edit</button>
+        </div>
         ${stats.filter(([, val]) => val).map(([lbl, val]) => `
           <div class="cd-stat">
             <span class="cd-stat-lbl">${lbl}</span>
             <span class="cd-stat-val">${val}</span>
           </div>`).join('')}
+        <a href="${ebayUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+          <button class="cd-stats-action-btn cd-btn-ebay">eBay Sold ↗</button>
+        </a>
+        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+          <button class="cd-stats-action-btn cd-btn-tcdb">TCDB ↗</button>
+        </a>` : ''}
       </div>
       ${psaSection}
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
       <div class="cd-owned-row">
         <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
         <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
-      </div>
-      <div class="cd-action-row">
-        <a href="${ebayUrl}" target="_blank" rel="noopener" class="cd-ext-link">
-          <button class="cd-ext-btn cd-btn-ebay">eBay Sold ↗</button>
-        </a>
-        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" class="cd-ext-link">
-          <button class="cd-ext-btn cd-btn-tcdb">TCDB ↗</button>
-        </a>` : ''}
       </div>
     </div>
   `
@@ -107,6 +112,11 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     const c = state.ALL_CARDS.find(x => x.id === cardId)
     if (!c) return
     await setDoc(doc(db, 'Cards', cardId), { Owned: !isOwned(c) }, { merge: true })
+  })
+
+  // Card details edit button
+  panelEl.querySelector('[data-card-edit]')?.addEventListener('click', () => {
+    openCardForm(cardId)
   })
 
   // 3-dot menu
