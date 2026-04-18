@@ -43,6 +43,10 @@ html, body {
 .m3-input, .m3-select { border: none; background: transparent; padding: 24px 16px 8px 16px; font-family: 'Roboto', sans-serif; font-size: 16px; color: var(--md-on-surface); width: 100%; outline: none; appearance: none; }
 .m3-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2344474E'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 24px; }
 .m3-field.read-only { background: rgba(0,0,0,0.03); border-bottom-color: transparent; }
+.field-suggest-wrap { position: relative; }
+.field-suggest-list { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--md-surface); border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.14); z-index: 2100; max-height: 220px; overflow-y: auto; }
+.field-suggest-item { padding: 13px 16px; font-size: 15px; cursor: pointer; color: var(--md-on-surface); }
+.field-suggest-item:hover { background: var(--md-surface-2); }
 
 /* ================================================================
    APP SHELL

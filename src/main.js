@@ -159,7 +159,9 @@ function onDataReady() {
 }
 
 function updateOwnedCount() {
-  const count = state.ALL_CARDS.filter(c => c.Owned === true || c.Owned === 'true').length
+  const count = state.collShowWishlistOnly
+    ? state.ALL_CARDS.filter(c => c.Owned !== true && c.Owned !== 'true').length
+    : state.ALL_CARDS.filter(c => c.Owned === true || c.Owned === 'true').length
   const el  = document.getElementById('totalOwnedCounter')
   const el2 = document.getElementById('totalOwnedCounterGlobal')
   if (el)  el.innerText  = count
@@ -245,7 +247,7 @@ function wireFilterChips() {
   }
   bindChip('chipWishlist',     () => state.setShowWishlistOnly(!state.showWishlistOnly),      () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) })
   bindChip('chipGraded',       () => state.setShowGradedOnly(!state.showGradedOnly),          () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) })
-  bindChip('chipCollWishlist', () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), renderCollectionView)
+  bindChip('chipCollWishlist', () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), () => { updateOwnedCount(); renderCollectionView() })
   bindChip('chipCollGraded',   () => state.setCollShowGradedOnly(!state.collShowGradedOnly),    renderCollectionView)
 
   // Sort chips

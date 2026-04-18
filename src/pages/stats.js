@@ -57,6 +57,7 @@ export function renderStats() {
 
       <!-- Summary row — styled like badge breakdown -->
       <div class="stat-card">
+        <div class="stat-card-title">Collection Overview</div>
         <div class="stat-badge-grid">
           <div class="stat-badge-item" style="--badge-color:#3D5AFE;">
             <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>

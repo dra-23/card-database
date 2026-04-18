@@ -40,6 +40,37 @@ export function setFormFlag(flag, active) {
   }
 }
 
+// ── Custom suggest dropdown ────────────────────────────────────────────────
+function attachSuggest(inputId, listId, rawValues) {
+  const input   = document.getElementById(inputId)
+  const listEl  = document.getElementById(listId)
+  if (!input || !listEl) return
+
+  const options = [...new Set(rawValues.filter(Boolean))].sort()
+
+  function show(q) {
+    const filtered = q
+      ? options.filter(v => v.toLowerCase().includes(q.toLowerCase()))
+      : options
+    if (!filtered.length) { listEl.style.display = 'none'; return }
+    listEl.innerHTML = filtered.slice(0, 30).map(v =>
+      `<div class="field-suggest-item">${v}</div>`
+    ).join('')
+    listEl.style.display = 'block'
+    listEl.querySelectorAll('.field-suggest-item').forEach(item => {
+      item.addEventListener('mousedown', e => {
+        e.preventDefault()
+        input.value = item.textContent
+        listEl.style.display = 'none'
+      })
+    })
+  }
+
+  input.addEventListener('focus', () => show(input.value))
+  input.addEventListener('input', () => show(input.value))
+  input.addEventListener('blur',  () => setTimeout(() => { listEl.style.display = 'none' }, 150))
+}
+
 // ── Open card form (add or edit) ───────────────────────────────────────────
 export function openCardForm(cardId = null, formCtx = null) {
   const ctx = formCtx || (state.selectedPlayer ? 'player' : 'collection')
@@ -62,13 +93,9 @@ export function openCardForm(cardId = null, formCtx = null) {
   const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
   if (unsleevdBtn) { unsleevdBtn.style.display = isEdit ? 'none' : ''; unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
 
-  // Populate autocomplete datalists from existing cards
-  const fillDatalist = (id, values) => {
-    const dl = document.getElementById(id)
-    if (dl) dl.innerHTML = [...new Set(values.filter(Boolean))].sort().map(v => `<option value="${v}">`).join('')
-  }
-  fillDatalist('f_set_list',          state.ALL_CARDS.map(c => c.Set))
-  fillDatalist('f_manufacturer_list', state.ALL_CARDS.map(c => c.Manufacturer))
+  // Custom suggest dropdowns for Set and Manufacturer
+  attachSuggest('f_set',          'f_set_suggest',          state.ALL_CARDS.map(c => c.Set))
+  attachSuggest('f_manufacturer', 'f_manufacturer_suggest', state.ALL_CARDS.map(c => c.Manufacturer))
 
   // Populate player dropdown
   const playerSel   = document.getElementById('f_player')
