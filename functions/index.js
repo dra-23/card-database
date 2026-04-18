@@ -45,7 +45,8 @@ exports.psalookup = onRequest({ region: 'us-central1' }, async (req, res) => {
       } catch (_) { /* SMR is optional */ }
     }
 
-    res.json({ cert, grade: gradeStr || null, pop, smrValue, lastSold: null })
+    res.json({ cert, grade: gradeStr || null, pop, smrValue, lastSold: null,
+      _debug: { specId: certData.SpecID, specNumber: certData.SpecNumber } })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
