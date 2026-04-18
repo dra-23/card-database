@@ -227,7 +227,7 @@ html, body {
 .card-info-row1 { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-info-row2 { font-size: 12px; opacity: 0.6; }
 .card-badge-tray { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; align-items: center; }
-.badge-grade    { background: #fff; color: #000; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; border: 1.5px solid var(--md-surface-1); white-space: nowrap; }
+.badge-grade    { background: #002D62; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; }
 .badge-rc       { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
 .badge-auto     { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
 .badge-mem      { background: #1565C0; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }

@@ -60,7 +60,7 @@ export function buildCardDetailHTML(card, ctx) {
           <div class="cd-player">${playerName}</div>
           <div class="cd-badge-row">
             ${gradeStr   ? `<span class="badge-grade">${gradeStr}</span>`   : ''}
-            ${isRC       ? `<span class="badge-rc">ROOKIE</span>`           : ''}
+            ${isRC       ? `<span class="badge-rc">RC</span>`               : ''}
             ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
             ${isMem      ? `<span class="badge-mem">MEM</span>`             : ''}
             ${isNumbered ? `<span class="badge-numbered">#'d</span>`        : ''}
