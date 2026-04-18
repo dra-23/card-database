@@ -62,6 +62,14 @@ export function openCardForm(cardId = null, formCtx = null) {
   const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
   if (unsleevdBtn) { unsleevdBtn.style.display = isEdit ? 'none' : ''; unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
 
+  // Populate autocomplete datalists from existing cards
+  const fillDatalist = (id, values) => {
+    const dl = document.getElementById(id)
+    if (dl) dl.innerHTML = [...new Set(values.filter(Boolean))].sort().map(v => `<option value="${v}">`).join('')
+  }
+  fillDatalist('f_set_list',          state.ALL_CARDS.map(c => c.Set))
+  fillDatalist('f_manufacturer_list', state.ALL_CARDS.map(c => c.Manufacturer))
+
   // Populate player dropdown
   const playerSel   = document.getElementById('f_player')
   const sortedPlayers = [...state.ALL_PLAYERS].sort((a, b) => (a.Player || a.id).localeCompare(b.Player || b.id))
@@ -134,12 +142,12 @@ export function openCardForm(cardId = null, formCtx = null) {
 
 // ── Save card ──────────────────────────────────────────────────────────────
 export async function saveCard(owned = true) {
-  const saveBtn  = document.getElementById('btnSaveCard')
+  const saveBtn     = document.getElementById('btnSaveCard')
   const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
-  const btn = owned ? saveBtn : unsleevdBtn
   if (saveBtn)    { saveBtn.disabled = true;    saveBtn.innerText    = 'Saving…' }
   if (unsleevdBtn){ unsleevdBtn.disabled = true; unsleevdBtn.innerText = 'Saving…' }
 
+  let errorMsg = null
   try {
     const id   = document.getElementById('f_cardId').value
     const file = document.getElementById('f_fileInput').files[0]
@@ -170,7 +178,7 @@ export async function saveCard(owned = true) {
       Auto:     document.getElementById('f_auto').value     === 'true',
       Mem:      document.getElementById('f_mem').value      === 'true',
       Numbered: document.getElementById('f_numbered').value === 'true',
-      Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : owned,
+      Owned: id ? (state.ALL_CARDS.find(x => x.id === id)?.Owned ?? true) : owned,
     }
 
     // deleteField() is only valid in setDoc/updateDoc, not addDoc
@@ -179,12 +187,12 @@ export async function saveCard(owned = true) {
     if (id) await setDoc(doc(db, 'Cards', id), cardData, { merge: true })
     else    await addDoc(collection(db, 'Cards'), cardData)
 
-    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = 'Saved!' }
-    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
     closeAllForms()
   } catch (e) {
     console.error('saveCard error:', e)
-    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = '⚠ ' + (e?.code || e?.message || 'Save failed') }
+    errorMsg = e?.code || e?.message || 'Save failed'
+  } finally {
+    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = errorMsg ? `⚠ ${errorMsg}` : 'Saved!' }
     if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
   }
 }

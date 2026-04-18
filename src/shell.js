@@ -336,11 +336,11 @@ function appShellHTML() {
         </div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Year</label><input type="text" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
+        <div class="m3-field"><label class="m3-label">Year</label><input type="text" inputmode="numeric" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
         <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input" placeholder="e.g. MJ-23"></div>
       </div>
-      <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input" list="f_set_list" autocomplete="off"><datalist id="f_set_list"></datalist></div>
+      <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input" list="f_manufacturer_list" autocomplete="off"><datalist id="f_manufacturer_list"></datalist></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field"><label class="m3-label">Sport</label>
           <select id="f_sport" class="m3-select">
