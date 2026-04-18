@@ -2,8 +2,9 @@ import { db, doc, setDoc } from '../firebase.js'
 import * as state from '../state.js'
 import { lookupCert } from '../services/psa.js'
 
-let _cardId       = null
-let _psaGrade     = null
+let _cardId          = null
+let _psaGrade        = null
+let _psaImage        = null
 let _scrimWasVisible = false
 
 function syncLookupBtn() {
@@ -15,6 +16,7 @@ function syncLookupBtn() {
 export function openPSASheet(cardId) {
   _cardId   = cardId
   _psaGrade = null
+  _psaImage = null
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
 
@@ -79,11 +81,14 @@ export async function fetchAndPreviewPSA() {
   try {
     const data = await lookupCert(certNum)
     _psaGrade = data.grade || null
+    _psaImage = data.frontImage || null
 
     document.getElementById('psa_cert').value = data.cert || certNum
     document.getElementById('reg_pop').value  = data.pop != null ? String(data.pop) : ''
 
-    statusEl.textContent = data.grade ? `Grade: ${data.grade}` : 'Lookup successful'
+    const parts = [data.grade ? `Grade: ${data.grade}` : 'Lookup successful']
+    if (_psaImage) parts.push('· image found')
+    statusEl.textContent = parts.join(' ')
     statusEl.style.color = 'var(--md-on-surface-variant)'
   } catch (err) {
     statusEl.style.color = '#C62828'
@@ -111,6 +116,7 @@ export async function savePSAData() {
       PSAPop:  popVal ? Number(popVal) : null,
     }
     if (_psaGrade) updates.PSAGrade = _psaGrade
+    if (_psaImage) updates['App Image'] = _psaImage
 
     const card = state.ALL_CARDS.find(c => c.id === _cardId)
     if (card && card['Grading Company'] !== companyVal) {
