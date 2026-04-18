@@ -2,29 +2,45 @@ import { db, doc, setDoc } from '../firebase.js'
 import * as state from '../state.js'
 import { lookupCert } from '../services/psa.js'
 
-let _cardId = null
-let _fetchedData = null
+let _cardId       = null
+let _psaGrade     = null
 let _scrimWasVisible = false
 
+function syncLookupBtn() {
+  const co  = document.getElementById('reg_company')?.value
+  const btn = document.getElementById('btnLookupPSA')
+  if (btn) btn.style.display = co === 'PSA' ? '' : 'none'
+}
+
 export function openPSASheet(cardId) {
-  _cardId = cardId
-  _fetchedData = null
+  _cardId   = cardId
+  _psaGrade = null
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
 
+  const co = card['Grading Company'] || 'PSA'
+
+  const companyEl = document.getElementById('reg_company')
+  if (companyEl) {
+    companyEl.value    = ['PSA', 'BGS', 'SGC', 'CGC'].includes(co) ? co : 'PSA'
+    companyEl.onchange = syncLookupBtn
+  }
+
   document.getElementById('psa_cert').value = card.PSACert || ''
-  document.getElementById('psaFetchStatus').style.display = 'none'
-  document.getElementById('psaFetchStatus').textContent   = ''
-  document.getElementById('psaFetchResult').style.display = 'none'
+  document.getElementById('reg_pop').value  = card.PSAPop != null ? String(card.PSAPop) : ''
+
+  const statusEl = document.getElementById('psaFetchStatus')
+  statusEl.style.display = 'none'
+  statusEl.textContent   = ''
+
+  const titleEl = document.getElementById('registrySheetTitle')
+  if (titleEl) titleEl.textContent = `${co} Registry`
 
   const saveBtn = document.getElementById('btnSavePSA')
-  saveBtn.style.display = 'none'
-  saveBtn.disabled      = false
-  saveBtn.textContent   = 'Save to Card'
+  saveBtn.disabled    = false
+  saveBtn.textContent = 'Save to Card'
 
-  const lookupBtn = document.getElementById('btnLookupPSA')
-  lookupBtn.disabled    = false
-  lookupBtn.textContent = 'Look Up'
+  syncLookupBtn()
 
   const scrim = document.getElementById('globalScrim')
   _scrimWasVisible = !!(scrim && scrim.style.display === 'block')
@@ -53,50 +69,60 @@ export async function fetchAndPreviewPSA() {
 
   const btn      = document.getElementById('btnLookupPSA')
   const statusEl = document.getElementById('psaFetchStatus')
-  const resultEl = document.getElementById('psaFetchResult')
 
-  btn.disabled = true
+  btn.disabled    = true
   btn.textContent = 'Looking up…'
   statusEl.style.color   = 'var(--md-on-surface-variant)'
   statusEl.textContent   = 'Fetching from PSA…'
   statusEl.style.display = 'block'
-  resultEl.style.display = 'none'
-  document.getElementById('btnSavePSA').style.display = 'none'
 
   try {
-    _fetchedData = await lookupCert(certNum)
+    const data = await lookupCert(certNum)
+    _psaGrade = data.grade || null
 
-    document.getElementById('psaPreviewGrade').textContent = _fetchedData.grade ?? '—'
-    document.getElementById('psaPreviewPop').textContent   = _fetchedData.pop   ?? '—'
+    document.getElementById('psa_cert').value = data.cert || certNum
+    document.getElementById('reg_pop').value  = data.pop != null ? String(data.pop) : ''
 
-    statusEl.style.display = 'none'
-    resultEl.style.display = 'block'
-    document.getElementById('btnSavePSA').style.display = 'block'
+    statusEl.textContent = data.grade ? `Grade: ${data.grade}` : 'Lookup successful'
+    statusEl.style.color = 'var(--md-on-surface-variant)'
   } catch (err) {
     statusEl.style.color = '#C62828'
     statusEl.textContent = err.message || 'Lookup failed'
   } finally {
-    btn.disabled = false
-    btn.textContent = 'Look Up'
+    btn.disabled    = false
+    btn.textContent = 'Look Up from PSA'
   }
 }
 
 export async function savePSAData() {
-  if (!_fetchedData || !_cardId) return
+  if (!_cardId) return
   const btn = document.getElementById('btnSavePSA')
-  btn.disabled = true
+
+  const certVal    = document.getElementById('psa_cert').value.trim()
+  const popVal     = document.getElementById('reg_pop').value.trim()
+  const companyVal = document.getElementById('reg_company').value
+
+  btn.disabled    = true
   btn.textContent = 'Saving…'
+
   try {
-    await setDoc(doc(db, 'Cards', _cardId), {
-      PSACert:  _fetchedData.cert,
-      PSAPop:   _fetchedData.pop,
-      PSAGrade: _fetchedData.grade,
-    }, { merge: true })
-    btn.disabled = false
-    btn.textContent = 'Saved!'
+    const updates = {
+      PSACert: certVal || null,
+      PSAPop:  popVal ? Number(popVal) : null,
+    }
+    if (_psaGrade) updates.PSAGrade = _psaGrade
+
+    const card = state.ALL_CARDS.find(c => c.id === _cardId)
+    if (card && card['Grading Company'] !== companyVal) {
+      updates['Grading Company'] = companyVal
+    }
+
+    await setDoc(doc(db, 'Cards', _cardId), updates, { merge: true })
     closePSASheet()
   } catch (e) {
-    btn.disabled = false
-    btn.textContent = '⚠ Save failed'
+    console.error('savePSAData error:', e)
+  } finally {
+    btn.disabled    = false
+    btn.textContent = 'Save to Card'
   }
 }

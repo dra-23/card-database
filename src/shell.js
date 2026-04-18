@@ -398,23 +398,32 @@ function appShellHTML() {
   </div>
 </div>
 
-<!-- PSA CERT SHEET -->
+<!-- REGISTRY SHEET -->
 <div class="sheet" id="psaSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body">
-    <h2 style="margin-bottom:20px; font-family:'Google Sans Display';">PSA Certificate</h2>
+    <h2 id="registrySheetTitle" style="margin-bottom:20px; font-family:'Google Sans Display';">Registry Entry</h2>
     <div style="display:flex; flex-direction:column; gap:14px;">
       <div class="m3-field">
-        <label class="m3-label">PSA Cert Number</label>
-        <input type="text" id="psa_cert" class="m3-input" placeholder="8-digit cert number" inputmode="numeric" maxlength="10">
+        <label class="m3-label">Grading Company</label>
+        <select id="reg_company" class="m3-select">
+          <option value="PSA">PSA</option>
+          <option value="BGS">BGS</option>
+          <option value="SGC">SGC</option>
+          <option value="CGC">CGC</option>
+        </select>
+      </div>
+      <div class="m3-field">
+        <label class="m3-label">Cert Number</label>
+        <input type="text" id="psa_cert" class="m3-input" placeholder="Cert / serial number" inputmode="numeric">
+      </div>
+      <div class="m3-field">
+        <label class="m3-label">Pop Report</label>
+        <input type="text" id="reg_pop" class="m3-input" placeholder="Population count" inputmode="numeric">
       </div>
       <div id="psaFetchStatus" style="display:none; font-size:13px; padding:0 4px;"></div>
-      <div id="psaFetchResult" style="display:none; background:var(--md-surface-2); border-radius:14px; overflow:hidden;">
-        <div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val" id="psaPreviewGrade">—</span></div>
-        <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val" id="psaPreviewPop">—</span></div>
-      </div>
-      <button class="expressive-btn" id="btnLookupPSA" style="background:#002D62; color:white; height:52px; border-radius:26px;">Look Up</button>
-      <button class="expressive-btn" id="btnSavePSA" style="display:none; background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
+      <button class="expressive-btn" id="btnLookupPSA" style="display:none; background:#002D62; color:white; height:52px; border-radius:26px;">Look Up from PSA</button>
+      <button class="expressive-btn" id="btnSavePSA" style="background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
       <button class="expressive-btn" id="cancelPSABtn" style="background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Cancel</button>
     </div>
   </div>

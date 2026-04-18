@@ -38,18 +38,27 @@ export function buildCardDetailHTML(card, ctx) {
 
   const isGraded = co && co !== 'Raw'
   const hasPSA   = isGraded && !!card.PSACert
+  const registryUrl = hasPSA ? (() => {
+    switch (co) {
+      case 'PSA': return `https://www.psacard.com/cert/${card.PSACert}`
+      case 'BGS': return `https://www.beckett.com/grading/card-lookup?item_id=${card.PSACert}`
+      case 'SGC': return `https://www.gosgc.com/cert-code-lookup?cert_code=${card.PSACert}`
+      case 'CGC': return `https://www.cgccards.com/certlookup/${card.PSACert}`
+      default:    return ''
+    }
+  })() : ''
   const psaSection = isGraded ? `
     <div class="psa-card">
       <div class="psa-card-header">
-        <span class="psa-card-title">PSA Registry Data</span>
+        <span class="psa-card-title">${co} Registry Data</span>
         <button class="psa-edit-btn" data-psa-edit="${escapeAttr(card.id)}">${hasPSA ? 'Edit' : '+ Link'}</button>
       </div>
       ${hasPSA ? `
       <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
       <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
-      <a href="https://www.psacard.com/cert/${card.PSACert}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-        <button class="psa-registry-btn">PSA Registry ↗</button>
-      </a>` : ''}
+      ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+        <button class="psa-registry-btn">${co} Registry ↗</button>
+      </a>` : ''}` : ''}
     </div>` : ''
 
   return `

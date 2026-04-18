@@ -7,7 +7,7 @@ export function renderCollectionView() {
   // 1. Filter
   let cards = state.collShowWishlistOnly
     ? state.ALL_CARDS.filter(c => !isOwned(c))
-    : state.ALL_CARDS.filter(c => isOwned(c))
+    : [...state.ALL_CARDS]
 
   if (state.collShowGradedOnly) {
     cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
@@ -90,8 +90,7 @@ export function renderCollectionView() {
 
     const header = document.createElement('div')
     header.className = 'year-group-header'
-    const ownedCount = groupCards.filter(c => isOwned(c)).length
-    header.innerHTML = `${key} <span class="year-count">${ownedCount} cards</span>`
+    header.innerHTML = `${key} <span class="year-count">${groupCards.length} cards</span>`
     fragment.appendChild(header)
 
     const listDiv = document.createElement('div')
