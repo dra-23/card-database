@@ -21,32 +21,10 @@ exports.psalookup = onRequest({ region: 'us-central1' }, async (req, res) => {
     const certRaw  = await psaGet(KEY, `/cert/GetByCertNumber/${cert}`)
     const certData = certRaw.PSACert ?? certRaw
 
-    const gradeStr = certData.CardGrade ?? certData.PSAGrade ?? certData.GradeDescription ?? ''
-    const gradeNum = parseFloat(gradeStr.match(/[\d.]+$/)?.[0])
-    const pop      = certData.TotalPopulation ?? null
+    const grade = certData.CardGrade ?? certData.PSAGrade ?? certData.GradeDescription ?? null
+    const pop   = certData.TotalPopulation ?? null
 
-    let smrValue = null
-    for (const id of [certData.SpecNumber, certData.SpecID]) {
-      if (!id || smrValue != null) continue
-      try {
-        const smrRaw = await psaGet(KEY, `/smrpriceguide/GetSMRPriceGuideItemBySpec/${id}`)
-        const items  = Array.isArray(smrRaw) ? smrRaw
-          : (smrRaw.SMRPriceGuideItem ?? smrRaw.Items ?? smrRaw.PriceGuideItems ?? [])
-
-        if (items.length && !isNaN(gradeNum)) {
-          const match = items.find(i => parseFloat(i.Grade ?? i.GradeID ?? i.PSAGrade) === gradeNum)
-            ?? items.find(i => String(i.Grade ?? '').includes(String(gradeNum)))
-          smrValue = match?.Value ?? match?.Price ?? match?.SMRValue ?? match?.AveragePrice ?? null
-        }
-        if (smrValue == null && !Array.isArray(smrRaw) && !isNaN(gradeNum)) {
-          const obj = smrRaw.SMRPriceGuideItem ?? smrRaw
-          smrValue  = obj[`Grade${gradeNum}`] ?? obj[`PSA${gradeNum}`] ?? null
-        }
-      } catch (_) { /* SMR is optional */ }
-    }
-
-    res.json({ cert, grade: gradeStr || null, pop, smrValue, lastSold: null,
-      _debug: { specId: certData.SpecID, specNumber: certData.SpecNumber } })
+    res.json({ cert, grade, pop })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }

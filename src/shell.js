@@ -411,8 +411,6 @@ function appShellHTML() {
       <div id="psaFetchResult" style="display:none; background:var(--md-surface-2); border-radius:14px; overflow:hidden;">
         <div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val" id="psaPreviewGrade">—</span></div>
         <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val" id="psaPreviewPop">—</span></div>
-        <div class="psa-stat-row"><span class="psa-stat-lbl">PSA Value (Est.)</span><span class="psa-stat-val" id="psaPreviewSmr" style="color:#2E7D32;">—</span></div>
-        <div class="psa-stat-row"><span class="psa-stat-lbl">Last Sold (APR)</span><span class="psa-stat-val" id="psaPreviewSold" style="color:#2E7D32;">—</span></div>
       </div>
       <button class="expressive-btn" id="btnLookupPSA" style="background:#002D62; color:white; height:52px; border-radius:26px;">Look Up</button>
       <button class="expressive-btn" id="btnSavePSA" style="display:none; background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>

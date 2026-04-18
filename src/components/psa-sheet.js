@@ -66,14 +66,8 @@ export async function fetchAndPreviewPSA() {
   try {
     _fetchedData = await lookupCert(certNum)
 
-    const fmt = v => v != null
-      ? `$${parseFloat(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : '—'
-
-    document.getElementById('psaPreviewGrade').textContent = _fetchedData.grade    ?? '—'
-    document.getElementById('psaPreviewPop').textContent   = _fetchedData.pop      ?? '—'
-    document.getElementById('psaPreviewSold').textContent  = fmt(_fetchedData.lastSold)
-    document.getElementById('psaPreviewSmr').textContent   = fmt(_fetchedData.smrValue)
+    document.getElementById('psaPreviewGrade').textContent = _fetchedData.grade ?? '—'
+    document.getElementById('psaPreviewPop').textContent   = _fetchedData.pop   ?? '—'
 
     statusEl.style.display = 'none'
     resultEl.style.display = 'block'
@@ -94,11 +88,9 @@ export async function savePSAData() {
   btn.textContent = 'Saving…'
   try {
     await setDoc(doc(db, 'Cards', _cardId), {
-      PSACert:     _fetchedData.cert,
-      PSAPop:      _fetchedData.pop,
-      PSALastSold: _fetchedData.lastSold,
-      PSASMRValue: _fetchedData.smrValue,
-      PSAGrade:    _fetchedData.grade,
+      PSACert:  _fetchedData.cert,
+      PSAPop:   _fetchedData.pop,
+      PSAGrade: _fetchedData.grade,
     }, { merge: true })
     btn.disabled = false
     btn.textContent = 'Saved!'

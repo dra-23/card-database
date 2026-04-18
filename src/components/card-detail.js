@@ -44,8 +44,6 @@ export function buildCardDetailHTML(card, ctx) {
       ${hasPSA ? `
       <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
       <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
-      ${card.PSASMRValue != null ? `<div class="psa-stat-row"><span class="psa-stat-lbl">PSA Value (Est.)</span><span class="psa-stat-val" style="color:#2E7D32;">$${parseFloat(card.PSASMRValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` : ''}
-      ${card.PSALastSold != null ? `<div class="psa-stat-row"><span class="psa-stat-lbl">Last Sold (APR)</span><span class="psa-stat-val" style="color:#2E7D32;">$${parseFloat(card.PSALastSold).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` : ''}
       <a href="https://www.psacard.com/cert/${card.PSACert}" target="_blank" rel="noopener" style="display:block;">
         <button class="psa-registry-btn">PSA Registry ↗</button>
       </a>` : ''}
