@@ -180,7 +180,7 @@ export function renderDetail(player) {
       if (yA !== yB) return yA.localeCompare(yB)
       const sA = (a.Set || '').toLowerCase(), sB = (b.Set || '').toLowerCase()
       if (sA !== sB) return sA.localeCompare(sB)
-      return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
+      return (a.Number || '').localeCompare(b.Number || '', undefined, { numeric: true })
     })
 
   if (state.cardSearchQuery) {
