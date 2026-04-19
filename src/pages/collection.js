@@ -36,7 +36,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     if (setA !== setB) return setA.localeCompare(setB)
     const spA = (a.Sport || '').toLowerCase(), spB = (b.Sport || '').toLowerCase()
     if (spA !== spB) return spA.localeCompare(spB)
-    return (a.Number || '').localeCompare(b.Number || '', undefined, { numeric: true })
+    return String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true })
   }
 
   if (sortBy === 'sport') {
