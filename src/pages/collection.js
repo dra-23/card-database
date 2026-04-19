@@ -160,10 +160,12 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     observer.observe(sentinel)
   }
 
-  renderNextGroup()
-
-  if (savedScroll > 0 && scrollEl) {
-    requestAnimationFrame(() => { scrollEl.scrollTop = savedScroll })
+  if (preserveScroll && savedScroll > 0) {
+    // Render all groups synchronously so content is tall enough for scroll restore
+    while (currentGroupIdx < groupKeys.length) renderNextGroup()
+    requestAnimationFrame(() => { if (scrollEl) scrollEl.scrollTop = savedScroll })
+  } else {
+    renderNextGroup()
   }
 }
 
