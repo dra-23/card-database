@@ -46,12 +46,16 @@ function attachSuggest(inputId, listId, rawValues) {
   const listEl  = document.getElementById(listId)
   if (!input || !listEl) return
 
-  const options = [...new Set(rawValues.filter(Boolean))].sort()
+  // Always refresh options; only wire listeners once
+  input._suggestOpts = [...new Set(rawValues.filter(Boolean))].sort()
+  if (input.dataset.suggestReady) return
+  input.dataset.suggestReady = '1'
 
   function show(q) {
+    const opts = input._suggestOpts || []
     const filtered = q
-      ? options.filter(v => v.toLowerCase().includes(q.toLowerCase()))
-      : options
+      ? opts.filter(v => v.toLowerCase().includes(q.toLowerCase()))
+      : opts
     if (!filtered.length) { listEl.style.display = 'none'; return }
     listEl.innerHTML = filtered.slice(0, 30).map(v =>
       `<div class="field-suggest-item">${v}</div>`
@@ -129,6 +133,7 @@ export function openCardForm(cardId = null, formCtx = null) {
   if (isEdit) {
     const c = state.ALL_CARDS.find(x => x.id === cardId)
     if (!c) return
+    document.getElementById('f_fileInput').value = ''
     document.getElementById('f_year').value         = c.Year || ''
     document.getElementById('f_set').value          = c.Set || ''
     document.getElementById('f_number').value       = c.Number || ''
@@ -168,11 +173,23 @@ export function openCardForm(cardId = null, formCtx = null) {
 }
 
 // ── Save card ──────────────────────────────────────────────────────────────
+let _saving = false
+
 export async function saveCard(owned = true) {
+  if (_saving) return
+  _saving = true
+
   const saveBtn     = document.getElementById('btnSaveCard')
   const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
   if (saveBtn)    { saveBtn.disabled = true;    saveBtn.innerText    = 'Saving…' }
   if (unsleevdBtn){ unsleevdBtn.disabled = true; unsleevdBtn.innerText = 'Saving…' }
+
+  // Safety net: always re-enable after 15s regardless
+  const safetyTimer = setTimeout(() => {
+    if (saveBtn)    { saveBtn.disabled = false; saveBtn.innerText = 'Save Card' }
+    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+    _saving = false
+  }, 15000)
 
   let errorMsg = null
   try {
@@ -219,6 +236,8 @@ export async function saveCard(owned = true) {
     console.error('saveCard error:', e)
     errorMsg = e?.code || e?.message || 'Save failed'
   } finally {
+    clearTimeout(safetyTimer)
+    _saving = false
     if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = errorMsg ? `⚠ ${errorMsg}` : 'Saved!' }
     if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
   }
