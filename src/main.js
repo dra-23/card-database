@@ -123,6 +123,8 @@ function startApp() {
       closeCardSheets()
     } else if (e.state?.v !== 'detail' && state.selectedPlayer && !isWideLayout()) {
       closeDetail()
+    } else if (state.currentPage === 'stats') {
+      switchPage('players')
     }
   })
 
@@ -133,8 +135,13 @@ function startApp() {
     else openPlayerForm()
   })
 
-  // Scrim
-  document.getElementById('globalScrim').addEventListener('click', () => closeAllForms())
+  // Scrim — close card sheets first, then form sheets
+  document.getElementById('globalScrim').addEventListener('click', () => {
+    const cardSheetOpen = ['cardDetailSheet','collectionCardSheet','gradedCardSheet']
+      .some(id => document.getElementById(id)?.classList.contains('open'))
+    if (cardSheetOpen) closeCardSheets()
+    else closeAllForms()
+  })
 
   // Page swipe init after tick
   requestAnimationFrame(() => initPageSwipe())
@@ -175,8 +182,11 @@ function wireNavButtons() {
     btn.addEventListener('click', () => {
       const page = btn.dataset.page
       if (!page) return
-      // Close player detail when tapping away to another page on mobile
+      // Tapping Players while a player is open closes detail (works on both mobile and desktop)
+      if (page === 'players' && state.selectedPlayer) { closeDetail(); return }
+      // Close player detail when leaving players page on mobile
       if (page !== 'players' && state.selectedPlayer && !isWideLayout()) closeDetail()
+      if (page === 'stats') history.pushState({ v: 'page', page: 'stats' }, '')
       state.setCurrentPage(page)
       _commitPageSwitch(page, PAGE_NAMES.indexOf(page))
       _updateNavActive(page)
