@@ -93,14 +93,44 @@ function _renderSearchResults(results) {
   })
 }
 
-function _selectSearchResult(r) {
-  _openWithPrefill({
+async function _selectSearchResult(r) {
+  if (!r.id) { _openWithPrefill(_searchPrefill(r)); return }
+
+  _setStatus('Fetching card image…')
+  let imageFile = null
+  let imagePreview = null
+
+  try {
+    const { data } = await cardsight.images.getCard(r.id, { format: 'json' })
+    if (data?.data) {
+      imagePreview = data.data  // base64 data URI
+      imageFile    = _dataUriToFile(data.data, 'card.jpg')
+    }
+  } catch (_) { /* image unavailable — proceed without it */ }
+
+  _setStatus('')
+  _openWithPrefill({ ..._searchPrefill(r), imageFile, imagePreview })
+}
+
+function _searchPrefill(r) {
+  return {
     year:         r.year || '',
     set:          r.setName || '',
     manufacturer: r.manufacturerName || '',
     sport:        SPORT_MAP[(r.segment || '').toLowerCase()] || '',
     playerName:   r.name || '',
-  })
+  }
+}
+
+function _dataUriToFile(dataUri, filename) {
+  try {
+    const [meta, b64] = dataUri.split(',')
+    const mime = meta.match(/:(.*?);/)[1]
+    const bytes = atob(b64)
+    const arr = new Uint8Array(bytes.length)
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i)
+    return new File([arr], filename, { type: mime })
+  } catch (_) { return null }
 }
 
 // ── Scan / identify ────────────────────────────────────────────────────────
