@@ -20,7 +20,7 @@ export function closeSheet(sheetId) {
 }
 
 export function closeAllForms(opts = {}) {
-  ;['cardFormSheet', 'playerFormSheet', 'psaSheet'].forEach(id => {
+  ;['cardSearchSheet', 'cardFormSheet', 'playerFormSheet', 'psaSheet'].forEach(id => {
     const s = document.getElementById(id)
     if (!s || !s.classList.contains('open')) return
     s.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)'

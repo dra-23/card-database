@@ -545,3 +545,39 @@ html, body {
    PLAYER EDIT SHEET (dynamically created)
    ================================================================ */
 #playerEditSheet { z-index: 1200; }
+
+/* ================================================================
+   CARD SEARCH / SCAN SHEET
+   ================================================================ */
+.cs-search-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.cs-search-input-wrap { flex: 1; position: relative; display: flex; align-items: center; background: var(--md-surface-2); border-radius: 14px; height: 48px; }
+.cs-search-icon { position: absolute; left: 12px; font-size: 20px; color: var(--md-on-surface-variant); pointer-events: none; }
+.cs-search-input { flex: 1; border: none; background: transparent; padding: 0 36px 0 40px; font-size: 15px; font-family: 'Google Sans', sans-serif; color: var(--md-on-surface); outline: none; height: 100%; }
+.cs-search-input::placeholder { color: var(--md-outline); }
+.cs-search-clear { position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: var(--md-on-surface-variant); display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%; }
+.cs-go-btn { display: flex; align-items: center; justify-content: center; }
+
+.cs-scan-btn { width: 100%; height: 52px; border-radius: 14px; border: 2px dashed var(--md-outline); background: transparent; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; font-weight: 600; font-family: 'Google Sans', sans-serif; color: var(--md-on-surface-variant); cursor: pointer; margin-bottom: 16px; transition: background 0.15s, border-color 0.15s; }
+.cs-scan-btn:active { background: var(--md-surface-2); border-color: var(--md-primary); color: var(--md-primary); }
+.cs-scan-btn .material-symbols-outlined { font-size: 22px; }
+
+.cs-results { display: flex; flex-direction: column; gap: 2px; }
+.cs-result-item { display: flex; align-items: center; padding: 13px 4px 13px 12px; border-radius: 14px; cursor: pointer; transition: background 0.12s; gap: 8px; }
+.cs-result-item:active { background: var(--md-surface-2); }
+.cs-result-body { flex: 1; min-width: 0; }
+.cs-result-name { font-size: 15px; font-weight: 600; color: var(--md-on-surface); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cs-result-meta { font-size: 13px; color: var(--md-on-surface-variant); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-chevron { font-size: 20px; color: var(--md-outline); flex-shrink: 0; }
+.cs-parallel-tag { font-size: 11px; font-weight: 700; background: var(--md-surface-1); color: var(--md-on-surface-variant); padding: 2px 7px; border-radius: 6px; }
+.cs-empty { padding: 32px 0; text-align: center; color: var(--md-on-surface-variant); font-size: 14px; }
+
+.cs-scan-card { display: flex; gap: 14px; align-items: flex-start; padding: 4px 0 12px; }
+.cs-scan-img { width: 90px; height: 120px; object-fit: cover; border-radius: 10px; flex-shrink: 0; background: var(--md-surface-2); }
+.cs-scan-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cs-conf-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-top: 4px; }
+.cs-conf-high   { background: rgba(46,125,50,0.12); color: #2E7D32; }
+.cs-conf-medium { background: rgba(184,134,11,0.12); color: #B8860B; }
+.cs-conf-low    { background: rgba(232,25,44,0.10); color: #E8192C; }
+.cs-alt-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); padding: 16px 4px 4px; }
+
+.cs-manual-btn { width: 100%; margin-top: 20px; padding: 14px; background: none; border: none; font-size: 14px; font-weight: 600; color: var(--md-on-surface-variant); cursor: pointer; font-family: 'Google Sans', sans-serif; text-decoration: underline; text-underline-offset: 3px; }

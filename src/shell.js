@@ -317,6 +317,34 @@ function appShellHTML() {
   <div id="gradedCardPanel"></div>
 </div>
 
+<!-- CARD SEARCH SHEET -->
+<div class="sheet" id="cardSearchSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 style="margin-bottom:16px; font-family:'Google Sans Display';">Add Card</h2>
+    <div class="cs-search-row">
+      <div class="cs-search-input-wrap">
+        <span class="material-symbols-outlined cs-search-icon">search</span>
+        <input type="text" id="cs_query" class="cs-search-input" placeholder="Player, set, year…" autocomplete="off" inputmode="search">
+        <button id="cs_clear" class="cs-search-clear" style="display:none;">
+          <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+        </button>
+      </div>
+      <button class="expressive-btn cs-go-btn" id="csSearchBtn" style="flex-shrink:0;height:48px;width:48px;border-radius:14px;padding:0;background:var(--md-primary);color:#fff;box-shadow:none;">
+        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+      </button>
+    </div>
+    <input type="file" id="cs_fileInput" accept="image/*" capture="environment" style="display:none;">
+    <button class="cs-scan-btn" id="csScanBtn">
+      <span class="material-symbols-outlined">photo_camera</span>
+      <span>Scan Card</span>
+    </button>
+    <div id="cs_status" style="display:none; font-size:13px; padding:6px 2px; color:var(--md-on-surface-variant);"></div>
+    <div id="csResults" class="cs-results"></div>
+    <button class="cs-manual-btn" id="csManualBtn">Enter manually</button>
+  </div>
+</div>
+
 <!-- CARD FORM SHEET -->
 <div class="sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>

@@ -75,8 +75,13 @@ function attachSuggest(inputId, listId, rawValues) {
   input.addEventListener('blur',  () => setTimeout(() => { listEl.style.display = 'none' }, 150))
 }
 
+// ── Save card ──────────────────────────────────────────────────────────────
+let _pendingImageFile = null  // set by card-search when scan image should be uploaded
+
+export function setPendingImageFile(file) { _pendingImageFile = file }
+
 // ── Open card form (add or edit) ───────────────────────────────────────────
-export function openCardForm(cardId = null, formCtx = null) {
+export function openCardForm(cardId = null, formCtx = null, prefill = null) {
   const ctx = formCtx || (state.selectedPlayer ? 'player' : 'collection')
   let contextPlayer = null
   if (cardId) {
@@ -163,6 +168,33 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_imagePreview').style.display     = 'none'
     document.getElementById('previewPlaceholder').style.display = 'block'
     document.getElementById('f_fileInput').value = ''
+    _pendingImageFile = null
+
+    // Apply CardSight prefill if provided
+    if (prefill) {
+      if (prefill.year)         document.getElementById('f_year').value = prefill.year
+      if (prefill.set)          document.getElementById('f_set').value = prefill.set
+      if (prefill.manufacturer) document.getElementById('f_manufacturer').value = prefill.manufacturer
+      if (prefill.number)       document.getElementById('f_number').value = prefill.number
+      if (prefill.sport)        document.getElementById('f_sport').value = prefill.sport
+      if (prefill.numbered)     setFormFlag('numbered', true)
+      if (prefill.gradingCompany) {
+        document.getElementById('f_grading').value = prefill.gradingCompany
+        if (prefill.grade) document.getElementById('f_grade').value = prefill.grade
+      }
+      if (prefill.imageFile) {
+        _pendingImageFile = prefill.imageFile
+        document.getElementById('f_imagePreview').src           = prefill.imagePreview || ''
+        document.getElementById('f_imagePreview').style.display = 'block'
+        document.getElementById('previewPlaceholder').style.display = 'none'
+      }
+      if (prefill.playerName) {
+        const match = state.ALL_PLAYERS.find(p =>
+          (p.Player || '').toLowerCase() === (prefill.playerName || '').toLowerCase()
+        )
+        if (match) playerSel.value = match.id
+      }
+    }
   }
 
   const sheet = document.getElementById('cardFormSheet')
@@ -194,7 +226,8 @@ export async function saveCard(owned = true) {
   let errorMsg = null
   try {
     const id   = document.getElementById('f_cardId').value
-    const file = document.getElementById('f_fileInput').files[0]
+    const file = document.getElementById('f_fileInput').files[0] || _pendingImageFile
+    _pendingImageFile = null
     let imageUrl = id ? (state.ALL_CARDS.find(x => x.id === id)?.['App Image'] || '') : ''
 
     if (file) {

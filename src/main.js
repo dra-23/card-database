@@ -13,6 +13,7 @@ import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFla
 import { openPlayerForm, savePlayer, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
 import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
+import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
 
 // ── Render app shell HTML first ────────────────────────────────────────────
 renderShell()
@@ -81,9 +82,11 @@ function startApp() {
   attachSheetGestures('cardDetailSheet',    'cardDetailPanel',    'swipeHint',     'swipeHintRight',     'player')
   attachSheetGestures('collectionCardSheet','collectionCardPanel','swipeHintColl', 'swipeHintCollRight', 'collection')
   attachSheetGestures('gradedCardSheet',    'gradedCardPanel',    'swipeHintGrad', 'swipeHintGradRight', 'graded')
+  attachFormDismissGesture('cardSearchSheet', closeAllForms)
   attachFormDismissGesture('cardFormSheet',   closeAllForms)
   attachFormDismissGesture('playerFormSheet', closeAllForms)
   attachFormDismissGesture('psaSheet',        closePSASheet)
+  initCardSearch()
 
   initFastScroll(document.getElementById('detailScrollBody'),     document.getElementById('detailFastScroll'))
   initFastScroll(document.getElementById('collectionScrollBody'), document.getElementById('collFastScroll'))
@@ -116,6 +119,10 @@ function startApp() {
   window.addEventListener('popstate', e => {
     if (document.getElementById('psaSheet').classList.contains('open')) {
       closePSASheet()
+    } else if (document.getElementById('cardSearchSheet').classList.contains('open')) {
+      closeCardSearch()
+      const scrim = document.getElementById('globalScrim')
+      if (scrim) scrim.style.display = 'none'
     } else if (document.getElementById('cardFormSheet').classList.contains('open') ||
         document.getElementById('playerFormSheet').classList.contains('open')) {
       closeAllForms()
@@ -130,8 +137,8 @@ function startApp() {
 
   // FAB
   document.getElementById('floating-fab').addEventListener('click', () => {
-    if (state.selectedPlayer) openCardForm(null, 'player')
-    else if (state.currentPage === 'collection') openCardForm(null, 'collection')
+    if (state.selectedPlayer) openCardSearch('player')
+    else if (state.currentPage === 'collection') openCardSearch('collection')
     else openPlayerForm()
   })
 
@@ -199,8 +206,8 @@ function wireNavButtons() {
 
   // Wide FABs
   document.getElementById('addPlayerFab')?.addEventListener('click',   () => openPlayerForm())
-  document.getElementById('addCardCollFab')?.addEventListener('click', () => openCardForm(null, 'collection'))
-  document.getElementById('addCardDetailFab')?.addEventListener('click', () => openCardForm(null, 'player'))
+  document.getElementById('addCardCollFab')?.addEventListener('click', () => openCardSearch('collection'))
+  document.getElementById('addCardDetailFab')?.addEventListener('click', () => openCardSearch('player'))
 
   // Back buttons in player detail
   document.getElementById('backBtn')?.addEventListener('click', closeDetail)
