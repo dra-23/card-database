@@ -243,9 +243,25 @@ function _renderScanResults(detections, file, imgUrl) {
   })
 }
 
-function _selectDetection(detection, file, grading) {
+async function _selectDetection(detection, file, grading) {
   const card = detection.card
   const g = grading || detection.grading
+
+  let imageFile = file
+  let imagePreview = _scanObjectUrl
+
+  if (card.id) {
+    _setStatus('Fetching official card image…')
+    try {
+      const { data } = await cardsight.images.getCard(card.id, { format: 'json' })
+      if (data?.data) {
+        imageFile    = _dataUriToFile(data.data, 'card.jpg')
+        imagePreview = data.data
+      }
+    } catch (_) {}
+    _setStatus('')
+  }
+
   _openWithPrefill({
     year:           card.year || '',
     set:            card.setName || '',
@@ -255,8 +271,8 @@ function _selectDetection(detection, file, grading) {
     playerName:     card.name || '',
     gradingCompany: g?.company?.name || '',
     grade:          g?.grade?.value || '',
-    imageFile:      file,
-    imagePreview:   _scanObjectUrl,
+    imageFile,
+    imagePreview,
   })
 }
 
