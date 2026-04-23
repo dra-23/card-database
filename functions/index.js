@@ -1,4 +1,8 @@
 const { onRequest } = require('firebase-functions/v2/https')
+const { initializeApp } = require('firebase-admin/app')
+const { getAuth } = require('firebase-admin/auth')
+
+initializeApp()
 
 const PSA_BASE = 'https://api.psacard.com/publicapi'
 
@@ -10,7 +14,17 @@ async function psaGet(key, path) {
   return res.json()
 }
 
-exports.psalookup = onRequest({ region: 'us-central1' }, async (req, res) => {
+exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5 }, async (req, res) => {
+  // Require a valid Firebase ID token — rejects all unauthenticated callers
+  const authHeader = req.headers.authorization || ''
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  if (!idToken) { res.status(401).json({ error: 'Unauthorized' }); return }
+  try {
+    await getAuth().verifyIdToken(idToken)
+  } catch (_) {
+    res.status(401).json({ error: 'Invalid token' }); return
+  }
+
   const cert = String(req.query.cert || '').replace(/\D/g, '')
   if (!cert) { res.status(400).json({ error: 'cert query param required' }); return }
 
@@ -32,12 +46,10 @@ exports.psalookup = onRequest({ region: 'us-central1' }, async (req, res) => {
     let frontImage = null
     if (imgRaw.status === 'fulfilled') {
       const imgs = imgRaw.value
-      // Handle array form: [{ImageURL, IsFrontImage}]
       if (Array.isArray(imgs)) {
         const front = imgs.find(i => i.IsFrontImage) ?? imgs[0]
         frontImage = front?.ImageURL ?? null
       } else {
-        // Handle object form
         frontImage = imgs.FrontImageURL ?? imgs.ImageFront ?? imgs.FrontImage ?? null
       }
     }
