@@ -16,10 +16,9 @@ export function isLightboxOpen() {
 
 export function initLightbox() {
   document.getElementById('imgLightboxClose').addEventListener('click', () => {
-    closeLightbox()
     history.back()
   })
   document.getElementById('imgLightbox').addEventListener('click', e => {
-    if (e.target === e.currentTarget) { closeLightbox(); history.back() }
+    if (e.target === e.currentTarget) history.back()
   })
 }
