@@ -31,9 +31,9 @@ export function openPSASheet(cardId) {
   document.getElementById('psa_cert').value = card.PSACert || ''
   document.getElementById('reg_pop').value  = card.PSAPop != null ? String(card.PSAPop) : ''
 
-  const statusEl = document.getElementById('psaFetchStatus')
-  statusEl.style.display = 'none'
-  statusEl.textContent   = ''
+  document.getElementById('psaFetchStatus').style.display  = 'none'
+  document.getElementById('psaFetchStatus').textContent    = ''
+  document.getElementById('psaImagePreview').style.display = 'none'
 
   const titleEl = document.getElementById('registrySheetTitle')
   if (titleEl) titleEl.textContent = `${co} Registry`
@@ -71,12 +71,15 @@ export async function fetchAndPreviewPSA() {
 
   const btn      = document.getElementById('btnLookupPSA')
   const statusEl = document.getElementById('psaFetchStatus')
+  const previewEl = document.getElementById('psaImagePreview')
+  const previewImg = document.getElementById('psaPreviewImg')
 
   btn.disabled    = true
   btn.textContent = 'Looking up…'
   statusEl.style.color   = 'var(--md-on-surface-variant)'
   statusEl.textContent   = 'Fetching from PSA…'
   statusEl.style.display = 'block'
+  previewEl.style.display = 'none'
 
   try {
     const data = await lookupCert(certNum)
@@ -86,10 +89,13 @@ export async function fetchAndPreviewPSA() {
     document.getElementById('psa_cert').value = data.cert || certNum
     document.getElementById('reg_pop').value  = data.pop != null ? String(data.pop) : ''
 
-    const parts = [data.grade ? `Grade: ${data.grade}` : 'Lookup successful']
-    if (_psaImage) parts.push('· image found')
-    statusEl.textContent = parts.join(' ')
+    statusEl.textContent = data.grade ? `Grade: ${data.grade}` : 'Lookup successful'
     statusEl.style.color = 'var(--md-on-surface-variant)'
+
+    if (_psaImage) {
+      previewImg.src = _psaImage
+      previewEl.style.display = 'block'
+    }
   } catch (err) {
     statusEl.style.color = '#C62828'
     statusEl.textContent = err.message || 'Lookup failed'
@@ -116,7 +122,7 @@ export async function savePSAData() {
       PSAPop:  popVal ? Number(popVal) : null,
     }
     if (_psaGrade) updates.PSAGrade = _psaGrade
-    if (_psaImage) updates['App Image'] = _psaImage
+    if (_psaImage) updates.PSAImage = _psaImage  // stored separately, never overwrites App Image
 
     const card = state.ALL_CARDS.find(c => c.id === _cardId)
     if (card && card['Grading Company'] !== companyVal) {

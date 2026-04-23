@@ -453,6 +453,9 @@ function appShellHTML() {
         <input type="text" id="reg_pop" class="m3-input" placeholder="Population count" inputmode="numeric">
       </div>
       <div id="psaFetchStatus" style="display:none; font-size:13px; padding:0 4px;"></div>
+      <div id="psaImagePreview" style="display:none; text-align:center; margin:4px 0;">
+        <img id="psaPreviewImg" style="max-height:220px; max-width:100%; border-radius:12px; object-fit:contain;">
+      </div>
       <button class="expressive-btn" id="btnLookupPSA" style="display:none; background:#002D62; color:white; height:52px; border-radius:26px;">Look Up from PSA</button>
       <button class="expressive-btn" id="btnSavePSA" style="background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
       <button class="expressive-btn" id="cancelPSABtn" style="background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Cancel</button>
