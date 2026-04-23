@@ -399,7 +399,7 @@ html, body {
 
 .cd-stats-grid { background: var(--md-surface-2); border-radius: 16px; overflow: hidden; }
 .cd-stats-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
-.cd-stats-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--md-on-surface-variant); }
+.cd-stats-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--md-on-surface-variant); }
 .cd-stats-edit-btn { font-size: 13px; font-weight: 700; color: #002D62; background: none; border: none; cursor: pointer; padding: 4px 0; }
 .cd-stat { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid rgba(0,0,0,0.06); }
 .cd-stat-lbl { font-size: 13px; color: var(--md-on-surface-variant); }
@@ -411,7 +411,7 @@ html, body {
 
 .psa-card { background: var(--md-surface-2); border-radius: 16px; overflow: hidden; }
 .psa-card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
-.psa-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--md-on-surface-variant); }
+.psa-card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--md-on-surface-variant); }
 .psa-edit-btn { font-size: 13px; font-weight: 700; color: var(--co-psa); background: none; border: none; cursor: pointer; padding: 4px 0; }
 .psa-card[data-co="BGS"] .psa-edit-btn { color: var(--co-bgs); }
 .psa-card[data-co="SGC"] .psa-edit-btn { color: #555; }
