@@ -56,6 +56,7 @@ export function buildCardDetailHTML(card, ctx) {
       </div>
       ${hasPSA ? `
       <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
+      ${card.PSAGrade ? `<div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val">${card.PSAGrade}</span></div>` : ''}
       <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
       ${card.PSAImage ? `<img src="${card.PSAImage}" class="psa-cert-img" alt="${co} cert image">` : ''}
       ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">

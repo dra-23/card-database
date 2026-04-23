@@ -382,8 +382,8 @@ html, body {
 
 .cd-header { display: flex; align-items: flex-start; gap: 12px; }
 .cd-header-info { flex: 1; min-width: 0; }
-.cd-year-set { font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; line-height: 1.15; margin-bottom: 4px; word-break: break-word; }
-.cd-player { font-size: 15px; font-weight: 600; color: var(--md-on-surface-variant); margin-bottom: 9px; }
+.cd-year-set { font-family: 'Google Sans Display'; font-size: 26px; font-weight: 700; line-height: 1.15; margin-bottom: 4px; word-break: break-word; }
+.cd-player { font-size: 18px; font-weight: 600; color: var(--md-on-surface-variant); margin-bottom: 9px; }
 .cd-badge-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .cd-number-tag { font-size: 12px; font-weight: 600; color: var(--md-on-surface-variant); }
 .cd-badge-row .badge-grade    { font-size: 11px; padding: 3px 9px; }
