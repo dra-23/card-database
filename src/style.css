@@ -473,7 +473,7 @@ html, body {
   #collection-view { flex-direction: row !important; }
   #collection-view .master-col { flex: 1; min-width: 0; }
   #collectionCardSheet { display: none !important; }
-  #twoPane-collectionDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
+  #twoPane-collectionDetail { display: flex !important; width: 440px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
   #twoPane-collectionDetail::-webkit-scrollbar { display: none; }
   #twoPane-coll-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
   #twoPane-coll-panel::-webkit-scrollbar { display: none; }
@@ -482,7 +482,7 @@ html, body {
   #graded-view { flex-direction: row !important; }
   #graded-view .master-col { flex: 1; min-width: 0; }
   #gradedCardSheet { display: none !important; }
-  #twoPane-gradedDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
+  #twoPane-gradedDetail { display: flex !important; width: 440px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
   #twoPane-gradedDetail::-webkit-scrollbar { display: none; }
   #twoPane-grad-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
   #twoPane-grad-panel::-webkit-scrollbar { display: none; }
@@ -497,11 +497,16 @@ html, body {
 }
 @media (min-width: 1280px) {
   #cardDetailSheet { display: none !important; }
-  #twoPane-cardDetail { display: flex !important; width: 380px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
+  #twoPane-cardDetail { display: flex !important; width: 440px; flex-shrink: 0; height: 100%; overflow-y: auto; border-left: 1px solid var(--md-surface-2); background: var(--md-surface); flex-direction: column; }
   #twoPane-cardDetail::-webkit-scrollbar { display: none; }
   #twoPane-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
   #twoPane-panel::-webkit-scrollbar { display: none; }
   #twoPane-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+}
+@media (min-width: 1440px) {
+  #twoPane-collectionDetail { width: 520px !important; }
+  #twoPane-gradedDetail     { width: 520px !important; }
+  #twoPane-cardDetail       { width: 520px !important; }
 }
 
 /* ================================================================

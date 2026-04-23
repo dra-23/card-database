@@ -21,7 +21,7 @@ export function _applyWideLayout() {
 
   if (selectedPlayer) {
     slot.style.display = 'flex'; slot.style.flexDirection = 'row'
-    gv.style.width = '300px'; gv.style.minWidth = '300px'; gv.style.maxWidth = '300px'
+    gv.style.width = '340px'; gv.style.minWidth = '340px'; gv.style.maxWidth = '340px'
     gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
     dv.style.display = 'flex'; dv.style.flexDirection = 'row'
     dv.style.flex = '1'; dv.style.minWidth = '0'
