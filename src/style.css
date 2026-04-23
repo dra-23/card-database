@@ -563,8 +563,10 @@ html, body {
 .cs-scan-btn .material-symbols-outlined { font-size: 22px; }
 
 .cs-results { display: flex; flex-direction: column; gap: 2px; }
-.cs-result-item { display: flex; align-items: center; padding: 13px 4px 13px 12px; border-radius: 14px; cursor: pointer; transition: background 0.12s; gap: 8px; }
+.cs-result-item { display: flex; align-items: center; padding: 8px 4px 8px 8px; border-radius: 14px; cursor: pointer; transition: background 0.12s; gap: 10px; }
 .cs-result-item:active { background: var(--md-surface-2); }
+.cs-result-thumb { width: 44px; height: 62px; object-fit: cover; border-radius: 7px; background: var(--md-surface-2); flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
+.cs-result-thumb--loaded { opacity: 1; }
 .cs-result-body { flex: 1; min-width: 0; }
 .cs-result-name { font-size: 15px; font-weight: 600; color: var(--md-on-surface); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .cs-result-meta { font-size: 13px; color: var(--md-on-surface-variant); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

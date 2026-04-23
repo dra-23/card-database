@@ -83,6 +83,7 @@ function _renderSearchResults(results) {
     const parallel = r.parallelName ? `<span class="cs-parallel-tag">${r.parallelName}</span>` : ''
     return `
       <div class="cs-result-item" data-idx="${i}">
+        <img class="cs-result-thumb" data-thumb="${i}" alt="">
         <div class="cs-result-body">
           <div class="cs-result-name">${r.name}${parallel}</div>
           <div class="cs-result-meta">${meta}</div>
@@ -94,6 +95,22 @@ function _renderSearchResults(results) {
   el.querySelectorAll('.cs-result-item').forEach(item => {
     item.addEventListener('click', () => _selectSearchResult(results[+item.dataset.idx]))
   })
+
+  _fetchResultImages(results, el)
+}
+
+async function _fetchResultImages(results, el) {
+  await Promise.allSettled(
+    results.map(async (r, i) => {
+      if (!r.id) return
+      try {
+        const { data } = await cardsight.images.getCard(r.id, { format: 'json' })
+        if (!data?.data) return
+        const img = el.querySelector(`[data-thumb="${i}"]`)
+        if (img) { img.src = data.data; img.classList.add('cs-result-thumb--loaded') }
+      } catch (_) {}
+    })
+  )
 }
 
 async function _selectSearchResult(r) {
