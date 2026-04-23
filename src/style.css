@@ -200,6 +200,7 @@ html, body {
 
 /* Sheet z-indices */
 #cardDetailSheet, #collectionCardSheet, #gradedCardSheet { z-index: 1100; }
+#cardSearchSheet { z-index: 1200; }
 #cardFormSheet, #playerFormSheet { z-index: 1200; }
 #psaSheet { z-index: 1300; }
 
