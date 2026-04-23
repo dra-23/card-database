@@ -300,7 +300,10 @@ function appShellHTML() {
 <!-- IMAGE LIGHTBOX -->
 <div id="imgLightbox">
   <button id="imgLightboxClose" aria-label="Close">✕</button>
+  <button id="imgLightboxPrev" aria-label="Previous">&#8249;</button>
   <img id="imgLightboxImg" alt="">
+  <button id="imgLightboxNext" aria-label="Next">&#8250;</button>
+  <div id="imgLightboxCounter"></div>
 </div>
 
 <!-- CARD DETAIL SHEETS -->

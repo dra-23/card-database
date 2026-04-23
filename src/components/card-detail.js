@@ -151,9 +151,12 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     window._openPSASheet?.(cardId)
   })
 
-  // PSA cert image lightbox
-  panelEl.querySelector('.psa-cert-img')?.addEventListener('click', e => {
-    window._openLightbox?.(e.currentTarget.src)
+  // PSA cert image lightbox — all images, with prev/next navigation
+  const certImgs = [...panelEl.querySelectorAll('.psa-cert-img')]
+  certImgs.forEach((img, i) => {
+    img.addEventListener('click', () => {
+      window._openLightbox?.(certImgs.map(im => im.src), i)
+    })
   })
 }
 
