@@ -195,7 +195,18 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
         const match = state.ALL_PLAYERS.find(p =>
           (p.Player || '').toLowerCase() === (prefill.playerName || '').toLowerCase()
         )
-        if (match) playerSel.value = match.id
+        if (match) { playerSel.value = match.id; refreshTeams() }
+      }
+      if (prefill.team) {
+        const teamSel = document.getElementById('f_team')
+        teamSel.value = prefill.team
+        if (!teamSel.value) {
+          const opt = document.createElement('option')
+          opt.value = prefill.team
+          opt.textContent = prefill.team
+          teamSel.insertBefore(opt, teamSel.firstChild)
+          teamSel.value = prefill.team
+        }
       }
     }
   }

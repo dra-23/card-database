@@ -134,7 +134,7 @@ async function _selectSearchResult(r) {
   const prefill = {
     year:         detail?.releaseYear || r.year || '',
     set:          detail?.setName     || r.setName || '',
-    manufacturer: r.manufacturerName  || '',
+    manufacturer: detail?.manufacturer || r.manufacturerName || '',
     number:       detail?.number      || '',
     numbered:     !!(detail?.numberedTo),
     rc:           attrs.some(a => a === 'rc' || a === 'rookie'),
@@ -142,6 +142,7 @@ async function _selectSearchResult(r) {
     mem:          attrs.some(a => a.includes('mem') || a.includes('patch') || a.includes('relic')),
     sport:        SPORT_MAP[(r.segment || '').toLowerCase()] || '',
     playerName:   detail?.name || r.name || '',
+    team:         detail?.description || '',
     imageFile:    imgData?.data ? _dataUriToFile(imgData.data, 'card.jpg') : null,
     imagePreview: imgData?.data || null,
   }
