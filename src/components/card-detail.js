@@ -145,6 +145,11 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
     window._openPSASheet?.(cardId)
   })
+
+  // PSA cert image lightbox
+  panelEl.querySelector('.psa-cert-img')?.addEventListener('click', e => {
+    window._openLightbox?.(e.currentTarget.src)
+  })
 }
 
 export function refreshCurrentCardPanel(cardId) {

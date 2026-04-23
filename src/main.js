@@ -14,6 +14,7 @@ import { openPlayerForm, savePlayer, createPlayerEditSheet, openPlayerEditMenu, 
 import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
+import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
 
 // ── Render app shell HTML first ────────────────────────────────────────────
 renderShell()
@@ -87,6 +88,7 @@ function startApp() {
   attachFormDismissGesture('playerFormSheet', closeAllForms)
   attachFormDismissGesture('psaSheet',        closePSASheet)
   initCardSearch()
+  initLightbox()
 
   initFastScroll(document.getElementById('detailScrollBody'),     document.getElementById('detailFastScroll'))
   initFastScroll(document.getElementById('collectionScrollBody'), document.getElementById('collFastScroll'))
@@ -117,7 +119,9 @@ function startApp() {
 
   // Back button / history
   window.addEventListener('popstate', e => {
-    if (document.getElementById('psaSheet').classList.contains('open')) {
+    if (isLightboxOpen()) {
+      closeLightbox(); return
+    } else if (document.getElementById('psaSheet').classList.contains('open')) {
       closePSASheet()
     } else if (document.getElementById('cardSearchSheet').classList.contains('open')) {
       closeCardSearch()
@@ -155,6 +159,7 @@ function startApp() {
   document.getElementById('slot-players')?.classList.add('active')
 
   // Expose hooks for gestures module
+  window._openLightbox    = openLightbox
   window._navigateCard    = navigateCard
   window._closeCardSheet  = closeCardSheet
   window._openRowMenu     = openRowMenu

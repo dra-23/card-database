@@ -424,7 +424,12 @@ html, body {
 .psa-card[data-co="SGC"] .psa-registry-btn { background: var(--co-sgc); color: #1e1e1e; }
 .psa-card[data-co="CGC"] .psa-registry-btn { background: var(--co-cgc); }
 .psa-registry-btn:active { opacity: 0.85; }
-.psa-cert-img { display: block; width: 100%; max-height: 280px; object-fit: contain; background: var(--md-surface-2); border-top: 1px solid rgba(0,0,0,0.06); }
+.psa-cert-img { display: block; width: 100%; max-height: 280px; object-fit: contain; background: var(--md-surface-2); border-top: 1px solid rgba(0,0,0,0.06); cursor: zoom-in; }
+
+#imgLightbox { display: none; position: fixed; inset: 0; z-index: 1400; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; }
+#imgLightbox.open { display: flex; }
+#imgLightboxImg { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 10px; }
+#imgLightboxClose { position: absolute; top: 16px; right: 16px; width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(255,255,255,0.18); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 .cd-owned-row { display: flex; align-items: center; justify-content: space-between; background: var(--md-surface-2); border-radius: 16px; padding: 14px 16px; }
 .cd-owned-label { font-size: 15px; font-weight: 700; }

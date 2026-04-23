@@ -297,6 +297,12 @@ function appShellHTML() {
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim"></div>
 
+<!-- IMAGE LIGHTBOX -->
+<div id="imgLightbox">
+  <button id="imgLightboxClose" aria-label="Close">✕</button>
+  <img id="imgLightboxImg" alt="">
+</div>
+
 <!-- CARD DETAIL SHEETS -->
 <div class="sheet" id="cardDetailSheet">
   <div class="sheet-handle"></div>
