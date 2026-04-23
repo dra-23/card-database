@@ -21,12 +21,18 @@ export function _applyWideLayout() {
 
   if (selectedPlayer) {
     slot.style.display = 'flex'; slot.style.flexDirection = 'row'
-    gv.style.width = '340px'; gv.style.minWidth = '340px'; gv.style.maxWidth = '340px'
-    gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    if (isThreePaneLayout()) {
+      gv.style.display = ''
+      gv.style.width = '340px'; gv.style.minWidth = '340px'; gv.style.maxWidth = '340px'
+      gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    } else {
+      gv.style.display = 'none'
+    }
     dv.style.display = 'flex'; dv.style.flexDirection = 'row'
     dv.style.flex = '1'; dv.style.minWidth = '0'
     dv.classList.remove('tp-no-player')
   } else {
+    gv.style.display = ''
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
     gv.style.flexShrink = ''; gv.style.borderRight = ''
     slot.style.display = ''; slot.style.flexDirection = ''

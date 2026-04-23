@@ -2,7 +2,7 @@ import './style.css'
 import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase.js'
 import { renderShell } from './shell.js'
 import * as state from './state.js'
-import { PAGE_NAMES, isWideLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery } from './layout.js'
+import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery } from './layout.js'
 import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
 import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation } from './pages/players.js'
 import { renderCollectionView } from './pages/collection.js'
@@ -132,7 +132,7 @@ function startApp() {
       closeAllForms()
     } else if (['cardDetailSheet','collectionCardSheet','gradedCardSheet'].some(id => document.getElementById(id).classList.contains('open'))) {
       closeCardSheets()
-    } else if (e.state?.v !== 'detail' && state.selectedPlayer && !isWideLayout()) {
+    } else if (e.state?.v !== 'detail' && state.selectedPlayer && (!isWideLayout() || !isThreePaneLayout())) {
       closeDetail()
     } else if (state.currentPage === 'stats') {
       switchPage('players')
@@ -197,7 +197,7 @@ function wireNavButtons() {
       // Tapping Players while a player is open closes detail (works on both mobile and desktop)
       if (page === 'players' && state.selectedPlayer) { closeDetail(); return }
       // Close player detail when leaving players page on mobile
-      if (page !== 'players' && state.selectedPlayer && !isWideLayout()) closeDetail()
+      if (page !== 'players' && state.selectedPlayer && (!isWideLayout() || !isThreePaneLayout())) closeDetail()
       if (page === 'stats') history.pushState({ v: 'page', page: 'stats' }, '')
       state.setCurrentPage(page)
       _commitPageSwitch(page, PAGE_NAMES.indexOf(page))
