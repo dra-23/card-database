@@ -5,6 +5,7 @@ import { lookupCert } from '../services/psa.js'
 let _cardId          = null
 let _psaGrade        = null
 let _psaImage        = null
+let _psaImageBack    = null
 let _scrimWasVisible = false
 
 function syncLookupBtn() {
@@ -14,9 +15,10 @@ function syncLookupBtn() {
 }
 
 export function openPSASheet(cardId) {
-  _cardId   = cardId
-  _psaGrade = null
-  _psaImage = null
+  _cardId       = cardId
+  _psaGrade     = null
+  _psaImage     = null
+  _psaImageBack = null
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
 
@@ -69,10 +71,9 @@ export async function fetchAndPreviewPSA() {
   const certNum = document.getElementById('psa_cert').value.trim()
   if (!certNum) return
 
-  const btn      = document.getElementById('btnLookupPSA')
-  const statusEl = document.getElementById('psaFetchStatus')
+  const btn       = document.getElementById('btnLookupPSA')
+  const statusEl  = document.getElementById('psaFetchStatus')
   const previewEl = document.getElementById('psaImagePreview')
-  const previewImg = document.getElementById('psaPreviewImg')
 
   btn.disabled    = true
   btn.textContent = 'Looking up…'
@@ -83,8 +84,9 @@ export async function fetchAndPreviewPSA() {
 
   try {
     const data = await lookupCert(certNum)
-    _psaGrade = data.grade || null
-    _psaImage = data.frontImage || null
+    _psaGrade     = data.grade     || null
+    _psaImage     = data.frontImage || null
+    _psaImageBack = data.backImage  || null
 
     document.getElementById('psa_cert').value = data.cert || certNum
     document.getElementById('reg_pop').value  = data.pop != null ? String(data.pop) : ''
@@ -92,9 +94,12 @@ export async function fetchAndPreviewPSA() {
     statusEl.textContent = data.grade ? `Grade: ${data.grade}` : 'Lookup successful'
     statusEl.style.color = 'var(--md-on-surface-variant)'
 
-    if (_psaImage) {
-      previewImg.src = _psaImage
+    if (_psaImage || _psaImageBack) {
       previewEl.style.display = 'block'
+      previewEl.innerHTML = [_psaImage, _psaImageBack]
+        .filter(Boolean)
+        .map(src => `<img src="${src}" style="max-height:200px;max-width:48%;border-radius:10px;object-fit:contain;">`)
+        .join('')
     }
   } catch (err) {
     statusEl.style.color = '#C62828'
@@ -121,8 +126,9 @@ export async function savePSAData() {
       PSACert: certVal || null,
       PSAPop:  popVal ? Number(popVal) : null,
     }
-    if (_psaGrade) updates.PSAGrade = _psaGrade
-    if (_psaImage) updates.PSAImage = _psaImage  // stored separately, never overwrites App Image
+    if (_psaGrade)     updates.PSAGrade     = _psaGrade
+    if (_psaImage)     updates.PSAImage     = _psaImage
+    if (_psaImageBack) updates.PSAImageBack = _psaImageBack
 
     const card = state.ALL_CARDS.find(c => c.id === _cardId)
     if (card && card['Grading Company'] !== companyVal) {

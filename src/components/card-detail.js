@@ -58,7 +58,11 @@ export function buildCardDetailHTML(card, ctx) {
       <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
       ${card.PSAGrade ? `<div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val">${card.PSAGrade}</span></div>` : ''}
       <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
-      ${card.PSAImage ? `<img src="${card.PSAImage}" class="psa-cert-img" alt="${co} cert image">` : ''}
+      ${(card.PSAImage || card.PSAImageBack) ? `
+      <div class="psa-cert-img-row">
+        ${card.PSAImage     ? `<img src="${card.PSAImage}"     class="psa-cert-img" alt="${co} front">` : ''}
+        ${card.PSAImageBack ? `<img src="${card.PSAImageBack}" class="psa-cert-img" alt="${co} back">` : ''}
+      </div>` : ''}
       ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
         <button class="psa-registry-btn">${co} Registry ↗</button>
       </a>` : ''}` : ''}

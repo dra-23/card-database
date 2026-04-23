@@ -424,7 +424,8 @@ html, body {
 .psa-card[data-co="SGC"] .psa-registry-btn { background: var(--co-sgc); color: #1e1e1e; }
 .psa-card[data-co="CGC"] .psa-registry-btn { background: var(--co-cgc); }
 .psa-registry-btn:active { opacity: 0.85; }
-.psa-cert-img { display: block; width: 100%; max-height: 280px; object-fit: contain; background: var(--md-surface-2); border-top: 1px solid rgba(0,0,0,0.06); cursor: zoom-in; }
+.psa-cert-img-row { display: flex; gap: 2px; border-top: 1px solid rgba(0,0,0,0.06); background: var(--md-surface-2); }
+.psa-cert-img { flex: 1; min-width: 0; max-height: 280px; object-fit: contain; cursor: zoom-in; }
 
 #imgLightbox { display: none; position: fixed; inset: 0; z-index: 1400; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; }
 #imgLightbox.open { display: flex; }

@@ -14,15 +14,23 @@ async function psaGet(key, path) {
   return res.json()
 }
 
-function extractImageUrl(raw) {
-  if (!raw) return null
-  // Unwrap PSACert envelope if present
+function extractImages(raw) {
+  if (!raw) return { frontImage: null, backImage: null }
   const obj = raw.PSACert ?? raw
+
   if (Array.isArray(obj)) {
     const front = obj.find(i => i.IsFrontImage) ?? obj[0]
-    return front?.ImageURL ?? front?.FrontImageURL ?? null
+    const back  = obj.find(i => !i.IsFrontImage && i !== front) ?? null
+    return {
+      frontImage: front?.ImageURL ?? front?.FrontImageURL ?? null,
+      backImage:  back?.ImageURL  ?? back?.BackImageURL   ?? null,
+    }
   }
-  return obj.FrontImageURL ?? obj.ImageFront ?? obj.FrontImage ?? obj.ImageURL ?? null
+
+  return {
+    frontImage: obj.FrontImageURL ?? obj.ImageFront ?? obj.FrontImage ?? obj.ImageURL ?? null,
+    backImage:  obj.BackImageURL  ?? obj.ImageBack  ?? obj.BackImage  ?? null,
+  }
 }
 
 exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5 }, async (req, res) => {
@@ -56,12 +64,12 @@ exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5 }, async 
     const imgPayload = imgRaw.status === 'fulfilled' ? imgRaw.value : null
     console.log('PSA image raw response:', JSON.stringify(imgPayload))
 
-    // Try dedicated image endpoint first, fall back to URLs embedded in cert data
-    const frontImage = extractImageUrl(imgPayload)
-      ?? certData.FrontImageURL ?? certData.ImageFront ?? certData.FrontImage ?? null
+    const { frontImage, backImage } = extractImages(imgPayload)
+    const resolvedFront = frontImage ?? certData.FrontImageURL ?? certData.ImageFront ?? certData.FrontImage ?? null
+    const resolvedBack  = backImage  ?? certData.BackImageURL  ?? certData.ImageBack  ?? certData.BackImage  ?? null
 
-    console.log('PSA resolved frontImage:', frontImage)
-    res.json({ cert, grade, pop, frontImage })
+    console.log('PSA images:', { front: resolvedFront, back: resolvedBack })
+    res.json({ cert, grade, pop, frontImage: resolvedFront, backImage: resolvedBack })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
