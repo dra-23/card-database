@@ -2,6 +2,9 @@ import { cardsight } from '../cardsight.js'
 import * as state from '../state.js'
 import { openCardForm } from './card-form.js'
 
+const API_BASE = 'https://api.cardsight.ai'
+const API_KEY  = () => import.meta.env.VITE_CARDSIGHT_API_KEY
+
 const SPORT_MAP = {
   baseball: 'Baseball', football: 'Football', basketball: 'Basketball',
   hockey: 'Hockey', golf: 'Golf', soccer: 'Soccer',
@@ -96,20 +99,37 @@ function _renderSearchResults(results) {
 async function _selectSearchResult(r) {
   if (!r.id) { _openWithPrefill(_searchPrefill(r)); return }
 
-  _setStatus('Fetching card image…')
-  let imageFile = null
-  let imagePreview = null
+  _setStatus('Fetching card details…')
 
-  try {
-    const { data } = await cardsight.images.getCard(r.id, { format: 'json' })
-    if (data?.data) {
-      imagePreview = data.data  // base64 data URI
-      imageFile    = _dataUriToFile(data.data, 'card.jpg')
-    }
-  } catch (_) { /* image unavailable — proceed without it */ }
+  const [detailResult, imageResult] = await Promise.allSettled([
+    fetch(`${API_BASE}/v1/catalog/cards/${r.id}`, { headers: { 'X-API-Key': API_KEY() } })
+      .then(res => res.ok ? res.json() : null),
+    cardsight.images.getCard(r.id, { format: 'json' }),
+  ])
 
   _setStatus('')
-  _openWithPrefill({ ..._searchPrefill(r), imageFile, imagePreview })
+
+  // Merge detail fields on top of the lightweight search result
+  const detail = detailResult.status === 'fulfilled' ? detailResult.value : null
+  const imgData = imageResult.status === 'fulfilled' ? imageResult.value?.data : null
+
+  const attrs  = (detail?.attributes || []).map(a => a.toLowerCase())
+  const prefill = {
+    year:         detail?.releaseYear || r.year || '',
+    set:          detail?.setName     || r.setName || '',
+    manufacturer: r.manufacturerName  || '',
+    number:       detail?.number      || '',
+    numbered:     !!(detail?.numberedTo),
+    rc:           attrs.some(a => a === 'rc' || a === 'rookie'),
+    auto:         attrs.some(a => a.includes('auto')),
+    mem:          attrs.some(a => a.includes('mem') || a.includes('patch') || a.includes('relic')),
+    sport:        SPORT_MAP[(r.segment || '').toLowerCase()] || '',
+    playerName:   detail?.name || r.name || '',
+    imageFile:    imgData?.data ? _dataUriToFile(imgData.data, 'card.jpg') : null,
+    imagePreview: imgData?.data || null,
+  }
+
+  _openWithPrefill(prefill)
 }
 
 function _searchPrefill(r) {

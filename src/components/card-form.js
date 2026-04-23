@@ -178,6 +178,9 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
       if (prefill.number)       document.getElementById('f_number').value = prefill.number
       if (prefill.sport)        document.getElementById('f_sport').value = prefill.sport
       if (prefill.numbered)     setFormFlag('numbered', true)
+      if (prefill.rc)           setFormFlag('rc',   true)
+      if (prefill.auto)         setFormFlag('auto', true)
+      if (prefill.mem)          setFormFlag('mem',  true)
       if (prefill.gradingCompany) {
         document.getElementById('f_grading').value = prefill.gradingCompany
         if (prefill.grade) document.getElementById('f_grade').value = prefill.grade
