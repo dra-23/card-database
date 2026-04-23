@@ -14,8 +14,18 @@ async function psaGet(key, path) {
   return res.json()
 }
 
+function extractImageUrl(raw) {
+  if (!raw) return null
+  // Unwrap PSACert envelope if present
+  const obj = raw.PSACert ?? raw
+  if (Array.isArray(obj)) {
+    const front = obj.find(i => i.IsFrontImage) ?? obj[0]
+    return front?.ImageURL ?? front?.FrontImageURL ?? null
+  }
+  return obj.FrontImageURL ?? obj.ImageFront ?? obj.FrontImage ?? obj.ImageURL ?? null
+}
+
 exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5 }, async (req, res) => {
-  // Require a valid Firebase ID token — rejects all unauthenticated callers
   const authHeader = req.headers.authorization || ''
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
   if (!idToken) { res.status(401).json({ error: 'Unauthorized' }); return }
@@ -43,17 +53,14 @@ exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5 }, async 
     const grade = certData.CardGrade ?? certData.PSAGrade ?? certData.GradeDescription ?? null
     const pop   = certData.TotalPopulation ?? null
 
-    let frontImage = null
-    if (imgRaw.status === 'fulfilled') {
-      const imgs = imgRaw.value
-      if (Array.isArray(imgs)) {
-        const front = imgs.find(i => i.IsFrontImage) ?? imgs[0]
-        frontImage = front?.ImageURL ?? null
-      } else {
-        frontImage = imgs.FrontImageURL ?? imgs.ImageFront ?? imgs.FrontImage ?? null
-      }
-    }
+    const imgPayload = imgRaw.status === 'fulfilled' ? imgRaw.value : null
+    console.log('PSA image raw response:', JSON.stringify(imgPayload))
 
+    // Try dedicated image endpoint first, fall back to URLs embedded in cert data
+    const frontImage = extractImageUrl(imgPayload)
+      ?? certData.FrontImageURL ?? certData.ImageFront ?? certData.FrontImage ?? null
+
+    console.log('PSA resolved frontImage:', frontImage)
     res.json({ cert, grade, pop, frontImage })
   } catch (e) {
     res.status(500).json({ error: e.message })
