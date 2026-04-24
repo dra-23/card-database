@@ -1,6 +1,6 @@
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, SPORT_ICONS } from '../utils.js'
-import { isWideLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
+import { isWideLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
 export function renderGallery() {
@@ -71,21 +71,12 @@ export function openDetail(id) {
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
-    const dv    = document.getElementById('detail-view')
-    const slot  = document.getElementById('slot-players')
-    const gv    = document.getElementById('gallery-view')
-    if (dv.parentElement !== slot) slot.appendChild(dv)
-    slot.style.display = 'flex'; slot.style.flexDirection = 'row'
-    gv.style.width = '300px'; gv.style.minWidth = '300px'; gv.style.maxWidth = '300px'
-    gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
-    dv.style.display = 'flex'; dv.style.flexDirection = 'row'
-    dv.style.flex = '1'; dv.style.minWidth = '0'
-    dv.style.position = 'relative'; dv.style.inset = ''
-    dv.classList.remove('tp-no-player')
-    document.getElementById('twoPane-empty').style.display = 'flex'
     document.getElementById('twoPane-panel').style.display = 'none'
     document.getElementById('twoPane-panel').innerHTML = ''
     document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'))
+    _applyWideLayout()
+    // On medium-wide (768-1279px) gallery is hidden; push state so back gesture stays on player detail
+    if (!isThreePaneLayout()) history.pushState({ v: 'detail', p: id }, '')
   }
 
   // Highlight selected player tile in gallery
