@@ -556,6 +556,8 @@ html, body {
     gap: 8px; padding: 8px;
   }
   #slot-players:not(:has(#detail-view.tp-no-player)) .player-tile { border-radius: 16px; }
+  /* More columns for graded grid on wider screens */
+  .graded-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 }
 
 /* ================================================================
