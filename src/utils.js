@@ -46,7 +46,7 @@ export function sheetTransformY(px) {
 }
 
 export function escapeAttr(str) {
-  return (str || '').replace(/'/g, "\\'")
+  return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
 export function vibrate(ms = 10) {

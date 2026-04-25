@@ -78,7 +78,7 @@ export function openDetail(id) {
 
   // Highlight selected player tile in gallery
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
-  document.querySelector(`.player-tile[data-player-id="${player.id}"]`)?.classList.add('tile-selected')
+  document.querySelector(`.player-tile[data-player-id="${CSS.escape(player.id)}"]`)?.classList.add('tile-selected')
 
   renderDetail(player)
 
