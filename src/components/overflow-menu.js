@@ -82,9 +82,16 @@ export function createOverflowMenu() {
     const playerName = player ? (player.Player || player.id) : (c.Player || '')
     const num = c.Number ? `#${c.Number}` : ''
 
-    // Build deduplicated fallback queries. Set names like "Base Set" won't match
-    // CardSight, but the Manufacturer field ("Fleer", "Topps") usually will since
-    // it appears in CardSight's release name. Try both independently.
+    // Find the visible market value cell to give live feedback
+    const panelCandidates = ['twoPane-panel','twoPane-coll-panel','twoPane-grad-panel','cardDetailPanel','collectionCardPanel','gradedCardPanel']
+    let targetPanel = null
+    for (const pid of panelCandidates) {
+      const p = document.getElementById(pid)
+      if (p?.querySelector('[data-mv-value]')) { targetPanel = p; break }
+    }
+    const valEl = targetPanel?.querySelector('[data-mv-value]')
+    if (valEl) valEl.textContent = 'Searching…'
+
     const seen = new Set()
     const queries = [
       [playerName, c.Year, c.Set,          num],
@@ -97,19 +104,29 @@ export function createOverflowMenu() {
       .map(parts => parts.filter(Boolean).join(' ').trim())
       .filter(q => q && !seen.has(q) && seen.add(q))
 
+    console.log('[FindMarketValue] card:', { playerName, year: c.Year, set: c.Set, manufacturer: c.Manufacturer, number: c.Number })
+    console.log('[FindMarketValue] queries to try:', queries)
+
     try {
       let cardsightId = null
       for (const q of queries) {
         const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
+        console.log(`[FindMarketValue] q="${q}" →`, error ? `error: ${error}` : `${data?.results?.length ?? 0} results`)
         if (!error && data?.results?.length) {
           cardsightId = data.results[0].id
+          console.log('[FindMarketValue] matched id:', cardsightId, 'name:', data.results[0].name)
           break
         }
       }
-      if (!cardsightId) return
+      if (!cardsightId) {
+        console.warn('[FindMarketValue] no match found across all queries')
+        if (valEl && document.contains(valEl)) valEl.textContent = 'Not found'
+        return
+      }
       await setDoc(doc(db, 'Cards', id), { CardsightId: cardsightId }, { merge: true })
     } catch (e) {
-      console.error('findMarketValue:', e)
+      console.error('[FindMarketValue] error:', e)
+      if (valEl && document.contains(valEl)) valEl.textContent = 'Error'
     }
   })
 
