@@ -76,7 +76,8 @@ function attachSuggest(inputId, listId, rawValues) {
 }
 
 // ── Save card ──────────────────────────────────────────────────────────────
-let _pendingImageFile = null  // set by card-search when scan image should be uploaded
+let _pendingImageFile    = null  // set by card-search when scan image should be uploaded
+let _pendingCardsightId  = null  // set by card-search when a CardSight result is selected
 
 export function setPendingImageFile(file) { _pendingImageFile = file }
 
@@ -168,7 +169,8 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     document.getElementById('f_imagePreview').style.display     = 'none'
     document.getElementById('previewPlaceholder').style.display = 'block'
     document.getElementById('f_fileInput').value = ''
-    _pendingImageFile = null
+    _pendingImageFile   = null
+    _pendingCardsightId = null
 
     // Apply CardSight prefill if provided
     if (prefill) {
@@ -191,6 +193,7 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
         document.getElementById('f_imagePreview').style.display = 'block'
         document.getElementById('previewPlaceholder').style.display = 'none'
       }
+      if (prefill.cardsightId) _pendingCardsightId = prefill.cardsightId
       if (prefill.playerName) {
         const match = state.ALL_PLAYERS.find(p =>
           (p.Player || '').toLowerCase() === (prefill.playerName || '').toLowerCase()
@@ -241,7 +244,9 @@ export async function saveCard(owned = true) {
   try {
     const id   = document.getElementById('f_cardId').value
     const file = document.getElementById('f_fileInput').files[0] || _pendingImageFile
-    _pendingImageFile = null
+    _pendingImageFile   = null
+    const cardsightId   = _pendingCardsightId
+    _pendingCardsightId = null
     let imageUrl = id ? (state.ALL_CARDS.find(x => x.id === id)?.['App Image'] || '') : ''
 
     if (file) {
@@ -270,6 +275,7 @@ export async function saveCard(owned = true) {
       Mem:      document.getElementById('f_mem').value      === 'true',
       Numbered: document.getElementById('f_numbered').value === 'true',
       Owned: id ? (state.ALL_CARDS.find(x => x.id === id)?.Owned ?? true) : owned,
+      ...(cardsightId && !id ? { CardsightId: cardsightId } : {}),
     }
 
     // deleteField() is only valid in setDoc/updateDoc, not addDoc

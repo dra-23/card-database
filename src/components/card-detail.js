@@ -5,6 +5,7 @@ import { promptPrice } from './price-prompt.js'
 import { isWideLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
+import { cardsight } from '../cardsight.js'
 
 // ── Card detail HTML ───────────────────────────────────────────────────────
 export function buildCardDetailHTML(card, ctx) {
@@ -32,7 +33,6 @@ export function buildCardDetailHTML(card, ctx) {
     ['Card Number',  card.Number ? `#${card.Number}` : null],
     ['Sport',        card.Sport],
     ['Team',         card.Team],
-    ['Price Paid',   card.Price ? `$${card.Price}` : null],
     ...(parallel ? [['Parallel', parallel]] : []),
     ...(serial   ? [['Serial',   serial]]   : []),
   ]
@@ -67,6 +67,27 @@ export function buildCardDetailHTML(card, ctx) {
         <button class="psa-registry-btn">${co} Registry ↗</button>
       </a>` : ''}` : ''}
     </div>` : ''
+
+  const pricePaid = card.Price ? `$${parseFloat(card.Price).toFixed(2)}` : '—'
+  const marketSection = `
+    <div class="market-section">
+      <div class="market-header">
+        <span class="market-title">Market Value</span>
+        ${card.CardsightId ? `<button class="market-refresh-btn" data-mv-refresh>Refresh</button>` : ''}
+      </div>
+      <div class="market-stat-row">
+        <span class="market-stat-lbl">Purchase Price</span>
+        <span class="market-stat-val">${pricePaid}</span>
+      </div>
+      <div class="market-stat-row">
+        <span class="market-stat-lbl">Market Value</span>
+        <span class="market-stat-val" data-mv-value>${card.CardsightId ? 'Fetching…' : '—'}</span>
+      </div>
+      <div class="market-stat-row" data-mv-change-row style="display:none">
+        <span class="market-stat-lbl">Gain / Loss</span>
+        <span class="market-stat-val" data-mv-change></span>
+      </div>
+    </div>`
 
   return `
     <div class="cd-img-wrap">
@@ -108,6 +129,7 @@ export function buildCardDetailHTML(card, ctx) {
         </a>` : ''}
       </div>
       ${psaSection}
+      ${marketSection}
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
       <div class="cd-owned-row">
         <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
@@ -115,6 +137,60 @@ export function buildCardDetailHTML(card, ctx) {
       </div>
     </div>
   `
+}
+
+// ── Market value async loader ──────────────────────────────────────────────
+const _mvGen = new WeakMap()
+
+async function _loadMarketValue(panelEl, card) {
+  if (!card.CardsightId) return
+  const gen = (_mvGen.get(panelEl) || 0) + 1
+  _mvGen.set(panelEl, gen)
+  const alive = () => _mvGen.get(panelEl) === gen
+
+  try {
+    const { data, error } = await cardsight.pricing.get(card.CardsightId)
+    if (!alive()) return
+    const valEl     = panelEl.querySelector('[data-mv-value]')
+    const changeRow = panelEl.querySelector('[data-mv-change-row]')
+    const changeEl  = panelEl.querySelector('[data-mv-change]')
+    if (!valEl) return
+
+    if (error || !data) { valEl.textContent = 'N/A'; return }
+
+    const co = card['Grading Company']
+    const gr = String(card.Grade || '')
+
+    let records = null
+    if (co && co !== 'Raw' && data.graded?.length) {
+      const cg = data.graded.find(g => g.company_name === co) || data.graded[0]
+      const gg = cg?.grades?.find(g => g.grade_value === gr) || cg?.grades?.[0]
+      if (gg?.records?.length) records = gg.records
+    }
+    if (!records?.length && data.raw?.records?.length) records = data.raw.records
+    if (!records?.length) { valEl.textContent = 'No data'; return }
+
+    const avg = records.reduce((s, r) => s + r.price, 0) / records.length
+    const lastDate = records[0]?.date ? new Date(records[0].date).toLocaleDateString() : null
+    valEl.textContent = `$${avg.toFixed(2)}`
+    if (lastDate) valEl.title = `Avg of ${records.length} sale${records.length !== 1 ? 's' : ''} · Last: ${lastDate}`
+
+    if (card.Price && changeRow && changeEl) {
+      const paid = parseFloat(card.Price)
+      if (!isNaN(paid) && paid > 0) {
+        const diff = avg - paid
+        const pct  = ((diff / paid) * 100).toFixed(1)
+        const sign = diff >= 0 ? '+' : ''
+        changeEl.textContent = `${sign}$${diff.toFixed(2)} (${sign}${pct}%)`
+        changeEl.className = `market-stat-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
+        changeRow.style.display = ''
+      }
+    }
+  } catch {
+    if (!alive()) return
+    const v = panelEl.querySelector('[data-mv-value]')
+    if (v) v.textContent = 'N/A'
+  }
 }
 
 // ── Render card into a panel element ──────────────────────────────────────
@@ -150,6 +226,18 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
     window._openPSASheet?.(cardId)
   })
+
+  // Market value refresh button
+  panelEl.querySelector('[data-mv-refresh]')?.addEventListener('click', () => {
+    const valEl = panelEl.querySelector('[data-mv-value]')
+    if (valEl) valEl.textContent = 'Fetching…'
+    const changeRow = panelEl.querySelector('[data-mv-change-row]')
+    if (changeRow) changeRow.style.display = 'none'
+    _loadMarketValue(panelEl, card)
+  })
+
+  // Kick off pricing fetch if card has a CardsightId
+  _loadMarketValue(panelEl, card)
 
   // PSA cert image lightbox — all images, with prev/next navigation
   const certImgs = [...panelEl.querySelectorAll('.psa-cert-img')]

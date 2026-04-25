@@ -158,6 +158,7 @@ async function _selectSearchResult(r) {
     team:         detail?.description || '',
     imageFile:    imgData?.data ? _dataUriToFile(imgData.data, 'card.jpg') : null,
     imagePreview: imgData?.data || null,
+    cardsightId:  detail?.id || r.id || '',
   }
 
   _openWithPrefill(prefill)
@@ -170,6 +171,7 @@ function _searchPrefill(r) {
     manufacturer: r.manufacturerName || '',
     sport:        _sportFromReleaseName(r.releaseName) || '',
     playerName:   r.name || '',
+    cardsightId:  r.id || '',
   }
 }
 
@@ -287,6 +289,7 @@ async function _selectDetection(detection, file, grading) {
     grade:          g?.grade?.value || '',
     imageFile,
     imagePreview,
+    cardsightId:    card.id || '',
   })
 }
 
