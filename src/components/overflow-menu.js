@@ -80,8 +80,6 @@ export function createOverflowMenu() {
     const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
     const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
     const playerName = player ? (player.Player || player.id) : (c.Player || '')
-    const num = c.Number || ''  // no # prefix — CardSight search chokes on it
-
     // Find the visible market value cell to give live feedback
     const panelCandidates = ['twoPane-panel','twoPane-coll-panel','twoPane-grad-panel','cardDetailPanel','collectionCardPanel','gradedCardPanel']
     let targetPanel = null
@@ -92,60 +90,35 @@ export function createOverflowMenu() {
     const valEl = targetPanel?.querySelector('[data-mv-value]')
     if (valEl) valEl.textContent = 'Searching…'
 
-    // Year-first ordering and no # prefix — CardSight search ranks better this way
+    // Card number excluded — including it causes 0 results in CardSight text search.
+    // Year-first ordering matches CardSight's release indexing.
     const seen = new Set()
-    const typedQueries = [
-      [c.Year, playerName, c.Set,          num],
-      [c.Year, playerName, c.Manufacturer, num],
-      [c.Year, playerName,                 num],
-      [c.Year, playerName, c.Set              ],
-      [c.Year, playerName, c.Manufacturer     ],
-      [c.Year, playerName                     ],
-      [playerName,         c.Manufacturer, num],
-      [playerName,                         num],
+    const queries = [
+      [c.Year, playerName, c.Set          ],
+      [c.Year, playerName, c.Manufacturer ],
+      [c.Year, playerName                 ],
+      [playerName,         c.Manufacturer ],
+      [playerName,         c.Set          ],
     ]
       .map(parts => parts.filter(Boolean).join(' ').trim())
       .filter(q => q && !seen.has(q) && seen.add(q))
 
-    console.log('[FindMarketValue] card:', { playerName, year: c.Year, set: c.Set, manufacturer: c.Manufacturer, number: c.Number })
-    console.log('[FindMarketValue] queries to try:', typedQueries)
-
     try {
       let cardsightId = null
-
-      // First pass: with type:'card' filter
-      for (const q of typedQueries) {
+      for (const q of queries) {
         const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
-        console.log(`[FindMarketValue] (typed) q="${q}" →`, error ? `error: ${error}` : `${data?.results?.length ?? 0} results`)
         if (!error && data?.results?.length) {
           cardsightId = data.results[0].id
-          console.log('[FindMarketValue] matched id:', cardsightId, 'name:', data.results[0].name)
           break
         }
       }
-
-      // Second pass: without type filter (covers sports with different catalog scoping)
       if (!cardsightId) {
-        const seen2 = new Set()
-        const untypedQueries = typedQueries.filter(q => !seen2.has(q) && seen2.add(q))
-        for (const q of untypedQueries) {
-          const { data, error } = await cardsight.catalog.search({ q, take: 5 })
-          console.log(`[FindMarketValue] (untyped) q="${q}" →`, error ? `error: ${error}` : `${data?.results?.length ?? 0} results`)
-          if (!error && data?.results?.length) {
-            cardsightId = data.results[0].id
-            console.log('[FindMarketValue] matched id:', cardsightId, 'name:', data.results[0].name)
-            break
-          }
-        }
-      }
-      if (!cardsightId) {
-        console.warn('[FindMarketValue] no match found across all queries')
         if (valEl && document.contains(valEl)) valEl.textContent = 'Not found'
         return
       }
       await setDoc(doc(db, 'Cards', id), { CardsightId: cardsightId }, { merge: true })
     } catch (e) {
-      console.error('[FindMarketValue] error:', e)
+      console.error('[FindMarketValue]', e)
       if (valEl && document.contains(valEl)) valEl.textContent = 'Error'
     }
   })
