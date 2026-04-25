@@ -2,7 +2,7 @@ import './style.css'
 import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase.js'
 import { renderShell } from './shell.js'
 import * as state from './state.js'
-import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery } from './layout.js'
+import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery, _threePaneQuery } from './layout.js'
 import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
 import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation } from './pages/players.js'
 import { renderCollectionView } from './pages/collection.js'
@@ -106,12 +106,23 @@ function startApp() {
     if (menuBtn) { e.stopPropagation(); openRowMenu(menuBtn.dataset.menuCard, menuBtn); return }
   })
 
-  // Adaptive layout change listener
+  // Adaptive layout change listeners (fold/unfold, window resize)
   _wideQuery.addEventListener('change', e => {
     requestAnimationFrame(() => {
       if (e.matches) _applyWideLayout()
       else           _applyMobileLayout()
+      _reRenderCurrentPage()
     })
+  })
+
+  // Three-pane threshold: re-apply wide layout so gallery visibility updates
+  _threePaneQuery.addEventListener('change', () => {
+    if (isWideLayout()) {
+      requestAnimationFrame(() => {
+        _applyWideLayout()
+        _reRenderCurrentPage()
+      })
+    }
   })
 
   // Sign out
@@ -175,6 +186,17 @@ function onDataReady() {
   _updateFloatingFab(state.currentPage || 'players')
   if (isWideLayout()) _applyWideLayout()
   if (state.currentPage === 'stats') renderStats()
+}
+
+function _reRenderCurrentPage() {
+  if (!state.cardsLoaded) return
+  renderGallery()
+  if (state.selectedPlayer) renderDetail(state.selectedPlayer)
+  refreshCurrentCardPanel(state.currentCardId)
+  const page = state.currentPage
+  if (page === 'collection') renderCollectionView()
+  if (page === 'graded')     renderGradedView()
+  if (page === 'stats')      renderStats()
 }
 
 function updateOwnedCount() {

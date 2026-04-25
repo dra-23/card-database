@@ -16,6 +16,10 @@ export function _applyWideLayout() {
   const gv   = document.getElementById('gallery-view')
   if (!dv || !slot || !gv) return
 
+  // Reset the mobile page-track transform so the active slot isn't translated off-screen
+  const track = document.getElementById('page-track')
+  if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)' }
+
   if (dv.parentElement !== slot) slot.appendChild(dv)
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
 
