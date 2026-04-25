@@ -80,7 +80,7 @@ export function createOverflowMenu() {
     const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
     const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
     const playerName = player ? (player.Player || player.id) : (c.Player || '')
-    const num = c.Number ? `#${c.Number}` : ''
+    const num = c.Number || ''  // no # prefix — CardSight search chokes on it
 
     // Find the visible market value cell to give live feedback
     const panelCandidates = ['twoPane-panel','twoPane-coll-panel','twoPane-grad-panel','cardDetailPanel','collectionCardPanel','gradedCardPanel']
@@ -92,13 +92,16 @@ export function createOverflowMenu() {
     const valEl = targetPanel?.querySelector('[data-mv-value]')
     if (valEl) valEl.textContent = 'Searching…'
 
+    // Year-first ordering and no # prefix — CardSight search ranks better this way
     const seen = new Set()
     const typedQueries = [
-      [playerName, c.Year, c.Set,          num],
-      [playerName, c.Year, c.Manufacturer, num],
-      [playerName, c.Year,                 num],
+      [c.Year, playerName, c.Set,          num],
+      [c.Year, playerName, c.Manufacturer, num],
+      [c.Year, playerName,                 num],
+      [c.Year, playerName, c.Set              ],
+      [c.Year, playerName, c.Manufacturer     ],
+      [c.Year, playerName                     ],
       [playerName,         c.Manufacturer, num],
-      [playerName,         c.Set,          num],
       [playerName,                         num],
     ]
       .map(parts => parts.filter(Boolean).join(' ').trim())
