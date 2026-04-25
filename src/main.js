@@ -10,7 +10,7 @@ import { renderGradedView } from './pages/graded.js'
 import { renderStats } from './pages/stats.js'
 import { handleCardTap, navigateCard, closeCardSheet, refreshCurrentCardPanel } from './components/card-detail.js'
 import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFlag } from './components/card-form.js'
-import { openPlayerForm, savePlayer, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
+import { openPlayerForm, savePlayer, handlePlayerFileSelect, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
 import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
@@ -230,6 +230,10 @@ function wireFormButtons() {
   document.getElementById('cancelCardFormBtn')?.addEventListener('click', closeAllForms)
   document.getElementById('selectPhotoBtn')?.addEventListener('click', () => document.getElementById('f_fileInput').click())
   document.getElementById('f_fileInput')?.addEventListener('change', e => handleFileSelect(e.target))
+  document.getElementById('pf_selectMainBtn')?.addEventListener('click', () => document.getElementById('pf_mainFileInput').click())
+  document.getElementById('pf_selectBannerBtn')?.addEventListener('click', () => document.getElementById('pf_bannerFileInput').click())
+  document.getElementById('pf_mainFileInput')?.addEventListener('change', e => handlePlayerFileSelect(e.target, 'pf_mainImgPreview', 'pf_mainImgPlaceholder'))
+  document.getElementById('pf_bannerFileInput')?.addEventListener('change', e => handlePlayerFileSelect(e.target, 'pf_bannerImgPreview', 'pf_bannerImgPlaceholder'))
   document.getElementById('f_rc_btn')?.addEventListener('click',       () => setFormFlag('rc',       document.getElementById('f_rc').value       !== 'true'))
   document.getElementById('f_auto_btn')?.addEventListener('click',     () => setFormFlag('auto',     document.getElementById('f_auto').value     !== 'true'))
   document.getElementById('f_mem_btn')?.addEventListener('click',      () => setFormFlag('mem',      document.getElementById('f_mem').value      !== 'true'))

@@ -487,8 +487,26 @@ function appShellHTML() {
           <option value="Soccer">Soccer</option>
         </select>
       </div>
-      <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Banner Image URL</label><input type="text" id="pf_bannerImg" class="m3-input"></div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="width:64px; height:88px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
+          <span id="pf_mainImgPlaceholder" style="font-size:9px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
+          <img id="pf_mainImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+        </div>
+        <div style="flex:1;">
+          <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">
+          <button type="button" class="expressive-btn" id="pf_selectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:13px; width:100%;">Select Player Photo</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="width:96px; height:36px; flex-shrink:0; background:#F0F0F0; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
+          <span id="pf_bannerImgPlaceholder" style="font-size:9px; color:var(--md-outline);">Banner</span>
+          <img id="pf_bannerImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+        </div>
+        <div style="flex:1;">
+          <input type="file" id="pf_bannerFileInput" accept="image/*" style="display:none;">
+          <button type="button" class="expressive-btn" id="pf_selectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:13px; width:100%;">Select Banner Photo</button>
+        </div>
+      </div>
       <button class="expressive-btn" id="btnSavePlayer" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;">Add Player</button>
     </div>
   </div>

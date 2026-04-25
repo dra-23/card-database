@@ -1,4 +1,4 @@
-import { db, doc, setDoc, deleteDoc } from '../firebase.js'
+import { db, doc, setDoc, deleteDoc, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import * as state from '../state.js'
 import { getCleanImg } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
@@ -11,16 +11,46 @@ export function openPlayerForm() {
   scrim.onclick = () => closeAllForms()
 }
 
+export function handlePlayerFileSelect(input, previewId, placeholderId) {
+  const file = input.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    const preview = document.getElementById(previewId)
+    const placeholder = document.getElementById(placeholderId)
+    if (preview) { preview.src = e.target.result; preview.style.display = 'block' }
+    if (placeholder) placeholder.style.display = 'none'
+  }
+  reader.readAsDataURL(file)
+}
+
+async function _uploadPlayerImg(inputId, folder) {
+  const file = document.getElementById(inputId)?.files[0]
+  if (!file) return null
+  const storageRef = ref(storage, `players/${folder}_${Date.now()}_${file.name}`)
+  const snapshot = await uploadBytes(storageRef, file)
+  return getDownloadURL(snapshot.ref)
+}
+
 export async function savePlayer() {
   const name = document.getElementById('pf_name').value.trim()
   if (!name) return
-  await setDoc(doc(db, 'Players', name), {
-    Player: name,
-    Sport: document.getElementById('pf_sport').value,
-    'Main Image': document.getElementById('pf_mainImg').value,
-    'Banner_Image': document.getElementById('pf_bannerImg').value,
-  })
-  ;['pf_name','pf_mainImg','pf_bannerImg'].forEach(id => { document.getElementById(id).value = '' })
+
+  const [mainUrl, bannerUrl] = await Promise.all([
+    _uploadPlayerImg('pf_mainFileInput', 'main'),
+    _uploadPlayerImg('pf_bannerFileInput', 'banner'),
+  ])
+
+  const data = { Player: name, Sport: document.getElementById('pf_sport').value }
+  if (mainUrl)   data['Main Image']    = mainUrl
+  if (bannerUrl) data['Banner_Image']  = bannerUrl
+
+  await setDoc(doc(db, 'Players', name), data)
+
+  document.getElementById('pf_name').value = ''
+  ;['pf_mainFileInput','pf_bannerFileInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '' })
+  ;['pf_mainImgPreview','pf_bannerImgPreview'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none' })
+  ;['pf_mainImgPlaceholder','pf_bannerImgPlaceholder'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = '' })
   closeAllForms()
 }
 
