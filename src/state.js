@@ -23,9 +23,8 @@ export let collShowGradedOnly    = false
 export let collShowWishlistOnly  = false
 export let collSortBy            = 'year'
 
-// Graded search + sort
+// Graded search
 export let gradedSearchQuery = ''
-export let gradedSortBy      = 'year'
 
 // Navigable sequences (used by card-to-card swipe)
 export let cardSequence       = []
@@ -48,7 +47,6 @@ export function setCollShowWishlistOnly(v) { collShowWishlistOnly = v }
 export function setCollSortBy(v)           { collSortBy = v }
 
 export function setGradedSearchQuery(v) { gradedSearchQuery = v }
-export function setGradedSortBy(v)      { gradedSortBy = v }
 
 export function setCardSequence(seq)       { cardSequence = seq }
 export function setCollCardSequence(seq)   { collCardSequence = seq }

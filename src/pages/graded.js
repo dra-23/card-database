@@ -19,31 +19,13 @@ export function renderGradedView() {
     )
   }
 
-  const sortBy = state.gradedSortBy || 'year'
-
-  const subSort = (a, b) => {
+  cards.sort((a, b) => {
     const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
     if (yA !== yB) return yA - yB
     const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
     if (setA !== setB) return setA.localeCompare(setB)
     return String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true })
-  }
-
-  if (sortBy === 'sport') {
-    cards.sort((a, b) => {
-      const sA = (a.Sport || '').toLowerCase(), sB = (b.Sport || '').toLowerCase()
-      if (sA !== sB) return sA.localeCompare(sB)
-      return subSort(a, b)
-    })
-  } else if (sortBy === 'set') {
-    cards.sort((a, b) => {
-      const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
-      if (setA !== setB) return setA.localeCompare(setB)
-      return subSort(a, b)
-    })
-  } else {
-    cards.sort(subSort)
-  }
+  })
 
   const counterEl = document.getElementById('gradedCounter')
   if (counterEl) counterEl.innerText = cards.length
