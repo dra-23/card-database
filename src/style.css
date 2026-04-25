@@ -191,6 +191,14 @@ html, body {
 @media (min-width: 768px) {
   .sheet { left: 50%; right: auto; width: 100%; max-width: 560px; transform: translateX(-50%) translateY(calc(100% + 24px)); border-radius: 28px; bottom: 24px; }
   .sheet.open { transform: translateX(-50%) translateY(0); box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+  /* Card detail sheet becomes a right-side panel on tablet/desktop */
+  #cardDetailSheet {
+    left: auto; right: 0; top: 0; bottom: 0;
+    width: 480px; height: 100%; max-height: 100%;
+    border-radius: 0;
+    transform: translateX(100%);
+  }
+  #cardDetailSheet.open { transform: translateX(0); box-shadow: -4px 0 32px rgba(0,0,0,0.18); }
 }
 .sheet-handle { width: 36px; height: 3px; background: #d0d0d0; border-radius: 10px; margin: 10px auto 6px; flex-shrink: 0; padding-top: 6px; box-sizing: content-box; cursor: grab; touch-action: none; }
 .sheet-handle:active { cursor: grabbing; background: #c8c8c8; }
@@ -515,16 +523,16 @@ html, body {
   #twoPane-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
   #twoPane-panel::-webkit-scrollbar { display: none; }
   #twoPane-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  /* Form sheets become full-height side panels that slide in from the left */
+  /* Form sheets become full-height right-side panels on desktop */
   #cardFormSheet, #playerFormSheet, #cardSearchSheet, #psaSheet {
-    left: 72px; right: auto; top: 0; bottom: 0;
+    left: auto; right: 0; top: 0; bottom: 0;
     width: 480px; height: 100%; max-height: 100%;
-    border-radius: 0 16px 16px 0;
-    transform: translateX(-100%);
+    border-radius: 0;
+    transform: translateX(100%);
   }
   #cardFormSheet.open, #playerFormSheet.open, #cardSearchSheet.open, #psaSheet.open {
     transform: translateX(0);
-    box-shadow: 4px 0 32px rgba(0,0,0,0.18);
+    box-shadow: -4px 0 32px rgba(0,0,0,0.18);
   }
   .sheet-handle { display: none; }
 }

@@ -38,10 +38,10 @@ export function isOwned(card) {
 }
 
 /** Returns the transform string for a sheet at a given Y offset.
- *  On desktop (≥1280px) sheets are side panels that slide on the X axis. */
+ *  On desktop (≥1280px) form sheets are right-side panels that slide on the X axis. */
 export function sheetTransformY(px) {
   if (window.matchMedia('(min-width: 1280px)').matches) {
-    return (px === 0 || px === '0') ? 'translateX(0)' : 'translateX(-100%)'
+    return (px === 0 || px === '0') ? 'translateX(0)' : 'translateX(100%)'
   }
   const y = typeof px === 'number' ? `${px}px` : px
   const wide = window.matchMedia('(min-width: 768px)').matches
