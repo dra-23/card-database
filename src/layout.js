@@ -24,14 +24,10 @@ export function _applyWideLayout() {
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
 
   if (selectedPlayer) {
-    slot.style.display = 'flex'; slot.style.flexDirection = 'row'
-    if (isThreePaneLayout()) {
-      gv.style.display = ''
-      gv.style.width = '340px'; gv.style.minWidth = '340px'; gv.style.maxWidth = '340px'
-      gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
-    } else {
-      gv.style.display = 'none'
-    }
+    const galleryW = isThreePaneLayout() ? '340px' : '260px'
+    gv.style.display = ''
+    gv.style.width = galleryW; gv.style.minWidth = galleryW; gv.style.maxWidth = galleryW
+    gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
     dv.style.display = 'flex'; dv.style.flexDirection = 'row'
     dv.style.flex = '1'; dv.style.minWidth = '0'
     dv.classList.remove('tp-no-player')
@@ -49,6 +45,10 @@ export function _applyWideLayout() {
   }
 
   _commitPageSwitch(currentPage || 'players', PAGE_NAMES.indexOf(currentPage || 'players'))
+  // Re-assert flex row AFTER _commitPageSwitch clears the slot's inline display
+  if (selectedPlayer) {
+    slot.style.display = 'flex'; slot.style.flexDirection = 'row'
+  }
   _updateFloatingFab(currentPage || 'players')
 }
 

@@ -72,8 +72,6 @@ export function openDetail(id) {
     document.getElementById('twoPane-panel').innerHTML = ''
     document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'))
     _applyWideLayout()
-    // On medium-wide (768-1279px) gallery is hidden; push state so back gesture stays on player detail
-    if (!isThreePaneLayout()) history.pushState({ v: 'detail', p: id }, '')
   }
 
   // Highlight selected player tile in gallery
