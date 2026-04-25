@@ -385,12 +385,12 @@ function appShellHTML() {
         <div class="m3-field"><label class="m3-label">Sport</label>
           <select id="f_sport" class="m3-select">
             <option value="">Select...</option>
-            <option value="Baseball">Baseball ⚾</option>
-            <option value="Basketball">Basketball 🏀</option>
-            <option value="Football">Football 🏈</option>
-            <option value="Hockey">Hockey 🏒</option>
-            <option value="Golf">Golf ⛳</option>
-            <option value="Soccer">Soccer ⚽</option>
+            <option value="Baseball">Baseball</option>
+            <option value="Basketball">Basketball</option>
+            <option value="Football">Football</option>
+            <option value="Hockey">Hockey</option>
+            <option value="Golf">Golf</option>
+            <option value="Soccer">Soccer</option>
           </select>
         </div>
         <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
@@ -479,12 +479,12 @@ function appShellHTML() {
       <div class="m3-field"><label class="m3-label">Player Name</label><input type="text" id="pf_name" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Default Sport</label>
         <select id="pf_sport" class="m3-select">
-          <option value="Baseball">Baseball ⚾</option>
-          <option value="Basketball">Basketball 🏀</option>
-          <option value="Football">Football 🏈</option>
-          <option value="Hockey">Hockey 🏒</option>
-          <option value="Golf">Golf ⛳</option>
-          <option value="Soccer">Soccer ⚽</option>
+          <option value="Baseball">Baseball</option>
+          <option value="Basketball">Basketball</option>
+          <option value="Football">Football</option>
+          <option value="Hockey">Hockey</option>
+          <option value="Golf">Golf</option>
+          <option value="Soccer">Soccer</option>
         </select>
       </div>
       <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>

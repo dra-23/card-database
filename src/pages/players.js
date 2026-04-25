@@ -16,14 +16,16 @@ export function renderGallery() {
   grid.innerHTML = sorted.map(p => {
     const pC    = state.ALL_CARDS.filter(c => c.Player === p.id)
     const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))]
-      .map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('')
+      .map(s => `<div class="sport-icon">${SPORT_ICONS[s] || s.slice(0,3).toUpperCase()}</div>`).join('')
     return `
       <div class="player-tile" data-player-id="${escapeAttr(p.id)}">
-        <div class="sport-badge-overlay">${icons}</div>
         <img class="tile-img" src="${getCleanImg(p['Main Image'])}" alt="${escapeAttr(p.Player || p.id)}">
         <div class="tile-text-bar">
-          <div class="tile-title">${p.Player || p.id}</div>
-          <div class="tile-subtitle">${pC.filter(c => isOwned(c)).length} owned</div>
+          <div class="tile-text-main">
+            <div class="tile-title">${p.Player || p.id}</div>
+            <div class="tile-subtitle">${pC.filter(c => isOwned(c)).length} owned</div>
+          </div>
+          ${icons ? `<div class="tile-sport-icons">${icons}</div>` : ''}
         </div>
       </div>`
   }).join('')

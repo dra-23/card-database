@@ -47,12 +47,12 @@ export function createPlayerEditSheet() {
         <div class="m3-field"><label class="m3-label">Banner Image URL</label><input type="text" id="pe_bannerImg" class="m3-input"></div>
         <div class="m3-field"><label class="m3-label">Default Sport</label>
           <select id="pe_sport" class="m3-select">
-            <option value="Baseball">Baseball ⚾</option>
-            <option value="Basketball">Basketball 🏀</option>
-            <option value="Football">Football 🏈</option>
-            <option value="Hockey">Hockey 🏒</option>
-            <option value="Golf">Golf ⛳</option>
-            <option value="Soccer">Soccer ⚽</option>
+            <option value="Baseball">Baseball</option>
+            <option value="Basketball">Basketball</option>
+            <option value="Football">Football</option>
+            <option value="Hockey">Hockey</option>
+            <option value="Golf">Golf</option>
+            <option value="Soccer">Soccer</option>
           </select>
         </div>
         <div style="display:flex; gap:12px; margin-top:8px;">

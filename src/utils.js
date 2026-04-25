@@ -1,10 +1,10 @@
 export const SPORT_ICONS = {
-  Basketball: '🏀',
-  Football: '🏈',
-  Baseball: '⚾',
-  Golf: '⛳',
-  Hockey: '🏒',
-  Soccer: '⚽',
+  Basketball: 'BSK',
+  Football:   'FB',
+  Baseball:   'BB',
+  Golf:       'GLF',
+  Hockey:     'HK',
+  Soccer:     'SOC',
 }
 
 export function getCleanImg(url) {
