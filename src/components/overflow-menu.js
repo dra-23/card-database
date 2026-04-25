@@ -82,15 +82,20 @@ export function createOverflowMenu() {
     const playerName = player ? (player.Player || player.id) : (c.Player || '')
     const num = c.Number ? `#${c.Number}` : ''
 
-    // Try progressively simpler queries until CardSight returns a hit.
-    // Year format mismatches (e.g. "1986" vs "1986-87") cause the full query to miss,
-    // so falling back without year or set catches those cases.
+    // Build deduplicated fallback queries. Set names like "Base Set" won't match
+    // CardSight, but the Manufacturer field ("Fleer", "Topps") usually will since
+    // it appears in CardSight's release name. Try both independently.
+    const seen = new Set()
     const queries = [
-      [playerName, c.Year, c.Set, num],
-      [playerName, c.Year, num],
-      [playerName, c.Set, num],
-      [playerName, num],
-    ].map(parts => parts.filter(Boolean).join(' ').trim()).filter(Boolean)
+      [playerName, c.Year, c.Set,          num],
+      [playerName, c.Year, c.Manufacturer, num],
+      [playerName, c.Year,                 num],
+      [playerName,         c.Manufacturer, num],
+      [playerName,         c.Set,          num],
+      [playerName,                         num],
+    ]
+      .map(parts => parts.filter(Boolean).join(' ').trim())
+      .filter(q => q && !seen.has(q) && seen.add(q))
 
     try {
       let cardsightId = null
