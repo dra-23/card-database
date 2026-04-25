@@ -93,7 +93,7 @@ export function createOverflowMenu() {
     if (valEl) valEl.textContent = 'Searching…'
 
     const seen = new Set()
-    const queries = [
+    const typedQueries = [
       [playerName, c.Year, c.Set,          num],
       [playerName, c.Year, c.Manufacturer, num],
       [playerName, c.Year,                 num],
@@ -105,17 +105,34 @@ export function createOverflowMenu() {
       .filter(q => q && !seen.has(q) && seen.add(q))
 
     console.log('[FindMarketValue] card:', { playerName, year: c.Year, set: c.Set, manufacturer: c.Manufacturer, number: c.Number })
-    console.log('[FindMarketValue] queries to try:', queries)
+    console.log('[FindMarketValue] queries to try:', typedQueries)
 
     try {
       let cardsightId = null
-      for (const q of queries) {
+
+      // First pass: with type:'card' filter
+      for (const q of typedQueries) {
         const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
-        console.log(`[FindMarketValue] q="${q}" →`, error ? `error: ${error}` : `${data?.results?.length ?? 0} results`)
+        console.log(`[FindMarketValue] (typed) q="${q}" →`, error ? `error: ${error}` : `${data?.results?.length ?? 0} results`)
         if (!error && data?.results?.length) {
           cardsightId = data.results[0].id
           console.log('[FindMarketValue] matched id:', cardsightId, 'name:', data.results[0].name)
           break
+        }
+      }
+
+      // Second pass: without type filter (covers sports with different catalog scoping)
+      if (!cardsightId) {
+        const seen2 = new Set()
+        const untypedQueries = typedQueries.filter(q => !seen2.has(q) && seen2.add(q))
+        for (const q of untypedQueries) {
+          const { data, error } = await cardsight.catalog.search({ q, take: 5 })
+          console.log(`[FindMarketValue] (untyped) q="${q}" →`, error ? `error: ${error}` : `${data?.results?.length ?? 0} results`)
+          if (!error && data?.results?.length) {
+            cardsightId = data.results[0].id
+            console.log('[FindMarketValue] matched id:', cardsightId, 'name:', data.results[0].name)
+            break
+          }
         }
       }
       if (!cardsightId) {
