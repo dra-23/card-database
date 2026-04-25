@@ -5,9 +5,22 @@ import { openCardForm } from './card-form.js'
 const API_BASE = 'https://api.cardsight.ai'
 const API_KEY  = () => import.meta.env.VITE_CARDSIGHT_API_KEY
 
-const SPORT_MAP = {
-  baseball: 'Baseball', football: 'Football', basketball: 'Basketball',
-  hockey: 'Hockey', golf: 'Golf', soccer: 'Soccer',
+const SPORT_KEYWORDS = [
+  ['baseball',   'Baseball'],
+  ['basketball', 'Basketball'],
+  ['football',   'Football'],
+  ['hockey',     'Hockey'],
+  ['golf',       'Golf'],
+  ['soccer',     'Soccer'],
+]
+
+function _sportFromReleaseName(releaseName) {
+  if (!releaseName) return ''
+  const n = releaseName.toLowerCase()
+  for (const [kw, sport] of SPORT_KEYWORDS) {
+    if (n.includes(kw)) return sport
+  }
+  return ''
 }
 
 let _ctx = null
@@ -140,7 +153,7 @@ async function _selectSearchResult(r) {
     rc:           attrs.some(a => a === 'rc' || a === 'rookie'),
     auto:         attrs.some(a => a.includes('auto')),
     mem:          attrs.some(a => a.includes('mem') || a.includes('patch') || a.includes('relic')),
-    sport:        SPORT_MAP[(r.segment || '').toLowerCase()] || '',
+    sport:        _sportFromReleaseName(detail?.releaseName || r.releaseName) || '',
     playerName:   detail?.name || r.name || '',
     team:         detail?.description || '',
     imageFile:    imgData?.data ? _dataUriToFile(imgData.data, 'card.jpg') : null,
@@ -155,7 +168,7 @@ function _searchPrefill(r) {
     year:         r.year || '',
     set:          r.setName || '',
     manufacturer: r.manufacturerName || '',
-    sport:        SPORT_MAP[(r.segment || '').toLowerCase()] || '',
+    sport:        _sportFromReleaseName(r.releaseName) || '',
     playerName:   r.name || '',
   }
 }
@@ -268,6 +281,7 @@ async function _selectDetection(detection, file, grading) {
     manufacturer:   card.manufacturer || '',
     number:         card.number || '',
     numbered:       !!card.numberedTo || !!(card.parallel?.numberedTo),
+    sport:          _sportFromReleaseName(card.releaseName || card.setName) || '',
     playerName:     card.name || '',
     gradingCompany: g?.company?.name || '',
     grade:          g?.grade?.value || '',
