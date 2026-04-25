@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, SPORT_ICONS } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
 import { isWideLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
@@ -14,18 +14,13 @@ export function renderGallery() {
   })
 
   grid.innerHTML = sorted.map(p => {
-    const pC    = state.ALL_CARDS.filter(c => c.Player === p.id)
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))]
-      .map(s => `<div class="sport-icon">${SPORT_ICONS[s] || s.slice(0,3).toUpperCase()}</div>`).join('')
+    const pC = state.ALL_CARDS.filter(c => c.Player === p.id)
     return `
       <div class="player-tile" data-player-id="${escapeAttr(p.id)}">
         <img class="tile-img" src="${getCleanImg(p['Main Image'])}" alt="${escapeAttr(p.Player || p.id)}">
         <div class="tile-text-bar">
-          <div class="tile-text-main">
-            <div class="tile-title">${p.Player || p.id}</div>
-            <div class="tile-subtitle">${pC.filter(c => isOwned(c)).length} owned</div>
-          </div>
-          ${icons ? `<div class="tile-sport-icons">${icons}</div>` : ''}
+          <div class="tile-title">${p.Player || p.id}</div>
+          <div class="tile-subtitle">${pC.filter(c => isOwned(c)).length} owned</div>
         </div>
       </div>`
   }).join('')

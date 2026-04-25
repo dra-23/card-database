@@ -157,10 +157,16 @@ function appShellHTML() {
                       </button>
                     </div>
                   </div>
+                  <div class="sort-chips-row">
+                    <span class="sort-label">Sort:</span>
+                    <div id="gradedSortYear"  class="sort-chip active" data-graded-sort="year">Year</div>
+                    <div id="gradedSortSport" class="sort-chip" data-graded-sort="sport">Sport</div>
+                    <div id="gradedSortSet"   class="sort-chip" data-graded-sort="set">Set</div>
+                  </div>
                 </div>
               </div>
               <div class="scroll-body" id="gradedScrollBody">
-                <div class="graded-grid" id="gradedList"></div>
+                <div id="gradedList"></div>
               </div>
             </div>
             <div id="twoPane-gradedDetail">

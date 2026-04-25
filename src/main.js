@@ -272,13 +272,23 @@ function wireFilterChips() {
   bindChip('chipCollWishlist', () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), () => { updateOwnedCount(); renderCollectionView() })
   bindChip('chipCollGraded',   () => state.setCollShowGradedOnly(!state.collShowGradedOnly),    renderCollectionView)
 
-  // Sort chips
+  // Collection sort chips
   document.querySelectorAll('.sort-chip[data-sort]').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'))
+      document.querySelectorAll('#slot-collection .sort-chip').forEach(c => c.classList.remove('active'))
       chip.classList.add('active')
       state.setCollSortBy(chip.dataset.sort)
       renderCollectionView()
+    })
+  })
+
+  // Graded sort chips
+  document.querySelectorAll('.sort-chip[data-graded-sort]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#slot-graded .sort-chip').forEach(c => c.classList.remove('active'))
+      chip.classList.add('active')
+      state.setGradedSortBy(chip.dataset.gradedSort)
+      renderGradedView()
     })
   })
 }
