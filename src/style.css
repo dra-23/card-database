@@ -191,6 +191,7 @@ html, body {
 @media (min-width: 768px) {
   .sheet { left: 50%; right: auto; width: 100%; max-width: 560px; transform: translateX(-50%) translateY(calc(100% + 24px)); border-radius: 28px; bottom: 24px; }
   .sheet.open { transform: translateX(-50%) translateY(0); box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+  .sheet-body { padding-top: 24px; padding-bottom: 32px; }
   /* Card detail sheet becomes a right-side panel on tablet/desktop */
   #cardDetailSheet {
     left: auto; right: 0; top: 0; bottom: 0;
