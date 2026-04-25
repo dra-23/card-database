@@ -80,15 +80,29 @@ export function createOverflowMenu() {
     const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
     const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
     const playerName = player ? (player.Player || player.id) : (c.Player || '')
-    const q = [playerName, c.Year, c.Set, c.Number ? `#${c.Number}` : ''].filter(Boolean).join(' ').trim()
-    if (!q) return
+    const num = c.Number ? `#${c.Number}` : ''
+
+    // Try progressively simpler queries until CardSight returns a hit.
+    // Year format mismatches (e.g. "1986" vs "1986-87") cause the full query to miss,
+    // so falling back without year or set catches those cases.
+    const queries = [
+      [playerName, c.Year, c.Set, num],
+      [playerName, c.Year, num],
+      [playerName, c.Set, num],
+      [playerName, num],
+    ].map(parts => parts.filter(Boolean).join(' ').trim()).filter(Boolean)
+
     try {
-      const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
-      if (error || !data?.results?.length) return
-      const cardsightId = data.results[0].id
+      let cardsightId = null
+      for (const q of queries) {
+        const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
+        if (!error && data?.results?.length) {
+          cardsightId = data.results[0].id
+          break
+        }
+      }
       if (!cardsightId) return
       await setDoc(doc(db, 'Cards', id), { CardsightId: cardsightId }, { merge: true })
-      // cards:updated fires → refreshCurrentCardPanel → _loadMarketValue auto-runs
     } catch (e) {
       console.error('findMarketValue:', e)
     }
