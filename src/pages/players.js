@@ -104,6 +104,7 @@ export function closeDetail() {
     _updateFloatingFab('players')
     if (history.state?.v === 'detail') history.back()
   } else {
+    gv.style.display = ''
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
     gv.style.flexShrink = ''; gv.style.borderRight = ''
     slot.style.display = ''; slot.style.flexDirection = ''
