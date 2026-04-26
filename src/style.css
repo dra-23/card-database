@@ -540,6 +540,10 @@ html, body {
     transform: translateX(0);
     box-shadow: -4px 0 32px rgba(0,0,0,0.18);
   }
+  #cardFormSheet .sheet-body, #playerFormSheet .sheet-body,
+  #cardSearchSheet .sheet-body, #psaSheet .sheet-body {
+    padding-top: 32px; padding-bottom: 40px;
+  }
 }
 @media (min-width: 1440px) {
   #twoPane-collectionDetail { width: 520px !important; }
