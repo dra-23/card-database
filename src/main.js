@@ -167,8 +167,11 @@ function startApp() {
     else openPlayerForm()
   })
 
-  // Scrim — close card sheets first, then form sheets
+  // Scrim — PSA sheet takes priority (closes to card detail), then card sheets, then forms
   document.getElementById('globalScrim').addEventListener('click', () => {
+    if (document.getElementById('psaSheet')?.classList.contains('open')) {
+      closePSASheet(); return
+    }
     const cardSheetOpen = ['cardDetailSheet','collectionCardSheet','gradedCardSheet']
       .some(id => document.getElementById(id)?.classList.contains('open'))
     if (cardSheetOpen) closeCardSheets()

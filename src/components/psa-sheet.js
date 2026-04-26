@@ -57,8 +57,8 @@ export function closePSASheet() {
   const sheet = document.getElementById('psaSheet')
   if (!sheet) return
   sheet.style.transition = 'transform 0.35s cubic-bezier(0.1,0.7,0.1,1)'
-  sheet.style.transform = 'translateY(100%)'
-  setTimeout(() => { sheet.classList.remove('open'); sheet.style.transform = '' }, 340)
+  sheet.classList.remove('open')
+  sheet.style.transform = ''
 
   const scrim = document.getElementById('globalScrim')
   if (scrim) {
