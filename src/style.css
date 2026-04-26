@@ -530,11 +530,16 @@ html, body {
   #twoPane-panel { flex: 1; overflow-y: auto; padding: 24px; will-change: transform; }
   #twoPane-panel::-webkit-scrollbar { display: none; }
   #twoPane-panel.animating { transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  /* Match collection/graded right panels to same 50/50 split */
+  #twoPane-collectionDetail { flex: 1; min-width: 0; width: auto; }
+  #twoPane-gradedDetail { flex: 1; min-width: 0; width: auto; }
 }
 @media (min-width: 1280px) {
   #cardDetailSheet { display: none !important; }
-  /* Desktop: revert card detail panel to fixed width (three-pane layout) */
+  /* Desktop: revert all right panels to fixed width */
   #twoPane-cardDetail { flex: unset; flex-shrink: 0; width: 440px; }
+  #twoPane-collectionDetail { flex: unset; flex-shrink: 0; width: 440px; }
+  #twoPane-gradedDetail { flex: unset; flex-shrink: 0; width: 440px; }
 }
 @media (min-width: 1440px) {
   #twoPane-collectionDetail { width: 520px !important; }
