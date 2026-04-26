@@ -2,7 +2,7 @@ import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../f
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
-import { isWideLayout, isThreePaneLayout } from '../layout.js'
+import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
 import { cardsight } from '../cardsight.js'
@@ -253,7 +253,7 @@ export function refreshCurrentCardPanel(cardId) {
   const ctx = state.activeCardContext
 
   if (ctx === 'player') {
-    const panel = isThreePaneLayout()
+    const panel = isFoldLayout()
       ? document.getElementById('twoPane-panel')
       : document.getElementById('cardDetailPanel')
     if (panel) renderCardPanelInto(panel, cardId, ctx)
@@ -275,7 +275,7 @@ export function handleCardTap(cardId, ctx) {
   state.setCurrentCardId(cardId)
   state.setActiveCardContext(ctx || 'player')
 
-  const useInlinePanel = ctx === 'player' ? isThreePaneLayout() : isWideLayout()
+  const useInlinePanel = ctx === 'player' ? isFoldLayout() : isWideLayout()
 
   if (useInlinePanel) {
     const panelMap = {
@@ -327,7 +327,7 @@ export function navigateCard(dir, ctx) {
   state.setCurrentCardId(nextId)
   state.setActiveCardContext(ctx)
 
-  const useInline = ctx === 'player' ? isThreePaneLayout() : isWideLayout()
+  const useInline = ctx === 'player' ? isFoldLayout() : isWideLayout()
   if (useInline) {
     handleCardTap(nextId, ctx)
     return
