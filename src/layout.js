@@ -4,9 +4,11 @@ export const PAGE_NAMES = ['players', 'collection', 'graded', 'stats']
 const NAV_BTN_W = 52, NAV_GAP = 4, NAV_PAD = 8
 
 export const _wideQuery      = window.matchMedia('(min-width: 768px)')
+export const _foldQuery      = window.matchMedia('(min-width: 840px)')
 export const _threePaneQuery = window.matchMedia('(min-width: 1280px)')
 
 export function isWideLayout()      { return _wideQuery.matches }
+export function isFoldLayout()      { return _foldQuery.matches }
 export function isThreePaneLayout() { return _threePaneQuery.matches }
 
 // ── Adaptive layout ────────────────────────────────────────────────────────
@@ -24,10 +26,20 @@ export function _applyWideLayout() {
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
 
   if (selectedPlayer) {
-    const galleryW = isThreePaneLayout() ? '340px' : '260px'
-    gv.style.display = ''
-    gv.style.width = galleryW; gv.style.minWidth = galleryW; gv.style.maxWidth = galleryW
-    gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    if (isThreePaneLayout()) {
+      // 1280px+: three-pane — gallery sidebar at 340px
+      gv.style.display = ''
+      gv.style.width = '340px'; gv.style.minWidth = '340px'; gv.style.maxWidth = '340px'
+      gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    } else if (isFoldLayout()) {
+      // 840–1279px: fold — hide gallery, detail-view fills full width (50/50 via CSS)
+      gv.style.display = 'none'
+    } else {
+      // 768–839px: tablet — gallery sidebar at 260px
+      gv.style.display = ''
+      gv.style.width = '260px'; gv.style.minWidth = '260px'; gv.style.maxWidth = '260px'
+      gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    }
     dv.style.display = 'flex'; dv.style.flexDirection = 'row'
     dv.style.flex = '1'; dv.style.minWidth = '0'
     dv.classList.remove('tp-no-player')

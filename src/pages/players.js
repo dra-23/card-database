@@ -1,6 +1,6 @@
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
-import { isWideLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
+import { isWideLayout, isFoldLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
 export function renderGallery() {
@@ -72,6 +72,8 @@ export function openDetail(id) {
     document.getElementById('twoPane-panel').innerHTML = ''
     document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'))
     _applyWideLayout()
+    // Fold layout hides gallery — push state so back gesture returns to gallery
+    if (isFoldLayout() && !isThreePaneLayout()) history.pushState({ v: 'detail', p: id }, '')
   }
 
   // Highlight selected player tile in gallery
