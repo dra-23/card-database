@@ -2,7 +2,7 @@ import './style.css'
 import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase.js'
 import { renderShell } from './shell.js'
 import * as state from './state.js'
-import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery, _threePaneQuery } from './layout.js'
+import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery, _foldQuery, _threePaneQuery } from './layout.js'
 import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
 import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation } from './pages/players.js'
 import { renderCollectionView } from './pages/collection.js'
@@ -113,6 +113,16 @@ function startApp() {
       else           _applyMobileLayout()
       _reRenderCurrentPage()
     })
+  })
+
+  // Fold threshold (840px): re-apply layout so gallery/panel routing updates
+  _foldQuery.addEventListener('change', () => {
+    if (isWideLayout()) {
+      requestAnimationFrame(() => {
+        _applyWideLayout()
+        _reRenderCurrentPage()
+      })
+    }
   })
 
   // Three-pane threshold: re-apply wide layout so gallery visibility updates

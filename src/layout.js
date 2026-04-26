@@ -18,9 +18,13 @@ export function _applyWideLayout() {
   const gv   = document.getElementById('gallery-view')
   if (!dv || !slot || !gv) return
 
-  // Reset the mobile page-track transform so the active slot isn't translated off-screen
+  // Reset mobile-only elements when switching to wide layout
   const track = document.getElementById('page-track')
   if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)' }
+  const nb = document.getElementById('nav-bar')
+  if (nb) { nb.style.transition = 'none'; nb.style.transform = '' }
+  const ffab = document.getElementById('floating-fab')
+  if (ffab) { ffab.style.display = 'none' }
 
   if (dv.parentElement !== slot) slot.appendChild(dv)
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
@@ -235,7 +239,7 @@ export function initPageSwipe() {
   let sx = 0, sy = 0, lx = 0, pageIdx = idx0, locked = null, active = false
 
   container.addEventListener('touchstart', e => {
-    if (document.querySelector('.sheet.open')) return
+    if (isWideLayout() || document.querySelector('.sheet.open')) return
     // Sync pageIdx with actual current page (e.g. after navigating to stats via button)
     pageIdx = PAGE_NAMES.indexOf(currentPage || 'players')
     // Stats page is not swipe-navigable
@@ -248,7 +252,7 @@ export function initPageSwipe() {
   }, { passive: true })
 
   container.addEventListener('touchmove', e => {
-    if (!active) return
+    if (!active || isWideLayout()) return
     const dx = e.touches[0].clientX - sx
     const dy = e.touches[0].clientY - sy
     lx = e.touches[0].clientX
