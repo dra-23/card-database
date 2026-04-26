@@ -1,7 +1,7 @@
 import { db, doc, setDoc, addDoc, collection, deleteField, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import { auth } from '../firebase.js'
 import * as state from '../state.js'
-import { isOwned } from '../utils.js'
+import { isOwned, getCleanImg } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
 
 // ── Grade dropdown init ────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     setFormFlag('mem',      c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true')
     setFormFlag('numbered', c.Numbered === true || c.Numbered === 'true')
     if (c['App Image']) {
-      document.getElementById('f_imagePreview').src   = c['App Image']
+      document.getElementById('f_imagePreview').src   = getCleanImg(c['App Image'])
       document.getElementById('f_imagePreview').style.display     = 'block'
       document.getElementById('previewPlaceholder').style.display = 'none'
     }
