@@ -2,18 +2,31 @@ import { Chart, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Leg
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
 import { auth } from '../firebase.js'
+import { getThemePref, setThemePref } from '../theme.js'
 
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController)
 
-// Brand palette
+// Brand palette (static)
 const C_PRIMARY  = '#E8192C'
 const C_BLUE     = '#3D5AFE'
-const C_SURFACE1 = '#c2caf0'
-const C_SURFACE2 = '#dfe4fb'
 const C_GOLD     = '#B8860B'
 const C_MEM      = '#1565C0'
 const C_SILVER   = '#78909C'
 const C_GREEN    = '#2E7D32'
+
+function isDarkMode() { return document.documentElement.dataset.theme === 'dark' }
+
+function getChartColors() {
+  const dark = isDarkMode()
+  return {
+    bar:      dark ? '#4A5296' : '#c2caf0',
+    barHover: dark ? '#6674CC' : C_PRIMARY,
+    barBlue:  dark ? '#5B6BE0' : C_BLUE,
+    grid:     dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+    tick:     dark ? '#9496A9' : '#44474E',
+    surface1: dark ? '#4A5296' : '#c2caf0',
+  }
+}
 
 const SPORT_COLORS = {
   Baseball:   '#1565C0',
@@ -58,6 +71,8 @@ export function renderStats() {
   const displayName = user?.displayName || 'Collector'
   const email       = user?.email       || ''
 
+  const themePref = getThemePref()
+
   document.getElementById('statsContent').innerHTML = `
     <div class="profile-header">
       ${photoURL
@@ -67,6 +82,22 @@ export function renderStats() {
       ${email ? `<div class="profile-email">${email}</div>` : ''}
     </div>
     <div class="stats-content">
+
+      <!-- Settings: Appearance -->
+      <div class="stat-card">
+        <div class="stat-card-title">Appearance</div>
+        <div class="theme-segmented">
+          <button class="theme-seg-btn${themePref === 'light'  ? ' active' : ''}" data-pref="light">
+            <span class="material-symbols-outlined">light_mode</span>Light
+          </button>
+          <button class="theme-seg-btn${themePref === 'system' ? ' active' : ''}" data-pref="system">
+            <span class="material-symbols-outlined">brightness_auto</span>System
+          </button>
+          <button class="theme-seg-btn${themePref === 'dark'   ? ' active' : ''}" data-pref="dark">
+            <span class="material-symbols-outlined">dark_mode</span>Dark
+          </button>
+        </div>
+      </div>
 
       <!-- Summary row — styled like badge breakdown -->
       <div class="stat-card">
@@ -155,6 +186,16 @@ export function renderStats() {
     </div>
   `
 
+  // Theme toggle buttons
+  document.querySelectorAll('.theme-seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setThemePref(btn.dataset.pref)
+      renderStats()
+    })
+  })
+
+  const cc = getChartColors()
+
   // By Sport — donut with brand colors
   const sportMap = {}
   owned.forEach(c => { if (c.Sport) sportMap[c.Sport] = (sportMap[c.Sport] || 0) + 1 })
@@ -166,12 +207,12 @@ export function renderStats() {
         labels: sportEntries.map(e => e[0]),
         datasets: [{
           data: sportEntries.map(e => e[1]),
-          backgroundColor: sportEntries.map(e => SPORT_COLORS[e[0]] || C_SURFACE1),
+          backgroundColor: sportEntries.map(e => SPORT_COLORS[e[0]] || cc.surface1),
           borderWidth: 0,
         }],
       },
       options: {
-        plugins: { legend: { position: 'left', labels: { padding: 14, font: { size: 12 }, boxWidth: 12, boxHeight: 12 } } },
+        plugins: { legend: { position: 'left', labels: { padding: 14, font: { size: 12 }, color: cc.tick, boxWidth: 12, boxHeight: 12 } } },
         maintainAspectRatio: false,
         cutout: '65%',
       },
@@ -193,8 +234,8 @@ export function renderStats() {
         labels: playerLabels,
         datasets: [{
           data: topPlayers.map(e => e[1]),
-          backgroundColor: C_SURFACE1,
-          hoverBackgroundColor: C_PRIMARY,
+          backgroundColor: cc.bar,
+          hoverBackgroundColor: cc.barHover,
           borderRadius: 8,
         }],
       },
@@ -202,8 +243,8 @@ export function renderStats() {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 11 }, stepSize: 1 } },
-          y: { grid: { display: false }, ticks: { font: { size: 12 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: cc.tick, stepSize: 1 } },
+          y: { grid: { display: false }, ticks: { font: { size: 12 }, color: cc.tick } },
         },
         maintainAspectRatio: false,
       },
@@ -221,16 +262,16 @@ export function renderStats() {
         labels: yearEntries.map(e => e[0]),
         datasets: [{
           data: yearEntries.map(e => e[1]),
-          backgroundColor: C_SURFACE1,
-          hoverBackgroundColor: C_BLUE,
+          backgroundColor: cc.bar,
+          hoverBackgroundColor: cc.barBlue,
           borderRadius: 6,
         }],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
-          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 1, font: { size: 11 } } },
+          x: { ticks: { maxRotation: 45, font: { size: 10 }, color: cc.tick }, grid: { display: false } },
+          y: { grid: { color: cc.grid }, ticks: { stepSize: 1, font: { size: 11 }, color: cc.tick } },
         },
         maintainAspectRatio: false,
       },
@@ -267,8 +308,8 @@ export function renderStats() {
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 12 } } },
-          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 1, font: { size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 12 }, color: cc.tick } },
+          y: { grid: { color: cc.grid }, ticks: { stepSize: 1, font: { size: 11 }, color: cc.tick } },
         },
         maintainAspectRatio: false,
       },

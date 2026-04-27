@@ -1,4 +1,5 @@
 import './style.css'
+import { initTheme } from './theme.js'
 import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase.js'
 import { renderShell } from './shell.js'
 import * as state from './state.js'
@@ -15,6 +16,9 @@ import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
 import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
+
+// ── Apply theme before first paint ─────────────────────────────────────────
+initTheme()
 
 // ── Render app shell HTML first ────────────────────────────────────────────
 renderShell()
