@@ -276,7 +276,7 @@ function appShellHTML() {
   </div><!-- /content-row -->
 </div><!-- /app-shell -->
 
-<!-- MOBILE NAV BAR (3 pages + inline FAB) -->
+<!-- MOBILE NAV BAR (3 pages) -->
 <nav id="nav-bar">
   <div id="nav-indicator"></div>
   <button class="nav-item active" id="nav-players"    data-page="players">
@@ -288,11 +288,12 @@ function appShellHTML() {
   <button class="nav-item" id="nav-graded"    data-page="graded">
     <span class="material-symbols-outlined">g_mobiledata_badge</span>
   </button>
-  <div id="nav-fab-sep"></div>
-  <button id="floating-fab">
-    <span class="material-symbols-outlined" style="font-size:24px;">add</span>
-  </button>
 </nav>
+
+<!-- FLOATING FAB (standalone, shown on mobile + fold) -->
+<button id="floating-fab">
+  <span class="material-symbols-outlined" style="font-size:24px;">add</span>
+</button>
 
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim"></div>

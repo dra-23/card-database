@@ -22,9 +22,8 @@ export function _applyWideLayout() {
   const track = document.getElementById('page-track')
   if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)' }
   const nb = document.getElementById('nav-bar')
-  if (nb) { nb.style.transition = 'none'; nb.style.transform = '' }
+  if (nb) { nb.style.transition = 'none'; nb.style.transform = ''; nb.style.display = '' }
   const ffab = document.getElementById('floating-fab')
-  if (ffab) { ffab.style.display = 'none' }
 
   if (dv.parentElement !== slot) slot.appendChild(dv)
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
@@ -155,25 +154,24 @@ export function _updateNavActive(page) {
 
 export function _updateFloatingFab(page) {
   const fab = document.getElementById('floating-fab')
-  const sep = document.getElementById('nav-fab-sep')
   if (!fab) return
-
-  if (isWideLayout()) {
-    fab.style.display = 'none'
-    if (sep) sep.style.display = 'none'
-    return
-  }
 
   const show = page === 'players' || page === 'collection'
 
+  // Tablet (768–839px) or desktop (1280px+): hide FAB, in-layout FABs handle it
+  if ((isWideLayout() && !isFoldLayout()) || isThreePaneLayout()) {
+    fab.classList.remove('visible')
+    fab.style.display = 'none'
+    return
+  }
+
+  // Mobile (<768px) and fold (840–1279px): show on players/collection
   if (show) {
     fab.classList.add('visible')
     fab.style.display = 'flex'
-    if (sep) sep.style.display = 'block'
   } else {
     fab.classList.remove('visible')
     fab.style.display = 'none'
-    if (sep) sep.style.display = 'none'
   }
 }
 
