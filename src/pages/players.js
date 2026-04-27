@@ -48,19 +48,25 @@ export function openDetail(id) {
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
 
-  // Populate wide-layout hero stats
+  // Populate wide-layout hero and top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
   const heroSleevd    = allPlayerCards.filter(c => isOwned(c)).length
   const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
   const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
   const heroName = document.getElementById('playerWideHeroName')
   if (heroName) heroName.textContent = player.Player || player.id
-  const heroS = document.getElementById('wideHeroSleevd')
-  const heroU = document.getElementById('wideHeroUnsleevd')
-  const heroG = document.getElementById('wideHeroGraded')
-  if (heroS) heroS.textContent = heroSleevd
-  if (heroU) heroU.textContent = heroUnsleevd
-  if (heroG) heroG.textContent = heroGraded
+  // Top bar: show player name + stat pill, hide total count
+  const topBarTitle = document.getElementById('topBarTitle')
+  const topBarStats = document.getElementById('topBarStats')
+  const totalPill   = document.getElementById('totalOwnedCounterGlobal')
+  if (topBarTitle) topBarTitle.textContent = player.Player || player.id
+  if (topBarStats) {
+    document.getElementById('topBarSleevd').textContent  = heroSleevd
+    document.getElementById('topBarUnsleevd').textContent = heroUnsleevd
+    document.getElementById('topBarGraded').textContent  = heroGraded
+    topBarStats.style.display = 'flex'
+  }
+  if (totalPill) totalPill.style.display = 'none'
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
   const detailWrap = document.getElementById('detailHeaderWrap')
@@ -99,6 +105,13 @@ export function closeDetail() {
   dv.style.transform = ''; dv.style.transition = ''
   dv.classList.add('tp-no-player')
   state.setSelectedPlayer(null)
+  // Restore top bar to page title + total count
+  const topBarTitle = document.getElementById('topBarTitle')
+  const topBarStats = document.getElementById('topBarStats')
+  const totalPill   = document.getElementById('totalOwnedCounterGlobal')
+  if (topBarTitle) topBarTitle.textContent = 'Players'
+  if (topBarStats) topBarStats.style.display = 'none'
+  if (totalPill) totalPill.style.display = ''
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   if (!isWideLayout()) {
     _updateFloatingFab('players')
@@ -163,6 +176,15 @@ export function initDetailSwipeBack() {
 
 export function renderDetail(player) {
   if (!player) return
+  // Refresh top bar stats whenever detail re-renders
+  const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
+  const tbS = document.getElementById('topBarSleevd')
+  const tbU = document.getElementById('topBarUnsleevd')
+  const tbG = document.getElementById('topBarGraded')
+  if (tbS) tbS.textContent = allPlayerCards.filter(c => isOwned(c)).length
+  if (tbU) tbU.textContent = allPlayerCards.filter(c => !isOwned(c)).length
+  if (tbG) tbG.textContent = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
+
   let cards = state.ALL_CARDS.filter(c => c.Player === player.id)
     .sort((a, b) => {
       const yA = a.Year?.toString() || '', yB = b.Year?.toString() || ''
