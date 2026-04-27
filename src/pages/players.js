@@ -64,6 +64,7 @@ export function openDetail(id) {
     document.getElementById('topBarSleevd').textContent  = heroSleevd
     document.getElementById('topBarUnsleevd').textContent = heroUnsleevd
     document.getElementById('topBarGraded').textContent  = heroGraded
+    document.getElementById('topBarTotal').textContent   = state.ALL_CARDS.filter(c => isOwned(c)).length
     topBarStats.style.display = 'flex'
   }
   if (totalPill) totalPill.style.display = 'none'
@@ -184,6 +185,8 @@ export function renderDetail(player) {
   if (tbS) tbS.textContent = allPlayerCards.filter(c => isOwned(c)).length
   if (tbU) tbU.textContent = allPlayerCards.filter(c => !isOwned(c)).length
   if (tbG) tbG.textContent = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
+  const tbT = document.getElementById('topBarTotal')
+  if (tbT) tbT.textContent = state.ALL_CARDS.filter(c => isOwned(c)).length
 
   let cards = state.ALL_CARDS.filter(c => c.Player === player.id)
     .sort((a, b) => {

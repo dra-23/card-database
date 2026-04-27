@@ -40,6 +40,9 @@ function appShellHTML() {
         <span class="stat-pill-sep">·</span>
         <span class="stat-pill-label">graded</span>
         <strong id="topBarGraded">0</strong>
+        <span class="stat-pill-sep">·</span>
+        <span class="stat-pill-label">total</span>
+        <strong id="topBarTotal">0</strong>
       </div>
     </div>
     <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
