@@ -83,9 +83,11 @@ export function openDetail(id) {
     if (isFoldLayout() && !isThreePaneLayout()) history.pushState({ v: 'detail', p: id }, '')
   }
 
-  // Highlight selected player tile in gallery
+  // Highlight selected player tile, dim others
+  const grid = document.getElementById('playerGrid')
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   document.querySelector(`.player-tile[data-player-id="${CSS.escape(player.id)}"]`)?.classList.add('tile-selected')
+  if (grid) grid.classList.add('has-selection')
 
   renderDetail(player)
 
@@ -114,6 +116,7 @@ export function closeDetail() {
   if (topBarStats) topBarStats.style.display = 'none'
   if (totalPill) totalPill.style.display = ''
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
+  document.getElementById('playerGrid')?.classList.remove('has-selection')
   if (!isWideLayout()) {
     _updateFloatingFab('players')
     if (history.state?.v === 'detail') history.back()
