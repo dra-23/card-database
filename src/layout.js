@@ -76,6 +76,7 @@ export function _applyMobileLayout() {
 
   const gv = document.getElementById('gallery-view')
   if (gv) {
+    gv.style.display = ''
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
     gv.style.flexShrink = ''; gv.style.borderRight = ''
   }

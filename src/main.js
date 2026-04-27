@@ -109,8 +109,13 @@ function startApp() {
   // Adaptive layout change listeners (fold/unfold, window resize)
   _wideQuery.addEventListener('change', e => {
     requestAnimationFrame(() => {
-      if (e.matches) _applyWideLayout()
-      else           _applyMobileLayout()
+      if (e.matches) {
+        _applyWideLayout()
+      } else {
+        _applyMobileLayout()
+        // If a player was open on fold, close detail so gallery is the mobile entry point
+        if (state.selectedPlayer) closeDetail()
+      }
       _reRenderCurrentPage()
     })
   })
