@@ -326,8 +326,19 @@ html, body {
 .nav-label { display: none; }
 
 /* ================================================================
-   FLOATING FAB (standalone fixed button)
+   FABs
    ================================================================ */
+/* Mobile FAB — lives inside the nav-bar pill */
+#nav-fab {
+  width: 52px; height: 52px; border-radius: 28px;
+  background: var(--md-surface-2); color: var(--md-on-surface);
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; position: relative; z-index: 1;
+  flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+#nav-fab.hidden { display: none; }
+
+/* Standalone FAB — fold layout only (840–1279px), controlled by JS */
 #floating-fab {
   position: fixed;
   bottom: calc(20px + env(safe-area-inset-bottom));
@@ -339,6 +350,11 @@ html, body {
   box-shadow: 0 4px 14px rgba(0,0,0,0.2);
 }
 #floating-fab.visible { display: flex; }
+
+/* Fold (840–1279px): hide inline wide FABs, standalone FAB takes over */
+@media (min-width: 840px) and (max-width: 1279px) {
+  #addPlayerFab, #addCardCollFab { display: none !important; }
+}
 
 /* Stats icon in page top bars (mobile only) */
 .top-bar-icon-btn {

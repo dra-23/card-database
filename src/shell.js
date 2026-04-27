@@ -281,7 +281,7 @@ function appShellHTML() {
   </div><!-- /content-row -->
 </div><!-- /app-shell -->
 
-<!-- MOBILE NAV BAR (3 pages) -->
+<!-- MOBILE NAV BAR (3 pages + FAB inside pill) -->
 <nav id="nav-bar">
   <div id="nav-indicator"></div>
   <button class="nav-item active" id="nav-players"    data-page="players">
@@ -293,9 +293,12 @@ function appShellHTML() {
   <button class="nav-item" id="nav-graded"    data-page="graded">
     <span class="material-symbols-outlined">g_mobiledata_badge</span>
   </button>
+  <button id="nav-fab">
+    <span class="material-symbols-outlined" style="font-size:24px;">add</span>
+  </button>
 </nav>
 
-<!-- FLOATING FAB (standalone, shown on mobile + fold) -->
+<!-- STANDALONE FLOATING FAB (fold layout 840–1279px only) -->
 <button id="floating-fab">
   <span class="material-symbols-outlined" style="font-size:24px;">add</span>
 </button>

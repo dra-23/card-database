@@ -154,18 +154,27 @@ export function _updateNavActive(page) {
 
 export function _updateFloatingFab(page) {
   const fab = document.getElementById('floating-fab')
+  const navFab = document.getElementById('nav-fab')
   if (!fab) return
 
   const show = page === 'players' || page === 'collection'
 
-  // Tablet (768–839px) or desktop (1280px+): hide FAB, in-layout FABs handle it
-  if ((isWideLayout() && !isFoldLayout()) || isThreePaneLayout()) {
+  // Mobile (<768px): nav-fab inside pill handles it; hide standalone
+  if (!isWideLayout()) {
+    fab.classList.remove('visible')
+    fab.style.display = 'none'
+    if (navFab) navFab.classList.toggle('hidden', !show)
+    return
+  }
+
+  // Tablet (768–839px) or desktop (1280px+): hide standalone, inline wide-fabs handle it
+  if (!isFoldLayout() || isThreePaneLayout()) {
     fab.classList.remove('visible')
     fab.style.display = 'none'
     return
   }
 
-  // Mobile (<768px) and fold (840–1279px): show on players/collection
+  // Fold (840–1279px): show standalone FAB on players/collection
   if (show) {
     fab.classList.add('visible')
     fab.style.display = 'flex'

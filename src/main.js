@@ -160,12 +160,14 @@ function startApp() {
     }
   })
 
-  // FAB
-  document.getElementById('floating-fab').addEventListener('click', () => {
+  // FAB (mobile pill FAB + standalone fold FAB share the same action)
+  const _fabAction = () => {
     if (state.selectedPlayer) openCardSearch('player')
     else if (state.currentPage === 'collection') openCardSearch('collection')
     else openPlayerForm()
-  })
+  }
+  document.getElementById('floating-fab').addEventListener('click', _fabAction)
+  document.getElementById('nav-fab')?.addEventListener('click', _fabAction)
 
   // Scrim — PSA sheet takes priority (closes to card detail), then card sheets, then forms
   document.getElementById('globalScrim').addEventListener('click', () => {
