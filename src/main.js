@@ -147,23 +147,20 @@ function startApp() {
   // Sign out (nav rail button)
   document.getElementById('signOutBtn')?.addEventListener('click', signOutUser)
 
-  // Settings sheet
-  function openSettingsSheet() {
-    // Sync active state on buttons each time sheet opens
+  // Settings page (full-screen push)
+  function openSettingsPage() {
     const pref = getThemePref()
     document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.pref === pref)
     })
-    const scrim = document.getElementById('globalScrim')
-    if (scrim) { scrim.style.zIndex = '1150'; scrim.style.display = 'block' }
-    document.getElementById('settingsSheet').classList.add('open')
+    history.pushState({ v: 'settings' }, '')
+    document.getElementById('settings-page').classList.add('open')
   }
-  function closeSettingsSheet() {
-    document.getElementById('settingsSheet').classList.remove('open')
-    const scrim = document.getElementById('globalScrim')
-    if (scrim) { scrim.style.zIndex = '900'; scrim.style.display = 'none' }
+  function closeSettingsPage() {
+    document.getElementById('settings-page').classList.remove('open')
   }
-  document.getElementById('settingsBtn')?.addEventListener('click', openSettingsSheet)
+  document.getElementById('settingsBtn')?.addEventListener('click', openSettingsPage)
+  document.getElementById('settingsPageBack')?.addEventListener('click', () => { history.back() })
   document.getElementById('settingsSignOutBtn')?.addEventListener('click', signOutUser)
   document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -174,12 +171,13 @@ function startApp() {
       if (state.currentPage === 'stats') renderStats()
     })
   })
-  attachFormDismissGesture('settingsSheet', closeSettingsSheet)
 
   // Back button / history
   window.addEventListener('popstate', e => {
     if (isLightboxOpen()) {
       closeLightbox(); return
+    } else if (document.getElementById('settings-page').classList.contains('open')) {
+      closeSettingsPage()
     } else if (document.getElementById('psaSheet').classList.contains('open')) {
       closePSASheet()
     } else if (document.getElementById('cardSearchSheet').classList.contains('open')) {

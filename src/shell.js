@@ -303,13 +303,16 @@ function appShellHTML() {
   <span class="material-symbols-outlined" style="font-size:24px;">add</span>
 </button>
 
-<!-- SETTINGS SHEET -->
-<div class="sheet" id="settingsSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-body" style="padding-top:8px;">
-    <div style="font-family:'Google Sans Display'; font-size:22px; font-weight:700; margin-bottom:4px;">Settings</div>
-
-    <div class="settings-section-title">Appearance</div>
+<!-- SETTINGS PAGE (full-screen push, slides in from right) -->
+<div id="settings-page">
+  <div class="settings-page-topbar">
+    <button class="icon-btn" id="settingsPageBack" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+    <span class="brand" style="font-size:20px; flex:1; margin-left:10px;">Settings</span>
+  </div>
+  <div class="settings-page-body">
+    <div class="settings-section-title" style="padding-top:8px;">Appearance</div>
     <div class="theme-segmented" id="settingsThemeSegmented">
       <button class="theme-seg-btn" data-pref="light">
         <span class="material-symbols-outlined">light_mode</span>Light
