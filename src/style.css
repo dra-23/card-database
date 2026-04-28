@@ -700,6 +700,7 @@ html, body {
 [data-theme="dark"] .player-stat-pill,
 [data-theme="dark"] .total-count-pill { background: var(--md-surface-2); }
 [data-theme="dark"] .card-item { border-color: rgba(255,255,255,0.04); }
+[data-theme="dark"] .back-btn { background: rgba(0,0,0,0.5); color: var(--md-on-surface); }
 
 /* ================================================================
    THEME SEGMENTED CONTROL (Settings / Profile page)
