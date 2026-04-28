@@ -2,7 +2,6 @@ import { Chart, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Leg
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
 import { auth } from '../firebase.js'
-import { getThemePref, setThemePref } from '../theme.js'
 
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController)
 
@@ -71,8 +70,6 @@ export function renderStats() {
   const displayName = user?.displayName || 'Collector'
   const email       = user?.email       || ''
 
-  const themePref = getThemePref()
-
   document.getElementById('statsContent').innerHTML = `
     <div class="profile-header">
       ${photoURL
@@ -82,22 +79,6 @@ export function renderStats() {
       ${email ? `<div class="profile-email">${email}</div>` : ''}
     </div>
     <div class="stats-content">
-
-      <!-- Settings: Appearance -->
-      <div class="stat-card">
-        <div class="stat-card-title">Appearance</div>
-        <div class="theme-segmented">
-          <button class="theme-seg-btn${themePref === 'light'  ? ' active' : ''}" data-pref="light">
-            <span class="material-symbols-outlined">light_mode</span>Light
-          </button>
-          <button class="theme-seg-btn${themePref === 'system' ? ' active' : ''}" data-pref="system">
-            <span class="material-symbols-outlined">brightness_auto</span>System
-          </button>
-          <button class="theme-seg-btn${themePref === 'dark'   ? ' active' : ''}" data-pref="dark">
-            <span class="material-symbols-outlined">dark_mode</span>Dark
-          </button>
-        </div>
-      </div>
 
       <!-- Summary row — styled like badge breakdown -->
       <div class="stat-card">
@@ -185,14 +166,6 @@ export function renderStats() {
 
     </div>
   `
-
-  // Theme toggle buttons
-  document.querySelectorAll('.theme-seg-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setThemePref(btn.dataset.pref)
-      renderStats()
-    })
-  })
 
   const cc = getChartColors()
 

@@ -1,5 +1,5 @@
 import './style.css'
-import { initTheme } from './theme.js'
+import { initTheme, getThemePref, setThemePref } from './theme.js'
 import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './firebase.js'
 import { renderShell } from './shell.js'
 import * as state from './state.js'
@@ -144,8 +144,37 @@ function startApp() {
     }
   })
 
-  // Sign out
+  // Sign out (nav rail button)
   document.getElementById('signOutBtn')?.addEventListener('click', signOutUser)
+
+  // Settings sheet
+  function openSettingsSheet() {
+    // Sync active state on buttons each time sheet opens
+    const pref = getThemePref()
+    document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.pref === pref)
+    })
+    const scrim = document.getElementById('globalScrim')
+    if (scrim) { scrim.style.zIndex = '1150'; scrim.style.display = 'block' }
+    document.getElementById('settingsSheet').classList.add('open')
+  }
+  function closeSettingsSheet() {
+    document.getElementById('settingsSheet').classList.remove('open')
+    const scrim = document.getElementById('globalScrim')
+    if (scrim) { scrim.style.zIndex = '900'; scrim.style.display = 'none' }
+  }
+  document.getElementById('settingsBtn')?.addEventListener('click', openSettingsSheet)
+  document.getElementById('settingsSignOutBtn')?.addEventListener('click', signOutUser)
+  document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setThemePref(btn.dataset.pref)
+      document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.pref === btn.dataset.pref)
+      )
+      if (state.currentPage === 'stats') renderStats()
+    })
+  })
+  attachFormDismissGesture('settingsSheet', closeSettingsSheet)
 
   // Back button / history
   window.addEventListener('popstate', e => {

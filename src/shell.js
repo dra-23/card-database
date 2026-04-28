@@ -303,6 +303,31 @@ function appShellHTML() {
   <span class="material-symbols-outlined" style="font-size:24px;">add</span>
 </button>
 
+<!-- SETTINGS SHEET -->
+<div class="sheet" id="settingsSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" style="padding-top:8px;">
+    <div style="font-family:'Google Sans Display'; font-size:22px; font-weight:700; margin-bottom:4px;">Settings</div>
+
+    <div class="settings-section-title">Appearance</div>
+    <div class="theme-segmented" id="settingsThemeSegmented">
+      <button class="theme-seg-btn" data-pref="light">
+        <span class="material-symbols-outlined">light_mode</span>Light
+      </button>
+      <button class="theme-seg-btn" data-pref="system">
+        <span class="material-symbols-outlined">brightness_auto</span>System
+      </button>
+      <button class="theme-seg-btn" data-pref="dark">
+        <span class="material-symbols-outlined">dark_mode</span>Dark
+      </button>
+    </div>
+
+    <button class="settings-signout-btn" id="settingsSignOutBtn">
+      <span class="material-symbols-outlined">logout</span>Sign out
+    </button>
+  </div>
+</div>
+
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim"></div>
 

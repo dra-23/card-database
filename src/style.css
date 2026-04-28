@@ -27,7 +27,7 @@
   --md-surface-2: #262840;
   --md-on-surface: #E2E4F0;
   --md-on-surface-variant: #9496A9;
-  --md-outline: #545669;
+  --md-outline: #8A8CA0;
 }
 
 html, body {
@@ -266,7 +266,7 @@ html, body {
 .search-filter-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; overflow-x: hidden; }
 .search-wrap { position: relative; flex: 1; min-width: 120px; display: flex; align-items: center; }
 .search-input-expressive { width: 100%; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); padding: 0 40px 0 16px; font-family: 'Google Sans', sans-serif; font-size: 15px; color: var(--md-on-surface); outline: none; }
-.search-input-expressive::placeholder { color: var(--md-outline); opacity: 0.7; }
+.search-input-expressive::placeholder { color: var(--md-on-surface-variant); opacity: 0.55; }
 .search-input-expressive:focus { box-shadow: 0 0 0 2px #6b7cde; }
 .search-clear-btn { position: absolute; right: 8px; background: none; border: none; padding: 4px; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; display: none; align-items: center; justify-content: center; border-radius: 50%; }
 .search-clear-btn.visible { display: flex; }
@@ -426,7 +426,7 @@ html, body {
 .cd-stats-grid { background: var(--md-surface-2); border-radius: 16px; overflow: hidden; }
 .cd-stats-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
 .cd-stats-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--md-on-surface-variant); }
-.cd-stats-edit-btn { font-size: 13px; font-weight: 700; color: #002D62; background: none; border: none; cursor: pointer; padding: 4px 0; }
+.cd-stats-edit-btn { font-size: 13px; font-weight: 700; color: var(--md-on-surface-variant); background: none; border: none; cursor: pointer; padding: 4px 0; }
 .cd-stat { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid rgba(0,0,0,0.06); }
 .cd-stat-lbl { font-size: 13px; color: var(--md-on-surface-variant); }
 .cd-stat-val { font-size: 14px; font-weight: 700; text-align: right; }
@@ -438,10 +438,7 @@ html, body {
 .psa-card { background: var(--md-surface-2); border-radius: 16px; overflow: hidden; }
 .psa-card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
 .psa-card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--md-on-surface-variant); }
-.psa-edit-btn { font-size: 13px; font-weight: 700; color: var(--co-psa); background: none; border: none; cursor: pointer; padding: 4px 0; }
-.psa-card[data-co="BGS"] .psa-edit-btn { color: var(--co-bgs); }
-.psa-card[data-co="SGC"] .psa-edit-btn { color: #555; }
-.psa-card[data-co="CGC"] .psa-edit-btn { color: var(--co-cgc); }
+.psa-edit-btn { font-size: 13px; font-weight: 700; color: var(--md-on-surface-variant); background: none; border: none; cursor: pointer; padding: 4px 0; }
 .psa-stat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid rgba(0,0,0,0.06); }
 .psa-stat-lbl { font-size: 13px; color: var(--md-on-surface-variant); }
 .psa-stat-val { font-size: 14px; font-weight: 700; }
@@ -661,6 +658,24 @@ html, body {
 .cs-conf-medium { background: rgba(184,134,11,0.12); color: #B8860B; }
 .cs-conf-low    { background: rgba(232,25,44,0.10); color: #E8192C; }
 .cs-alt-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); padding: 16px 4px 4px; }
+
+/* Select Photo button — muted secondary color */
+#selectPhotoBtn { color: var(--md-on-surface-variant); }
+
+/* Settings sheet */
+.settings-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--md-on-surface-variant); padding: 20px 0 10px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-top: 1px solid rgba(128,128,128,0.12); }
+.settings-row-label { font-size: 15px; font-weight: 500; color: var(--md-on-surface);
+  display: flex; align-items: center; gap: 12px; }
+.settings-row-label .material-symbols-outlined { color: var(--md-on-surface-variant); font-size: 22px; }
+.settings-signout-btn { width: 100%; margin-top: 24px; padding: 16px;
+  border-radius: 16px; border: none; background: rgba(232,25,44,0.08);
+  color: var(--md-primary); font-family: 'Google Sans', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; gap: 10px; }
+[data-theme="dark"] .settings-signout-btn { background: rgba(232,25,44,0.14); }
 
 /* ================================================================
    DARK MODE OVERRIDES
