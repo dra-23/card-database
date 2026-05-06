@@ -78,17 +78,29 @@ export function buildCardDetailHTML(card, ctx) {
   const setPreviewSection = sameSetCards.length > 0 ? `
     <div class="set-preview-section">
       <div class="set-preview-title">More from ${card.Year} ${card.Set}</div>
-      <div class="set-preview-list">
-        ${sameSetCards.map(c => {
-          const p = state.ALL_PLAYERS.find(pl => pl.id === c.Player)
-          const pName = p ? (p.Player || p.id) : (c.Player || '')
-          return `<div class="set-preview-item" data-set-card-id="${escapeAttr(c.id)}">
-            <img class="set-preview-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy">
-            <div class="set-preview-name">${pName}</div>
-            <div class="set-preview-num">#${c.Number || '—'}</div>
-          </div>`
-        }).join('')}
-      </div>
+      ${sameSetCards.map(c => {
+        const p = state.ALL_PLAYERS.find(pl => pl.id === c.Player)
+        const pName = p ? (p.Player || p.id) : (c.Player || '')
+        const co2 = c['Grading Company'] || '', gr2 = c.Grade || ''
+        const cRC  = c.RC   === true || c.RC   === 'true'
+        const cAut = c.Auto === true || c.Auto === 'true'
+        const cMem = c.Mem  === true || c.Mem  === 'true' || c.Patch === true || c.Patch === 'true'
+        const cNum = c.Numbered === true || c.Numbered === 'true'
+        const cb1 = (co2 && co2 !== 'Raw') ? `<span class="badge-grade" data-co="${co2}">${co2} ${gr2}</span>` : ''
+        const cb2 = cRC  ? `<span class="badge-rc">RC</span>`         : ''
+        const cb3 = cAut ? `<span class="badge-auto">AUTO</span>`     : ''
+        const cb4 = cMem ? `<span class="badge-mem">MEM</span>`       : ''
+        const cb5 = cNum ? `<span class="badge-numbered">#'d</span>`  : ''
+        const cBadges = cb1 + cb2 + cb3 + cb4 + cb5
+        return `<div class="card-item ${isOwned(c) ? '' : 'not-owned'} set-preview-row" data-set-card-id="${escapeAttr(c.id)}">
+          <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy">
+          <div class="card-info">
+            <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
+            <div class="card-info-row2">${pName}</div>
+            ${cBadges ? `<div class="card-badge-tray">${cBadges}</div>` : ''}
+          </div>
+        </div>`
+      }).join('')}
     </div>` : ''
 
   const pricePaid = card.Price ? `$${parseFloat(card.Price).toFixed(2)}` : '—'
