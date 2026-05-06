@@ -146,6 +146,10 @@ export function buildCardDetailHTML(card, ctx) {
         </button>
       </div>
       <div class="cd-divider"></div>
+      <div class="cd-owned-row">
+        <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
+        <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
+      </div>
       <div class="cd-stats-grid">
         <div class="cd-stats-header">
           <span class="cd-stats-title">Card Details</span>
@@ -167,10 +171,6 @@ export function buildCardDetailHTML(card, ctx) {
       ${marketSection}
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
       ${setPreviewSection}
-      <div class="cd-owned-row">
-        <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
-        <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
-      </div>
     </div>
   `
 }
