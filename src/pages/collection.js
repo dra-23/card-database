@@ -17,13 +17,16 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   }
 
   if (state.collSearchQuery) {
-    const q = state.collSearchQuery.toLowerCase()
-    cards = cards.filter(c =>
-      (c.Year || '').toString().toLowerCase().includes(q) ||
-      (c.Set || '').toLowerCase().includes(q) ||
-      (c.Manufacturer || '').toLowerCase().includes(q) ||
-      (c.Player || '').toLowerCase().includes(q)
-    )
+    const tokens = state.collSearchQuery.toLowerCase().trim().split(/\s+/)
+    cards = cards.filter(c => {
+      const haystack = [
+        (c.Year || '').toString(),
+        c.Set || '',
+        c.Manufacturer || '',
+        c.Player || '',
+      ].join(' ').toLowerCase()
+      return tokens.every(t => haystack.includes(t))
+    })
   }
 
   // 2. Sort — primary key determined by chip, sub-order always: year → set → number

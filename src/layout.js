@@ -119,6 +119,7 @@ export function switchPage(page) {
   _commitPageSwitch(page, idx)
   _updateNavActive(page)
   _updateFloatingFab(page)
+  emit('page:changed', page)
 }
 
 export function _commitPageSwitch(page, idx) {

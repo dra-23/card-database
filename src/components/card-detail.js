@@ -236,9 +236,10 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   panelEl.querySelector('[data-view-set]')?.addEventListener('click', () => {
     const setName = card.Set
     if (!setName) return
-    state.setCollSearchQuery(setName)
+    const query = [card.Year, setName].filter(Boolean).join(' ')
+    state.setCollSearchQuery(query)
     const input = document.getElementById('collSearchInput')
-    if (input) { input.value = setName }
+    if (input) { input.value = query }
     const clearBtn = document.getElementById('collSearchClear')
     if (clearBtn) clearBtn.style.display = ''
     closeCardSheets()
