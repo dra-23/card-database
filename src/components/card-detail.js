@@ -2,7 +2,7 @@ import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../f
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
-import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
+import { isWideLayout, isFoldLayout, isThreePaneLayout, switchPage } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
 import { cardsight } from '../cardsight.js'
@@ -29,8 +29,9 @@ export function buildCardDetailHTML(card, ctx) {
 
   const stats = [
     ['Year',         card.Year],
-    ['Manufacturer', card.Manufacturer],
+    ['Set',          card.Set],
     ['Card Number',  card.Number ? `#${card.Number}` : null],
+    ['Manufacturer', card.Manufacturer],
     ['Sport',        card.Sport],
     ['Team',         card.Team],
     ...(parallel ? [['Parallel', parallel]] : []),
@@ -116,7 +117,11 @@ export function buildCardDetailHTML(card, ctx) {
           <span class="cd-stats-title">Card Details</span>
           <button class="cd-stats-edit-btn" data-card-edit="${escapeAttr(card.id)}">Edit</button>
         </div>
-        ${stats.filter(([, val]) => val).map(([lbl, val]) => `
+        ${stats.filter(([, val]) => val).map(([lbl, val]) => lbl === 'Set' ? `
+          <div class="cd-stat">
+            <span class="cd-stat-lbl">Set</span>
+            <button class="cd-set-link" data-view-set="${escapeAttr(card.Set)}">${val}</button>
+          </div>` : `
           <div class="cd-stat">
             <span class="cd-stat-lbl">${lbl}</span>
             <span class="cd-stat-val">${val}</span>
@@ -225,6 +230,19 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   // PSA edit
   panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
     window._openPSASheet?.(cardId)
+  })
+
+  // View set in Collection
+  panelEl.querySelector('[data-view-set]')?.addEventListener('click', () => {
+    const setName = card.Set
+    if (!setName) return
+    state.setCollSearchQuery(setName)
+    const input = document.getElementById('collSearchInput')
+    if (input) { input.value = setName }
+    const clearBtn = document.getElementById('collSearchClear')
+    if (clearBtn) clearBtn.style.display = ''
+    closeCardSheets()
+    switchPage('collection')
   })
 
   // Market value refresh button
