@@ -2,7 +2,7 @@ import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../f
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
-import { isWideLayout, isFoldLayout, isThreePaneLayout, switchPage } from '../layout.js'
+import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
 import { cardsight } from '../cardsight.js'
@@ -69,6 +69,28 @@ export function buildCardDetailHTML(card, ctx) {
       </a>` : ''}` : ''}
     </div>` : ''
 
+  const sameSetCards = (card.Year && card.Set)
+    ? state.ALL_CARDS
+        .filter(c => c.id !== card.id && c.Year === card.Year && c.Set === card.Set)
+        .sort((a, b) => String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true }))
+    : []
+
+  const setPreviewSection = sameSetCards.length > 0 ? `
+    <div class="set-preview-section">
+      <div class="set-preview-title">More from ${card.Year} ${card.Set}</div>
+      <div class="set-preview-list">
+        ${sameSetCards.map(c => {
+          const p = state.ALL_PLAYERS.find(pl => pl.id === c.Player)
+          const pName = p ? (p.Player || p.id) : (c.Player || '')
+          return `<div class="set-preview-item" data-set-card-id="${escapeAttr(c.id)}">
+            <img class="set-preview-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy">
+            <div class="set-preview-name">${pName}</div>
+            <div class="set-preview-num">#${c.Number || '—'}</div>
+          </div>`
+        }).join('')}
+      </div>
+    </div>` : ''
+
   const pricePaid = card.Price ? `$${parseFloat(card.Price).toFixed(2)}` : '—'
   const marketSection = `
     <div class="market-section">
@@ -117,11 +139,7 @@ export function buildCardDetailHTML(card, ctx) {
           <span class="cd-stats-title">Card Details</span>
           <button class="cd-stats-edit-btn" data-card-edit="${escapeAttr(card.id)}">Edit</button>
         </div>
-        ${stats.filter(([, val]) => val).map(([lbl, val]) => lbl === 'Set' ? `
-          <div class="cd-stat">
-            <span class="cd-stat-lbl">Set</span>
-            <button class="cd-set-link" data-view-set="${escapeAttr(card.Set)}">${val}</button>
-          </div>` : `
+        ${stats.filter(([, val]) => val).map(([lbl, val]) => `
           <div class="cd-stat">
             <span class="cd-stat-lbl">${lbl}</span>
             <span class="cd-stat-val">${val}</span>
@@ -136,6 +154,7 @@ export function buildCardDetailHTML(card, ctx) {
       ${psaSection}
       ${marketSection}
       ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
+      ${setPreviewSection}
       <div class="cd-owned-row">
         <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
         <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
@@ -232,18 +251,9 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     window._openPSASheet?.(cardId)
   })
 
-  // View set in Collection
-  panelEl.querySelector('[data-view-set]')?.addEventListener('click', () => {
-    const setName = card.Set
-    if (!setName) return
-    const query = [card.Year, setName].filter(Boolean).join(' ')
-    state.setCollSearchQuery(query)
-    const input = document.getElementById('collSearchInput')
-    if (input) { input.value = query }
-    const clearBtn = document.getElementById('collSearchClear')
-    if (clearBtn) clearBtn.style.display = ''
-    closeCardSheets()
-    switchPage('collection')
+  // Same-set card preview taps
+  panelEl.querySelectorAll('[data-set-card-id]').forEach(el => {
+    el.addEventListener('click', () => handleCardTap(el.dataset.setCardId, ctx))
   })
 
   // Market value refresh button
