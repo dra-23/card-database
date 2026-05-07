@@ -266,7 +266,7 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
 
   // Same-set card preview taps
   panelEl.querySelectorAll('[data-set-card-id]').forEach(el => {
-    el.addEventListener('click', () => handleCardTap(el.dataset.setCardId, ctx))
+    el.addEventListener('click', () => handleCardTap(el.dataset.setCardId, ctx, true))
   })
 
   // Market value refresh button
@@ -313,7 +313,7 @@ export function refreshCurrentCardPanel(cardId) {
 }
 
 // ── handleCardTap ─────────────────────────────────────────────────────────
-export function handleCardTap(cardId, ctx) {
+export function handleCardTap(cardId, ctx, replace = false) {
   state.setCurrentCardId(cardId)
   state.setActiveCardContext(ctx || 'player')
 
@@ -353,7 +353,8 @@ export function handleCardTap(cardId, ctx) {
     if (scrim) scrim.style.display = 'block'
     if (nb)    { nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px))'; nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)' }
 
-    history.pushState({ v: 'card', id: cardId, ctx }, '')
+    if (replace) history.replaceState({ v: 'card', id: cardId, ctx }, '')
+    else         history.pushState({ v: 'card', id: cardId, ctx }, '')
   }
 }
 
