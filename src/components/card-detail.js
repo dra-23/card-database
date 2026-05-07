@@ -234,6 +234,7 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
   panelEl.innerHTML = buildCardDetailHTML(card, ctx)
+  panelEl.scrollTop = 0
 
   // Toggle owned
   panelEl.querySelector(`[data-card-toggle]`)?.addEventListener('click', async () => {
