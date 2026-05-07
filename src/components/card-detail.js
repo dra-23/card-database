@@ -71,7 +71,7 @@ export function buildCardDetailHTML(card, ctx) {
 
   const sameSetCards = (card.Year && card.Set)
     ? state.ALL_CARDS
-        .filter(c => c.id !== card.id && c.Year === card.Year && c.Set === card.Set)
+        .filter(c => c.id !== card.id && c.Year === card.Year && c.Set === card.Set && c.Sport === card.Sport)
         .sort((a, b) => String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true }))
     : []
 
