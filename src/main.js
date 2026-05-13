@@ -162,6 +162,26 @@ function startApp() {
   function closeSettingsPage() {
     document.getElementById('settings-page').classList.remove('open')
   }
+  function _syncRailThemeBtn() {
+    const isDark = document.documentElement.dataset.theme === 'dark'
+    const icon  = document.getElementById('railThemeIcon')
+    const label = document.getElementById('railThemeLabel')
+    if (icon)  icon.textContent  = isDark ? 'light_mode' : 'dark_mode'
+    if (label) label.textContent = isDark ? 'Light Mode' : 'Dark Mode'
+    document.getElementById('railThemeToggle')?.classList.toggle('active', isDark)
+  }
+  _syncRailThemeBtn()
+
+  document.getElementById('railThemeToggle')?.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'system' : 'dark'
+    setThemePref(next)
+    document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.pref === next)
+    )
+    _syncRailThemeBtn()
+    if (state.currentPage === 'stats') renderStats()
+  })
+
   document.getElementById('settingsBtn')?.addEventListener('click', openSettingsPage)
   document.getElementById('settingsPageBack')?.addEventListener('click', () => { history.back() })
   document.getElementById('settingsSignOutBtn')?.addEventListener('click', signOutUser)
@@ -171,6 +191,7 @@ function startApp() {
       document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.pref === btn.dataset.pref)
       )
+      _syncRailThemeBtn()
       if (state.currentPage === 'stats') renderStats()
     })
   })
