@@ -3,6 +3,73 @@ import { auth } from '../firebase.js'
 import * as state from '../state.js'
 import { isOwned, getCleanImg } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
+import { cardsight } from '../cardsight.js'
+
+const _SPORT_KW = [
+  ['baseball','Baseball'],['basketball','Basketball'],['football','Football'],
+  ['hockey','Hockey'],['golf','Golf'],['soccer','Soccer'],
+]
+function _sportFromName(name) {
+  if (!name) return ''
+  const n = name.toLowerCase()
+  for (const [kw, sport] of _SPORT_KW) { if (n.includes(kw)) return sport }
+  return ''
+}
+
+async function _identifyAndPrefill(file) {
+  const btn = document.getElementById('selectPhotoBtn')
+  if (btn) { btn.textContent = '🔍 Identifying…'; btn.disabled = true }
+
+  try {
+    const { data, error } = await cardsight.identify.card(file)
+    if (error || !data?.detections?.length) {
+      if (btn) { btn.textContent = '📷 Change Photo'; btn.disabled = false }
+      return
+    }
+
+    const top     = data.detections[0]
+    const card    = top.card
+    const grading = top.grading
+
+    const fill = (id, val) => {
+      if (!val) return
+      const el = document.getElementById(id)
+      if (el && !el.value) el.value = val
+    }
+
+    fill('f_year',         card.year ? String(card.year) : '')
+    fill('f_set',          card.setName || '')
+    fill('f_number',       card.number  ? String(card.number) : '')
+    fill('f_manufacturer', card.manufacturer || '')
+
+    const sport   = _sportFromName(card.releaseName || card.setName)
+    const sportEl = document.getElementById('f_sport')
+    if (sport && sportEl && !sportEl.value) sportEl.value = sport
+
+    if (card.name) {
+      const playerSel = document.getElementById('f_player')
+      if (playerSel && !playerSel.value) {
+        const match = state.ALL_PLAYERS.find(p =>
+          (p.Player || '').toLowerCase() === (card.name || '').toLowerCase()
+        )
+        if (match) { playerSel.value = match.id; playerSel.dispatchEvent(new Event('change')) }
+      }
+    }
+
+    const gradingEl = document.getElementById('f_grading')
+    if (grading?.company?.name && gradingEl && gradingEl.value === 'Raw') {
+      gradingEl.value = grading.company.name
+      if (grading.grade?.value) document.getElementById('f_grade').value = grading.grade.value
+    }
+
+    if (card.numberedTo || card.parallel?.numberedTo) setFormFlag('numbered', true)
+    if (card.id) _pendingCardsightId = card.id
+
+    if (btn) { btn.textContent = '✓ AI matched'; btn.disabled = false }
+  } catch (_) {
+    if (btn) { btn.textContent = '📷 Change Photo'; btn.disabled = false }
+  }
+}
 
 // ── Grade dropdown init ────────────────────────────────────────────────────
 export function initGradeDropdown() {
@@ -169,6 +236,8 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     document.getElementById('f_imagePreview').style.display     = 'none'
     document.getElementById('previewPlaceholder').style.display = 'block'
     document.getElementById('f_fileInput').value = ''
+    const photoBtn = document.getElementById('selectPhotoBtn')
+    if (photoBtn) { photoBtn.textContent = '📷 Select Photo'; photoBtn.disabled = false }
     _pendingImageFile   = null
     _pendingCardsightId = null
 
@@ -308,4 +377,7 @@ export function handleFileSelect(input) {
     document.getElementById('previewPlaceholder').style.display = 'none'
   }
   reader.readAsDataURL(file)
+
+  // Auto-identify only when adding a new card
+  if (!document.getElementById('f_cardId').value) _identifyAndPrefill(file)
 }
