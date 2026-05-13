@@ -25,6 +25,13 @@ export function renderGallery() {
       </div>`
   }).join('')
 
+  // Crop landscape images to fill the tile
+  grid.querySelectorAll('.tile-img').forEach(img => {
+    const applyFit = () => { if (img.naturalWidth > img.naturalHeight) img.style.objectFit = 'cover' }
+    if (img.complete) applyFit()
+    else img.addEventListener('load', applyFit, { once: true })
+  })
+
   // Attach click + long-press on tiles
   grid.querySelectorAll('.player-tile').forEach(tile => {
     tile.addEventListener('click', () => openDetail(tile.dataset.playerId))
