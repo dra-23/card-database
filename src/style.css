@@ -255,10 +255,10 @@ html, body {
 .badge-grade[data-co="BGS"] { background: var(--co-bgs); }
 .badge-grade[data-co="SGC"] { background: var(--co-sgc); color: #1e1e1e; }
 .badge-grade[data-co="CGC"] { background: var(--co-cgc); }
-.badge-rc       { background: #E8192C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-auto     { background: #B8860B; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-mem      { background: #1565C0; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
-.badge-numbered { background: #78909C; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-rc       { background: #E8192C; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-auto     { background: #B8860B; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-mem      { background: #1565C0; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-numbered { background: #78909C; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
 .card-row-menu-btn { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; }
 .card-row-menu-btn:active { background: rgba(0,0,0,0.07); opacity: 1; }
 
@@ -743,3 +743,14 @@ html, body {
 [data-theme="dark"] .theme-seg-btn.active { background: rgba(232,25,44,0.15); }
 
 .cs-manual-btn { width: 100%; margin-top: 20px; padding: 14px; background: none; border: none; font-size: 14px; font-weight: 600; color: var(--md-on-surface-variant); cursor: pointer; font-family: 'Google Sans', sans-serif; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ================================================================
+   BADGE PICKER SHEET
+   ================================================================ */
+.badge-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.badge-pick-btn { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; border-radius: 18px; border: 2px solid var(--md-outline); background: transparent; cursor: pointer; transition: border-color 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; }
+.badge-pick-btn.badge-pick-active { border-color: transparent; background: var(--md-surface-2); }
+.badge-pick-chip { font-size: 15px; font-weight: 800; padding: 5px 16px; border-radius: 8px; color: #fff; opacity: 0.25; letter-spacing: 0.5px; transition: opacity 0.15s; }
+.badge-pick-btn.badge-pick-active .badge-pick-chip { opacity: 1; }
+.badge-pick-lbl { font-size: 13px; font-weight: 600; font-family: 'Google Sans', sans-serif; color: var(--md-on-surface-variant); }
+.badge-pick-btn.badge-pick-active .badge-pick-lbl { color: var(--md-on-surface); }

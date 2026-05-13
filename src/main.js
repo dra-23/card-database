@@ -16,6 +16,7 @@ import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
 import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
+import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
 
 // ── Apply theme before first paint ─────────────────────────────────────────
 initTheme()
@@ -91,6 +92,8 @@ function startApp() {
   attachFormDismissGesture('cardFormSheet',   closeAllForms)
   attachFormDismissGesture('playerFormSheet', closeAllForms)
   attachFormDismissGesture('psaSheet',        closePSASheet)
+  attachFormDismissGesture('badgePickerSheet', closeBadgePicker)
+  initBadgePicker()
   initCardSearch()
   initLightbox()
 
@@ -207,6 +210,9 @@ function startApp() {
 
   // Scrim — PSA sheet takes priority (closes to card detail), then card sheets, then forms
   document.getElementById('globalScrim').addEventListener('click', () => {
+    if (document.getElementById('badgePickerSheet')?.classList.contains('open')) {
+      closeBadgePicker(); return
+    }
     if (document.getElementById('psaSheet')?.classList.contains('open')) {
       closePSASheet(); return
     }
@@ -221,6 +227,7 @@ function startApp() {
   document.getElementById('slot-players')?.classList.add('active')
 
   // Expose hooks for gestures module
+  window._openBadgePicker = openBadgePicker
   window._openLightbox    = openLightbox
   window._navigateCard    = navigateCard
   window._closeCardSheet  = closeCardSheet

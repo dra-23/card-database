@@ -306,7 +306,7 @@ export function initCardLongPress() {
         const cardId = row.dataset.cardId
         if (!cardId) return
         vibrate(50)
-        window._openRowMenu?.(cardId, null, t.clientX, t.clientY)
+        window._openBadgePicker?.(cardId)
       }, LONG_PRESS_MS)
     }, { passive: true })
 

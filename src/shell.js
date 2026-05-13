@@ -331,6 +331,32 @@ function appShellHTML() {
   </div>
 </div>
 
+<!-- BADGE PICKER SHEET -->
+<div class="sheet" id="badgePickerSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" style="padding-top:16px;">
+    <div style="font-family:'Google Sans Display'; font-size:18px; font-weight:700; margin-bottom:16px;">Quick Badges</div>
+    <div class="badge-picker-grid">
+      <button class="badge-pick-btn" data-badge="RC">
+        <span class="badge-rc badge-pick-chip">RC</span>
+        <span class="badge-pick-lbl">Rookie</span>
+      </button>
+      <button class="badge-pick-btn" data-badge="Auto">
+        <span class="badge-auto badge-pick-chip">AUTO</span>
+        <span class="badge-pick-lbl">Autograph</span>
+      </button>
+      <button class="badge-pick-btn" data-badge="Mem">
+        <span class="badge-mem badge-pick-chip">MEM</span>
+        <span class="badge-pick-lbl">Memorabilia</span>
+      </button>
+      <button class="badge-pick-btn" data-badge="Numbered">
+        <span class="badge-numbered badge-pick-chip">#'d</span>
+        <span class="badge-pick-lbl">Numbered</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim"></div>
 
