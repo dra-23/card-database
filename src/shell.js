@@ -72,7 +72,6 @@ function appShellHTML() {
     <div style="flex:1;"></div>
     <button class="rail-item" id="railThemeToggle" title="Toggle dark mode">
       <span class="material-symbols-outlined" id="railThemeIcon">dark_mode</span>
-      <span class="rail-label" id="railThemeLabel">Dark Mode</span>
     </button>
     <button id="signOutBtn" class="rail-item" title="Sign out" style="opacity:0.6;">
       <span class="material-symbols-outlined">logout</span>

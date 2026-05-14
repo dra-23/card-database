@@ -164,16 +164,14 @@ function startApp() {
   }
   function _syncRailThemeBtn() {
     const isDark = document.documentElement.dataset.theme === 'dark'
-    const icon  = document.getElementById('railThemeIcon')
-    const label = document.getElementById('railThemeLabel')
-    if (icon)  icon.textContent  = isDark ? 'light_mode' : 'dark_mode'
-    if (label) label.textContent = isDark ? 'Light Mode' : 'Dark Mode'
+    const icon = document.getElementById('railThemeIcon')
+    if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode'
     document.getElementById('railThemeToggle')?.classList.toggle('active', isDark)
   }
   _syncRailThemeBtn()
 
   document.getElementById('railThemeToggle')?.addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'system' : 'dark'
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
     setThemePref(next)
     document.querySelectorAll('#settingsThemeSegmented .theme-seg-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.pref === next)
