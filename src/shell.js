@@ -263,7 +263,7 @@ function appShellHTML() {
               </div>
 
               <!-- MOBILE STAT PILL (hidden on desktop) -->
-              <div id="playerDetailPill" style="padding:4px 20px 12px;">
+              <div id="playerDetailPill" style="padding:4px 20px 12px; display:flex; justify-content:center;">
                 <div class="player-stat-pill">
                   <span class="stat-pill-label">sleevd</span>
                   <strong id="detailPillSleevd">0</strong>
@@ -273,9 +273,6 @@ function appShellHTML() {
                   <span class="stat-pill-sep">·</span>
                   <span class="stat-pill-label">graded</span>
                   <strong id="detailPillGraded">0</strong>
-                  <span class="stat-pill-sep">·</span>
-                  <span class="stat-pill-label">paid</span>
-                  <strong id="detailPillValue">—</strong>
                 </div>
               </div>
               <div class="search-filter-row">
