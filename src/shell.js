@@ -29,7 +29,8 @@ function appShellHTML() {
   <!-- GLOBAL TOP BAR (spans full width on desktop) -->
   <div id="top-bar-global">
     <img src="/logo.png" style="width:40px; height:40px; border-radius:12px; flex-shrink:0;" onerror="this.style.display='none'">
-    <span id="topBarTitle" class="brand" style="font-size:20px; flex:1; margin-left:10px;">Players</span>
+    <span id="topBarTitle" class="brand" style="font-size:20px; margin-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+    <div id="topBarSearchSlot"></div>
     <div id="topBarStats" style="display:none; align-items:center; margin-right:8px;">
       <div class="player-stat-pill">
         <span class="stat-pill-label">sleevd</span>
@@ -118,7 +119,7 @@ function appShellHTML() {
                       <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
-                  <div class="search-filter-row" style="padding-bottom:6px;">
+                  <div class="search-filter-row" id="collSearchRow" style="padding-bottom:6px;">
                     <div class="search-wrap">
                       <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set...">
                       <button class="search-clear-btn" tabindex="-1" id="collSearchClear">
@@ -170,7 +171,7 @@ function appShellHTML() {
                       <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
-                  <div class="search-filter-row">
+                  <div class="search-filter-row" id="gradedSearchRow">
                     <div class="search-wrap">
                       <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set...">
                       <button class="search-clear-btn" tabindex="-1" id="gradedSearchClear">
@@ -270,7 +271,7 @@ function appShellHTML() {
                   </div>
                 </div>
               </div>
-              <div class="search-filter-row">
+              <div class="search-filter-row" id="detailSearchRow">
                 <div class="search-wrap">
                   <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
                   <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">

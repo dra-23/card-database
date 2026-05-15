@@ -103,6 +103,11 @@ html, body {
   padding: 0 24px 0 20px; flex-shrink: 0;
   padding-top: env(safe-area-inset-top); border-bottom: 1px solid rgba(0,0,0,0.07);
 }
+#topBarTitle { flex: 1; min-width: 0; }
+#top-bar-global.search-active #topBarTitle { flex: 0 0 auto; max-width: 220px; }
+#topBarSearchSlot { display: none; flex: 1; min-width: 0; align-items: center; padding: 0 8px; }
+#topBarSearchSlot .search-filter-row { position: static !important; background: transparent !important; padding: 0 !important; z-index: auto !important; overflow: visible !important; width: 100%; }
+#topBarSearchSlot .search-input-expressive { height: 40px; border-radius: 20px; }
 #page-container { flex: 1; min-width: 0; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--md-surface-1); }
 
 /* ================================================================

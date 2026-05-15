@@ -85,6 +85,10 @@ function startApp() {
     if (page === 'collection') renderCollectionView({ preserveScroll: true })
     if (page === 'graded')     renderGradedView()
     if (page === 'stats')      renderStats()
+    const titleMap = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Profile' }
+    const tb = document.getElementById('topBarTitle')
+    if (tb && !state.selectedPlayer) tb.textContent = titleMap[page] || page
+    _syncTopBarSearch(page)
   })
 
   // Overlays & dynamic elements
@@ -138,6 +142,7 @@ function startApp() {
         if (state.selectedPlayer) closeDetail()
       }
       _reRenderCurrentPage()
+      _syncTopBarSearch(state.currentPage)
     })
   })
 
@@ -260,15 +265,61 @@ function startApp() {
   document.getElementById('slot-players')?.classList.add('active')
 
   // Expose hooks for gestures module
-  window._openBadgePicker = openBadgePicker
-  window._openLightbox    = openLightbox
-  window._navigateCard    = navigateCard
-  window._closeCardSheet  = closeCardSheet
-  window._openRowMenu     = openRowMenu
-  window._openCardForm    = openCardForm
+  window._openBadgePicker    = openBadgePicker
+  window._openLightbox       = openLightbox
+  window._navigateCard       = navigateCard
+  window._closeCardSheet     = closeCardSheet
+  window._openRowMenu        = openRowMenu
+  window._openCardForm       = openCardForm
   window._openPlayerEditMenu = openPlayerEditMenu
-  window._openPSASheet    = openPSASheet
-  window.closeDetail      = closeDetail
+  window._openPSASheet       = openPSASheet
+  window.closeDetail         = closeDetail
+  window._afterPlayerDetail  = () => _syncTopBarSearch(state.currentPage)
+
+  // Initial title
+  const _tb = document.getElementById('topBarTitle')
+  if (_tb) _tb.textContent = 'Players'
+}
+
+// ── Top-bar search sync (desktop only) ────────────────────────────────────
+const _searchAnchors = {}
+function _syncTopBarSearch(page) {
+  const slot   = document.getElementById('topBarSearchSlot')
+  const topBar = document.getElementById('top-bar-global')
+  if (!slot || !topBar) return
+
+  // Restore any previously moved row
+  Object.entries(_searchAnchors).forEach(([id, { parent, sibling }]) => {
+    const el = document.getElementById(id)
+    if (el && el.parentElement === slot) parent.insertBefore(el, sibling)
+  })
+
+  if (!_wideQuery.matches) {
+    slot.style.display = 'none'
+    topBar.classList.remove('search-active')
+    return
+  }
+
+  const rowId = page === 'collection'                         ? 'collSearchRow'
+              : page === 'graded'                             ? 'gradedSearchRow'
+              : page === 'players' && state.selectedPlayer   ? 'detailSearchRow'
+              : null
+
+  if (!rowId) {
+    slot.style.display = 'none'
+    topBar.classList.remove('search-active')
+    return
+  }
+
+  const row = document.getElementById(rowId)
+  if (!row) { slot.style.display = 'none'; topBar.classList.remove('search-active'); return }
+
+  if (!_searchAnchors[rowId]) {
+    _searchAnchors[rowId] = { parent: row.parentElement, sibling: row.nextSibling }
+  }
+  slot.appendChild(row)
+  slot.style.display = 'flex'
+  topBar.classList.add('search-active')
 }
 
 function onDataReady() {

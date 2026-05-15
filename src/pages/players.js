@@ -104,6 +104,7 @@ export function openDetail(id) {
   if (grid) grid.classList.add('has-selection')
 
   renderDetail(player)
+  window._afterPlayerDetail?.()
 
   if (!isWideLayout()) {
     const dv = document.getElementById('detail-view')
@@ -131,6 +132,7 @@ export function closeDetail() {
   if (totalPill) totalPill.style.display = ''
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
   document.getElementById('playerGrid')?.classList.remove('has-selection')
+  window._afterPlayerDetail?.()
   if (!isWideLayout()) {
     _updateFloatingFab('players')
     if (history.state?.v === 'detail') history.back()
