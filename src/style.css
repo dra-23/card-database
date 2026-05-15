@@ -2,6 +2,8 @@
    CSS VARIABLES + RESET
    ================================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body.pwa { user-select: none; -webkit-user-select: none; }
+body.pwa .allow-select, body.pwa .allow-select * { user-select: text; -webkit-user-select: text; }
 
 :root {
   --md-primary: #E8192C;
@@ -19,6 +21,7 @@
   --coll-h1: 53px;
   --nav-height: 80px;
   --nav-height-safe: calc(96px + env(safe-area-inset-bottom));
+  overscroll-behavior-y: none;
 }
 
 [data-theme="dark"] {

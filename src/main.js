@@ -24,6 +24,20 @@ initTheme()
 // ── Render app shell HTML first ────────────────────────────────────────────
 renderShell()
 
+// ── PWA native feel ────────────────────────────────────────────────────────
+const _isPWA = () => window.matchMedia('(display-mode: standalone)').matches
+
+if (_isPWA()) {
+  document.body.classList.add('pwa')
+
+  document.addEventListener('contextmenu', e => {
+    if (e.shiftKey) return
+    if (e.target.closest('a, img, video, audio, textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="search"]:not([disabled])')) return
+    if (window.getSelection()?.toString().length > 0) return
+    e.preventDefault()
+  })
+}
+
 // ── Auth flow ──────────────────────────────────────────────────────────────
 const authScreen = document.getElementById('auth-screen')
 const appShell   = document.getElementById('app-shell')
