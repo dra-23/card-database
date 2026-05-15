@@ -244,8 +244,10 @@ html, body {
 /* ================================================================
    CARD LIST ITEMS
    ================================================================ */
-.card-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; margin-bottom: 6px; cursor: pointer; border: 1.5px solid rgba(0,0,0,0.10); }
-.card-item.not-owned { opacity: 0.5; border-style: dashed; }
+.card-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 0; margin: 0; cursor: pointer; border: none; position: relative; }
+.card-item::after { content: ''; position: absolute; bottom: 0; left: 88px; right: 0; height: 1px; background: var(--md-outline); opacity: 0.18; pointer-events: none; }
+.card-item:last-child::after { display: none; }
+.card-item.not-owned { opacity: 0.45; }
 .card-thumb { width: 60px; height: 80px; border-radius: 0; object-fit: cover; background: #eee; flex-shrink: 0; }
 .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .card-info-row1 { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -295,7 +297,7 @@ html, body {
 .year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
 .year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }
 .year-sub-header { position: sticky; top: var(--coll-h1); background: var(--md-surface); z-index: 9; padding: 5px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); border-bottom: 1px solid var(--md-surface-2); }
-.collection-card-list { padding: 8px 16px; }
+.collection-card-list { padding: 0; }
 
 /* ================================================================
    GRADED VIEW
@@ -503,7 +505,7 @@ html, body {
 #detail-view-empty p { font-size: 15px; font-weight: 600; }
 
 /* Selected row/tile in wide layout */
-.card-item.tp-selected { border-color: var(--md-surface-1); background: var(--md-surface-2); box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+.card-item.tp-selected { background: var(--md-surface-2); }
 .card-item.tp-selected .card-row-menu-btn { color: var(--md-on-surface-variant); }
 .graded-tile.tp-selected { outline: 3px solid #b6bef8; outline-offset: -3px; }
 
@@ -722,7 +724,7 @@ html, body {
 [data-theme="dark"] .nav-indicator { background: rgba(255,255,255,0.12); }
 [data-theme="dark"] .player-stat-pill,
 [data-theme="dark"] .total-count-pill { background: var(--md-surface-2); }
-[data-theme="dark"] .card-item { border-color: rgba(255,255,255,0.04); }
+[data-theme="dark"] .card-item::after { opacity: 0.12; }
 [data-theme="dark"] .player-tile,
 [data-theme="dark"] .graded-tile { box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.4); }
 [data-theme="dark"] .tile-text-bar { border-top-color: rgba(255,255,255,0.06); }
