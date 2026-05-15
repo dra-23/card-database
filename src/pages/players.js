@@ -233,8 +233,6 @@ export function renderDetail(player) {
     groups.get(key).push(c)
   })
 
-  const valueStr = totalValue > 0 ? `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'
-
   // Update mobile pill
   const ps = document.getElementById('detailPillSleevd')
   const pu = document.getElementById('detailPillUnsleevd')
@@ -243,15 +241,7 @@ export function renderDetail(player) {
   if (pu) pu.textContent = allPlayerCards.length - ownedCards.length
   if (pg) pg.textContent = gradedCards.length
 
-  let html = `<div class="player-stats-bar">
-    <div class="psb-stat"><span class="psb-val">${ownedCards.length}</span><span class="psb-lbl">sleevd</span></div>
-    <div class="psb-divider"></div>
-    <div class="psb-stat"><span class="psb-val">${allPlayerCards.length - ownedCards.length}</span><span class="psb-lbl">unsleevd</span></div>
-    <div class="psb-divider"></div>
-    <div class="psb-stat"><span class="psb-val">${gradedCards.length}</span><span class="psb-lbl">graded</span></div>
-    <div class="psb-divider"></div>
-    <div class="psb-stat"><span class="psb-val">${valueStr}</span><span class="psb-lbl">paid</span></div>
-  </div>`
+  let html = ``
 
   groups.forEach((groupCards, yearKey) => {
     const rawYears   = [...new Set(groupCards.map(c => (c.Year || '').toString()))].sort()

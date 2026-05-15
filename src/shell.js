@@ -125,6 +125,9 @@ function appShellHTML() {
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
+                    <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
+                    <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
+                    <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
                   </div>
                   <div class="coll-chips-row">
                     <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
@@ -133,10 +136,6 @@ function appShellHTML() {
                     <div id="chipCollAuto"     class="filter-chip" data-chip="collAuto">AUTO</div>
                     <div id="chipCollMem"      class="filter-chip" data-chip="collMem">MEM</div>
                     <div id="chipCollNumbered" class="filter-chip" data-chip="collNumbered">#'d</div>
-                    <div class="coll-chips-divider"></div>
-                    <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
-                    <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
-                    <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
                   </div>
                 </div>
               </div>

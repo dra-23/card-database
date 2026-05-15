@@ -265,7 +265,8 @@ html, body {
 /* ================================================================
    SEARCH / FILTER ROW
    ================================================================ */
-.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px 6px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; overflow-x: hidden; }
+.search-filter-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px 6px; background: var(--md-surface); position: sticky; top: 0; z-index: 20; width: 100%; overflow-x: auto; scrollbar-width: none; }
+.search-filter-row::-webkit-scrollbar { display: none; }
 .search-wrap { position: relative; flex: 1; min-width: 120px; display: flex; align-items: center; }
 .search-input-expressive { width: 100%; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); padding: 0 40px 0 16px; font-family: 'Google Sans', sans-serif; font-size: 15px; color: var(--md-on-surface); outline: none; }
 .search-input-expressive::placeholder { color: var(--md-on-surface-variant); opacity: 0.55; }
@@ -290,11 +291,6 @@ html, body {
    YEAR GROUP HEADERS
    ================================================================ */
 #playerDetailPill { display: block; }
-.player-stats-bar { display: none; align-items: center; padding: 12px 16px; gap: 0; border-bottom: 1px solid var(--md-surface-2); background: var(--md-surface); }
-.psb-stat { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; }
-.psb-val { font-family: 'Google Sans Display'; font-size: 20px; font-weight: 700; line-height: 1; color: var(--md-on-surface); }
-.psb-lbl { font-size: 11px; font-weight: 600; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.3px; }
-.psb-divider { width: 1px; height: 32px; background: var(--md-outline); opacity: 0.25; flex-shrink: 0; }
 .year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
 .year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
 .year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }
@@ -622,7 +618,6 @@ html, body {
 @media (min-width: 768px) {
   #playerWideHero { display: block; }
   #playerBannerSection, #playerThumbSection, #playerDetailPill { display: none !important; }
-  .player-stats-bar { display: flex; }
   /* Smaller player tiles in sidebar mode (player selected) */
   #slot-players:not(:has(#detail-view.tp-no-player)) .player-grid {
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
