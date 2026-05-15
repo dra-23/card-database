@@ -254,25 +254,21 @@ function appShellHTML() {
                 </button>
               </div>
 
-              <!-- MOBILE THUMB + NAME (hidden on desktop) -->
-              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+              <!-- MOBILE THUMB + NAME + PILL (hidden on desktop) -->
+              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px 12px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-                <div style="padding-bottom:8px;">
-                  <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
-                </div>
-              </div>
-
-              <!-- MOBILE STAT PILL (hidden on desktop) -->
-              <div id="playerDetailPill" style="padding:4px 20px 12px; display:flex; justify-content:center;">
-                <div class="player-stat-pill">
-                  <span class="stat-pill-label">sleevd</span>
-                  <strong id="detailPillSleevd">0</strong>
-                  <span class="stat-pill-sep">·</span>
-                  <span class="stat-pill-label">unsleevd</span>
-                  <strong id="detailPillUnsleevd">0</strong>
-                  <span class="stat-pill-sep">·</span>
-                  <span class="stat-pill-label">graded</span>
-                  <strong id="detailPillGraded">0</strong>
+                <div id="playerDetailPill" style="padding-bottom:8px; flex:1; min-width:0;">
+                  <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display'; margin:0 0 6px;"></h2>
+                  <div class="player-stat-pill" style="display:inline-flex;">
+                    <span class="stat-pill-label">sleevd</span>
+                    <strong id="detailPillSleevd">0</strong>
+                    <span class="stat-pill-sep">·</span>
+                    <span class="stat-pill-label">unsleevd</span>
+                    <strong id="detailPillUnsleevd">0</strong>
+                    <span class="stat-pill-sep">·</span>
+                    <span class="stat-pill-label">graded</span>
+                    <strong id="detailPillGraded">0</strong>
+                  </div>
                 </div>
               </div>
               <div class="search-filter-row">
