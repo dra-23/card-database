@@ -118,24 +118,22 @@ function appShellHTML() {
                       <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
-                  <div class="search-filter-row">
+                  <div class="search-filter-row" style="padding-bottom:6px;">
                     <div class="search-wrap">
                       <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set...">
                       <button class="search-clear-btn" tabindex="-1" id="collSearchClear">
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
+                  </div>
+                  <div class="coll-chips-row">
                     <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
                     <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
-                  </div>
-                  <div class="badge-filter-row">
                     <div id="chipCollRC"       class="filter-chip" data-chip="collRC">RC</div>
                     <div id="chipCollAuto"     class="filter-chip" data-chip="collAuto">AUTO</div>
                     <div id="chipCollMem"      class="filter-chip" data-chip="collMem">MEM</div>
                     <div id="chipCollNumbered" class="filter-chip" data-chip="collNumbered">#'d</div>
-                  </div>
-                  <div class="sort-chips-row">
-                    <span class="sort-label">Sort:</span>
+                    <div class="coll-chips-divider"></div>
                     <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
                     <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
                     <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
