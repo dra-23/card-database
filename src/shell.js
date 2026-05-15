@@ -248,6 +248,9 @@ function appShellHTML() {
                 <button class="back-btn" id="backBtn">
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
+                <button class="top-bar-icon-btn" id="editPlayerBtn" aria-label="Edit player" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:56px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
                 <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
                   <span class="material-symbols-outlined">person</span>
                 </button>
@@ -256,13 +259,26 @@ function appShellHTML() {
               <!-- MOBILE THUMB + NAME (hidden on desktop) -->
               <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-                <div style="padding-bottom:8px; flex:1;">
+                <div style="padding-bottom:8px;">
                   <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
-                  <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
                 </div>
-                <button class="icon-btn" id="editPlayerBtn" style="flex-shrink:0; margin-bottom:10px; width:36px; height:36px; border-radius:12px; background:var(--md-surface-2);" aria-label="Edit player">
-                  <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
-                </button>
+              </div>
+
+              <!-- MOBILE STAT PILL (hidden on desktop) -->
+              <div id="playerDetailPill" style="padding:4px 20px 12px;">
+                <div class="player-stat-pill">
+                  <span class="stat-pill-label">sleevd</span>
+                  <strong id="detailPillSleevd">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">unsleevd</span>
+                  <strong id="detailPillUnsleevd">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">graded</span>
+                  <strong id="detailPillGraded">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">paid</span>
+                  <strong id="detailPillValue">—</strong>
+                </div>
               </div>
               <div class="search-filter-row">
                 <div class="search-wrap">

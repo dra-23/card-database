@@ -225,8 +225,6 @@ export function renderDetail(player) {
   if (state.showWishlistOnly) cards = cards.filter(c => !isOwned(c))
 
   state.setCardSequence(cards.map(c => c.id))
-  document.getElementById('playerDetailCount').innerText =
-    `${cards.filter(c => isOwned(c)).length} Owned`
 
   const groups = new Map()
   cards.forEach(c => {
@@ -236,6 +234,17 @@ export function renderDetail(player) {
   })
 
   const valueStr = totalValue > 0 ? `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'
+
+  // Update mobile pill
+  const ps = document.getElementById('detailPillSleevd')
+  const pu = document.getElementById('detailPillUnsleevd')
+  const pg = document.getElementById('detailPillGraded')
+  const pv = document.getElementById('detailPillValue')
+  if (ps) ps.textContent = ownedCards.length
+  if (pu) pu.textContent = allPlayerCards.length - ownedCards.length
+  if (pg) pg.textContent = gradedCards.length
+  if (pv) pv.textContent = valueStr
+
   let html = `<div class="player-stats-bar">
     <div class="psb-stat"><span class="psb-val">${ownedCards.length}</span><span class="psb-lbl">sleevd</span></div>
     <div class="psb-divider"></div>
