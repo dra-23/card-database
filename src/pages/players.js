@@ -62,6 +62,13 @@ export function openDetail(id) {
   const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
   const heroName = document.getElementById('playerWideHeroName')
   if (heroName) heroName.textContent = player.Player || player.id
+
+  // Wire edit buttons (both mobile and desktop)
+  const _onEdit = () => window._openPlayerEditMenu?.(player.id)
+  document.getElementById('editPlayerBtn')?.removeEventListener('click', _onEdit)
+  document.getElementById('editPlayerBtnWide')?.removeEventListener('click', _onEdit)
+  document.getElementById('editPlayerBtn')?.addEventListener('click', _onEdit)
+  document.getElementById('editPlayerBtnWide')?.addEventListener('click', _onEdit)
   // Top bar: show player name + stat pill, hide total count
   const topBarTitle = document.getElementById('topBarTitle')
   const topBarStats = document.getElementById('topBarStats')
@@ -189,12 +196,15 @@ export function renderDetail(player) {
   if (!player) return
   // Refresh top bar stats whenever detail re-renders
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
+  const ownedCards   = allPlayerCards.filter(c => isOwned(c))
+  const gradedCards  = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
+  const totalValue   = ownedCards.reduce((sum, c) => sum + (parseFloat(c.Price) || 0), 0)
   const tbS = document.getElementById('topBarSleevd')
   const tbU = document.getElementById('topBarUnsleevd')
   const tbG = document.getElementById('topBarGraded')
-  if (tbS) tbS.textContent = allPlayerCards.filter(c => isOwned(c)).length
-  if (tbU) tbU.textContent = allPlayerCards.filter(c => !isOwned(c)).length
-  if (tbG) tbG.textContent = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
+  if (tbS) tbS.textContent = ownedCards.length
+  if (tbU) tbU.textContent = allPlayerCards.length - ownedCards.length
+  if (tbG) tbG.textContent = gradedCards.length
   const tbT = document.getElementById('topBarTotal')
   if (tbT) tbT.textContent = state.ALL_CARDS.filter(c => isOwned(c)).length
 
@@ -225,7 +235,17 @@ export function renderDetail(player) {
     groups.get(key).push(c)
   })
 
-  let html = ''
+  const valueStr = totalValue > 0 ? `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'
+  let html = `<div class="player-stats-bar">
+    <div class="psb-stat"><span class="psb-val">${ownedCards.length}</span><span class="psb-lbl">sleevd</span></div>
+    <div class="psb-divider"></div>
+    <div class="psb-stat"><span class="psb-val">${allPlayerCards.length - ownedCards.length}</span><span class="psb-lbl">unsleevd</span></div>
+    <div class="psb-divider"></div>
+    <div class="psb-stat"><span class="psb-val">${gradedCards.length}</span><span class="psb-lbl">graded</span></div>
+    <div class="psb-divider"></div>
+    <div class="psb-stat"><span class="psb-val">${valueStr}</span><span class="psb-lbl">paid</span></div>
+  </div>`
+
   groups.forEach((groupCards, yearKey) => {
     const rawYears   = [...new Set(groupCards.map(c => (c.Year || '').toString()))].sort()
     const displayYear = rawYears.length === 1 ? rawYears[0] : rawYears.join(' · ')
@@ -245,11 +265,12 @@ export function buildCardRow(c, ctx) {
   const isAuto     = c.Auto     === true || c.Auto     === 'true'
   const isMem      = c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true'
   const isNumbered = c.Numbered === true || c.Numbered === 'true'
+  const serialNum  = c.SerialNumber || ''
   const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade" data-co="${co}">${co} ${gr}</span>` : ''
   const rcBadge       = isRC       ? `<span class="badge-rc">RC</span>`         : ''
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
   const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''
-  const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d</span>` : ''
+  const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d${serialNum ? ` ${serialNum}` : ''}</span>` : ''
   const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">

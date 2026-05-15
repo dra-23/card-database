@@ -286,6 +286,11 @@ html, body {
 /* ================================================================
    YEAR GROUP HEADERS
    ================================================================ */
+.player-stats-bar { display: flex; align-items: center; padding: 12px 16px; gap: 0; border-bottom: 1px solid var(--md-surface-2); background: var(--md-surface); }
+.psb-stat { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; }
+.psb-val { font-family: 'Google Sans Display'; font-size: 20px; font-weight: 700; line-height: 1; color: var(--md-on-surface); }
+.psb-lbl { font-size: 11px; font-weight: 600; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: 0.3px; }
+.psb-divider { width: 1px; height: 32px; background: var(--md-outline); opacity: 0.25; flex-shrink: 0; }
 .year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
 .year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
 .year-group-header .year-count { font-size: 13px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }

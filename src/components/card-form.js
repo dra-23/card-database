@@ -217,6 +217,7 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     document.getElementById('f_grade').value        = c.Grade || 'N/A'
     document.getElementById('f_price').value        = c.Price || ''
     document.getElementById('f_url').value          = c['Card Information'] || ''
+    document.getElementById('f_serialnumber').value = c.SerialNumber || ''
     setFormFlag('rc',       c.RC       === true || c.RC       === 'true')
     setFormFlag('auto',     c.Auto     === true || c.Auto     === 'true')
     setFormFlag('mem',      c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true')
@@ -238,6 +239,7 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     document.getElementById('f_fileInput').value = ''
     const photoBtn = document.getElementById('selectPhotoBtn')
     if (photoBtn) { photoBtn.textContent = '📷 Select Photo'; photoBtn.disabled = false }
+    document.getElementById('f_serialnumber').value = ''
     _pendingImageFile   = null
     _pendingCardsightId = null
 
@@ -342,7 +344,8 @@ export async function saveCard(owned = true) {
       RC:       document.getElementById('f_rc').value       === 'true',
       Auto:     document.getElementById('f_auto').value     === 'true',
       Mem:      document.getElementById('f_mem').value      === 'true',
-      Numbered: document.getElementById('f_numbered').value === 'true',
+      Numbered:     document.getElementById('f_numbered').value === 'true',
+      SerialNumber: document.getElementById('f_serialnumber').value,
       Owned: id ? (state.ALL_CARDS.find(x => x.id === id)?.Owned ?? true) : owned,
       ...(cardsightId && !id ? { CardsightId: cardsightId } : {}),
     }

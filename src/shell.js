@@ -228,7 +228,10 @@ function appShellHTML() {
                   <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                   </button>
-                  <div id="playerWideHeroName"></div>
+                  <div id="playerWideHeroName" style="flex:1;"></div>
+                  <button class="icon-btn" id="editPlayerBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;" aria-label="Edit player">
+                    <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
+                  </button>
                 </div>
               </div>
 
@@ -247,10 +250,13 @@ function appShellHTML() {
               <!-- MOBILE THUMB + NAME (hidden on desktop) -->
               <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-                <div style="padding-bottom:8px;">
+                <div style="padding-bottom:8px; flex:1;">
                   <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
                   <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
                 </div>
+                <button class="icon-btn" id="editPlayerBtn" style="flex-shrink:0; margin-bottom:10px; width:36px; height:36px; border-radius:12px; background:var(--md-surface-2);" aria-label="Edit player">
+                  <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
+                </button>
               </div>
               <div class="search-filter-row">
                 <div class="search-wrap">
@@ -495,6 +501,10 @@ function appShellHTML() {
       <input type="hidden" id="f_auto"     value="false">
       <input type="hidden" id="f_mem"      value="false">
       <input type="hidden" id="f_numbered" value="false">
+      <div class="m3-field">
+        <label class="m3-label">Serial # (if numbered, e.g. 47/99)</label>
+        <input type="text" id="f_serialnumber" class="m3-input" placeholder="e.g. 47/99" autocomplete="off">
+      </div>
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>
         <button class="expressive-btn" id="btnMarkUnsleevd" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Mark Unsleevd</button>

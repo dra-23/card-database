@@ -17,7 +17,7 @@ export function buildCardDetailHTML(card, ctx) {
   const owned       = isOwned(card)
   const url         = card['Card Information'] || ''
   const parallel    = card.Parallel || ''
-  const serial      = card.Serial || card['Serial Number'] || ''
+  const serial      = card.SerialNumber || card.Serial || card['Serial Number'] || ''
   const notes       = card.Notes || ''
   const isRC        = card.RC       === true || card.RC       === 'true'
   const isAuto      = card.Auto     === true || card.Auto     === 'true'
