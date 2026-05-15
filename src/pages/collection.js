@@ -15,6 +15,10 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   if (state.collShowGradedOnly) {
     cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   }
+  if (state.collFilterRC)       cards = cards.filter(c => c.RC       === true || c.RC       === 'true')
+  if (state.collFilterAuto)     cards = cards.filter(c => c.Auto     === true || c.Auto     === 'true')
+  if (state.collFilterMem)      cards = cards.filter(c => c.Mem      === true || c.Mem      === 'true' || c.Patch === true || c.Patch === 'true')
+  if (state.collFilterNumbered) cards = cards.filter(c => c.Numbered === true || c.Numbered === 'true')
 
   if (state.collSearchQuery) {
     const tokens = state.collSearchQuery.toLowerCase().trim().split(/\s+/)

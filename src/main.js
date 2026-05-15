@@ -374,6 +374,10 @@ function wireFilterChips() {
   bindChip('chipGraded',       () => state.setShowGradedOnly(!state.showGradedOnly),          () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) })
   bindChip('chipCollWishlist', () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), () => { updateOwnedCount(); renderCollectionView() })
   bindChip('chipCollGraded',   () => state.setCollShowGradedOnly(!state.collShowGradedOnly),    renderCollectionView)
+  bindChip('chipCollRC',       () => state.setCollFilterRC(!state.collFilterRC),           renderCollectionView)
+  bindChip('chipCollAuto',     () => state.setCollFilterAuto(!state.collFilterAuto),       renderCollectionView)
+  bindChip('chipCollMem',      () => state.setCollFilterMem(!state.collFilterMem),         renderCollectionView)
+  bindChip('chipCollNumbered', () => state.setCollFilterNumbered(!state.collFilterNumbered), renderCollectionView)
 
   // Collection sort chips
   document.querySelectorAll('.sort-chip[data-sort]').forEach(chip => {

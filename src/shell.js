@@ -128,6 +128,12 @@ function appShellHTML() {
                     <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
                     <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
                   </div>
+                  <div class="badge-filter-row">
+                    <div id="chipCollRC"       class="filter-chip" data-chip="collRC">RC</div>
+                    <div id="chipCollAuto"     class="filter-chip" data-chip="collAuto">AUTO</div>
+                    <div id="chipCollMem"      class="filter-chip" data-chip="collMem">MEM</div>
+                    <div id="chipCollNumbered" class="filter-chip" data-chip="collNumbered">#'d</div>
+                  </div>
                   <div class="sort-chips-row">
                     <span class="sort-label">Sort:</span>
                     <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>

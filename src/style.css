@@ -277,6 +277,8 @@ html, body {
 .filter-chip:active { background: rgba(0,0,0,0.06); }
 .filter-chip.active { background: var(--md-surface-1); border-color: var(--md-surface-1); color: var(--md-on-surface); font-weight: 600; padding-left: 10px; }
 .filter-chip.active::before { content: 'check'; font-family: 'Material Symbols Outlined'; font-size: 16px; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; line-height: 1; }
+.badge-filter-row { display: flex; align-items: center; gap: 6px; padding: 4px 16px 8px; overflow-x: auto; scrollbar-width: none; }
+.badge-filter-row::-webkit-scrollbar { display: none; }
 .sort-chips-row { display: flex; align-items: center; gap: 6px; padding: 6px 12px 8px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
 .sort-chips-row::-webkit-scrollbar { display: none; }
 .sort-label { font-size: 12px; font-weight: 600; color: var(--md-on-surface-variant); flex-shrink: 0; }
