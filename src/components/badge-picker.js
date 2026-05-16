@@ -25,6 +25,7 @@ export function openBadgePicker(cardId) {
   const scrim = document.getElementById('globalScrim')
   if (scrim) scrim.style.display = 'block'
   document.getElementById('badgePickerSheet')?.classList.add('open')
+  history.pushState({ v: 'badge' }, '')
 }
 
 export function closeBadgePicker() {
@@ -32,6 +33,7 @@ export function closeBadgePicker() {
   const scrim = document.getElementById('globalScrim')
   if (scrim) scrim.style.display = 'none'
   _cardId = null
+  if (history.state?.v === 'badge') history.back()
 }
 
 export function initBadgePicker() {

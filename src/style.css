@@ -402,7 +402,7 @@ html, body {
 /* ================================================================
    SCRIM
    ================================================================ */
-.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 900; }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 900; cursor: pointer; }
 
 /* ================================================================
    OVERFLOW MENU (3-dot context)

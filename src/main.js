@@ -217,6 +217,8 @@ function startApp() {
   window.addEventListener('popstate', e => {
     if (isLightboxOpen()) {
       closeLightbox(); return
+    } else if (document.getElementById('badgePickerSheet')?.classList.contains('open')) {
+      closeBadgePicker(); return
     } else if (document.getElementById('settings-page').classList.contains('open')) {
       closeSettingsPage()
     } else if (document.getElementById('psaSheet').classList.contains('open')) {
