@@ -376,6 +376,7 @@ function wireNavButtons() {
       _commitPageSwitch(page, PAGE_NAMES.indexOf(page))
       _updateNavActive(page)
       _updateFloatingFab(page)
+      _syncTopBarSearch(page)
       if (page === 'collection') renderCollectionView()
       if (page === 'graded')     renderGradedView()
       if (page === 'stats')      renderStats()
