@@ -288,22 +288,24 @@ function _syncTopBarSearch(page) {
   const topBar = document.getElementById('top-bar-global')
   if (!slot || !topBar) return
 
-  // Restore any previously moved row
-  Object.entries(_searchAnchors).forEach(([id, { parent, sibling }]) => {
-    const el = document.getElementById(id)
-    if (el && el.parentElement === slot) parent.insertBefore(el, sibling)
-  })
-
   if (!_wideQuery.matches) {
+    // Restore ALL rows to their original positions when going mobile
+    Object.entries(_searchAnchors).forEach(([id, { parent, sibling }]) => {
+      const el = document.getElementById(id)
+      if (el) { el.style.display = ''; parent.insertBefore(el, sibling) }
+    })
     slot.style.display = 'none'
     topBar.classList.remove('search-active')
     return
   }
 
-  const rowId = page === 'collection'                         ? 'collSearchRow'
-              : page === 'graded'                             ? 'gradedSearchRow'
-              : page === 'players' && state.selectedPlayer   ? 'detailSearchRow'
+  const rowId = page === 'collection'                       ? 'collSearchRow'
+              : page === 'graded'                           ? 'gradedSearchRow'
+              : page === 'players' && state.selectedPlayer ? 'detailSearchRow'
               : null
+
+  // Hide all rows currently in slot — they stay in slot, just invisible
+  Array.from(slot.children).forEach(el => { el.style.display = 'none' })
 
   if (!rowId) {
     slot.style.display = 'none'
@@ -314,10 +316,15 @@ function _syncTopBarSearch(page) {
   const row = document.getElementById(rowId)
   if (!row) { slot.style.display = 'none'; topBar.classList.remove('search-active'); return }
 
+  // Move to slot on first visit; on return visits it's already there
   if (!_searchAnchors[rowId]) {
     _searchAnchors[rowId] = { parent: row.parentElement, sibling: row.nextSibling }
+    slot.appendChild(row)
+  } else if (row.parentElement !== slot) {
+    slot.appendChild(row) // restored to mobile, now back on desktop
   }
-  slot.appendChild(row)
+
+  row.style.display = ''
   slot.style.display = 'flex'
   topBar.classList.add('search-active')
 }
