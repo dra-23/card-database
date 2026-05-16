@@ -630,7 +630,7 @@ html, body {
    ================================================================ */
 #playerWideHero { display: none; padding: 14px 20px; border-bottom: 1px solid var(--md-surface-2); }
 #playerWideHeroName { font-family: 'Google Sans Display'; font-size: 26px; font-weight: 700; color: var(--md-on-surface); }
-.player-tile.tile-selected { box-shadow: 0 2px 4px rgba(0,0,0,0.12), 0 6px 20px rgba(0,0,0,0.09), 0 0 0 2.5px var(--md-primary); }
+.player-tile.tile-selected { box-shadow: 0 4px 8px rgba(0,0,0,0.18), 0 10px 28px rgba(0,0,0,0.14); }
 .player-grid.has-selection .player-tile:not(.tile-selected) { opacity: 0.4; filter: grayscale(0.3); transition: opacity 0.2s, filter 0.2s; }
 .player-grid.has-selection .player-tile.tile-selected { transition: opacity 0.2s; }
 @media (min-width: 768px) {
