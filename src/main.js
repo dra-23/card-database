@@ -87,7 +87,7 @@ function startApp() {
     if (page === 'stats')      renderStats()
     const titleMap = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Profile' }
     const tb = document.getElementById('topBarTitle')
-    if (tb && !state.selectedPlayer) tb.textContent = titleMap[page] || page
+    if (tb && !(page === 'players' && state.selectedPlayer)) tb.textContent = titleMap[page] || page
     _syncTopBarSearch(page)
   })
 
@@ -365,9 +365,11 @@ function wireNavButtons() {
     btn.addEventListener('click', () => {
       const page = btn.dataset.page
       if (!page) return
-      // Tapping Players while a player is open closes detail (works on both mobile and desktop)
-      if (page === 'players' && state.selectedPlayer) { closeDetail(); return }
-      // Close player detail when leaving players page on mobile
+      // Tapping Players while a player is open closes detail
+      // Mobile: return early (history.back() in closeDetail handles navigation)
+      // Desktop: fall through so _commitPageSwitch fires page:changed and syncs search/title
+      if (page === 'players' && state.selectedPlayer) { closeDetail(); if (!isWideLayout()) return }
+      // Close player detail when leaving players page on non-three-pane layouts
       if (page !== 'players' && state.selectedPlayer && (!isWideLayout() || !isThreePaneLayout())) closeDetail()
       if (page === 'stats') history.pushState({ v: 'page', page: 'stats' }, '')
       state.setCurrentPage(page)
