@@ -633,8 +633,13 @@ html, body {
 .player-tile.tile-selected { box-shadow: 0 4px 8px rgba(0,0,0,0.18), 0 10px 28px rgba(0,0,0,0.14); }
 .player-grid.has-selection .player-tile:not(.tile-selected) { opacity: 0.4; filter: grayscale(0.3); transition: opacity 0.2s, filter 0.2s; }
 .player-grid.has-selection .player-tile.tile-selected { transition: opacity 0.2s; }
+
+/* Tile edit button — hidden by default, shown on selected tile in wide layout */
+.tile-edit-btn { display: none; position: absolute; top: 7px; right: 7px; width: 28px; height: 28px; border-radius: 8px; border: none; background: rgba(0,0,0,0.42); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; align-items: center; justify-content: center; cursor: pointer; z-index: 2; padding: 0; }
+.tile-edit-btn .material-symbols-outlined { font-size: 15px; }
+.tile-edit-btn:active { background: rgba(0,0,0,0.6); }
+
 @media (min-width: 768px) {
-  #playerWideHero { display: block; }
   #playerBannerSection, #playerThumbSection, #playerDetailPill { display: none !important; }
   /* Smaller player tiles in sidebar mode (player selected) */
   #slot-players:not(:has(#detail-view.tp-no-player)) .player-grid {
@@ -644,7 +649,19 @@ html, body {
   #slot-players:not(:has(#detail-view.tp-no-player)) .player-tile { border-radius: 20px; }
   /* More columns for graded grid on wider screens */
   .graded-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  /* Show edit icon on selected tile */
+  .player-tile.tile-selected .tile-edit-btn { display: flex; }
 }
+
+/* Fold (840–1279px): gallery hidden — show a compact edit-only bar */
+@media (min-width: 840px) and (max-width: 1279px) {
+  #playerWideHero { display: flex; align-items: center; justify-content: flex-end; padding: 6px 12px; }
+  #backBtnWide, #playerWideHeroName { display: none; }
+}
+
+/* Tablet (768–839px) + three-pane (1280px+): gallery visible — hide the bar entirely */
+@media (min-width: 768px) and (max-width: 839px) { #playerWideHero { display: none !important; } }
+@media (min-width: 1280px) { #playerWideHero { display: none !important; } }
 
 /* ================================================================
    PLAYER EDIT SHEET (dynamically created)

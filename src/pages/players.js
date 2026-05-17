@@ -18,6 +18,9 @@ export function renderGallery() {
     return `
       <div class="player-tile" data-player-id="${escapeAttr(p.id)}">
         <img class="tile-img" src="${getCleanImg(p['Main Image'])}" alt="${escapeAttr(p.Player || p.id)}">
+        <button class="tile-edit-btn" data-edit-player="${escapeAttr(p.id)}" aria-label="Edit player">
+          <span class="material-symbols-outlined">edit</span>
+        </button>
         <div class="tile-text-bar">
           <div class="tile-title">${p.Player || p.id}</div>
           <div class="tile-subtitle">${pC.filter(c => isOwned(c)).length} owned</div>
@@ -35,6 +38,7 @@ export function renderGallery() {
   // Attach click + long-press on tiles
   grid.querySelectorAll('.player-tile').forEach(tile => {
     tile.addEventListener('click', () => openDetail(tile.dataset.playerId))
+    tile.querySelector('.tile-edit-btn')?.addEventListener('click', e => { e.stopPropagation(); window._openPlayerEditMenu?.(tile.dataset.playerId) })
     tile.addEventListener('contextmenu', e => { e.preventDefault(); window._openPlayerEditMenu?.(tile.dataset.playerId) })
     let pressTimer = null
     tile.addEventListener('touchstart', () => {
