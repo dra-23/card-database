@@ -648,7 +648,7 @@ html, body {
   }
   #slot-players:not(:has(#detail-view.tp-no-player)) .player-tile { border-radius: 20px; }
   /* More columns for graded grid on wider screens */
-  .graded-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  .graded-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   /* Show edit icon on selected tile */
   .player-tile.tile-selected .tile-edit-btn { display: flex; }
 }

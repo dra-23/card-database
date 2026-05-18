@@ -71,9 +71,10 @@ function buildGradedRow(c) {
   const gr          = c.Grade || ''
   const owned       = isOwned(c)
   const gradeLabel  = `${co} ${gr}`.trim()
+  const imgSrc      = getCleanImg(c.PSAImage || c['App Image'])
 
   return `<div class="graded-tile ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}" data-co="${co}">
-    <img class="graded-tile-img" src="${getCleanImg(c['App Image'])}" alt="">
+    <img class="graded-tile-img" src="${imgSrc}" alt="">
     <div class="graded-tile-bar">
       <div class="graded-tile-grade">${gradeLabel}</div>
       <div class="graded-tile-set">${c.Year || ''} ${c.Set || ''}</div>
