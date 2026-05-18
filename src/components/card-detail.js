@@ -38,8 +38,9 @@ export function buildCardDetailHTML(card, ctx) {
     ...(serial   ? [['Serial',   serial]]   : []),
   ]
 
-  const isGraded = co && co !== 'Raw'
-  const hasPSA   = isGraded && !!card.PSACert
+  const isGraded    = co && co !== 'Raw'
+  const hasPSA      = isGraded && !!card.PSACert
+  const hasPSAImages = !!(card.PSAImage || card.PSAImageBack)
   const registryUrl = hasPSA ? (() => {
     switch (co) {
       case 'PSA': return `https://www.psacard.com/cert/${card.PSACert}`
@@ -59,11 +60,6 @@ export function buildCardDetailHTML(card, ctx) {
       <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
       ${card.PSAGrade ? `<div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val">${card.PSAGrade}</span></div>` : ''}
       <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
-      ${(card.PSAImage || card.PSAImageBack) ? `
-      <div class="psa-cert-img-row">
-        ${card.PSAImage     ? `<img src="${card.PSAImage}"     class="psa-cert-img" alt="${co} front">` : ''}
-        ${card.PSAImageBack ? `<img src="${card.PSAImageBack}" class="psa-cert-img" alt="${co} back">` : ''}
-      </div>` : ''}
       ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
         <button class="psa-registry-btn">${co} Registry ↗</button>
       </a>` : ''}` : ''}
@@ -125,9 +121,14 @@ export function buildCardDetailHTML(card, ctx) {
     </div>`
 
   return `
+    ${hasPSAImages ? `
+    <div class="cd-psa-img-wrap">
+      ${card.PSAImage     ? `<img class="cd-psa-main-img" src="${card.PSAImage}"     alt="front">` : ''}
+      ${card.PSAImageBack ? `<img class="cd-psa-main-img" src="${card.PSAImageBack}" alt="back">`  : ''}
+    </div>` : `
     <div class="cd-img-wrap">
       <img src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
-    </div>
+    </div>`}
     <div class="cd-body">
       <div class="cd-header">
         <div class="cd-header-info">
@@ -281,7 +282,15 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   // Kick off pricing fetch if card has a CardsightId
   _loadMarketValue(panelEl, card)
 
-  // PSA cert image lightbox — all images, with prev/next navigation
+  // Main PSA images (front + back) — click to enlarge
+  const mainPSAImgs = [...panelEl.querySelectorAll('.cd-psa-main-img')]
+  mainPSAImgs.forEach((img, i) => {
+    img.addEventListener('click', () => {
+      window._openLightbox?.(mainPSAImgs.map(im => im.src), i)
+    })
+  })
+
+  // Legacy PSA cert thumbnails in the PSA section
   const certImgs = [...panelEl.querySelectorAll('.psa-cert-img')]
   certImgs.forEach((img, i) => {
     img.addEventListener('click', () => {
