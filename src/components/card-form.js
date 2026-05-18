@@ -1,8 +1,75 @@
 import { db, doc, setDoc, addDoc, collection, deleteField, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import { auth } from '../firebase.js'
 import * as state from '../state.js'
-import { isOwned } from '../utils.js'
+import { isOwned, getCleanImg } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
+import { cardsight } from '../cardsight.js'
+
+const _SPORT_KW = [
+  ['baseball','Baseball'],['basketball','Basketball'],['football','Football'],
+  ['hockey','Hockey'],['golf','Golf'],['soccer','Soccer'],
+]
+function _sportFromName(name) {
+  if (!name) return ''
+  const n = name.toLowerCase()
+  for (const [kw, sport] of _SPORT_KW) { if (n.includes(kw)) return sport }
+  return ''
+}
+
+async function _identifyAndPrefill(file) {
+  const btn = document.getElementById('selectPhotoBtn')
+  if (btn) { btn.textContent = '🔍 Identifying…'; btn.disabled = true }
+
+  try {
+    const { data, error } = await cardsight.identify.card(file)
+    if (error || !data?.detections?.length) {
+      if (btn) { btn.textContent = '📷 Change Photo'; btn.disabled = false }
+      return
+    }
+
+    const top     = data.detections[0]
+    const card    = top.card
+    const grading = top.grading
+
+    const fill = (id, val) => {
+      if (!val) return
+      const el = document.getElementById(id)
+      if (el && !el.value) el.value = val
+    }
+
+    fill('f_year',         card.year ? String(card.year) : '')
+    fill('f_set',          card.setName || '')
+    fill('f_number',       card.number  ? String(card.number) : '')
+    fill('f_manufacturer', card.manufacturer || '')
+
+    const sport   = _sportFromName(card.releaseName || card.setName)
+    const sportEl = document.getElementById('f_sport')
+    if (sport && sportEl && !sportEl.value) sportEl.value = sport
+
+    if (card.name) {
+      const playerSel = document.getElementById('f_player')
+      if (playerSel && !playerSel.value) {
+        const match = state.ALL_PLAYERS.find(p =>
+          (p.Player || '').toLowerCase() === (card.name || '').toLowerCase()
+        )
+        if (match) { playerSel.value = match.id; playerSel.dispatchEvent(new Event('change')) }
+      }
+    }
+
+    const gradingEl = document.getElementById('f_grading')
+    if (grading?.company?.name && gradingEl && gradingEl.value === 'Raw') {
+      gradingEl.value = grading.company.name
+      if (grading.grade?.value) document.getElementById('f_grade').value = grading.grade.value
+    }
+
+    if (card.numberedTo || card.parallel?.numberedTo) setFormFlag('numbered', true)
+    if (card.id) _pendingCardsightId = card.id
+
+    if (btn) { btn.textContent = '✓ AI matched'; btn.disabled = false }
+  } catch (_) {
+    if (btn) { btn.textContent = '📷 Change Photo'; btn.disabled = false }
+  }
+}
 
 // ── Grade dropdown init ────────────────────────────────────────────────────
 export function initGradeDropdown() {
@@ -40,8 +107,49 @@ export function setFormFlag(flag, active) {
   }
 }
 
+// ── Custom suggest dropdown ────────────────────────────────────────────────
+function attachSuggest(inputId, listId, rawValues) {
+  const input   = document.getElementById(inputId)
+  const listEl  = document.getElementById(listId)
+  if (!input || !listEl) return
+
+  // Always refresh options; only wire listeners once
+  input._suggestOpts = [...new Set(rawValues.filter(Boolean))].sort()
+  if (input.dataset.suggestReady) return
+  input.dataset.suggestReady = '1'
+
+  function show(q) {
+    const opts = input._suggestOpts || []
+    const filtered = q
+      ? opts.filter(v => v.toLowerCase().includes(q.toLowerCase()))
+      : opts
+    if (!filtered.length) { listEl.style.display = 'none'; return }
+    listEl.innerHTML = filtered.slice(0, 30).map(v =>
+      `<div class="field-suggest-item">${v}</div>`
+    ).join('')
+    listEl.style.display = 'block'
+    listEl.querySelectorAll('.field-suggest-item').forEach(item => {
+      item.addEventListener('mousedown', e => {
+        e.preventDefault()
+        input.value = item.textContent
+        listEl.style.display = 'none'
+      })
+    })
+  }
+
+  input.addEventListener('focus', () => show(input.value))
+  input.addEventListener('input', () => show(input.value))
+  input.addEventListener('blur',  () => setTimeout(() => { listEl.style.display = 'none' }, 150))
+}
+
+// ── Save card ──────────────────────────────────────────────────────────────
+let _pendingImageFile    = null  // set by card-search when scan image should be uploaded
+let _pendingCardsightId  = null  // set by card-search when a CardSight result is selected
+
+export function setPendingImageFile(file) { _pendingImageFile = file }
+
 // ── Open card form (add or edit) ───────────────────────────────────────────
-export function openCardForm(cardId = null, formCtx = null) {
+export function openCardForm(cardId = null, formCtx = null, prefill = null) {
   const ctx = formCtx || (state.selectedPlayer ? 'player' : 'collection')
   let contextPlayer = null
   if (cardId) {
@@ -58,6 +166,13 @@ export function openCardForm(cardId = null, formCtx = null) {
   const saveBtn = document.getElementById('btnSaveCard')
   saveBtn.disabled = false
   saveBtn.innerText = isEdit ? 'Save Card' : 'Mark Sleevd'
+
+  const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
+  if (unsleevdBtn) { unsleevdBtn.style.display = isEdit ? 'none' : ''; unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+
+  // Custom suggest dropdowns for Set and Manufacturer
+  attachSuggest('f_set',          'f_set_suggest',          state.ALL_CARDS.map(c => c.Set))
+  attachSuggest('f_manufacturer', 'f_manufacturer_suggest', state.ALL_CARDS.map(c => c.Manufacturer))
 
   // Populate player dropdown
   const playerSel   = document.getElementById('f_player')
@@ -91,6 +206,7 @@ export function openCardForm(cardId = null, formCtx = null) {
   if (isEdit) {
     const c = state.ALL_CARDS.find(x => x.id === cardId)
     if (!c) return
+    document.getElementById('f_fileInput').value = ''
     document.getElementById('f_year').value         = c.Year || ''
     document.getElementById('f_set').value          = c.Set || ''
     document.getElementById('f_number').value       = c.Number || ''
@@ -101,12 +217,13 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_grade').value        = c.Grade || 'N/A'
     document.getElementById('f_price').value        = c.Price || ''
     document.getElementById('f_url').value          = c['Card Information'] || ''
+    document.getElementById('f_serialnumber').value = c.SerialNumber || ''
     setFormFlag('rc',       c.RC       === true || c.RC       === 'true')
     setFormFlag('auto',     c.Auto     === true || c.Auto     === 'true')
     setFormFlag('mem',      c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true')
     setFormFlag('numbered', c.Numbered === true || c.Numbered === 'true')
     if (c['App Image']) {
-      document.getElementById('f_imagePreview').src   = c['App Image']
+      document.getElementById('f_imagePreview').src   = getCleanImg(c['App Image'])
       document.getElementById('f_imagePreview').style.display     = 'block'
       document.getElementById('previewPlaceholder').style.display = 'none'
     }
@@ -120,6 +237,52 @@ export function openCardForm(cardId = null, formCtx = null) {
     document.getElementById('f_imagePreview').style.display     = 'none'
     document.getElementById('previewPlaceholder').style.display = 'block'
     document.getElementById('f_fileInput').value = ''
+    const photoBtn = document.getElementById('selectPhotoBtn')
+    if (photoBtn) { photoBtn.textContent = '📷 Select Photo'; photoBtn.disabled = false }
+    document.getElementById('f_serialnumber').value = ''
+    _pendingImageFile   = null
+    _pendingCardsightId = null
+
+    // Apply CardSight prefill if provided
+    if (prefill) {
+      if (prefill.year)         document.getElementById('f_year').value = prefill.year
+      if (prefill.set)          document.getElementById('f_set').value = prefill.set
+      if (prefill.manufacturer) document.getElementById('f_manufacturer').value = prefill.manufacturer
+      if (prefill.number)       document.getElementById('f_number').value = prefill.number
+      if (prefill.sport)        document.getElementById('f_sport').value = prefill.sport
+      if (prefill.numbered)     setFormFlag('numbered', true)
+      if (prefill.rc)           setFormFlag('rc',   true)
+      if (prefill.auto)         setFormFlag('auto', true)
+      if (prefill.mem)          setFormFlag('mem',  true)
+      if (prefill.gradingCompany) {
+        document.getElementById('f_grading').value = prefill.gradingCompany
+        if (prefill.grade) document.getElementById('f_grade').value = prefill.grade
+      }
+      if (prefill.imageFile) {
+        _pendingImageFile = prefill.imageFile
+        document.getElementById('f_imagePreview').src           = prefill.imagePreview || ''
+        document.getElementById('f_imagePreview').style.display = 'block'
+        document.getElementById('previewPlaceholder').style.display = 'none'
+      }
+      if (prefill.cardsightId) _pendingCardsightId = prefill.cardsightId
+      if (prefill.playerName) {
+        const match = state.ALL_PLAYERS.find(p =>
+          (p.Player || '').toLowerCase() === (prefill.playerName || '').toLowerCase()
+        )
+        if (match) { playerSel.value = match.id; refreshTeams() }
+      }
+      if (prefill.team) {
+        const teamSel = document.getElementById('f_team')
+        teamSel.value = prefill.team
+        if (!teamSel.value) {
+          const opt = document.createElement('option')
+          opt.value = prefill.team
+          opt.textContent = prefill.team
+          teamSel.insertBefore(opt, teamSel.firstChild)
+          teamSel.value = prefill.team
+        }
+      }
+    }
   }
 
   const sheet = document.getElementById('cardFormSheet')
@@ -130,13 +293,31 @@ export function openCardForm(cardId = null, formCtx = null) {
 }
 
 // ── Save card ──────────────────────────────────────────────────────────────
-export async function saveCard() {
-  const btn = document.getElementById('btnSaveCard')
-  btn.disabled = true; btn.innerText = 'Saving…'
+let _saving = false
 
+export async function saveCard(owned = true) {
+  if (_saving) return
+  _saving = true
+
+  const saveBtn     = document.getElementById('btnSaveCard')
+  const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
+  if (saveBtn)    { saveBtn.disabled = true;    saveBtn.innerText    = 'Saving…' }
+  if (unsleevdBtn){ unsleevdBtn.disabled = true; unsleevdBtn.innerText = 'Saving…' }
+
+  // Safety net: always re-enable after 15s regardless
+  const safetyTimer = setTimeout(() => {
+    if (saveBtn)    { saveBtn.disabled = false; saveBtn.innerText = 'Save Card' }
+    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+    _saving = false
+  }, 15000)
+
+  let errorMsg = null
   try {
     const id   = document.getElementById('f_cardId').value
-    const file = document.getElementById('f_fileInput').files[0]
+    const file = document.getElementById('f_fileInput').files[0] || _pendingImageFile
+    _pendingImageFile   = null
+    const cardsightId   = _pendingCardsightId
+    _pendingCardsightId = null
     let imageUrl = id ? (state.ALL_CARDS.find(x => x.id === id)?.['App Image'] || '') : ''
 
     if (file) {
@@ -163,8 +344,10 @@ export async function saveCard() {
       RC:       document.getElementById('f_rc').value       === 'true',
       Auto:     document.getElementById('f_auto').value     === 'true',
       Mem:      document.getElementById('f_mem').value      === 'true',
-      Numbered: document.getElementById('f_numbered').value === 'true',
-      Owned: id ? state.ALL_CARDS.find(x => x.id === id)?.Owned : true,
+      Numbered:     document.getElementById('f_numbered').value === 'true',
+      SerialNumber: document.getElementById('f_serialnumber').value,
+      Owned: id ? (state.ALL_CARDS.find(x => x.id === id)?.Owned ?? true) : owned,
+      ...(cardsightId && !id ? { CardsightId: cardsightId } : {}),
     }
 
     // deleteField() is only valid in setDoc/updateDoc, not addDoc
@@ -176,8 +359,12 @@ export async function saveCard() {
     closeAllForms()
   } catch (e) {
     console.error('saveCard error:', e)
-    btn.disabled = false
-    btn.innerText = '⚠ ' + (e?.code || e?.message || 'Save failed')
+    errorMsg = e?.code || e?.message || 'Save failed'
+  } finally {
+    clearTimeout(safetyTimer)
+    _saving = false
+    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = errorMsg ? `⚠ ${errorMsg}` : 'Saved!' }
+    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
   }
 }
 
@@ -185,6 +372,7 @@ export async function saveCard() {
 export function handleFileSelect(input) {
   const file = input.files[0]
   if (!file) return
+
   const reader = new FileReader()
   reader.onload = e => {
     document.getElementById('f_imagePreview').src           = e.target.result
@@ -192,4 +380,7 @@ export function handleFileSelect(input) {
     document.getElementById('previewPlaceholder').style.display = 'none'
   }
   reader.readAsDataURL(file)
+
+  // Auto-identify only when adding a new card
+  if (!document.getElementById('f_cardId').value) _identifyAndPrefill(file)
 }

@@ -1,6 +1,6 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, SPORT_ICONS } from '../utils.js'
-import { isWideLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
+import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
+import { isWideLayout, isFoldLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
 export function renderGallery() {
@@ -14,13 +14,13 @@ export function renderGallery() {
   })
 
   grid.innerHTML = sorted.map(p => {
-    const pC    = state.ALL_CARDS.filter(c => c.Player === p.id)
-    const icons = [...new Set(pC.map(c => c.Sport).filter(Boolean))]
-      .map(s => `<div class="sport-icon">${SPORT_ICONS[s] || '🏐'}</div>`).join('')
+    const pC = state.ALL_CARDS.filter(c => c.Player === p.id)
     return `
       <div class="player-tile" data-player-id="${escapeAttr(p.id)}">
-        <div class="sport-badge-overlay">${icons}</div>
         <img class="tile-img" src="${getCleanImg(p['Main Image'])}" alt="${escapeAttr(p.Player || p.id)}">
+        <button class="tile-edit-btn" data-edit-player="${escapeAttr(p.id)}" aria-label="Edit player">
+          <span class="material-symbols-outlined">edit</span>
+        </button>
         <div class="tile-text-bar">
           <div class="tile-title">${p.Player || p.id}</div>
           <div class="tile-subtitle">${pC.filter(c => isOwned(c)).length} owned</div>
@@ -28,9 +28,17 @@ export function renderGallery() {
       </div>`
   }).join('')
 
+  // Crop landscape images to fill the tile
+  grid.querySelectorAll('.tile-img').forEach(img => {
+    const applyFit = () => { if (img.naturalWidth > img.naturalHeight) img.style.objectFit = 'cover' }
+    if (img.complete) applyFit()
+    else img.addEventListener('load', applyFit, { once: true })
+  })
+
   // Attach click + long-press on tiles
   grid.querySelectorAll('.player-tile').forEach(tile => {
     tile.addEventListener('click', () => openDetail(tile.dataset.playerId))
+    tile.querySelector('.tile-edit-btn')?.addEventListener('click', e => { e.stopPropagation(); window._openPlayerEditMenu?.(tile.dataset.playerId) })
     tile.addEventListener('contextmenu', e => { e.preventDefault(); window._openPlayerEditMenu?.(tile.dataset.playerId) })
     let pressTimer = null
     tile.addEventListener('touchstart', () => {
@@ -51,19 +59,33 @@ export function openDetail(id) {
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
 
-  // Populate wide-layout hero stats
+  // Populate wide-layout hero and top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
   const heroSleevd    = allPlayerCards.filter(c => isOwned(c)).length
   const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
   const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
   const heroName = document.getElementById('playerWideHeroName')
   if (heroName) heroName.textContent = player.Player || player.id
-  const heroS = document.getElementById('wideHeroSleevd')
-  const heroU = document.getElementById('wideHeroUnsleevd')
-  const heroG = document.getElementById('wideHeroGraded')
-  if (heroS) heroS.textContent = heroSleevd
-  if (heroU) heroU.textContent = heroUnsleevd
-  if (heroG) heroG.textContent = heroGraded
+
+  // Wire edit buttons (both mobile and desktop)
+  const _onEdit = () => window._openPlayerEditMenu?.(player.id)
+  document.getElementById('editPlayerBtn')?.removeEventListener('click', _onEdit)
+  document.getElementById('editPlayerBtnWide')?.removeEventListener('click', _onEdit)
+  document.getElementById('editPlayerBtn')?.addEventListener('click', _onEdit)
+  document.getElementById('editPlayerBtnWide')?.addEventListener('click', _onEdit)
+  // Top bar: show player name + stat pill, hide total count
+  const topBarTitle = document.getElementById('topBarTitle')
+  const topBarStats = document.getElementById('topBarStats')
+  const totalPill   = document.getElementById('totalOwnedCounterGlobal')
+  if (topBarTitle) topBarTitle.textContent = player.Player || player.id
+  if (topBarStats) {
+    document.getElementById('topBarSleevd').textContent  = heroSleevd
+    document.getElementById('topBarUnsleevd').textContent = heroUnsleevd
+    document.getElementById('topBarGraded').textContent  = heroGraded
+    document.getElementById('topBarTotal').textContent   = state.ALL_CARDS.filter(c => isOwned(c)).length
+    topBarStats.style.display = 'flex'
+  }
+  if (totalPill) totalPill.style.display = 'none'
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
   const detailWrap = document.getElementById('detailHeaderWrap')
@@ -71,33 +93,27 @@ export function openDetail(id) {
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
-    const dv    = document.getElementById('detail-view')
-    const slot  = document.getElementById('slot-players')
-    const gv    = document.getElementById('gallery-view')
-    if (dv.parentElement !== slot) slot.appendChild(dv)
-    slot.style.display = 'flex'; slot.style.flexDirection = 'row'
-    gv.style.width = '300px'; gv.style.minWidth = '300px'; gv.style.maxWidth = '300px'
-    gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
-    dv.style.display = 'flex'; dv.style.flexDirection = 'row'
-    dv.style.flex = '1'; dv.style.minWidth = '0'
-    dv.style.position = 'relative'; dv.style.inset = ''
-    dv.classList.remove('tp-no-player')
-    document.getElementById('twoPane-empty').style.display = 'flex'
     document.getElementById('twoPane-panel').style.display = 'none'
     document.getElementById('twoPane-panel').innerHTML = ''
     document.querySelectorAll('.card-item.tp-selected').forEach(el => el.classList.remove('tp-selected'))
+    _applyWideLayout()
+    // Fold layout hides gallery — push state so back gesture returns to gallery
+    if (isFoldLayout() && !isThreePaneLayout()) history.pushState({ v: 'detail', p: id }, '')
   }
 
-  // Highlight selected player tile in gallery
+  // Highlight selected player tile, dim others
+  const grid = document.getElementById('playerGrid')
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
-  document.querySelector(`.player-tile[data-player-id="${player.id}"]`)?.classList.add('tile-selected')
+  document.querySelector(`.player-tile[data-player-id="${CSS.escape(player.id)}"]`)?.classList.add('tile-selected')
+  if (grid) grid.classList.add('has-selection')
 
   renderDetail(player)
+  window._afterPlayerDetail?.()
 
   if (!isWideLayout()) {
     const dv = document.getElementById('detail-view')
     dv.style.display = 'flex'; dv.style.flexDirection = 'column'
-    document.getElementById('floating-fab')?.classList.add('visible')
+    _updateFloatingFab('players')
     history.pushState({ v: 'detail', p: id }, '')
   }
 }
@@ -108,27 +124,103 @@ export function closeDetail() {
   const slot = document.getElementById('slot-players')
   dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
   dv.style.position = 'absolute'; dv.style.inset = '0'
+  dv.style.transform = ''; dv.style.transition = ''
+  dv.classList.add('tp-no-player')
   state.setSelectedPlayer(null)
+  // Restore top bar to page title + total count
+  const topBarTitle = document.getElementById('topBarTitle')
+  const topBarStats = document.getElementById('topBarStats')
+  const totalPill   = document.getElementById('totalOwnedCounterGlobal')
+  if (topBarTitle) topBarTitle.textContent = 'Players'
+  if (topBarStats) topBarStats.style.display = 'none'
+  if (totalPill) totalPill.style.display = ''
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
+  document.getElementById('playerGrid')?.classList.remove('has-selection')
+  window._afterPlayerDetail?.()
   if (!isWideLayout()) {
-    document.getElementById('floating-fab')?.classList.remove('visible')
+    _updateFloatingFab('players')
     if (history.state?.v === 'detail') history.back()
   } else {
+    gv.style.display = ''
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
     gv.style.flexShrink = ''; gv.style.borderRight = ''
     slot.style.display = ''; slot.style.flexDirection = ''
   }
 }
 
+// ── Swipe-right-to-go-back gesture on mobile detail view ──────────────────
+export function initDetailSwipeBack() {
+  const dv = document.getElementById('detail-view')
+  if (!dv) return
+
+  let sx = 0, sy = 0, lx = 0, active = false, locked = null
+
+  dv.addEventListener('touchstart', e => {
+    if (isWideLayout() || !state.selectedPlayer) return
+    const t = e.touches[0]
+    sx = t.clientX; sy = t.clientY; lx = sx
+    active = true; locked = null
+  }, { passive: true })
+
+  dv.addEventListener('touchmove', e => {
+    if (!active || isWideLayout()) return
+    const t = e.touches[0]
+    lx = t.clientX
+    const dx = t.clientX - sx, dy = t.clientY - sy
+    if (!locked) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.5) locked = 'h'
+      else if (Math.abs(dy) > 8) { locked = 'v'; active = false; return }
+      else return
+    }
+    if (locked === 'h' && dx > 0) {
+      if (e.cancelable) e.preventDefault()
+      dv.style.transform = `translateX(${dx}px)`
+    }
+  }, { passive: false })
+
+  function onEnd() {
+    if (!active) return
+    active = false
+    const dx = lx - sx
+    if (locked === 'h' && dx > window.innerWidth * 0.3) {
+      dv.style.transition = 'transform 0.25s ease'
+      dv.style.transform  = `translateX(${window.innerWidth}px)`
+      setTimeout(() => closeDetail(), 230)
+    } else {
+      dv.style.transition = 'transform 0.25s ease'
+      dv.style.transform  = 'translateX(0)'
+      setTimeout(() => { dv.style.transition = ''; dv.style.transform = '' }, 250)
+    }
+    locked = null
+  }
+
+  dv.addEventListener('touchend',    onEnd, { passive: true })
+  dv.addEventListener('touchcancel', onEnd, { passive: true })
+}
+
 export function renderDetail(player) {
   if (!player) return
+  // Refresh top bar stats whenever detail re-renders
+  const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
+  const ownedCards   = allPlayerCards.filter(c => isOwned(c))
+  const gradedCards  = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
+  const totalValue   = ownedCards.reduce((sum, c) => sum + (parseFloat(c.Price) || 0), 0)
+  const tbS = document.getElementById('topBarSleevd')
+  const tbU = document.getElementById('topBarUnsleevd')
+  const tbG = document.getElementById('topBarGraded')
+  if (tbS) tbS.textContent = ownedCards.length
+  if (tbU) tbU.textContent = allPlayerCards.length - ownedCards.length
+  if (tbG) tbG.textContent = gradedCards.length
+  const tbT = document.getElementById('topBarTotal')
+  if (tbT) tbT.textContent = state.ALL_CARDS.filter(c => isOwned(c)).length
+
   let cards = state.ALL_CARDS.filter(c => c.Player === player.id)
     .sort((a, b) => {
       const yA = a.Year?.toString() || '', yB = b.Year?.toString() || ''
       if (yA !== yB) return yA.localeCompare(yB)
       const sA = (a.Set || '').toLowerCase(), sB = (b.Set || '').toLowerCase()
       if (sA !== sB) return sA.localeCompare(sB)
-      return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
+      return String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true })
     })
 
   if (state.cardSearchQuery) {
@@ -139,8 +231,6 @@ export function renderDetail(player) {
   if (state.showWishlistOnly) cards = cards.filter(c => !isOwned(c))
 
   state.setCardSequence(cards.map(c => c.id))
-  document.getElementById('playerDetailCount').innerText =
-    `${cards.filter(c => isOwned(c)).length} Owned`
 
   const groups = new Map()
   cards.forEach(c => {
@@ -149,7 +239,16 @@ export function renderDetail(player) {
     groups.get(key).push(c)
   })
 
-  let html = ''
+  // Update mobile pill
+  const ps = document.getElementById('detailPillSleevd')
+  const pu = document.getElementById('detailPillUnsleevd')
+  const pg = document.getElementById('detailPillGraded')
+  if (ps) ps.textContent = ownedCards.length
+  if (pu) pu.textContent = allPlayerCards.length - ownedCards.length
+  if (pg) pg.textContent = gradedCards.length
+
+  let html = ``
+
   groups.forEach((groupCards, yearKey) => {
     const rawYears   = [...new Set(groupCards.map(c => (c.Year || '').toString()))].sort()
     const displayYear = rawYears.length === 1 ? rawYears[0] : rawYears.join(' · ')
@@ -169,11 +268,12 @@ export function buildCardRow(c, ctx) {
   const isAuto     = c.Auto     === true || c.Auto     === 'true'
   const isMem      = c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true'
   const isNumbered = c.Numbered === true || c.Numbered === 'true'
-  const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade">${co} ${gr}</span>` : ''
+  const serialNum  = c.SerialNumber || ''
+  const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade" data-co="${co}">${co} ${gr}</span>` : ''
   const rcBadge       = isRC       ? `<span class="badge-rc">RC</span>`         : ''
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
   const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''
-  const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d</span>` : ''
+  const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d${serialNum ? ` ${serialNum}` : ''}</span>` : ''
   const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">

@@ -1,29 +1,39 @@
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
 
-export function renderCollectionView() {
+export function renderCollectionView({ preserveScroll = false } = {}) {
   if (!state.cardsLoaded) return
+
+  const scrollEl = document.getElementById('collectionScrollBody')
+  const savedScroll = preserveScroll ? (scrollEl?.scrollTop ?? 0) : 0
 
   // 1. Filter
   let cards = state.collShowWishlistOnly
     ? state.ALL_CARDS.filter(c => !isOwned(c))
-    : state.ALL_CARDS.filter(c => isOwned(c))
+    : [...state.ALL_CARDS]
 
   if (state.collShowGradedOnly) {
     cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   }
+  if (state.collFilterRC)       cards = cards.filter(c => c.RC       === true || c.RC       === 'true')
+  if (state.collFilterAuto)     cards = cards.filter(c => c.Auto     === true || c.Auto     === 'true')
+  if (state.collFilterMem)      cards = cards.filter(c => c.Mem      === true || c.Mem      === 'true' || c.Patch === true || c.Patch === 'true')
+  if (state.collFilterNumbered) cards = cards.filter(c => c.Numbered === true || c.Numbered === 'true')
 
   if (state.collSearchQuery) {
-    const q = state.collSearchQuery.toLowerCase()
-    cards = cards.filter(c =>
-      (c.Year || '').toString().toLowerCase().includes(q) ||
-      (c.Set || '').toLowerCase().includes(q) ||
-      (c.Manufacturer || '').toLowerCase().includes(q) ||
-      (c.Player || '').toLowerCase().includes(q)
-    )
+    const tokens = state.collSearchQuery.toLowerCase().trim().split(/\s+/)
+    cards = cards.filter(c => {
+      const haystack = [
+        (c.Year || '').toString(),
+        c.Set || '',
+        c.Manufacturer || '',
+        c.Player || '',
+      ].join(' ').toLowerCase()
+      return tokens.every(t => haystack.includes(t))
+    })
   }
 
-  // 2. Sort — primary key determined by chip, sub-order always: year → sport → set → number
+  // 2. Sort — primary key determined by chip, sub-order always: year → set → number
   const sortBy = state.collSortBy || 'year'
 
   const subSort = (a, b) => {
@@ -33,7 +43,7 @@ export function renderCollectionView() {
     if (setA !== setB) return setA.localeCompare(setB)
     const spA = (a.Sport || '').toLowerCase(), spB = (b.Sport || '').toLowerCase()
     if (spA !== spB) return spA.localeCompare(spB)
-    return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0)
+    return String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true })
   }
 
   if (sortBy === 'sport') {
@@ -90,18 +100,44 @@ export function renderCollectionView() {
 
     const header = document.createElement('div')
     header.className = 'year-group-header'
-    const ownedCount = groupCards.filter(c => isOwned(c)).length
-    header.innerHTML = `${key} <span class="year-count">${ownedCount} cards</span>`
+    header.innerHTML = `<span class="year-group-key">${key}</span><span class="year-count">${groupCards.length} cards</span>`
     fragment.appendChild(header)
 
-    const listDiv = document.createElement('div')
-    listDiv.className = 'collection-card-list'
-    groupCards.forEach(card => {
-      const wrapper = document.createElement('div')
-      wrapper.innerHTML = buildCollectionRow(card)
-      listDiv.appendChild(wrapper.firstElementChild)
-    })
-    fragment.appendChild(listDiv)
+    if (sortBy !== 'year') {
+      // Sub-group by year within each primary group
+      const yearGroups = new Map()
+      groupCards.forEach(c => {
+        const yr = c.Year?.toString() || 'Unknown'
+        if (!yearGroups.has(yr)) yearGroups.set(yr, [])
+        yearGroups.get(yr).push(c)
+      })
+      const showSubs = yearGroups.size > 1
+      yearGroups.forEach((yearCards, yr) => {
+        if (showSubs) {
+          const subHeader = document.createElement('div')
+          subHeader.className = 'year-sub-header'
+          subHeader.textContent = yr
+          fragment.appendChild(subHeader)
+        }
+        const listDiv = document.createElement('div')
+        listDiv.className = 'collection-card-list'
+        yearCards.forEach(card => {
+          const wrapper = document.createElement('div')
+          wrapper.innerHTML = buildCollectionRow(card)
+          listDiv.appendChild(wrapper.firstElementChild)
+        })
+        fragment.appendChild(listDiv)
+      })
+    } else {
+      const listDiv = document.createElement('div')
+      listDiv.className = 'collection-card-list'
+      groupCards.forEach(card => {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = buildCollectionRow(card)
+        listDiv.appendChild(wrapper.firstElementChild)
+      })
+      fragment.appendChild(listDiv)
+    }
 
     const oldSentinel = document.getElementById('collection-sentinel')
     if (oldSentinel) oldSentinel.remove()
@@ -131,7 +167,13 @@ export function renderCollectionView() {
     observer.observe(sentinel)
   }
 
-  renderNextGroup()
+  if (preserveScroll && savedScroll > 0) {
+    // Render all groups synchronously so content is tall enough for scroll restore
+    while (currentGroupIdx < groupKeys.length) renderNextGroup()
+    requestAnimationFrame(() => { if (scrollEl) scrollEl.scrollTop = savedScroll })
+  } else {
+    renderNextGroup()
+  }
 }
 
 function buildCollectionRow(c) {
@@ -143,7 +185,7 @@ function buildCollectionRow(c) {
   const isAuto      = c.Auto     === true || c.Auto     === 'true'
   const isMem       = c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true'
   const isNumbered  = c.Numbered === true || c.Numbered === 'true'
-  const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade">${co} ${gr}</span>` : ''
+  const gradeBadge    = (co && co !== 'Raw') ? `<span class="badge-grade" data-co="${co}">${co} ${gr}</span>` : ''
   const rcBadge       = isRC       ? `<span class="badge-rc">RC</span>`         : ''
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
   const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''

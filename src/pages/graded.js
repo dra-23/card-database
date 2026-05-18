@@ -20,21 +20,48 @@ export function renderGradedView() {
   }
 
   cards.sort((a, b) => {
-    const gA = parseFloat(a.Grade) || 0, gB = parseFloat(b.Grade) || 0
-    if (gB !== gA) return gB - gA
-    const pA = (state.ALL_PLAYERS.find(p => p.id === a.Player)?.Player || a.Player || '').toLowerCase()
-    const pB = (state.ALL_PLAYERS.find(p => p.id === b.Player)?.Player || b.Player || '').toLowerCase()
-    if (pA !== pB) return pA.localeCompare(pB)
-    return (a.Year?.toString() || '').localeCompare(b.Year?.toString() || '')
+    const yA = parseInt(a.Year) || 0, yB = parseInt(b.Year) || 0
+    if (yA !== yB) return yA - yB
+    const setA = (a.Set || '').toLowerCase(), setB = (b.Set || '').toLowerCase()
+    if (setA !== setB) return setA.localeCompare(setB)
+    return String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true })
   })
 
   const counterEl = document.getElementById('gradedCounter')
   if (counterEl) counterEl.innerText = cards.length
   state.setGradedCardSequence(cards.map(c => c.id))
 
-  const html = cards.map(c => buildGradedRow(c)).join('') ||
-    `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">🏆</div><div style="font-weight:700;">No graded cards found</div></div>`
-  document.getElementById('gradedList').innerHTML = html
+  // Group by player (preserve sort order within each group)
+  const playerGroups = new Map()
+  cards.forEach(c => {
+    const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
+    const name = player ? (player.Player || player.id) : (c.Player || '(Unknown Player)')
+    if (!playerGroups.has(name)) playerGroups.set(name, [])
+    playerGroups.get(name).push(c)
+  })
+
+  // Sort player groups: most cards first, then alphabetical
+  const sortedGroups = [...playerGroups.entries()].sort((a, b) =>
+    b[1].length - a[1].length || a[0].localeCompare(b[0])
+  )
+
+  const container = document.getElementById('gradedList')
+  if (!container) return
+
+  if (sortedGroups.length === 0) {
+    container.innerHTML = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">🏆</div><div style="font-weight:700;">No graded cards found</div></div>`
+    return
+  }
+
+  let html = ''
+  sortedGroups.forEach(([playerName, groupCards]) => {
+    html += `<div class="year-group-header"><span class="year-group-key">${playerName}</span><span class="year-count">${groupCards.length} card${groupCards.length !== 1 ? 's' : ''}</span></div>`
+    html += `<div class="graded-grid">`
+    groupCards.forEach(c => { html += buildGradedRow(c) })
+    html += `</div>`
+  })
+
+  container.innerHTML = html
 }
 
 function buildGradedRow(c) {
@@ -44,12 +71,12 @@ function buildGradedRow(c) {
   const gr          = c.Grade || ''
   const owned       = isOwned(c)
   const gradeLabel  = `${co} ${gr}`.trim()
+  const imgSrc      = getCleanImg(c.PSAImage || c['App Image'])
 
-  return `<div class="graded-tile ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
-    <img class="graded-tile-img" src="${getCleanImg(c['App Image'])}" alt="">
+  return `<div class="graded-tile ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}" data-co="${co}">
+    <img class="graded-tile-img" src="${imgSrc}" alt="">
     <div class="graded-tile-bar">
       <div class="graded-tile-grade">${gradeLabel}</div>
-      <div class="graded-tile-player">${playerName}</div>
       <div class="graded-tile-set">${c.Year || ''} ${c.Set || ''}</div>
     </div>
   </div>`

@@ -29,7 +29,23 @@ function appShellHTML() {
   <!-- GLOBAL TOP BAR (spans full width on desktop) -->
   <div id="top-bar-global">
     <img src="/logo.png" style="width:40px; height:40px; border-radius:12px; flex-shrink:0;" onerror="this.style.display='none'">
-    <span id="topBarTitle" class="brand" style="font-size:20px; flex:1; margin-left:10px;">Players</span>
+    <span id="topBarTitle" class="brand" style="font-size:20px; margin-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+    <div id="topBarSearchSlot"></div>
+    <div id="topBarStats" style="display:none; align-items:center; margin-right:8px;">
+      <div class="player-stat-pill">
+        <span class="stat-pill-label">sleevd</span>
+        <strong id="topBarSleevd">0</strong>
+        <span class="stat-pill-sep">·</span>
+        <span class="stat-pill-label">unsleevd</span>
+        <strong id="topBarUnsleevd">0</strong>
+        <span class="stat-pill-sep">·</span>
+        <span class="stat-pill-label">graded</span>
+        <strong id="topBarGraded">0</strong>
+        <span class="stat-pill-sep">·</span>
+        <span class="stat-pill-label">total</span>
+        <strong id="topBarTotal">0</strong>
+      </div>
+    </div>
     <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
   </div>
 
@@ -51,11 +67,14 @@ function appShellHTML() {
       <span class="rail-label">Graded</span>
     </button>
     <button class="rail-item" id="rail-stats"     data-page="stats">
-      <span class="material-symbols-outlined">bar_chart</span>
-      <span class="rail-label">Stats</span>
+      <span class="material-symbols-outlined">person</span>
+      <span class="rail-label">Profile</span>
     </button>
     <div style="flex:1;"></div>
-    <button id="signOutBtn" class="rail-item" title="Sign out" style="margin-top:auto; opacity:0.6;">
+    <button class="rail-item" id="railThemeToggle" title="Toggle dark mode">
+      <span class="material-symbols-outlined" id="railThemeIcon">dark_mode</span>
+    </button>
+    <button id="signOutBtn" class="rail-item" title="Sign out" style="opacity:0.6;">
       <span class="material-symbols-outlined">logout</span>
       <span class="rail-label">Sign Out</span>
     </button>
@@ -72,8 +91,8 @@ function appShellHTML() {
                 <div class="top-bar">
                   <span class="brand">Players</span>
                   <div class="total-count-pill" id="totalOwnedCounter">0</div>
-                  <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
-                    <span class="material-symbols-outlined">bar_chart</span>
+                  <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
+                    <span class="material-symbols-outlined">person</span>
                   </button>
                 </div>
               </div>
@@ -96,25 +115,43 @@ function appShellHTML() {
                   <div class="top-bar">
                     <span class="brand">Collection</span>
                     <div class="total-count-pill" id="collectionOwnedCounter">0</div>
-                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
-                      <span class="material-symbols-outlined">bar_chart</span>
+                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
+                      <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
-                  <div class="search-filter-row">
+                  <div class="search-filter-row" id="collSearchRow">
                     <div class="search-wrap">
                       <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set...">
                       <button class="search-clear-btn" tabindex="-1" id="collSearchClear">
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
-                    <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
-                    <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
-                  </div>
-                  <div class="sort-chips-row">
-                    <span class="sort-label">Sort:</span>
-                    <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
-                    <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
-                    <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
+                    <div class="dd-wrap" id="sortDdWrap">
+                      <button class="dd-btn" id="sortDdBtn">
+                        <span id="sortDdLabel">Year</span>
+                        <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                      </button>
+                      <div class="dd-panel" id="sortDdPanel">
+                        <div class="dd-opt dd-active" data-sort="year">Year</div>
+                        <div class="dd-opt" data-sort="sport">Sport</div>
+                        <div class="dd-opt" data-sort="set">Set</div>
+                      </div>
+                    </div>
+                    <div class="dd-wrap" id="collFilterDdWrap">
+                      <button class="dd-btn" id="collFilterDdBtn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
+                        <span id="collFilterDdLabel">Filter</span>
+                        <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                      </button>
+                      <div class="dd-panel" id="collFilterDdPanel">
+                        <div class="dd-check-opt" data-chip="collWishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
+                        <div class="dd-check-opt" data-chip="collGraded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+                        <div class="dd-check-opt" data-chip="collRC"><span class="material-symbols-outlined dd-check-icon">check</span>RC</div>
+                        <div class="dd-check-opt" data-chip="collAuto"><span class="material-symbols-outlined dd-check-icon">check</span>AUTO</div>
+                        <div class="dd-check-opt" data-chip="collMem"><span class="material-symbols-outlined dd-check-icon">check</span>MEM</div>
+                        <div class="dd-check-opt" data-chip="collNumbered"><span class="material-symbols-outlined dd-check-icon">check</span>#'d</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -145,11 +182,11 @@ function appShellHTML() {
                   <div class="top-bar">
                     <span class="brand">Graded</span>
                     <div class="total-count-pill" id="gradedCounter">0</div>
-                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats">
-                      <span class="material-symbols-outlined">bar_chart</span>
+                    <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
+                      <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
-                  <div class="search-filter-row">
+                  <div class="search-filter-row" id="gradedSearchRow">
                     <div class="search-wrap">
                       <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set...">
                       <button class="search-clear-btn" tabindex="-1" id="gradedSearchClear">
@@ -160,7 +197,7 @@ function appShellHTML() {
                 </div>
               </div>
               <div class="scroll-body" id="gradedScrollBody">
-                <div class="graded-grid" id="gradedList"></div>
+                <div id="gradedList"></div>
               </div>
             </div>
             <div id="twoPane-gradedDetail">
@@ -179,7 +216,10 @@ function appShellHTML() {
             <div class="collapsible-header-wrap" id="statsHeaderWrap">
               <div class="collapsible-header">
                 <div class="top-bar">
-                  <span class="brand">Stats</span>
+                  <span class="brand">Profile</span>
+                  <button class="top-bar-icon-btn" id="settingsBtn" aria-label="Settings">
+                    <span class="material-symbols-outlined">settings</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -203,21 +243,14 @@ function appShellHTML() {
 
               <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
               <div id="playerWideHero">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                <div style="display:flex; align-items:center; gap:10px;">
                   <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                   </button>
-                  <div id="playerWideHeroName"></div>
-                </div>
-                <div class="wide-hero-stats">
-                  <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
-                  <span class="wide-hero-count" id="wideHeroSleevd">0</span>
-                  <span class="wide-hero-sep">·</span>
-                  <span class="stat-badge-chip" style="background:#78909C;">unsleevd</span>
-                  <span class="wide-hero-count" id="wideHeroUnsleevd">0</span>
-                  <span class="wide-hero-sep">·</span>
-                  <span class="stat-badge-chip" style="background:#2E7D32;">graded</span>
-                  <span class="wide-hero-count" id="wideHeroGraded">0</span>
+                  <div id="playerWideHeroName" style="flex:1;"></div>
+                  <button class="icon-btn" id="editPlayerBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;" aria-label="Edit player">
+                    <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
+                  </button>
                 </div>
               </div>
 
@@ -228,28 +261,49 @@ function appShellHTML() {
                 <button class="back-btn" id="backBtn">
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
-                <button class="top-bar-icon-btn" data-page="stats" aria-label="Stats" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
-                  <span class="material-symbols-outlined">bar_chart</span>
+                <button class="top-bar-icon-btn" id="editPlayerBtn" aria-label="Edit player" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:56px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                  <span class="material-symbols-outlined">person</span>
                 </button>
               </div>
 
-              <!-- MOBILE THUMB + NAME (hidden on desktop) -->
-              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+              <!-- MOBILE THUMB + NAME + PILL (hidden on desktop) -->
+              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px 12px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
                 <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-                <div style="padding-bottom:8px;">
-                  <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display';"></h2>
-                  <div id="playerDetailCount" style="font-size:13px; font-weight:700; opacity:0.7;"></div>
+                <div id="playerDetailPill" style="padding-bottom:8px; flex:1; min-width:0;">
+                  <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display'; margin:0 0 6px;"></h2>
+                  <div class="player-stat-pill" style="display:inline-flex;">
+                    <span class="stat-pill-label">sleevd</span>
+                    <strong id="detailPillSleevd">0</strong>
+                    <span class="stat-pill-sep">·</span>
+                    <span class="stat-pill-label">unsleevd</span>
+                    <strong id="detailPillUnsleevd">0</strong>
+                    <span class="stat-pill-sep">·</span>
+                    <span class="stat-pill-label">graded</span>
+                    <strong id="detailPillGraded">0</strong>
+                  </div>
                 </div>
               </div>
-              <div class="search-filter-row">
+              <div class="search-filter-row" id="detailSearchRow">
                 <div class="search-wrap">
                   <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
                   <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">
                     <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                   </button>
                 </div>
-                <div id="chipWishlist" class="filter-chip" data-chip="wishlist">unsleevd</div>
-                <div id="chipGraded"   class="filter-chip" data-chip="graded">Graded</div>
+                <div class="dd-wrap" id="detailFilterDdWrap">
+                  <button class="dd-btn" id="detailFilterDdBtn">
+                    <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
+                    <span id="detailFilterDdLabel">Filter</span>
+                    <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                  </button>
+                  <div class="dd-panel" id="detailFilterDdPanel">
+                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
+                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -273,7 +327,7 @@ function appShellHTML() {
   </div><!-- /content-row -->
 </div><!-- /app-shell -->
 
-<!-- MOBILE NAV BAR (3 pages + inline FAB) -->
+<!-- MOBILE NAV BAR (3 pages + FAB inside pill) -->
 <nav id="nav-bar">
   <div id="nav-indicator"></div>
   <button class="nav-item active" id="nav-players"    data-page="players">
@@ -285,14 +339,81 @@ function appShellHTML() {
   <button class="nav-item" id="nav-graded"    data-page="graded">
     <span class="material-symbols-outlined">g_mobiledata_badge</span>
   </button>
-  <div id="nav-fab-sep"></div>
-  <button id="floating-fab">
+  <button id="nav-fab">
     <span class="material-symbols-outlined" style="font-size:24px;">add</span>
   </button>
 </nav>
 
+<!-- STANDALONE FLOATING FAB (fold layout 840–1279px only) -->
+<button id="floating-fab">
+  <span class="material-symbols-outlined" style="font-size:24px;">add</span>
+</button>
+
+<!-- SETTINGS PAGE (full-screen push, slides in from right) -->
+<div id="settings-page">
+  <div class="settings-page-topbar">
+    <button class="icon-btn" id="settingsPageBack" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+    <span class="brand" style="font-size:20px; flex:1; margin-left:10px;">Settings</span>
+  </div>
+  <div class="settings-page-body">
+    <div class="settings-section-title" style="padding-top:8px;">Appearance</div>
+    <div class="theme-segmented" id="settingsThemeSegmented">
+      <button class="theme-seg-btn" data-pref="light">
+        <span class="material-symbols-outlined">light_mode</span>Light
+      </button>
+      <button class="theme-seg-btn" data-pref="system">
+        <span class="material-symbols-outlined">brightness_auto</span>System
+      </button>
+      <button class="theme-seg-btn" data-pref="dark">
+        <span class="material-symbols-outlined">dark_mode</span>Dark
+      </button>
+    </div>
+
+    <button class="settings-signout-btn" id="settingsSignOutBtn">
+      <span class="material-symbols-outlined">logout</span>Sign out
+    </button>
+  </div>
+</div>
+
+<!-- BADGE PICKER SHEET -->
+<div class="sheet" id="badgePickerSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" style="padding-top:16px;">
+    <div style="font-family:'Google Sans Display'; font-size:18px; font-weight:700; margin-bottom:16px;">Quick Badges</div>
+    <div class="badge-picker-grid">
+      <button class="badge-pick-btn" data-badge="RC">
+        <span class="badge-rc badge-pick-chip">RC</span>
+        <span class="badge-pick-lbl">Rookie</span>
+      </button>
+      <button class="badge-pick-btn" data-badge="Auto">
+        <span class="badge-auto badge-pick-chip">AUTO</span>
+        <span class="badge-pick-lbl">Autograph</span>
+      </button>
+      <button class="badge-pick-btn" data-badge="Mem">
+        <span class="badge-mem badge-pick-chip">MEM</span>
+        <span class="badge-pick-lbl">Memorabilia</span>
+      </button>
+      <button class="badge-pick-btn" data-badge="Numbered">
+        <span class="badge-numbered badge-pick-chip">#'d</span>
+        <span class="badge-pick-lbl">Numbered</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- SCRIM -->
 <div class="scrim" id="globalScrim"></div>
+
+<!-- IMAGE LIGHTBOX -->
+<div id="imgLightbox">
+  <button id="imgLightboxClose" aria-label="Close">✕</button>
+  <button id="imgLightboxPrev" aria-label="Previous">&#8249;</button>
+  <img id="imgLightboxImg" alt="">
+  <button id="imgLightboxNext" aria-label="Next">&#8250;</button>
+  <div id="imgLightboxCounter"></div>
+</div>
 
 <!-- CARD DETAIL SHEETS -->
 <div class="sheet" id="cardDetailSheet">
@@ -312,6 +433,34 @@ function appShellHTML() {
   <div id="swipeHintGrad"      class="swipe-hint swipe-hint-left">← prev</div>
   <div id="swipeHintGradRight" class="swipe-hint swipe-hint-right">next →</div>
   <div id="gradedCardPanel"></div>
+</div>
+
+<!-- CARD SEARCH SHEET -->
+<div class="sheet" id="cardSearchSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 style="margin-bottom:16px; font-family:'Google Sans Display';">Add Card</h2>
+    <div class="cs-search-row">
+      <div class="cs-search-input-wrap">
+        <span class="material-symbols-outlined cs-search-icon">search</span>
+        <input type="text" id="cs_query" class="cs-search-input" placeholder="Player, set, year…" autocomplete="off" inputmode="search">
+        <button id="cs_clear" class="cs-search-clear" style="display:none;">
+          <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+        </button>
+      </div>
+      <button class="expressive-btn cs-go-btn" id="csSearchBtn" style="flex-shrink:0;height:48px;width:48px;border-radius:14px;padding:0;background:var(--md-primary);color:#fff;box-shadow:none;">
+        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+      </button>
+    </div>
+    <input type="file" id="cs_fileInput" accept="image/*" capture="environment" style="display:none;">
+    <button class="cs-scan-btn" id="csScanBtn">
+      <span class="material-symbols-outlined">photo_camera</span>
+      <span>Scan Card</span>
+    </button>
+    <div id="cs_status" style="display:none; font-size:13px; padding:6px 2px; color:var(--md-on-surface-variant);"></div>
+    <div id="csResults" class="cs-results"></div>
+    <button class="cs-manual-btn" id="csManualBtn">Enter manually</button>
+  </div>
 </div>
 
 <!-- CARD FORM SHEET -->
@@ -336,21 +485,21 @@ function appShellHTML() {
         </div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Year</label><input type="text" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
+        <div class="m3-field"><label class="m3-label">Year</label><input type="text" inputmode="numeric" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
         <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input" placeholder="e.g. MJ-23"></div>
       </div>
-      <div class="m3-field"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input"></div>
+      <div class="m3-field field-suggest-wrap"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input" autocomplete="off"><div class="field-suggest-list" id="f_set_suggest"></div></div>
+      <div class="m3-field field-suggest-wrap"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input" autocomplete="off"><div class="field-suggest-list" id="f_manufacturer_suggest"></div></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="m3-field"><label class="m3-label">Sport</label>
           <select id="f_sport" class="m3-select">
             <option value="">Select...</option>
-            <option value="Baseball">Baseball ⚾</option>
-            <option value="Basketball">Basketball 🏀</option>
-            <option value="Football">Football 🏈</option>
-            <option value="Hockey">Hockey 🏒</option>
-            <option value="Golf">Golf ⛳</option>
-            <option value="Soccer">Soccer ⚽</option>
+            <option value="Baseball">Baseball</option>
+            <option value="Basketball">Basketball</option>
+            <option value="Football">Football</option>
+            <option value="Hockey">Hockey</option>
+            <option value="Golf">Golf</option>
+            <option value="Soccer">Soccer</option>
           </select>
         </div>
         <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
@@ -367,7 +516,7 @@ function appShellHTML() {
         </div>
         <div class="m3-field"><label class="m3-label">Grade</label><select id="f_grade" class="m3-select"></select></div>
       </div>
-      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" id="f_price" class="m3-input"></div>
+      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" inputmode="decimal" id="f_price" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <button type="button" id="f_rc_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -389,10 +538,47 @@ function appShellHTML() {
       <input type="hidden" id="f_auto"     value="false">
       <input type="hidden" id="f_mem"      value="false">
       <input type="hidden" id="f_numbered" value="false">
+      <div class="m3-field">
+        <label class="m3-label">Serial # (if numbered, e.g. 47/99)</label>
+        <input type="text" id="f_serialnumber" class="m3-input" placeholder="e.g. 47/99" autocomplete="off">
+      </div>
       <div style="display:flex; gap:12px; margin-top:4px;">
         <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>
+        <button class="expressive-btn" id="btnMarkUnsleevd" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Mark Unsleevd</button>
         <button class="expressive-btn" id="btnSaveCard" style="background:var(--md-primary); color:white; flex:1; height:56px; border-radius:28px;">Save Card</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRY SHEET -->
+<div class="sheet" id="psaSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 id="registrySheetTitle" style="margin-bottom:20px; font-family:'Google Sans Display';">Registry Entry</h2>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="m3-field">
+        <label class="m3-label">Grading Company</label>
+        <select id="reg_company" class="m3-select">
+          <option value="PSA">PSA</option>
+          <option value="BGS">BGS</option>
+          <option value="SGC">SGC</option>
+          <option value="CGC">CGC</option>
+        </select>
+      </div>
+      <div class="m3-field">
+        <label class="m3-label">Cert Number</label>
+        <input type="text" id="psa_cert" class="m3-input" placeholder="Cert / serial number" inputmode="numeric">
+      </div>
+      <div class="m3-field">
+        <label class="m3-label">Pop Report</label>
+        <input type="text" id="reg_pop" class="m3-input" placeholder="Population count" inputmode="numeric">
+      </div>
+      <div id="psaFetchStatus" style="display:none; font-size:13px; padding:0 4px;"></div>
+      <div id="psaImagePreview" style="display:none; justify-content:center; gap:8px; margin:4px 0;"></div>
+      <button class="expressive-btn" id="btnLookupPSA" style="display:none; background:#002D62; color:white; height:52px; border-radius:26px;">Look Up from PSA</button>
+      <button class="expressive-btn" id="btnSavePSA" style="background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
+      <button class="expressive-btn" id="cancelPSABtn" style="background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Cancel</button>
     </div>
   </div>
 </div>
@@ -406,16 +592,34 @@ function appShellHTML() {
       <div class="m3-field"><label class="m3-label">Player Name</label><input type="text" id="pf_name" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Default Sport</label>
         <select id="pf_sport" class="m3-select">
-          <option value="Baseball">Baseball ⚾</option>
-          <option value="Basketball">Basketball 🏀</option>
-          <option value="Football">Football 🏈</option>
-          <option value="Hockey">Hockey 🏒</option>
-          <option value="Golf">Golf ⛳</option>
-          <option value="Soccer">Soccer ⚽</option>
+          <option value="Baseball">Baseball</option>
+          <option value="Basketball">Basketball</option>
+          <option value="Football">Football</option>
+          <option value="Hockey">Hockey</option>
+          <option value="Golf">Golf</option>
+          <option value="Soccer">Soccer</option>
         </select>
       </div>
-      <div class="m3-field"><label class="m3-label">Main Image URL</label><input type="text" id="pf_mainImg" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Banner Image URL</label><input type="text" id="pf_bannerImg" class="m3-input"></div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="width:64px; height:88px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
+          <span id="pf_mainImgPlaceholder" style="font-size:9px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
+          <img id="pf_mainImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+        </div>
+        <div style="flex:1;">
+          <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">
+          <button type="button" class="expressive-btn" id="pf_selectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:13px; width:100%;">Select Player Photo</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="width:96px; height:36px; flex-shrink:0; background:#F0F0F0; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
+          <span id="pf_bannerImgPlaceholder" style="font-size:9px; color:var(--md-outline);">Banner</span>
+          <img id="pf_bannerImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
+        </div>
+        <div style="flex:1;">
+          <input type="file" id="pf_bannerFileInput" accept="image/*" style="display:none;">
+          <button type="button" class="expressive-btn" id="pf_selectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:13px; width:100%;">Select Banner Photo</button>
+        </div>
+      </div>
       <button class="expressive-btn" id="btnSavePlayer" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;">Add Player</button>
     </div>
   </div>

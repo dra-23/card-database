@@ -4,9 +4,11 @@ export const PAGE_NAMES = ['players', 'collection', 'graded', 'stats']
 const NAV_BTN_W = 52, NAV_GAP = 4, NAV_PAD = 8
 
 export const _wideQuery      = window.matchMedia('(min-width: 768px)')
+export const _foldQuery      = window.matchMedia('(min-width: 840px)')
 export const _threePaneQuery = window.matchMedia('(min-width: 1280px)')
 
 export function isWideLayout()      { return _wideQuery.matches }
+export function isFoldLayout()      { return _foldQuery.matches }
 export function isThreePaneLayout() { return _threePaneQuery.matches }
 
 // ── Adaptive layout ────────────────────────────────────────────────────────
@@ -16,17 +18,40 @@ export function _applyWideLayout() {
   const gv   = document.getElementById('gallery-view')
   if (!dv || !slot || !gv) return
 
-  if (dv.parentElement !== slot) slot.appendChild(dv)
+  // Reset mobile-only elements when switching to wide layout
+  const track = document.getElementById('page-track')
+  if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)' }
+  const nb = document.getElementById('nav-bar')
+  if (nb) { nb.style.transition = 'none'; nb.style.transform = ''; nb.style.display = '' }
+  const ffab = document.getElementById('floating-fab')
 
-  gv.style.width = '300px'; gv.style.minWidth = '300px'; gv.style.maxWidth = '300px'
-  gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
-  dv.style.display = 'flex'; dv.style.flexDirection = 'row'
-  dv.style.flex = '1'; dv.style.minWidth = '0'
+  if (dv.parentElement !== slot) slot.appendChild(dv)
   dv.style.position = ''; dv.style.inset = ''; dv.style.zIndex = ''
 
   if (selectedPlayer) {
+    if (isThreePaneLayout()) {
+      // 1280px+: three-pane — gallery sidebar at 340px
+      gv.style.display = ''
+      gv.style.width = '340px'; gv.style.minWidth = '340px'; gv.style.maxWidth = '340px'
+      gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    } else if (isFoldLayout()) {
+      // 840–1279px: fold — hide gallery, detail-view fills full width (50/50 via CSS)
+      gv.style.display = 'none'
+    } else {
+      // 768–839px: tablet — gallery sidebar at 260px
+      gv.style.display = ''
+      gv.style.width = '260px'; gv.style.minWidth = '260px'; gv.style.maxWidth = '260px'
+      gv.style.flexShrink = '0'; gv.style.borderRight = '1px solid var(--md-surface-2)'
+    }
+    dv.style.display = 'flex'; dv.style.flexDirection = 'row'
+    dv.style.flex = '1'; dv.style.minWidth = '0'
     dv.classList.remove('tp-no-player')
   } else {
+    gv.style.display = ''
+    gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
+    gv.style.flexShrink = ''; gv.style.borderRight = ''
+    slot.style.display = ''; slot.style.flexDirection = ''
+    dv.style.display = 'none'; dv.style.flex = ''; dv.style.minWidth = ''
     dv.classList.add('tp-no-player')
     const empty = document.getElementById('twoPane-empty')
     const panel = document.getElementById('twoPane-panel')
@@ -35,6 +60,10 @@ export function _applyWideLayout() {
   }
 
   _commitPageSwitch(currentPage || 'players', PAGE_NAMES.indexOf(currentPage || 'players'))
+  // Re-assert flex row AFTER _commitPageSwitch clears the slot's inline display
+  if (selectedPlayer) {
+    slot.style.display = 'flex'; slot.style.flexDirection = 'row'
+  }
   _updateFloatingFab(currentPage || 'players')
 }
 
@@ -47,6 +76,7 @@ export function _applyMobileLayout() {
 
   const gv = document.getElementById('gallery-view')
   if (gv) {
+    gv.style.display = ''
     gv.style.width = ''; gv.style.minWidth = ''; gv.style.maxWidth = ''
     gv.style.flexShrink = ''; gv.style.borderRight = ''
   }
@@ -89,6 +119,7 @@ export function switchPage(page) {
   _commitPageSwitch(page, idx)
   _updateNavActive(page)
   _updateFloatingFab(page)
+  emit('page:changed', page)
 }
 
 export function _commitPageSwitch(page, idx) {
@@ -100,7 +131,7 @@ export function _commitPageSwitch(page, idx) {
     })
     const topBarTitle = document.getElementById('topBarTitle')
     if (topBarTitle) {
-      const titles = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Stats' }
+      const titles = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Profile' }
       topBarTitle.textContent = titles[page] || 'Players'
     }
   } else {
@@ -125,25 +156,33 @@ export function _updateNavActive(page) {
 
 export function _updateFloatingFab(page) {
   const fab = document.getElementById('floating-fab')
-  const sep = document.getElementById('nav-fab-sep')
+  const navFab = document.getElementById('nav-fab')
   if (!fab) return
 
-  if (isWideLayout()) {
+  const show = page === 'players' || page === 'collection'
+
+  // Mobile (<768px): nav-fab inside pill handles it; hide standalone
+  if (!isWideLayout()) {
+    fab.classList.remove('visible')
     fab.style.display = 'none'
-    if (sep) sep.style.display = 'none'
+    if (navFab) navFab.classList.toggle('hidden', !show)
     return
   }
 
-  const show = (page === 'players' && !!selectedPlayer) || page === 'collection'
+  // Tablet (768–839px) or desktop (1280px+): hide standalone, inline wide-fabs handle it
+  if (!isFoldLayout() || isThreePaneLayout()) {
+    fab.classList.remove('visible')
+    fab.style.display = 'none'
+    return
+  }
 
+  // Fold (840–1279px): show standalone FAB on players/collection
   if (show) {
     fab.classList.add('visible')
     fab.style.display = 'flex'
-    if (sep) sep.style.display = 'block'
   } else {
     fab.classList.remove('visible')
     fab.style.display = 'none'
-    if (sep) sep.style.display = 'none'
   }
 }
 
@@ -209,7 +248,7 @@ export function initPageSwipe() {
   let sx = 0, sy = 0, lx = 0, pageIdx = idx0, locked = null, active = false
 
   container.addEventListener('touchstart', e => {
-    if (document.querySelector('.sheet.open')) return
+    if (isWideLayout() || document.querySelector('.sheet.open')) return
     // Sync pageIdx with actual current page (e.g. after navigating to stats via button)
     pageIdx = PAGE_NAMES.indexOf(currentPage || 'players')
     // Stats page is not swipe-navigable
@@ -222,7 +261,7 @@ export function initPageSwipe() {
   }, { passive: true })
 
   container.addEventListener('touchmove', e => {
-    if (!active) return
+    if (!active || isWideLayout()) return
     const dx = e.touches[0].clientX - sx
     const dy = e.touches[0].clientY - sy
     lx = e.touches[0].clientX

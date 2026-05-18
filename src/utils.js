@@ -1,10 +1,10 @@
 export const SPORT_ICONS = {
-  Basketball: '🏀',
-  Football: '🏈',
-  Baseball: '⚾',
-  Golf: '⛳',
-  Hockey: '🏒',
-  Soccer: '⚽',
+  Basketball: 'BSK',
+  Football:   'FB',
+  Baseball:   'BB',
+  Golf:       'GLF',
+  Hockey:     'HK',
+  Soccer:     'SOC',
 }
 
 export function getCleanImg(url) {
@@ -37,16 +37,18 @@ export function isOwned(card) {
   return card.Owned === true || card.Owned === 'true'
 }
 
-/** Returns the transform string for a sheet at a given Y offset,
- *  preserving translateX(-50%) on wide layouts. */
+/** Returns the transform string for a sheet at a given Y offset.
+ *  On desktop (≥1280px) form sheets are right-side panels that slide on the X axis. */
 export function sheetTransformY(px) {
+  if (window.matchMedia('(min-width: 1280px)').matches) {
+    return (px === 0 || px === '0') ? 'translateX(0)' : 'translateX(100%)'
+  }
   const y = typeof px === 'number' ? `${px}px` : px
-  const wide = window.matchMedia('(min-width: 768px)').matches
-  return wide ? `translateX(-50%) translateY(${y})` : `translateY(${y})`
+  return `translateY(${y})`
 }
 
 export function escapeAttr(str) {
-  return (str || '').replace(/'/g, "\\'")
+  return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
 export function vibrate(ms = 10) {

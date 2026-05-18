@@ -1,8 +1,10 @@
-import { db, doc, setDoc, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
+import { db, doc, setDoc, deleteDoc, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
+import { promptPrice } from './price-prompt.js'
 import { renderCardPanelInto } from './card-detail.js'
 import { openCardForm } from './card-form.js'
+import { cardsight } from '../cardsight.js'
 
 let _activeCardId = null
 
@@ -22,6 +24,15 @@ export function createOverflowMenu() {
     <button class="overflow-menu-item" id="omToggleOwned">
       <svg id="omToggleIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"></svg>
       <span id="omOwnedLabel">Mark Unsleevd</span>
+    </button>
+    <button class="overflow-menu-item" id="omFindMarketValue">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+      Find Market Value
+    </button>
+    <div style="height:1px; background:var(--md-outline); opacity:0.12; margin:4px 0;"></div>
+    <button class="overflow-menu-item destructive" id="omDelete">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      Delete Card
     </button>
   `
   document.body.appendChild(popup)
@@ -55,12 +66,104 @@ export function createOverflowMenu() {
   document.getElementById('omToggleOwned').addEventListener('click', async () => {
     const id = _activeCardId; closeMenu()
     const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
-    await setDoc(doc(db, 'Cards', id), { Owned: !isOwned(c) }, { merge: true })
+    const markingSleevd = !isOwned(c)
+    const updates = { Owned: markingSleevd }
+    if (markingSleevd) {
+      const price = await promptPrice()
+      if (price !== null) updates.Price = String(price)
+    }
+    await setDoc(doc(db, 'Cards', id), updates, { merge: true })
+  })
+
+  document.getElementById('omFindMarketValue').addEventListener('click', async () => {
+    const id = _activeCardId; closeMenu()
+    const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
+    const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
+    const playerName = player ? (player.Player || player.id) : (c.Player || '')
+    // Find the visible market value cell to give live feedback
+    const panelCandidates = ['twoPane-panel','twoPane-coll-panel','twoPane-grad-panel','cardDetailPanel','collectionCardPanel','gradedCardPanel']
+    let targetPanel = null
+    for (const pid of panelCandidates) {
+      const p = document.getElementById(pid)
+      if (p?.querySelector('[data-mv-value]')) { targetPanel = p; break }
+    }
+    const valEl = targetPanel?.querySelector('[data-mv-value]')
+    if (valEl) valEl.textContent = 'Searching…'
+
+    // Card number excluded — including it causes 0 results in CardSight text search.
+    // Year-first ordering matches CardSight's release indexing.
+    const seen = new Set()
+    const queries = [
+      [c.Year, playerName, c.Set          ],
+      [c.Year, playerName, c.Manufacturer ],
+      [c.Year, playerName                 ],
+      [playerName,         c.Manufacturer ],
+      [playerName,         c.Set          ],
+    ]
+      .map(parts => parts.filter(Boolean).join(' ').trim())
+      .filter(q => q && !seen.has(q) && seen.add(q))
+
+    try {
+      let cardsightId = null
+      for (const q of queries) {
+        const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
+        if (!error && data?.results?.length) {
+          cardsightId = data.results[0].id
+          break
+        }
+      }
+      if (!cardsightId) {
+        if (valEl && document.contains(valEl)) valEl.textContent = 'Not found'
+        return
+      }
+      await setDoc(doc(db, 'Cards', id), { CardsightId: cardsightId }, { merge: true })
+    } catch (e) {
+      console.error('[FindMarketValue]', e)
+      if (valEl && document.contains(valEl)) valEl.textContent = 'Error'
+    }
+  })
+
+  document.getElementById('omDelete').addEventListener('click', () => {
+    const id = _activeCardId
+    closeMenu()
+    showDeleteConfirm(id)
   })
 
   document.addEventListener('pointerdown', e => {
     if (popup.classList.contains('open') && !popup.contains(e.target)) closeMenu()
   })
+}
+
+function showDeleteConfirm(cardId) {
+  const overlay = document.createElement('div')
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;'
+  overlay.innerHTML = `
+    <div style="background:var(--md-surface);border-radius:28px;padding:24px;width:100%;max-width:320px;">
+      <div style="font-size:18px;font-weight:700;font-family:'Google Sans Display';margin-bottom:8px;">Delete Card?</div>
+      <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:24px;line-height:1.5;">This card will be permanently deleted and cannot be undone.</div>
+      <div style="display:flex;gap:12px;">
+        <button id="_delCancel" style="flex:1;height:48px;border:none;border-radius:24px;background:var(--md-surface-2);font-family:'Google Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;color:var(--md-on-surface);">Cancel</button>
+        <button id="_delConfirm" style="flex:1;height:48px;border:none;border-radius:24px;background:#C62828;color:#fff;font-family:'Google Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">Delete</button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(overlay)
+
+  overlay.querySelector('#_delCancel').onclick  = () => overlay.remove()
+  overlay.querySelector('#_delConfirm').onclick = async () => {
+    overlay.remove()
+    try {
+      // Close card sheet if the deleted card is currently open
+      if (cardId === state.currentCardId) {
+        window._closeCardSheet?.(state.activeCardContext)
+      }
+      await deleteDoc(doc(db, 'Cards', cardId))
+    } catch (e) {
+      console.error('deleteCard error:', e)
+    }
+  }
+  // Tap outside to cancel
+  overlay.addEventListener('pointerdown', e => { if (e.target === overlay) overlay.remove() })
 }
 
 function closeMenu() {

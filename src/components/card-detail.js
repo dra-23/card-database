@@ -1,8 +1,11 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
-import { isWideLayout, isThreePaneLayout } from '../layout.js'
+import { promptPrice } from './price-prompt.js'
+import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
+import { openCardForm } from './card-form.js'
+import { cardsight } from '../cardsight.js'
 
 // ── Card detail HTML ───────────────────────────────────────────────────────
 export function buildCardDetailHTML(card, ctx) {
@@ -14,7 +17,7 @@ export function buildCardDetailHTML(card, ctx) {
   const owned       = isOwned(card)
   const url         = card['Card Information'] || ''
   const parallel    = card.Parallel || ''
-  const serial      = card.Serial || card['Serial Number'] || ''
+  const serial      = card.SerialNumber || card.Serial || card['Serial Number'] || ''
   const notes       = card.Notes || ''
   const isRC        = card.RC       === true || card.RC       === 'true'
   const isAuto      = card.Auto     === true || card.Auto     === 'true'
@@ -25,26 +28,115 @@ export function buildCardDetailHTML(card, ctx) {
   const tcdbUrl     = url  // Card Information field IS the TCDB link
 
   const stats = [
+    ['Year',         card.Year],
+    ['Set',          card.Set],
+    ['Card Number',  card.Number ? `#${card.Number}` : null],
     ['Manufacturer', card.Manufacturer],
     ['Sport',        card.Sport],
     ['Team',         card.Team],
-    ['Price Paid',   card.Price ? `$${card.Price}` : null],
     ...(parallel ? [['Parallel', parallel]] : []),
     ...(serial   ? [['Serial',   serial]]   : []),
   ]
 
+  const isGraded    = co && co !== 'Raw'
+  const hasPSA      = isGraded && !!card.PSACert
+  const hasPSAImages = !!(card.PSAImage || card.PSAImageBack)
+  const registryUrl = hasPSA ? (() => {
+    switch (co) {
+      case 'PSA': return `https://www.psacard.com/cert/${card.PSACert}`
+      case 'BGS': return `https://www.beckett.com/grading/card-lookup?item_id=${card.PSACert}`
+      case 'SGC': return `https://www.gosgc.com/cert-code-lookup?cert_code=${card.PSACert}`
+      case 'CGC': return `https://www.cgccards.com/certlookup/${card.PSACert}`
+      default:    return ''
+    }
+  })() : ''
+  const psaSection = isGraded ? `
+    <div class="psa-card" data-co="${co}">
+      <div class="psa-card-header">
+        <span class="psa-card-title">${co} Registry Data</span>
+        <button class="psa-edit-btn" data-psa-edit="${escapeAttr(card.id)}">${hasPSA ? 'Edit' : '+ Link'}</button>
+      </div>
+      ${hasPSA ? `
+      <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
+      ${card.PSAGrade ? `<div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val">${card.PSAGrade}</span></div>` : ''}
+      <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
+      ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+        <button class="psa-registry-btn">${co} Registry ↗</button>
+      </a>` : ''}` : ''}
+    </div>` : ''
+
+  const sameSetCards = (card.Year && card.Set)
+    ? state.ALL_CARDS
+        .filter(c => c.id !== card.id && c.Year === card.Year && c.Set === card.Set && c.Sport === card.Sport)
+        .sort((a, b) => String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true }))
+    : []
+
+  const setPreviewSection = sameSetCards.length > 0 ? `
+    <div class="set-preview-section">
+      <div class="set-preview-title">More from ${card.Year} ${card.Set}</div>
+      ${sameSetCards.map(c => {
+        const p = state.ALL_PLAYERS.find(pl => pl.id === c.Player)
+        const pName = p ? (p.Player || p.id) : (c.Player || '')
+        const co2 = c['Grading Company'] || '', gr2 = c.Grade || ''
+        const cRC  = c.RC   === true || c.RC   === 'true'
+        const cAut = c.Auto === true || c.Auto === 'true'
+        const cMem = c.Mem  === true || c.Mem  === 'true' || c.Patch === true || c.Patch === 'true'
+        const cNum = c.Numbered === true || c.Numbered === 'true'
+        const cb1 = (co2 && co2 !== 'Raw') ? `<span class="badge-grade" data-co="${co2}">${co2} ${gr2}</span>` : ''
+        const cb2 = cRC  ? `<span class="badge-rc">RC</span>`         : ''
+        const cb3 = cAut ? `<span class="badge-auto">AUTO</span>`     : ''
+        const cb4 = cMem ? `<span class="badge-mem">MEM</span>`       : ''
+        const cb5 = cNum ? `<span class="badge-numbered">#'d</span>`  : ''
+        const cBadges = cb1 + cb2 + cb3 + cb4 + cb5
+        return `<div class="card-item ${isOwned(c) ? '' : 'not-owned'} set-preview-row" data-set-card-id="${escapeAttr(c.id)}">
+          <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy">
+          <div class="card-info">
+            <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
+            <div class="card-info-row2">${pName}</div>
+            ${cBadges ? `<div class="card-badge-tray">${cBadges}</div>` : ''}
+          </div>
+        </div>`
+      }).join('')}
+    </div>` : ''
+
+  const pricePaid = card.Price ? `$${parseFloat(card.Price).toFixed(2)}` : '—'
+  const marketSection = `
+    <div class="market-section">
+      <div class="market-header">
+        <span class="market-title">Market Value</span>
+        ${card.CardsightId ? `<button class="market-refresh-btn" data-mv-refresh>Refresh</button>` : ''}
+      </div>
+      <div class="market-stat-row">
+        <span class="market-stat-lbl">Purchase Price</span>
+        <span class="market-stat-val">${pricePaid}</span>
+      </div>
+      <div class="market-stat-row">
+        <span class="market-stat-lbl">Market Value</span>
+        <span class="market-stat-val" data-mv-value>${card.CardsightId ? 'Fetching…' : '—'}</span>
+      </div>
+      <div class="market-stat-row" data-mv-change-row style="display:none">
+        <span class="market-stat-lbl">Gain / Loss</span>
+        <span class="market-stat-val" data-mv-change></span>
+      </div>
+    </div>`
+
   return `
+    ${hasPSAImages ? `
+    <div class="cd-psa-img-wrap">
+      ${card.PSAImage     ? `<img class="cd-psa-main-img" src="${card.PSAImage}"     alt="front">` : ''}
+      ${card.PSAImageBack ? `<img class="cd-psa-main-img" src="${card.PSAImageBack}" alt="back">`  : ''}
+    </div>` : `
     <div class="cd-img-wrap">
       <img src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
-    </div>
+    </div>`}
     <div class="cd-body">
       <div class="cd-header">
         <div class="cd-header-info">
           <div class="cd-year-set">${card.Year || ''} ${card.Set || ''} #${card.Number || 'N/A'}</div>
           <div class="cd-player">${playerName}</div>
           <div class="cd-badge-row">
-            ${gradeStr   ? `<span class="badge-grade">${gradeStr}</span>`   : ''}
-            ${isRC       ? `<span class="badge-rc">ROOKIE</span>`           : ''}
+            ${gradeStr   ? `<span class="badge-grade" data-co="${co}">${gradeStr}</span>`   : ''}
+            ${isRC       ? `<span class="badge-rc">RC</span>`               : ''}
             ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
             ${isMem      ? `<span class="badge-mem">MEM</span>`             : ''}
             ${isNumbered ? `<span class="badge-numbered">#'d</span>`        : ''}
@@ -55,28 +147,87 @@ export function buildCardDetailHTML(card, ctx) {
         </button>
       </div>
       <div class="cd-divider"></div>
-      <div class="cd-stats-grid">
-        ${stats.map(([lbl, val]) => `
-          <div class="cd-stat">
-            <div class="cd-stat-lbl">${lbl}</div>
-            <div class="cd-stat-val">${val || '—'}</div>
-          </div>`).join('')}
-      </div>
-      ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
       <div class="cd-owned-row">
         <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
         <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
       </div>
-      <div class="cd-action-row">
-        <a href="${ebayUrl}" target="_blank" rel="noopener" class="cd-ext-link">
-          <button class="cd-ext-btn cd-btn-ebay">eBay Sold ↗</button>
+      <div class="cd-stats-grid">
+        <div class="cd-stats-header">
+          <span class="cd-stats-title">Card Details</span>
+          <button class="cd-stats-edit-btn" data-card-edit="${escapeAttr(card.id)}">Edit</button>
+        </div>
+        ${stats.filter(([, val]) => val).map(([lbl, val]) => `
+          <div class="cd-stat">
+            <span class="cd-stat-lbl">${lbl}</span>
+            <span class="cd-stat-val">${val}</span>
+          </div>`).join('')}
+        <a href="${ebayUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+          <button class="cd-stats-action-btn cd-btn-ebay">eBay Sold ↗</button>
         </a>
-        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" class="cd-ext-link">
-          <button class="cd-ext-btn cd-btn-tcdb">TCDB ↗</button>
+        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+          <button class="cd-stats-action-btn cd-btn-tcdb">TCDB ↗</button>
         </a>` : ''}
       </div>
+      ${psaSection}
+      ${marketSection}
+      ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
+      ${setPreviewSection}
     </div>
   `
+}
+
+// ── Market value async loader ──────────────────────────────────────────────
+const _mvGen = new WeakMap()
+
+async function _loadMarketValue(panelEl, card) {
+  if (!card.CardsightId) return
+  const gen = (_mvGen.get(panelEl) || 0) + 1
+  _mvGen.set(panelEl, gen)
+  const alive = () => _mvGen.get(panelEl) === gen
+
+  try {
+    const { data, error } = await cardsight.pricing.get(card.CardsightId)
+    if (!alive()) return
+    const valEl     = panelEl.querySelector('[data-mv-value]')
+    const changeRow = panelEl.querySelector('[data-mv-change-row]')
+    const changeEl  = panelEl.querySelector('[data-mv-change]')
+    if (!valEl) return
+
+    if (error || !data) { valEl.textContent = 'N/A'; return }
+
+    const co = card['Grading Company']
+    const gr = String(card.Grade || '')
+
+    let records = null
+    if (co && co !== 'Raw' && data.graded?.length) {
+      const cg = data.graded.find(g => g.company_name === co) || data.graded[0]
+      const gg = cg?.grades?.find(g => g.grade_value === gr) || cg?.grades?.[0]
+      if (gg?.records?.length) records = gg.records
+    }
+    if (!records?.length && data.raw?.records?.length) records = data.raw.records
+    if (!records?.length) { valEl.textContent = 'No data'; return }
+
+    const avg = records.reduce((s, r) => s + r.price, 0) / records.length
+    const lastDate = records[0]?.date ? new Date(records[0].date).toLocaleDateString() : null
+    valEl.textContent = `$${avg.toFixed(2)}`
+    if (lastDate) valEl.title = `Avg of ${records.length} sale${records.length !== 1 ? 's' : ''} · Last: ${lastDate}`
+
+    if (card.Price && changeRow && changeEl) {
+      const paid = parseFloat(card.Price)
+      if (!isNaN(paid) && paid > 0) {
+        const diff = avg - paid
+        const pct  = ((diff / paid) * 100).toFixed(1)
+        const sign = diff >= 0 ? '+' : ''
+        changeEl.textContent = `${sign}$${diff.toFixed(2)} (${sign}${pct}%)`
+        changeEl.className = `market-stat-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
+        changeRow.style.display = ''
+      }
+    }
+  } catch {
+    if (!alive()) return
+    const v = panelEl.querySelector('[data-mv-value]')
+    if (v) v.textContent = 'N/A'
+  }
 }
 
 // ── Render card into a panel element ──────────────────────────────────────
@@ -84,17 +235,67 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
   panelEl.innerHTML = buildCardDetailHTML(card, ctx)
+  panelEl.scrollTop = 0
 
   // Toggle owned
   panelEl.querySelector(`[data-card-toggle]`)?.addEventListener('click', async () => {
     const c = state.ALL_CARDS.find(x => x.id === cardId)
     if (!c) return
-    await setDoc(doc(db, 'Cards', cardId), { Owned: !isOwned(c) }, { merge: true })
+    const markingSleevd = !isOwned(c)
+    const updates = { Owned: markingSleevd }
+    if (markingSleevd) {
+      const price = await promptPrice()
+      if (price !== null) updates.Price = String(price)
+    }
+    await setDoc(doc(db, 'Cards', cardId), updates, { merge: true })
+  })
+
+  // Card details edit button
+  panelEl.querySelector('[data-card-edit]')?.addEventListener('click', () => {
+    openCardForm(cardId)
   })
 
   // 3-dot menu
   panelEl.querySelector(`[data-card-menu]`)?.addEventListener('click', e => {
     window._openRowMenu?.(cardId, e.currentTarget)
+  })
+
+  // PSA edit
+  panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
+    window._openPSASheet?.(cardId)
+  })
+
+  // Same-set card preview taps
+  panelEl.querySelectorAll('[data-set-card-id]').forEach(el => {
+    el.addEventListener('click', () => handleCardTap(el.dataset.setCardId, ctx, true))
+  })
+
+  // Market value refresh button
+  panelEl.querySelector('[data-mv-refresh]')?.addEventListener('click', () => {
+    const valEl = panelEl.querySelector('[data-mv-value]')
+    if (valEl) valEl.textContent = 'Fetching…'
+    const changeRow = panelEl.querySelector('[data-mv-change-row]')
+    if (changeRow) changeRow.style.display = 'none'
+    _loadMarketValue(panelEl, card)
+  })
+
+  // Kick off pricing fetch if card has a CardsightId
+  _loadMarketValue(panelEl, card)
+
+  // Main PSA images (front + back) — click to enlarge
+  const mainPSAImgs = [...panelEl.querySelectorAll('.cd-psa-main-img')]
+  mainPSAImgs.forEach((img, i) => {
+    img.addEventListener('click', () => {
+      window._openLightbox?.(mainPSAImgs.map(im => im.src), i)
+    })
+  })
+
+  // Legacy PSA cert thumbnails in the PSA section
+  const certImgs = [...panelEl.querySelectorAll('.psa-cert-img')]
+  certImgs.forEach((img, i) => {
+    img.addEventListener('click', () => {
+      window._openLightbox?.(certImgs.map(im => im.src), i)
+    })
   })
 }
 
@@ -103,7 +304,7 @@ export function refreshCurrentCardPanel(cardId) {
   const ctx = state.activeCardContext
 
   if (ctx === 'player') {
-    const panel = isThreePaneLayout()
+    const panel = isFoldLayout()
       ? document.getElementById('twoPane-panel')
       : document.getElementById('cardDetailPanel')
     if (panel) renderCardPanelInto(panel, cardId, ctx)
@@ -121,11 +322,11 @@ export function refreshCurrentCardPanel(cardId) {
 }
 
 // ── handleCardTap ─────────────────────────────────────────────────────────
-export function handleCardTap(cardId, ctx) {
+export function handleCardTap(cardId, ctx, replace = false) {
   state.setCurrentCardId(cardId)
   state.setActiveCardContext(ctx || 'player')
 
-  const useInlinePanel = ctx === 'player' ? isThreePaneLayout() : isWideLayout()
+  const useInlinePanel = ctx === 'player' ? isFoldLayout() : isWideLayout()
 
   if (useInlinePanel) {
     const panelMap = {
@@ -161,7 +362,8 @@ export function handleCardTap(cardId, ctx) {
     if (scrim) scrim.style.display = 'block'
     if (nb)    { nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px))'; nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)' }
 
-    history.pushState({ v: 'card', id: cardId, ctx }, '')
+    if (replace) history.replaceState({ v: 'card', id: cardId, ctx }, '')
+    else         history.pushState({ v: 'card', id: cardId, ctx }, '')
   }
 }
 
@@ -177,7 +379,7 @@ export function navigateCard(dir, ctx) {
   state.setCurrentCardId(nextId)
   state.setActiveCardContext(ctx)
 
-  const useInline = ctx === 'player' ? isThreePaneLayout() : isWideLayout()
+  const useInline = ctx === 'player' ? isFoldLayout() : isWideLayout()
   if (useInline) {
     handleCardTap(nextId, ctx)
     return
