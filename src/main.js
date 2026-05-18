@@ -439,7 +439,11 @@ function wireSearchInputs() {
 }
 
 // ── Dropdown helpers ───────────────────────────────────────────────────────
+// Panels are portalled to document.body to escape will-change:transform and
+// overflow:hidden ancestors (notably #page-track and .master-col).
 let _openDdWrap = null
+let _openDdPanel = null
+let _openDdPanelHome = null
 
 function _openDd(wrapId) {
   if (_openDdWrap && _openDdWrap !== wrapId) _closeDd()
@@ -447,6 +451,9 @@ function _openDd(wrapId) {
   const panel = wrap?.querySelector('.dd-panel')
   const btn   = wrap?.querySelector('.dd-btn')
   if (!wrap || !panel || !btn) return
+  _openDdPanelHome = { parent: panel.parentElement, next: panel.nextSibling }
+  document.body.appendChild(panel)
+  _openDdPanel = panel
   const rect = btn.getBoundingClientRect()
   panel.style.top   = (rect.bottom + 4) + 'px'
   panel.style.right = (window.innerWidth - rect.right) + 'px'
@@ -457,9 +464,14 @@ function _openDd(wrapId) {
 
 function _closeDd() {
   if (!_openDdWrap) return
-  const wrap = document.getElementById(_openDdWrap)
-  if (wrap) { const p = wrap.querySelector('.dd-panel'); if (p) p.style.display = 'none'; wrap.classList.remove('open') }
+  if (_openDdPanel) {
+    _openDdPanel.style.display = 'none'
+    if (_openDdPanelHome?.parent) _openDdPanelHome.parent.insertBefore(_openDdPanel, _openDdPanelHome.next)
+  }
+  document.getElementById(_openDdWrap)?.classList.remove('open')
   _openDdWrap = null
+  _openDdPanel = null
+  _openDdPanelHome = null
 }
 
 // ── Wire filter/sort dropdowns ─────────────────────────────────────────────
@@ -467,7 +479,8 @@ function wireFilterChips() {
   // Global close on outside click or scroll
   document.addEventListener('click', e => {
     if (!_openDdWrap) return
-    if (!document.getElementById(_openDdWrap)?.contains(e.target)) _closeDd()
+    const wrap = document.getElementById(_openDdWrap)
+    if (!wrap?.contains(e.target) && !_openDdPanel?.contains(e.target)) _closeDd()
   }, true)
   document.addEventListener('scroll', _closeDd, true)
 
