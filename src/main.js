@@ -438,31 +438,109 @@ function wireSearchInputs() {
   bind('gradedSearchInput', 'gradedSearchClear', v => { state.setGradedSearchQuery(v); renderGradedView() })
 }
 
-// ── Wire filter chips ──────────────────────────────────────────────────────
-function wireFilterChips() {
-  const bindChip = (chipId, toggle, render) => {
-    document.getElementById(chipId)?.addEventListener('click', () => {
-      toggle()
-      document.getElementById(chipId).classList.toggle('active')
-      render()
-    })
-  }
-  bindChip('chipWishlist',     () => state.setShowWishlistOnly(!state.showWishlistOnly),      () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) })
-  bindChip('chipGraded',       () => state.setShowGradedOnly(!state.showGradedOnly),          () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) })
-  bindChip('chipCollWishlist', () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), () => { updateOwnedCount(); renderCollectionView() })
-  bindChip('chipCollGraded',   () => state.setCollShowGradedOnly(!state.collShowGradedOnly),    renderCollectionView)
-  bindChip('chipCollRC',       () => state.setCollFilterRC(!state.collFilterRC),           renderCollectionView)
-  bindChip('chipCollAuto',     () => state.setCollFilterAuto(!state.collFilterAuto),       renderCollectionView)
-  bindChip('chipCollMem',      () => state.setCollFilterMem(!state.collFilterMem),         renderCollectionView)
-  bindChip('chipCollNumbered', () => state.setCollFilterNumbered(!state.collFilterNumbered), renderCollectionView)
+// ── Dropdown helpers ───────────────────────────────────────────────────────
+let _openDdWrap = null
 
-  // Collection sort chips
-  document.querySelectorAll('.sort-chip[data-sort]').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#slot-collection .sort-chip').forEach(c => c.classList.remove('active'))
-      chip.classList.add('active')
-      state.setCollSortBy(chip.dataset.sort)
+function _openDd(wrapId) {
+  if (_openDdWrap && _openDdWrap !== wrapId) _closeDd()
+  const wrap  = document.getElementById(wrapId)
+  const panel = wrap?.querySelector('.dd-panel')
+  const btn   = wrap?.querySelector('.dd-btn')
+  if (!wrap || !panel || !btn) return
+  const rect = btn.getBoundingClientRect()
+  panel.style.top   = (rect.bottom + 4) + 'px'
+  panel.style.right = (window.innerWidth - rect.right) + 'px'
+  panel.style.display = 'block'
+  wrap.classList.add('open')
+  _openDdWrap = wrapId
+}
+
+function _closeDd() {
+  if (!_openDdWrap) return
+  const wrap = document.getElementById(_openDdWrap)
+  if (wrap) { const p = wrap.querySelector('.dd-panel'); if (p) p.style.display = 'none'; wrap.classList.remove('open') }
+  _openDdWrap = null
+}
+
+// ── Wire filter/sort dropdowns ─────────────────────────────────────────────
+function wireFilterChips() {
+  // Global close on outside click or scroll
+  document.addEventListener('click', e => {
+    if (!_openDdWrap) return
+    if (!document.getElementById(_openDdWrap)?.contains(e.target)) _closeDd()
+  }, true)
+  document.addEventListener('scroll', _closeDd, true)
+
+  // ── Sort dropdown ──────────────────────────────────────────────────
+  const SORT_LABELS = { year: 'Year', sport: 'Sport', set: 'Set' }
+  document.getElementById('sortDdBtn')?.addEventListener('click', () => {
+    _openDdWrap === 'sortDdWrap' ? _closeDd() : _openDd('sortDdWrap')
+  })
+  document.querySelectorAll('#sortDdPanel .dd-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('#sortDdPanel .dd-opt').forEach(o => o.classList.remove('dd-active'))
+      opt.classList.add('dd-active')
+      const label = document.getElementById('sortDdLabel')
+      if (label) label.textContent = SORT_LABELS[opt.dataset.sort] || opt.dataset.sort
+      state.setCollSortBy(opt.dataset.sort)
       renderCollectionView()
+      _closeDd()
+    })
+  })
+
+  // ── Collection filter dropdown ─────────────────────────────────────
+  const COLL_FILTERS = {
+    collWishlist: { toggle: () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), get: () => state.collShowWishlistOnly, render: () => { updateOwnedCount(); renderCollectionView() } },
+    collGraded:   { toggle: () => state.setCollShowGradedOnly(!state.collShowGradedOnly),     get: () => state.collShowGradedOnly,   render: renderCollectionView },
+    collRC:       { toggle: () => state.setCollFilterRC(!state.collFilterRC),                 get: () => state.collFilterRC,         render: renderCollectionView },
+    collAuto:     { toggle: () => state.setCollFilterAuto(!state.collFilterAuto),             get: () => state.collFilterAuto,       render: renderCollectionView },
+    collMem:      { toggle: () => state.setCollFilterMem(!state.collFilterMem),               get: () => state.collFilterMem,        render: renderCollectionView },
+    collNumbered: { toggle: () => state.setCollFilterNumbered(!state.collFilterNumbered),     get: () => state.collFilterNumbered,   render: renderCollectionView },
+  }
+  function _updateCollFilterBtn() {
+    const count = Object.values(COLL_FILTERS).filter(f => f.get()).length
+    const btn = document.getElementById('collFilterDdBtn')
+    const lbl = document.getElementById('collFilterDdLabel')
+    if (btn) btn.classList.toggle('dd-active', count > 0)
+    if (lbl) lbl.textContent = count > 0 ? `Filter · ${count}` : 'Filter'
+  }
+  document.getElementById('collFilterDdBtn')?.addEventListener('click', () => {
+    _openDdWrap === 'collFilterDdWrap' ? _closeDd() : _openDd('collFilterDdWrap')
+  })
+  document.querySelectorAll('#collFilterDdPanel .dd-check-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const f = COLL_FILTERS[opt.dataset.chip]
+      if (!f) return
+      f.toggle()
+      opt.classList.toggle('dd-checked', f.get())
+      _updateCollFilterBtn()
+      f.render()
+    })
+  })
+
+  // ── Detail (player) filter dropdown ───────────────────────────────
+  const DETAIL_FILTERS = {
+    wishlist: { toggle: () => state.setShowWishlistOnly(!state.showWishlistOnly), get: () => state.showWishlistOnly, render: () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) } },
+    graded:   { toggle: () => state.setShowGradedOnly(!state.showGradedOnly),    get: () => state.showGradedOnly,   render: () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) } },
+  }
+  function _updateDetailFilterBtn() {
+    const count = Object.values(DETAIL_FILTERS).filter(f => f.get()).length
+    const btn = document.getElementById('detailFilterDdBtn')
+    const lbl = document.getElementById('detailFilterDdLabel')
+    if (btn) btn.classList.toggle('dd-active', count > 0)
+    if (lbl) lbl.textContent = count > 0 ? `Filter · ${count}` : 'Filter'
+  }
+  document.getElementById('detailFilterDdBtn')?.addEventListener('click', () => {
+    _openDdWrap === 'detailFilterDdWrap' ? _closeDd() : _openDd('detailFilterDdWrap')
+  })
+  document.querySelectorAll('#detailFilterDdPanel .dd-check-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const f = DETAIL_FILTERS[opt.dataset.chip]
+      if (!f) return
+      f.toggle()
+      opt.classList.toggle('dd-checked', f.get())
+      _updateDetailFilterBtn()
+      f.render()
     })
   })
 }

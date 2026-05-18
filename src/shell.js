@@ -119,24 +119,39 @@ function appShellHTML() {
                       <span class="material-symbols-outlined">person</span>
                     </button>
                   </div>
-                  <div class="search-filter-row" id="collSearchRow" style="padding-bottom:6px;">
+                  <div class="search-filter-row" id="collSearchRow">
                     <div class="search-wrap">
                       <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set...">
                       <button class="search-clear-btn" tabindex="-1" id="collSearchClear">
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
-                    <div id="sortYear"  class="sort-chip active" data-sort="year">Year</div>
-                    <div id="sortSport" class="sort-chip" data-sort="sport">Sport</div>
-                    <div id="sortSet"   class="sort-chip" data-sort="set">Set</div>
-                  </div>
-                  <div class="coll-chips-row">
-                    <div id="chipCollWishlist" class="filter-chip" data-chip="collWishlist">unsleevd</div>
-                    <div id="chipCollGraded"   class="filter-chip" data-chip="collGraded">Graded</div>
-                    <div id="chipCollRC"       class="filter-chip" data-chip="collRC">RC</div>
-                    <div id="chipCollAuto"     class="filter-chip" data-chip="collAuto">AUTO</div>
-                    <div id="chipCollMem"      class="filter-chip" data-chip="collMem">MEM</div>
-                    <div id="chipCollNumbered" class="filter-chip" data-chip="collNumbered">#'d</div>
+                    <div class="dd-wrap" id="sortDdWrap">
+                      <button class="dd-btn" id="sortDdBtn">
+                        <span id="sortDdLabel">Year</span>
+                        <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                      </button>
+                      <div class="dd-panel" id="sortDdPanel">
+                        <div class="dd-opt dd-active" data-sort="year">Year</div>
+                        <div class="dd-opt" data-sort="sport">Sport</div>
+                        <div class="dd-opt" data-sort="set">Set</div>
+                      </div>
+                    </div>
+                    <div class="dd-wrap" id="collFilterDdWrap">
+                      <button class="dd-btn" id="collFilterDdBtn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
+                        <span id="collFilterDdLabel">Filter</span>
+                        <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                      </button>
+                      <div class="dd-panel" id="collFilterDdPanel">
+                        <div class="dd-check-opt" data-chip="collWishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
+                        <div class="dd-check-opt" data-chip="collGraded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+                        <div class="dd-check-opt" data-chip="collRC"><span class="material-symbols-outlined dd-check-icon">check</span>RC</div>
+                        <div class="dd-check-opt" data-chip="collAuto"><span class="material-symbols-outlined dd-check-icon">check</span>AUTO</div>
+                        <div class="dd-check-opt" data-chip="collMem"><span class="material-symbols-outlined dd-check-icon">check</span>MEM</div>
+                        <div class="dd-check-opt" data-chip="collNumbered"><span class="material-symbols-outlined dd-check-icon">check</span>#'d</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -278,8 +293,17 @@ function appShellHTML() {
                     <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                   </button>
                 </div>
-                <div id="chipWishlist" class="filter-chip" data-chip="wishlist">unsleevd</div>
-                <div id="chipGraded"   class="filter-chip" data-chip="graded">Graded</div>
+                <div class="dd-wrap" id="detailFilterDdWrap">
+                  <button class="dd-btn" id="detailFilterDdBtn">
+                    <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
+                    <span id="detailFilterDdLabel">Filter</span>
+                    <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                  </button>
+                  <div class="dd-panel" id="detailFilterDdPanel">
+                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
+                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

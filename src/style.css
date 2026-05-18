@@ -108,14 +108,10 @@ html, body {
 #topBarSearchSlot { display: none; flex: 1; min-width: 0; align-items: center; padding: 0 8px; }
 #topBarSearchSlot .search-filter-row { position: static !important; background: transparent !important; padding: 0 !important; z-index: auto !important; overflow: visible !important; width: 100%; }
 #topBarSearchSlot .search-input-expressive { height: 40px; border-radius: 20px; }
-#topBarSearchSlot .filter-chip { background: rgba(255,255,255,0.5); border-color: rgba(0,0,0,0.10); }
-#topBarSearchSlot .filter-chip.active { background: var(--md-surface); border-color: transparent; }
-#topBarSearchSlot .sort-chip { background: rgba(255,255,255,0.5); border-color: rgba(0,0,0,0.10); }
-#topBarSearchSlot .sort-chip.active { background: var(--md-surface); border-color: transparent; }
-[data-theme="dark"] #topBarSearchSlot .filter-chip { background: rgba(255,255,255,0.07); border-color: transparent; }
-[data-theme="dark"] #topBarSearchSlot .filter-chip.active { background: var(--md-surface-2); border-color: transparent; }
-[data-theme="dark"] #topBarSearchSlot .sort-chip { background: rgba(255,255,255,0.07); border-color: transparent; }
-[data-theme="dark"] #topBarSearchSlot .sort-chip.active { background: var(--md-surface-2); border-color: transparent; }
+#topBarSearchSlot .dd-btn { background: rgba(255,255,255,0.5); border-color: rgba(0,0,0,0.10); color: var(--md-on-surface); }
+#topBarSearchSlot .dd-btn.dd-active { background: var(--md-surface); border-color: transparent; color: var(--md-on-surface); font-weight: 600; }
+[data-theme="dark"] #topBarSearchSlot .dd-btn { background: rgba(255,255,255,0.07); border-color: transparent; }
+[data-theme="dark"] #topBarSearchSlot .dd-btn.dd-active { background: var(--md-surface-2); border-color: transparent; }
 #page-container { flex: 1; min-width: 0; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--md-surface-1); }
 
 /* ================================================================
@@ -292,18 +288,22 @@ html, body {
 .search-clear-btn { position: absolute; right: 8px; background: none; border: none; padding: 4px; cursor: pointer; color: var(--md-on-surface-variant); opacity: 0.55; display: none; align-items: center; justify-content: center; border-radius: 50%; }
 .search-clear-btn.visible { display: flex; }
 .search-clear-btn:active { opacity: 1; background: rgba(0,0,0,0.06); }
-.filter-chip { flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 4px; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--md-outline); background: transparent; font-size: 12px; font-weight: 500; color: var(--md-on-surface); cursor: pointer; transition: background 0.18s, border-color 0.18s, padding 0.18s; user-select: none; white-space: nowrap; }
-.filter-chip:active { background: rgba(0,0,0,0.06); }
-.filter-chip.active { background: var(--md-surface-1); border-color: var(--md-surface-1); color: var(--md-on-surface); font-weight: 600; padding-left: 8px; }
-.filter-chip.active::before { content: 'check'; font-family: 'Material Symbols Outlined'; font-size: 14px; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; line-height: 1; }
-.coll-chips-row { display: flex; align-items: center; gap: 6px; padding: 8px 16px 10px; overflow-x: auto; scrollbar-width: none; background: var(--md-surface); }
-.coll-chips-row::-webkit-scrollbar { display: none; }
-.coll-chips-divider { width: 1px; height: 20px; background: var(--md-outline); opacity: 0.25; flex-shrink: 0; margin: 0 2px; }
-.sort-chips-row { display: flex; align-items: center; gap: 6px; padding: 6px 12px 8px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
-.sort-chips-row::-webkit-scrollbar { display: none; }
-.sort-label { font-size: 12px; font-weight: 600; color: var(--md-on-surface-variant); flex-shrink: 0; }
-.sort-chip { flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--md-outline); background: transparent; font-size: 13px; font-weight: 500; color: var(--md-on-surface-variant); cursor: pointer; transition: background 0.15s, border-color 0.15s; user-select: none; white-space: nowrap; }
-.sort-chip.active { background: var(--md-surface-1); border-color: var(--md-surface-1); color: var(--md-on-surface); font-weight: 600; }
+/* ── Dropdown buttons + panels ──────────────────────────────────────────── */
+.dd-wrap { position: relative; flex-shrink: 0; }
+.dd-btn { display: flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px 0 10px; border-radius: 8px; border: 1px solid var(--md-outline); background: transparent; font-size: 12px; font-weight: 500; color: var(--md-on-surface-variant); cursor: pointer; user-select: none; white-space: nowrap; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+.dd-btn .material-symbols-outlined { font-size: 16px; line-height: 1; }
+.dd-btn:active { background: rgba(0,0,0,0.06); }
+.dd-btn.dd-active { background: var(--md-surface-1); border-color: var(--md-surface-1); color: var(--md-on-surface); font-weight: 600; }
+.dd-chevron { transition: transform 0.15s; }
+.dd-wrap.open .dd-chevron { transform: rotate(180deg); }
+.dd-panel { display: none; position: fixed; z-index: 500; background: var(--md-surface); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; min-width: 140px; border: 1px solid var(--md-surface-2); }
+.dd-opt { padding: 10px 16px; font-size: 14px; cursor: pointer; color: var(--md-on-surface-variant); white-space: nowrap; transition: background 0.1s; }
+.dd-opt:hover { background: var(--md-surface-1); }
+.dd-opt.dd-active { color: var(--md-primary); font-weight: 600; }
+.dd-check-opt { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 14px; cursor: pointer; color: var(--md-on-surface); white-space: nowrap; transition: background 0.1s; }
+.dd-check-opt:hover { background: var(--md-surface-1); }
+.dd-check-icon { font-size: 16px; color: var(--md-primary); opacity: 0; flex-shrink: 0; transition: opacity 0.1s; }
+.dd-check-opt.dd-checked .dd-check-icon { opacity: 1; }
 
 /* ================================================================
    YEAR GROUP HEADERS
@@ -755,7 +755,7 @@ html, body {
 [data-theme="dark"] .rail-item:hover { background: rgba(255,255,255,0.07); }
 [data-theme="dark"] .card-row-menu-btn:active,
 [data-theme="dark"] .search-clear-btn:active,
-[data-theme="dark"] .filter-chip:active { background: rgba(255,255,255,0.08); }
+[data-theme="dark"] .dd-btn:active { background: rgba(255,255,255,0.08); }
 [data-theme="dark"] .nav-indicator { background: rgba(255,255,255,0.12); }
 [data-theme="dark"] .player-stat-pill,
 [data-theme="dark"] .total-count-pill { background: var(--md-surface-2); }
