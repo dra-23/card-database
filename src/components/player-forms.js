@@ -68,7 +68,7 @@ export function createPlayerEditSheet() {
         <img id="peThumb" style="width:56px; height:78px; border-radius:12px; object-fit:cover; background:var(--md-surface-2); flex-shrink:0;">
         <div style="flex:1;">
           <div id="peName" style="font-family:'Google Sans Display'; font-size:20px; font-weight:700;"></div>
-          <div id="peCount" style="font-size:12px; opacity:0.6; margin-top:2px;"></div>
+          <div id="peCount" style="font-size:13px; opacity:0.6; margin-top:2px;"></div>
         </div>
       </div>
       <div style="display:flex; flex-direction:column; gap:12px;">
@@ -87,18 +87,18 @@ export function createPlayerEditSheet() {
           <div style="display:flex; flex-direction:column; gap:6px; flex:1; align-items:center;">
             <div style="width:64px; height:88px; border-radius:10px; overflow:hidden; background:var(--md-surface-2); border:1px dashed var(--md-outline); flex-shrink:0;">
               <img id="peMainPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-              <span id="peMainPlaceholder" style="display:flex; align-items:center; justify-content:center; height:100%; font-size:9px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
+              <span id="peMainPlaceholder" style="display:flex; align-items:center; justify-content:center; height:100%; font-size:10px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
             </div>
             <input type="file" id="peMainFileInput" accept="image/*" style="display:none;">
-            <button type="button" class="expressive-btn" id="peSelectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:36px; border-radius:18px; font-size:12px; width:100%; padding:0 12px;">Change Photo</button>
+            <button type="button" class="expressive-btn" id="peSelectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:36px; border-radius:18px; font-size:13px; width:100%; padding:0 12px;">Change Photo</button>
           </div>
           <div style="display:flex; flex-direction:column; gap:6px; flex:1; align-items:center;">
             <div style="width:64px; height:88px; border-radius:10px; overflow:hidden; background:var(--md-surface-2); border:1px dashed var(--md-outline); flex-shrink:0;">
               <img id="peBannerPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-              <span id="peBannerPlaceholder" style="display:flex; align-items:center; justify-content:center; height:100%; font-size:9px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Banner<br>Photo</span>
+              <span id="peBannerPlaceholder" style="display:flex; align-items:center; justify-content:center; height:100%; font-size:10px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Banner<br>Photo</span>
             </div>
             <input type="file" id="peBannerFileInput" accept="image/*" style="display:none;">
-            <button type="button" class="expressive-btn" id="peSelectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:36px; border-radius:18px; font-size:12px; width:100%; padding:0 12px;">Change Banner</button>
+            <button type="button" class="expressive-btn" id="peSelectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:36px; border-radius:18px; font-size:13px; width:100%; padding:0 12px;">Change Banner</button>
           </div>
         </div>
         <div style="display:flex; gap:12px; margin-top:8px;">

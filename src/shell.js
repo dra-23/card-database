@@ -10,9 +10,9 @@ function authScreenHTML() {
     <img src="/logo.png" style="width:72px; height:72px; border-radius:20px;" onerror="this.style.display='none'">
     <div style="text-align:center;">
       <div style="font-family:'Google Sans Display'; font-size:36px; font-weight:700; line-height:1;">sleevd</div>
-      <div style="font-size:15px; color:var(--md-on-surface-variant); margin-top:6px;">Your sports card collection</div>
+      <div style="font-size:16px; color:var(--md-on-surface-variant); margin-top:6px;">Your sports card collection</div>
     </div>
-    <button id="signInBtn" style="display:flex; align-items:center; gap:12px; width:100%; height:52px; border-radius:26px; border:1.5px solid #dadce0; background:#fff; font-family:'Google Sans',sans-serif; font-size:15px; font-weight:600; color:#3c4043; cursor:pointer; padding:0 20px; justify-content:center; transition:background 0.15s; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <button id="signInBtn" style="display:flex; align-items:center; gap:12px; width:100%; height:52px; border-radius:26px; border:1.5px solid #dadce0; background:#fff; font-family:'Google Sans',sans-serif; font-size:16px; font-weight:600; color:#3c4043; cursor:pointer; padding:0 20px; justify-content:center; transition:background 0.15s; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h12.4c-.5 2.9-2.1 5.3-4.5 6.9v5.7h7.3c4.3-4 6.9-9.8 6.9-16.7z"/><path fill="#34A853" d="M24 47c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2.1 1.4-4.7 2.2-7.9 2.2-6 0-11.1-4.1-13-9.6H3.5v5.9C7.3 41.8 15 47 24 47z"/><path fill="#FBBC05" d="M11 28.4c-.5-1.4-.7-2.9-.7-4.4s.3-3 .7-4.4v-5.9H3.5C1.3 17.3 0 20.5 0 24s1.3 6.7 3.5 9.3l7.5-5.9z"/><path fill="#EA4335" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.4l6.6-6.6C35.4 2.5 30.1 0 24 0 15 0 7.3 5.2 3.5 12.8l7.5 5.9c1.9-5.5 7-9.2 13-9.2z"/></svg>
       Sign in with Google
     </button>
@@ -457,7 +457,7 @@ function appShellHTML() {
       <span class="material-symbols-outlined">photo_camera</span>
       <span>Scan Card</span>
     </button>
-    <div id="cs_status" style="display:none; font-size:13px; padding:6px 2px; color:var(--md-on-surface-variant);"></div>
+    <div id="cs_status" style="display:none; font-size:14px; padding:6px 2px; color:var(--md-on-surface-variant);"></div>
     <div id="csResults" class="cs-results"></div>
     <button class="cs-manual-btn" id="csManualBtn">Enter manually</button>
   </div>
@@ -472,15 +472,15 @@ function appShellHTML() {
     <div style="display:flex; flex-direction:column; gap:16px;">
       <div style="display:flex; gap:12px; align-items:stretch;">
         <div id="imagePreviewContainer" style="width:90px; height:120px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-          <span id="previewPlaceholder" style="font-size:10px; color:var(--md-outline); text-align:center; padding:4px;">No<br>Image</span>
+          <span id="previewPlaceholder" style="font-size:11px; color:var(--md-outline); text-align:center; padding:4px;">No<br>Image</span>
           <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
         </div>
         <div style="flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center;">
           <input type="file" id="f_fileInput" accept="image/*" style="display:none;">
-          <button class="expressive-btn" id="selectPhotoBtn" style="background:var(--md-surface-1); box-shadow:none; padding:12px; font-size:13px;">📷 Select Photo</button>
+          <button class="expressive-btn" id="selectPhotoBtn" style="background:var(--md-surface-1); box-shadow:none; padding:12px; font-size:14px;">📷 Select Photo</button>
           <div class="m3-field" id="f_player_field" style="height:48px;">
             <label class="m3-label">Player</label>
-            <select id="f_player" class="m3-select" style="font-size:14px; padding-top:20px;"></select>
+            <select id="f_player" class="m3-select" style="font-size:15px; padding-top:20px;"></select>
           </div>
         </div>
       </div>
@@ -519,19 +519,19 @@ function appShellHTML() {
       <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" inputmode="decimal" id="f_price" class="m3-input"></div>
       <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_rc_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#E8192C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">RC</span>Rookie Card
+        <button type="button" id="f_rc_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#E8192C; color:#fff; font-size:12px; font-weight:800; padding:3px 8px; border-radius:6px;">RC</span>Rookie Card
         </button>
-        <button type="button" id="f_auto_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#B8860B; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">AUTO</span>Autograph
+        <button type="button" id="f_auto_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#B8860B; color:#fff; font-size:12px; font-weight:800; padding:3px 8px; border-radius:6px;">AUTO</span>Autograph
         </button>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_mem_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#1565C0; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">MEM</span>Memorabilia
+        <button type="button" id="f_mem_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#1565C0; color:#fff; font-size:12px; font-weight:800; padding:3px 8px; border-radius:6px;">MEM</span>Memorabilia
         </button>
-        <button type="button" id="f_numbered_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#78909C; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;">#'d</span>Numbered
+        <button type="button" id="f_numbered_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="background:#78909C; color:#fff; font-size:12px; font-weight:800; padding:3px 8px; border-radius:6px;">#'d</span>Numbered
         </button>
       </div>
       <input type="hidden" id="f_rc"       value="false">
@@ -574,7 +574,7 @@ function appShellHTML() {
         <label class="m3-label">Pop Report</label>
         <input type="text" id="reg_pop" class="m3-input" placeholder="Population count" inputmode="numeric">
       </div>
-      <div id="psaFetchStatus" style="display:none; font-size:13px; padding:0 4px;"></div>
+      <div id="psaFetchStatus" style="display:none; font-size:14px; padding:0 4px;"></div>
       <div id="psaImagePreview" style="display:none; justify-content:center; gap:8px; margin:4px 0;"></div>
       <button class="expressive-btn" id="btnLookupPSA" style="display:none; background:#002D62; color:white; height:52px; border-radius:26px;">Look Up from PSA</button>
       <button class="expressive-btn" id="btnSavePSA" style="background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
@@ -602,22 +602,22 @@ function appShellHTML() {
       </div>
       <div style="display:flex; gap:12px; align-items:center;">
         <div style="width:64px; height:88px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-          <span id="pf_mainImgPlaceholder" style="font-size:9px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
+          <span id="pf_mainImgPlaceholder" style="font-size:10px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
           <img id="pf_mainImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
         </div>
         <div style="flex:1;">
           <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">
-          <button type="button" class="expressive-btn" id="pf_selectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:13px; width:100%;">Select Player Photo</button>
+          <button type="button" class="expressive-btn" id="pf_selectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:14px; width:100%;">Select Player Photo</button>
         </div>
       </div>
       <div style="display:flex; gap:12px; align-items:center;">
         <div style="width:96px; height:36px; flex-shrink:0; background:#F0F0F0; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-          <span id="pf_bannerImgPlaceholder" style="font-size:9px; color:var(--md-outline);">Banner</span>
+          <span id="pf_bannerImgPlaceholder" style="font-size:10px; color:var(--md-outline);">Banner</span>
           <img id="pf_bannerImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
         </div>
         <div style="flex:1;">
           <input type="file" id="pf_bannerFileInput" accept="image/*" style="display:none;">
-          <button type="button" class="expressive-btn" id="pf_selectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:13px; width:100%;">Select Banner Photo</button>
+          <button type="button" class="expressive-btn" id="pf_selectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:14px; width:100%;">Select Banner Photo</button>
         </div>
       </div>
       <button class="expressive-btn" id="btnSavePlayer" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;">Add Player</button>

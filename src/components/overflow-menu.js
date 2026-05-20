@@ -140,10 +140,10 @@ function showDeleteConfirm(cardId) {
   overlay.innerHTML = `
     <div style="background:var(--md-surface);border-radius:28px;padding:24px;width:100%;max-width:320px;">
       <div style="font-size:18px;font-weight:700;font-family:'Google Sans Display';margin-bottom:8px;">Delete Card?</div>
-      <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:24px;line-height:1.5;">This card will be permanently deleted and cannot be undone.</div>
+      <div style="font-size:15px;color:var(--md-on-surface-variant);margin-bottom:24px;line-height:1.5;">This card will be permanently deleted and cannot be undone.</div>
       <div style="display:flex;gap:12px;">
-        <button id="_delCancel" style="flex:1;height:48px;border:none;border-radius:24px;background:var(--md-surface-2);font-family:'Google Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;color:var(--md-on-surface);">Cancel</button>
-        <button id="_delConfirm" style="flex:1;height:48px;border:none;border-radius:24px;background:#C62828;color:#fff;font-family:'Google Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">Delete</button>
+        <button id="_delCancel" style="flex:1;height:48px;border:none;border-radius:24px;background:var(--md-surface-2);font-family:'Google Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;color:var(--md-on-surface);">Cancel</button>
+        <button id="_delConfirm" style="flex:1;height:48px;border:none;border-radius:24px;background:#C62828;color:#fff;font-family:'Google Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;">Delete</button>
       </div>
     </div>
   `
