@@ -360,7 +360,7 @@ export function handleCardTap(cardId, ctx, replace = false) {
     const scrim  = document.getElementById('globalScrim')
     const nb     = document.getElementById('nav-bar')
     if (scrim) scrim.style.display = 'block'
-    if (nb)    { nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px))'; nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)' }
+    if (nb)    { nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px + env(safe-area-inset-bottom)))'; nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)' }
 
     if (replace) history.replaceState({ v: 'card', id: cardId, ctx }, '')
     else         history.pushState({ v: 'card', id: cardId, ctx }, '')

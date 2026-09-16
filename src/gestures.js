@@ -257,7 +257,7 @@ export function initNavBarAutoHide() {
   }
   function hide() {
     nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)'
-    nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px))'
+    nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px + env(safe-area-inset-bottom)))'
   }
 
   let idleTimer = null
