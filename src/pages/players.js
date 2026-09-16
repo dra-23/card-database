@@ -58,6 +58,8 @@ export function openDetail(id) {
   document.getElementById('playerName').innerText    = player.Player || player.id
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
+  document.getElementById('detailStickyName').innerText = player.Player || player.id
+  document.getElementById('detailStickyNamebar')?.classList.remove('visible')
 
   // Populate wide-layout hero and top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
@@ -126,6 +128,7 @@ export function closeDetail() {
   dv.style.position = 'absolute'; dv.style.inset = '0'
   dv.style.transform = ''; dv.style.transition = ''
   dv.classList.add('tp-no-player')
+  document.getElementById('detailStickyNamebar')?.classList.remove('visible')
   state.setSelectedPlayer(null)
   // Restore top bar to page title + total count
   const topBarTitle = document.getElementById('topBarTitle')

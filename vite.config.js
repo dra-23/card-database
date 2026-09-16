@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  define: {
+    'process.env': {},
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

@@ -4,7 +4,7 @@ import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './fireb
 import { renderShell } from './shell.js'
 import * as state from './state.js'
 import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery, _foldQuery, _threePaneQuery } from './layout.js'
-import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
+import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initNavBarAutoHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
 import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation } from './pages/players.js'
 import { renderCollectionView } from './pages/collection.js'
 import { renderGradedView } from './pages/graded.js'
@@ -89,6 +89,9 @@ function startApp() {
     const tb = document.getElementById('topBarTitle')
     if (tb && !(page === 'players' && state.selectedPlayer)) tb.textContent = titleMap[page] || page
     _syncTopBarSearch(page)
+    // Always reveal the floating toolbar on a fresh page — it should never
+    // land hidden from a previous page's scroll position
+    if (!isWideLayout()) { navBar.style.transition = ''; navBar.style.transform = 'translateX(-50%) translateY(0)' }
   })
 
   // Overlays & dynamic elements
@@ -120,6 +123,8 @@ function startApp() {
   initCardListDelegation()
   initCardLongPress()
   initInlinePanelSwipe()
+  initScrollHide()
+  initNavBarAutoHide()
 
   // Card list delegation
   document.getElementById('cardList').addEventListener('click', e => {
@@ -393,6 +398,7 @@ function wireNavButtons() {
   // Back buttons in player detail
   document.getElementById('backBtn')?.addEventListener('click', closeDetail)
   document.getElementById('backBtnWide')?.addEventListener('click', closeDetail)
+  document.getElementById('stickyBackBtn')?.addEventListener('click', closeDetail)
 }
 
 // ── Wire form buttons ──────────────────────────────────────────────────────

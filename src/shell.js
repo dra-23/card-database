@@ -234,6 +234,12 @@ function appShellHTML() {
       <!-- Detail view (player cards) -->
       <div class="view" id="detail-view" style="display:none; z-index:50;">
         <div class="master-col">
+          <div class="detail-sticky-namebar" id="detailStickyNamebar">
+            <button class="icon-btn" id="stickyBackBtn" aria-label="Back">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <span id="detailStickyName" class="detail-sticky-namebar-text"></span>
+          </div>
           <div id="detail-view-empty">
             <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             <p>Select a player to browse their cards</p>

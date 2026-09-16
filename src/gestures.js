@@ -215,6 +215,7 @@ export function initScrollHide() {
     { bodyId: 'statsScrollBody',      wrapId: 'statsHeaderWrap'      },
   ]
   const COLLAPSE_THRESHOLD = 64, REVEAL_THRESHOLD = 24
+  const stickyNamebar = document.getElementById('detailStickyNamebar')
   pairs.forEach(({ bodyId, wrapId }) => {
     const el   = document.getElementById(bodyId)
     const wrap = document.getElementById(wrapId)
@@ -224,9 +225,67 @@ export function initScrollHide() {
       if (ticking) return; ticking = true
       requestAnimationFrame(() => {
         const y = el.scrollTop
-        if (y <= REVEAL_THRESHOLD)       wrap.classList.remove('collapsed')
-        else if (y > COLLAPSE_THRESHOLD) wrap.classList.add('collapsed')
+        if (y <= REVEAL_THRESHOLD) {
+          wrap.classList.remove('collapsed')
+          if (bodyId === 'detailScrollBody') stickyNamebar?.classList.remove('visible')
+        } else if (y > COLLAPSE_THRESHOLD) {
+          wrap.classList.add('collapsed')
+          if (bodyId === 'detailScrollBody' && !isWideLayout()) stickyNamebar?.classList.add('visible')
+        }
         ticking = false
+      })
+    }, { passive: true })
+  })
+}
+
+// ── Floating toolbar auto-hide on scroll ───────────────────────────────────
+// Hides the bottom nav pill while the user scrolls down through a list, and
+// brings it back on scroll-up or once scrolling settles — same hide/show
+// transform used when a card-detail sheet opens/closes (card-detail.js).
+export function initNavBarAutoHide() {
+  const nb = document.getElementById('nav-bar')
+  if (!nb) return
+
+  const scrollIds = ['galleryScrollBody', 'collectionScrollBody', 'gradedScrollBody', 'detailScrollBody', 'statsScrollBody']
+  const HIDE_DELTA = 8
+  const MIN_SCROLL = 40
+  const IDLE_REVEAL_MS = 900
+
+  function show() {
+    nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)'
+    nb.style.transform = 'translateX(-50%) translateY(0)'
+  }
+  function hide() {
+    nb.style.transition = 'transform 0.3s cubic-bezier(0.05,0.7,0.1,1)'
+    nb.style.transform = 'translateX(-50%) translateY(calc(100% + 32px))'
+  }
+
+  let idleTimer = null
+
+  scrollIds.forEach(id => {
+    const el = document.getElementById(id)
+    if (!el) return
+    let lastTop = el.scrollTop
+    let ticking = false
+
+    el.addEventListener('scroll', () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        ticking = false
+        // Don't fight the sheet-open/close transform, and nav-bar is hidden
+        // entirely on wide layout anyway
+        if (isWideLayout() || document.querySelector('.sheet.open')) return
+
+        const top = el.scrollTop
+        const dy  = top - lastTop
+        lastTop   = top
+
+        if (top <= MIN_SCROLL || dy < -HIDE_DELTA)  show()
+        else if (dy > HIDE_DELTA)                    hide()
+
+        clearTimeout(idleTimer)
+        idleTimer = setTimeout(show, IDLE_REVEAL_MS)
       })
     }, { passive: true })
   })
