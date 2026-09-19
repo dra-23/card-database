@@ -152,52 +152,57 @@ html, body {
   .collapsible-header-wrap.collapsed > .collapsible-header { pointer-events: auto !important; opacity: 1; }
 }
 
-/* Player detail header: a single max-height transition (height measured into
-   --hero-h by a ResizeObserver) instead of the grid trick above — one property,
-   no separate opacity fade to fall out of sync with, so it collapses in one
-   smooth motion instead of stepping through two different-duration transitions. */
-#detailHeaderWrap {
-  flex-shrink: 0; overflow: hidden;
-  max-height: var(--hero-h, 600px);
-  transition: max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-}
-#detailHeaderWrap.collapsed { max-height: 0; }
-#detailHeaderWrap > .collapsible-header { opacity: 1; }
-@media (min-width: 768px) {
-  #detailHeaderWrap.collapsed { max-height: none !important; }
+/* Player detail hero: on mobile it's a purely decorative overlay
+   (banner/thumb/name/pill) that only ever animates via transform — GPU-
+   composited, no layout/reflow, so it stays smooth regardless of content.
+   It floats on top of #detailScrollBody (which never changes size) and
+   simply covers or uncovers #detailCompactHeader + the top of the list as
+   it slides. On desktop it never collapses, so it just stays a normal
+   in-flow header (matching the old behavior there) — only mobile gets the
+   overlay treatment. */
+#detailHeroDecorative { background: var(--md-surface); }
+@media (max-width: 767px) {
+  #detailHeroDecorative {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 60;
+    transform: translateY(0);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+  #detailHeroDecorative.collapsed { transform: translateY(-100%); }
 }
 
-/* Sticky compact name bar — shown once the big banner collapses on scroll,
-   so the player's name (and a way back) stay reachable without it taking up
-   space. Slides with the exact same transition as #detailHeaderWrap above
-   so the two move in lockstep instead of drifting out of sync. */
-.detail-sticky-namebar {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 110;
-  display: flex; align-items: center; gap: 12px;
-  height: 52px; padding: 0 16px;
+/* Compact name row: back + name. Lives in normal document flow as the first
+   child of the scroll list, using native position:sticky (same technique as
+   the year-group-headers) — it never gets toggled or animated, it's just
+   always correctly positioned, and the decorative hero above reveals it by
+   sliding away. */
+#detailCompactHeader {
+  position: sticky; top: 0; z-index: 20;
   background: var(--md-surface-1);
-  transform: translateY(-100%);
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
-.detail-sticky-namebar.visible { transform: translateY(0); }
+.detail-sticky-namerow { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 16px; }
 .detail-sticky-namebar-text {
   font-family: 'Google Sans Display'; font-size: 17px; font-weight: 700;
   color: var(--md-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-@media (min-width: 768px) { .detail-sticky-namebar { display: none; } }
+@media (min-width: 768px) { #detailCompactHeader { display: none; } }
 
-/* The card search row lives inside the scrollable list itself (not the
-   collapsing banner) as a native sticky element — visible up front like any
-   other page, and once scrolled past, it pins right below the compact name
-   bar above instead of disappearing, using the same offset trick as the
-   year-group-headers below it. */
-#detailScrollBody #detailSearchRow {
-  position: sticky; top: 0; z-index: 15;
+/* Search row: kept separate from the compact name row above it, because the
+   decorative hero is taller than that 52px row alone (banner + thumb, not
+   just a name) and would otherwise cover the search row too. A spacer sized
+   to the hero's real height (--hero-h, measured live via ResizeObserver
+   since the name/pill row can wrap to more lines) pushes it to sit right
+   below the hero at rest — visible before any scrolling — and once
+   scrolled, its own sticky offset docks it below the compact name row
+   instead of disappearing behind it. */
+#detailScrollBody > #detailSearchRow {
+  position: sticky; top: 52px; z-index: 15;
+  margin-top: calc(var(--hero-h, 232px) - 52px);
   background: var(--md-surface);
-  transition: top 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
-#detailHeaderWrap.collapsed ~ #detailScrollBody #detailSearchRow { top: 52px; }
+@media (min-width: 768px) {
+  #detailScrollBody > #detailSearchRow { margin-top: 0 !important; position: static; }
+}
 
 /* ================================================================
    PLAYER GRID
@@ -365,7 +370,10 @@ html, body {
 /* Player detail: once the banner collapses, the sticky namebar (z-index 110)
    occupies the same top strip the year headers stick to (top:0) and would
    otherwise hide them behind it — dock the headers below it instead. */
-#detailHeaderWrap.collapsed ~ #detailScrollBody .year-group-header { top: 114px; }
+/* Docks below the always-present compact header (namerow 52px + search row
+   62px = 114px) — #detailCompactHeader itself never moves, so this never
+   needs to change either. */
+#detailScrollBody .year-group-header { top: 114px; }
 
 /* ================================================================
    GRADED VIEW

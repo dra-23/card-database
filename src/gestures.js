@@ -233,30 +233,34 @@ export function initScrollHide() {
 
 // ── Player detail hero collapse ─────────────────────────────────────────────
 // Direction-based, like the floating toolbar (initNavBarAutoHide below):
-// hides the big banner on scroll-down, brings it back on scroll-up from
-// anywhere (not just at the very top), and both the banner (#detailHeaderWrap)
-// and the compact name bar (#detailStickyNamebar) animate on the exact same
-// max-height/transform transition so they move in lockstep instead of one
-// finishing before the other. The search row itself lives in the scrollable
-// list as a plain sticky element (see style.css), so it's visible up front
-// and simply docks below the compact bar once scrolled — no JS needed for it.
+// the decorative banner (#detailHeroDecorative) hides on scroll-down and
+// comes back on scroll-up from anywhere, not just at the very top. It's a
+// pure transform slide (GPU-composited) over a scroll list whose own size
+// never changes — #detailCompactHeader underneath is a plain in-flow sticky
+// element that's simply revealed as the banner slides away, so there's only
+// ever one thing animating instead of several needing to stay in sync.
 export function initDetailHeroCollapse() {
-  const el     = document.getElementById('detailScrollBody')
-  const wrap   = document.getElementById('detailHeaderWrap')
-  const namebar = document.getElementById('detailStickyNamebar')
-  if (!el || !wrap) return
+  const el   = document.getElementById('detailScrollBody')
+  const hero = document.getElementById('detailHeroDecorative')
+  if (!el || !hero) return
 
-  // Keep --hero-h in sync with the banner's actual rendered content (fixed
-  // banner image height, but the name/pill row can wrap to more lines) so
-  // the max-height collapse always starts from the true height, not a guess.
-  const heroContent = wrap.querySelector('.collapsible-header')
-  if (heroContent && 'ResizeObserver' in window) {
+  // The hero is taller than the compact header it overlays (banner + thumb
+  // vs. just a name row) — keep --hero-h/heroHeight in sync with its true
+  // rendered height (name/pill text can wrap to more lines) so #cardList
+  // reserves exactly enough space below the compact header, and so the
+  // collapse-trigger threshold below stays correct too.
+  // Set on .master-col (common ancestor of the hero and #cardList) since
+  // custom properties only inherit down the tree from where they're set.
+  let heroHeight = hero.offsetHeight || 232
+  const masterCol = hero.closest('.master-col')
+  if (masterCol && 'ResizeObserver' in window) {
     new ResizeObserver(([entry]) => {
-      wrap.style.setProperty('--hero-h', `${Math.ceil(entry.contentRect.height)}px`)
-    }).observe(heroContent)
+      heroHeight = entry.contentRect.height
+      masterCol.style.setProperty('--hero-h', `${Math.ceil(heroHeight)}px`)
+    }).observe(hero)
   }
 
-  const MIN_SCROLL = 40, HIDE_DELTA = 8
+  const NAMEROW_H = 52, HIDE_DELTA = 8
   let lastTop = el.scrollTop
   let ticking = false
 
@@ -268,13 +272,14 @@ export function initDetailHeroCollapse() {
       const dy  = top - lastTop
       lastTop   = top
 
-      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) {
-        wrap.classList.remove('collapsed')
-        namebar?.classList.remove('visible')
-      } else if (dy > HIDE_DELTA) {
-        wrap.classList.add('collapsed')
-        if (!isWideLayout()) namebar?.classList.add('visible')
-      }
+      // #detailSearchRow only reaches its own stuck position once scrollTop
+      // passes (heroHeight - NAMEROW_H) — collapsing the hero any earlier
+      // than that would expose a gap between the compact header and the
+      // not-yet-docked search row underneath it.
+      const stickPoint = Math.max(0, heroHeight - NAMEROW_H)
+
+      if (top <= stickPoint || dy < -HIDE_DELTA)        hero.classList.remove('collapsed')
+      else if (top > stickPoint && dy > HIDE_DELTA)     hero.classList.add('collapsed')
     })
   }, { passive: true })
 }

@@ -234,67 +234,85 @@ function appShellHTML() {
       <!-- Detail view (player cards) -->
       <div class="view" id="detail-view" style="display:none; z-index:50;">
         <div class="master-col">
-          <div class="detail-sticky-namebar" id="detailStickyNamebar">
-            <button class="icon-btn" id="stickyBackBtn" aria-label="Back">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </button>
-            <span id="detailStickyName" class="detail-sticky-namebar-text"></span>
-          </div>
           <div id="detail-view-empty">
             <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             <p>Select a player to browse their cards</p>
           </div>
-          <div id="detailHeaderWrap">
-            <div class="collapsible-header">
 
-              <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
-              <div id="playerWideHero">
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                  </button>
-                  <div id="playerWideHeroName" style="flex:1;"></div>
-                  <button class="icon-btn" id="editPlayerBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;" aria-label="Edit player">
-                    <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
-                  </button>
-                </div>
-              </div>
+          <!-- Purely decorative — banner/thumb/name/stat-pill. A plain overlay
+               that only ever animates via transform (GPU-composited, no
+               layout/reflow), so it slides smoothly regardless of content.
+               Everything a user actually needs (back, name, search) lives in
+               #detailCompactHeader below, which never moves. -->
+          <div id="detailHeroDecorative">
 
-              <!-- MOBILE BANNER (hidden on desktop) -->
-              <div id="playerBannerSection" style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
-                <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
-                <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-                <button class="back-btn" id="backBtn">
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
+            <div id="playerWideHero">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
-                <button class="top-bar-icon-btn" id="editPlayerBtn" aria-label="Edit player" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:56px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
-                  <span class="material-symbols-outlined">edit</span>
-                </button>
-                <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
-                  <span class="material-symbols-outlined">person</span>
+                <div id="playerWideHeroName" style="flex:1;"></div>
+                <button class="icon-btn" id="editPlayerBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;" aria-label="Edit player">
+                  <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
                 </button>
               </div>
+            </div>
 
-              <!-- MOBILE THUMB + NAME + PILL (hidden on desktop) -->
-              <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px 12px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
-                <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-                <div id="playerDetailPill" style="padding-bottom:8px; flex:1; min-width:0;">
-                  <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display'; margin:0 0 6px;"></h2>
-                  <div class="player-stat-pill" style="display:inline-flex;">
-                    <span class="stat-pill-label">sleevd</span>
-                    <strong id="detailPillSleevd">0</strong>
-                    <span class="stat-pill-sep">·</span>
-                    <span class="stat-pill-label">unsleevd</span>
-                    <strong id="detailPillUnsleevd">0</strong>
-                    <span class="stat-pill-sep">·</span>
-                    <span class="stat-pill-label">graded</span>
-                    <strong id="detailPillGraded">0</strong>
-                  </div>
+            <!-- MOBILE BANNER (hidden on desktop) -->
+            <div id="playerBannerSection" style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
+              <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
+              <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
+              <button class="back-btn" id="backBtn">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              </button>
+              <button class="top-bar-icon-btn" id="editPlayerBtn" aria-label="Edit player" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:56px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:12px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+                <span class="material-symbols-outlined">person</span>
+              </button>
+            </div>
+
+            <!-- MOBILE THUMB + NAME + PILL (hidden on desktop) -->
+            <div id="playerThumbSection" style="margin-top:-50px; padding:0 20px 12px; position:relative; display:flex; align-items:flex-end; gap:16px; z-index:15;">
+              <img id="playerThumb" style="width:80px; height:110px; border-radius:16px; border:4px solid var(--md-surface); object-fit:cover; background:#eee; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+              <div id="playerDetailPill" style="padding-bottom:8px; flex:1; min-width:0;">
+                <h2 id="playerName" style="font-size:24px; font-family:'Google Sans Display'; margin:0 0 6px;"></h2>
+                <div class="player-stat-pill" style="display:inline-flex;">
+                  <span class="stat-pill-label">sleevd</span>
+                  <strong id="detailPillSleevd">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">unsleevd</span>
+                  <strong id="detailPillUnsleevd">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">graded</span>
+                  <strong id="detailPillGraded">0</strong>
                 </div>
               </div>
             </div>
           </div>
+
           <div class="scroll-body" id="detailScrollBody">
+            <!-- Compact name row: back + name. Lives in normal flow as the
+                 first child of the scroll list, native position:sticky (same
+                 technique as the year-group-headers) — never toggled, never
+                 animated, always exactly where it should be. The decorative
+                 hero above covers it when expanded, and uncovers it by
+                 sliding away. -->
+            <div id="detailCompactHeader">
+              <div class="detail-sticky-namerow">
+                <button class="icon-btn" id="stickyBackBtn" aria-label="Back">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <span id="detailStickyName" class="detail-sticky-namebar-text"></span>
+              </div>
+            </div>
+            <!-- Search row: separate from the compact header above — it sits
+                 right below the decorative hero (visible before any
+                 scrolling, via a spacer sized to the hero's real height),
+                 and once scrolled, it's a plain sticky element that docks
+                 below the compact name row instead of being covered by it. -->
             <div class="search-filter-row" id="detailSearchRow">
               <div class="search-wrap">
                 <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">

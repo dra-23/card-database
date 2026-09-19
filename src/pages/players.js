@@ -59,7 +59,6 @@ export function openDetail(id) {
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
   document.getElementById('detailStickyName').innerText = player.Player || player.id
-  document.getElementById('detailStickyNamebar')?.classList.remove('visible')
 
   // Populate wide-layout hero and top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
@@ -90,8 +89,8 @@ export function openDetail(id) {
   if (totalPill) totalPill.style.display = 'none'
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
-  const detailWrap = document.getElementById('detailHeaderWrap')
-  if (detailWrap) detailWrap.classList.remove('collapsed')
+  const heroDecorative = document.getElementById('detailHeroDecorative')
+  if (heroDecorative) heroDecorative.classList.remove('collapsed')
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
@@ -128,7 +127,7 @@ export function closeDetail() {
   dv.style.position = 'absolute'; dv.style.inset = '0'
   dv.style.transform = ''; dv.style.transition = ''
   dv.classList.add('tp-no-player')
-  document.getElementById('detailStickyNamebar')?.classList.remove('visible')
+  document.getElementById('detailHeroDecorative')?.classList.remove('collapsed')
   state.setSelectedPlayer(null)
   // Restore top bar to page title + total count
   const topBarTitle = document.getElementById('topBarTitle')
