@@ -92,7 +92,7 @@ transition: box-shadow 0.25s cubic-bezier(0.2,0,0,1), transform 0.25s cubic-bezi
 
 **Card thumbnails:** `border-radius: 0` (no rounding — preserves full card corners)
 
-**Player tiles:** `aspect-ratio: 3/4`, `object-fit: contain` by default; JS switches to `object-fit: cover` for landscape images after load.
+**Player tiles:** `aspect-ratio: 3/4`, `object-fit: cover` — always fills the tile edge-to-edge (cropping top/bottom for portrait images, left/right for landscape) so every tile image matches the nameplate's width.
 
 ---
 
