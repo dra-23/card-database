@@ -206,10 +206,9 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
   sheet.addEventListener('touchcancel', onEnd, { passive: true })
 }
 
-// ── Collapsible header scroll-hide (gallery / graded / stats) ──────────────
+// ── Collapsible header scroll-hide (gallery / stats) ────────────────────────
 export function initScrollHide() {
   const pairs = [
-    { bodyId: 'gradedScrollBody',     wrapId: 'gradedHeaderWrap'     },
     { bodyId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
     { bodyId: 'statsScrollBody',      wrapId: 'statsHeaderWrap'      },
   ]
@@ -300,6 +299,48 @@ export function initDetailCompactBar() {
     if (ticking) return; ticking = true
     requestAnimationFrame(() => {
       ticking = false
+      const top = el.scrollTop
+      const dy  = top - lastTop
+      lastTop   = top
+
+      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
+      else if (dy > HIDE_DELTA)                  hide()
+    })
+  }, { passive: true })
+}
+
+// ── Collection / Graded header auto-hide ────────────────────────────────────
+// Same technique as the player-detail compact bar / floating nav toolbar:
+// hides on scroll-down, reveals immediately on scroll-up from anywhere.
+// wrapId must already be `position: sticky` (see style.css) — this only
+// layers the show/hide transform and toggles `${wrapId}-hidden` on the
+// shared .view so the year-group-headers can dock below it or reclaim its
+// space, in lockstep (matching transition duration/easing on both).
+export function initAutoHideHeader(bodyId, wrapId) {
+  const el   = document.getElementById(bodyId)
+  const bar  = document.getElementById(wrapId)
+  const view = bar?.closest('.view')
+  if (!el || !bar) return
+
+  const MIN_SCROLL = 40, HIDE_DELTA = 8
+  const TRANSITION = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)'
+  const hiddenClass = `${wrapId}-hidden`
+
+  view?.classList.remove(hiddenClass)
+  let lastTop = el.scrollTop
+  let ticking = false
+
+  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)'; view?.classList.remove(hiddenClass) }
+  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)'; view?.classList.add(hiddenClass) }
+
+  el.addEventListener('scroll', () => {
+    if (ticking) return; ticking = true
+    requestAnimationFrame(() => {
+      ticking = false
+      // Wide layout: header isn't sticky (its content is relocated into the
+      // global top bar instead — see style.css), so don't slide it via
+      // transform, that would just visually detach a normal static element.
+      if (isWideLayout()) return
       const top = el.scrollTop
       const dy  = top - lastTop
       lastTop   = top

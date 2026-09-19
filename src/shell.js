@@ -110,8 +110,13 @@ function appShellHTML() {
         <div class="page-slot" id="slot-collection">
           <div class="view" id="collection-view">
             <div class="master-col" style="height:100%;">
-              <div class="collapsible-header-wrap" id="collectionHeaderWrap">
-                <div class="collapsible-header">
+              <div class="scroll-body" id="collectionScrollBody">
+                <!-- Header lives in normal flow as the first child of the
+                     scroll list — native position:sticky for correct
+                     positioning, plus a JS-driven transform layered on top
+                     for toolbar-style auto-hide (same technique as the
+                     player detail compact bar / floating nav toolbar). -->
+                <div id="collectionHeaderWrap">
                   <div class="top-bar">
                     <span class="brand">Collection</span>
                     <div class="total-count-pill" id="collectionOwnedCounter">0</div>
@@ -154,8 +159,6 @@ function appShellHTML() {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="scroll-body" id="collectionScrollBody">
                 <div id="collectionList"></div>
               </div>
               <div class="fast-scroll-bar" id="collFastScroll"><div class="fast-scroll-thumb"></div></div>
@@ -177,8 +180,8 @@ function appShellHTML() {
         <div class="page-slot" id="slot-graded">
           <div class="view" id="graded-view">
             <div class="master-col" style="height:100%;">
-              <div class="collapsible-header-wrap" id="gradedHeaderWrap">
-                <div class="collapsible-header">
+              <div class="scroll-body" id="gradedScrollBody">
+                <div id="gradedHeaderWrap">
                   <div class="top-bar">
                     <span class="brand">Graded</span>
                     <div class="total-count-pill" id="gradedCounter">0</div>
@@ -195,8 +198,6 @@ function appShellHTML() {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="scroll-body" id="gradedScrollBody">
                 <div id="gradedList"></div>
               </div>
             </div>

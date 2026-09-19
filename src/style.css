@@ -203,6 +203,31 @@ html, body {
 #detailScrollBody .year-group-header { top: 114px; }
 .view.compact-bar-hidden #detailScrollBody .year-group-header { top: 0; }
 
+/* Collection / Graded headers: same technique as the player-detail compact
+   bar above — native position:sticky for correct positioning (they're the
+   first child of their scroll list), plus a JS-driven transform layered on
+   top for toolbar-style auto-hide (initAutoHideHeader). */
+#collectionHeaderWrap, #gradedHeaderWrap { background: var(--md-surface-1); }
+@media (max-width: 767px) {
+  #collectionHeaderWrap, #gradedHeaderWrap {
+    position: sticky; top: 0; z-index: 20;
+    transform: translateY(0);
+    will-change: transform;
+  }
+}
+/* Header height: 56px .top-bar + 62px .search-filter-row = 118px. Their
+   year-group-headers dock below it while shown, and reclaim top:0 while
+   it's hidden — same .<id>-hidden-on-.view trick as the compact bar.
+   Mobile only: on wide layout the header's own content is relocated into
+   the global top bar (see _syncTopBarSearch), collapsing this wrapper to
+   ~0 height, so the offset would otherwise leave a phantom gap. */
+@media (max-width: 767px) {
+  #collectionList .year-group-header { top: 118px; }
+  .view.collectionHeaderWrap-hidden #collectionList .year-group-header { top: 0; }
+  #gradedList .year-group-header { top: 118px; }
+  .view.gradedHeaderWrap-hidden #gradedList .year-group-header { top: 0; }
+}
+
 /* ================================================================
    PLAYER GRID
    ================================================================ */
@@ -585,9 +610,9 @@ html, body {
   #top-bar-global { display: flex; }
   /* Hide per-page title bars — global top bar shows the page name */
   #gallery-view .collapsible-header > .top-bar,
-  #collection-view .collapsible-header > .top-bar,
-  #graded-view .collapsible-header > .top-bar,
-  #slot-stats .collapsible-header > .top-bar { display: none; }
+  #slot-stats .collapsible-header > .top-bar,
+  #collectionHeaderWrap > .top-bar,
+  #gradedHeaderWrap > .top-bar { display: none; }
   /* Collection two-pane */
   #collection-view { flex-direction: row !important; }
   #collection-view .master-col { flex: 1; min-width: 0; }
