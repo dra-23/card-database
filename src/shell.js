@@ -241,9 +241,9 @@ function appShellHTML() {
 
           <!-- Purely decorative — banner/thumb/name/stat-pill. A plain overlay
                that only ever animates via transform (GPU-composited, no
-               layout/reflow), so it slides smoothly regardless of content.
-               Everything a user actually needs (back, name, search) lives in
-               #detailCompactHeader below, which never moves. -->
+               layout/reflow). Visible only at the very top of the list;
+               hides for any other scroll position and only comes back once
+               scrolled all the way back to the top. -->
           <div id="detailHeroDecorative">
 
             <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
@@ -294,12 +294,16 @@ function appShellHTML() {
           </div>
 
           <div class="scroll-body" id="detailScrollBody">
-            <!-- Compact name row: back + name. Lives in normal flow as the
-                 first child of the scroll list, native position:sticky (same
-                 technique as the year-group-headers) — never toggled, never
-                 animated, always exactly where it should be. The decorative
-                 hero above covers it when expanded, and uncovers it by
-                 sliding away. -->
+            <!-- Compact bar: back + name + search. Lives in normal document
+                 flow as the first child of the scroll list — native
+                 position:sticky (same technique as the year-group-headers)
+                 gives it correct positioning for free (visible right below
+                 the hero at rest via the margin-top spacer, pinned at top:0
+                 once scrolled past it). A separate JS-driven transform is
+                 layered on top of that for toolbar-style show/hide:
+                 auto-hides on scroll-down, reveals on scroll-up from
+                 anywhere — identical technique to the floating nav toolbar
+                 (initNavBarAutoHide). -->
             <div id="detailCompactHeader">
               <div class="detail-sticky-namerow">
                 <button class="icon-btn" id="stickyBackBtn" aria-label="Back">
@@ -307,28 +311,23 @@ function appShellHTML() {
                 </button>
                 <span id="detailStickyName" class="detail-sticky-namebar-text"></span>
               </div>
-            </div>
-            <!-- Search row: separate from the compact header above — it sits
-                 right below the decorative hero (visible before any
-                 scrolling, via a spacer sized to the hero's real height),
-                 and once scrolled, it's a plain sticky element that docks
-                 below the compact name row instead of being covered by it. -->
-            <div class="search-filter-row" id="detailSearchRow">
-              <div class="search-wrap">
-                <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
-                <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">
-                  <span class="material-symbols-outlined" style="font-size:18px;">close</span>
-                </button>
-              </div>
-              <div class="dd-wrap" id="detailFilterDdWrap">
-                <button class="dd-btn" id="detailFilterDdBtn">
-                  <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
-                  <span id="detailFilterDdLabel">Filter</span>
-                  <span class="material-symbols-outlined dd-chevron">expand_more</span>
-                </button>
-                <div class="dd-panel" id="detailFilterDdPanel">
-                  <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
-                  <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+              <div class="search-filter-row" id="detailSearchRow">
+                <div class="search-wrap">
+                  <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
+                  <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">
+                    <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+                  </button>
+                </div>
+                <div class="dd-wrap" id="detailFilterDdWrap">
+                  <button class="dd-btn" id="detailFilterDdBtn">
+                    <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
+                    <span id="detailFilterDdLabel">Filter</span>
+                    <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                  </button>
+                  <div class="dd-panel" id="detailFilterDdPanel">
+                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
+                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+                  </div>
                 </div>
               </div>
             </div>

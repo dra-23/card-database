@@ -155,14 +155,11 @@ html, body {
 /* Player detail hero: on mobile it's a purely decorative overlay
    (banner/thumb/name/pill) that only ever animates via transform — GPU-
    composited, no layout/reflow, so it stays smooth regardless of content.
-   It floats on top of #detailScrollBody (which never changes size) and
-   tracks scroll position directly (set in JS — see initDetailHeroCollapse)
-   so its retreat always stays in exact lockstep with the search row's own
-   native sticky reveal underneath, instead of a fixed-duration transition
-   that can outrun or lag behind it and expose a gap or a cover-up. On
-   desktop it never collapses, so it just stays a normal in-flow header
-   (matching the old behavior there) — only mobile gets the overlay
-   treatment. */
+   Visible only right at the top of the list (see initDetailHeroCollapse) —
+   it hides for any other scroll position and only comes back once scrolled
+   all the way back up, unlike the compact bar below it. On desktop it never
+   collapses, so it just stays a normal in-flow header (matching the old
+   behavior there) — only mobile gets the overlay treatment. */
 #detailHeroDecorative { background: var(--md-surface); }
 @media (max-width: 767px) {
   #detailHeroDecorative {
@@ -172,38 +169,39 @@ html, body {
   }
 }
 
-/* Compact name row: back + name. Lives in normal document flow as the first
-   child of the scroll list, using native position:sticky (same technique as
-   the year-group-headers) — it never gets toggled or animated, it's just
-   always correctly positioned, and the decorative hero above reveals it by
-   sliding away. */
+/* Compact bar: back + name + search. Lives in normal document flow as the
+   first child of the scroll list — native position:sticky (same technique
+   as the year-group-headers) gives correct positioning for free: visible
+   right below the hero at rest via the margin-top spacer (sized to the
+   hero's real height, --hero-h, measured live via ResizeObserver since the
+   name/pill row can wrap to more lines), then pinned at top:0 once scrolled
+   past it. A separate JS-driven transform layers toolbar-style show/hide on
+   top of that — auto-hides on scroll-down, reveals on scroll-up from
+   anywhere — identical technique and feel to the floating nav toolbar
+   (initNavBarAutoHide). */
 #detailCompactHeader {
   position: sticky; top: 0; z-index: 20;
+  margin-top: var(--hero-h, 232px);
   background: var(--md-surface-1);
+  transform: translateY(0);
+  will-change: transform;
+}
+@media (min-width: 768px) {
+  #detailCompactHeader { position: static; margin-top: 0 !important; display: none; }
 }
 .detail-sticky-namerow { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 16px; }
 .detail-sticky-namebar-text {
   font-family: 'Google Sans Display'; font-size: 17px; font-weight: 700;
   color: var(--md-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-@media (min-width: 768px) { #detailCompactHeader { display: none; } }
+#detailCompactHeader #detailSearchRow { position: static; background: var(--md-surface-1); }
 
-/* Search row: kept separate from the compact name row above it, because the
-   decorative hero is taller than that 52px row alone (banner + thumb, not
-   just a name) and would otherwise cover the search row too. A spacer sized
-   to the hero's real height (--hero-h, measured live via ResizeObserver
-   since the name/pill row can wrap to more lines) pushes it to sit right
-   below the hero at rest — visible before any scrolling — and once
-   scrolled, its own sticky offset docks it below the compact name row
-   instead of disappearing behind it. */
-#detailScrollBody > #detailSearchRow {
-  position: sticky; top: 52px; z-index: 15;
-  margin-top: calc(var(--hero-h, 232px) - 52px);
-  background: var(--md-surface);
-}
-@media (min-width: 768px) {
-  #detailScrollBody > #detailSearchRow { margin-top: 0 !important; position: static; }
-}
+/* Docks below the compact bar while it's shown, and reclaims that space
+   (top:0) while it's hidden — .compact-bar-hidden is toggled on .view in
+   lockstep with the bar's own show()/hide() (same transition duration and
+   easing on both), so the two always move together. */
+#detailScrollBody .year-group-header { top: 114px; }
+.view.compact-bar-hidden #detailScrollBody .year-group-header { top: 0; }
 
 /* ================================================================
    PLAYER GRID
@@ -363,18 +361,11 @@ html, body {
    YEAR GROUP HEADERS
    ================================================================ */
 #playerDetailPill { display: block; }
-.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; transition: top 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; transition: top 0.3s cubic-bezier(0.05, 0.7, 0.1, 1); }
 .year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
 .year-group-header .year-count { font-size: 16px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }
 .year-sub-header { position: sticky; top: var(--coll-h1); background: var(--md-surface); z-index: 9; padding: 5px 16px; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); border-bottom: 1px solid var(--md-surface-2); }
 .collection-card-list { padding: 0; }
-/* Player detail: once the banner collapses, the sticky namebar (z-index 110)
-   occupies the same top strip the year headers stick to (top:0) and would
-   otherwise hide them behind it — dock the headers below it instead. */
-/* Docks below the always-present compact header (namerow 52px + search row
-   62px = 114px) — #detailCompactHeader itself never moves, so this never
-   needs to change either. */
-#detailScrollBody .year-group-header { top: 114px; }
 
 /* ================================================================
    GRADED VIEW

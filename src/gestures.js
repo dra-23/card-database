@@ -231,48 +231,70 @@ export function initScrollHide() {
   })
 }
 
-// ── Player detail hero collapse ─────────────────────────────────────────────
-// The decorative banner (#detailHeroDecorative) retreats as the list
-// scrolls. Two regimes:
-//  1. While scrollTop is within the hero's own height, its transform tracks
-//     scrollTop 1:1 with no transition at all — exactly as fast as native
-//     #detailSearchRow's sticky reveal happens underneath (both are driven
-//     by the same scrollTop), so the two stay in perfect lockstep and there
-//     is never a gap (hero lagging behind) or a cover-up (hero outrunning
-//     it) — no threshold to tune, no timing to keep in sync.
-//  2. Once scrolled deeper than that, the hero is simply fully hidden — and
-//     scrolling up from anywhere brings it back with one smooth animated
-//     transition (like the floating toolbar), since 1:1 tracking doesn't
-//     apply way down in the list.
+// ── Player detail hero (banner) ─────────────────────────────────────────────
+// The decorative banner (#detailHeroDecorative) is visible only right at the
+// top of the list — any scroll away from the top hides it, and only
+// scrolling all the way back to the top brings it back. Unlike the compact
+// bar below, this one deliberately ignores scroll direction.
 export function initDetailHeroCollapse() {
   const el   = document.getElementById('detailScrollBody')
   const hero = document.getElementById('detailHeroDecorative')
   if (!el || !hero) return
 
-  // Keep --hero-h/heroHeight in sync with the hero's true rendered height
-  // (name/pill text can wrap to more lines) so #cardList reserves exactly
-  // enough space below the compact header, and the 1:1 tracking zone below
-  // stays accurate. Set on .master-col (common ancestor of hero + #cardList)
-  // since custom properties only inherit down the tree from where they're set.
-  let heroHeight = hero.offsetHeight || 232
+  // Keep --hero-h in sync with the hero's true rendered height (name/pill
+  // text can wrap to more lines) — #detailCompactHeader's margin-top spacer
+  // reads this so it sits right below the hero at rest. Set on .master-col
+  // (common ancestor of hero + compact bar) since custom properties only
+  // inherit down the tree from where they're set.
   const masterCol = hero.closest('.master-col')
   if (masterCol && 'ResizeObserver' in window) {
     new ResizeObserver(([entry]) => {
-      heroHeight = entry.contentRect.height
-      masterCol.style.setProperty('--hero-h', `${Math.ceil(heroHeight)}px`)
+      masterCol.style.setProperty('--hero-h', `${Math.ceil(entry.contentRect.height)}px`)
     }).observe(hero)
   }
 
+  const TOP_THRESHOLD = 8
   const TRANSITION = 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)'
-  const HIDE_DELTA = 8
+  let ticking = false
+
+  // No cached "shown" state to fall out of sync with the actual inline
+  // style (e.g. across player switches, or a scroll event firing during a
+  // content re-render) — every tick just applies the transform that matches
+  // the current scrollTop, unconditionally.
+  el.addEventListener('scroll', () => {
+    if (ticking) return; ticking = true
+    requestAnimationFrame(() => {
+      ticking = false
+      hero.style.transition = TRANSITION
+      hero.style.transform  = el.scrollTop <= TOP_THRESHOLD ? 'translateY(0)' : 'translateY(-100%)'
+    })
+  }, { passive: true })
+}
+
+// ── Player detail compact bar (back + name + search) ────────────────────────
+// Same technique and feel as the floating nav toolbar (initNavBarAutoHide
+// below): hides on scroll-down, reveals immediately on scroll-up from
+// anywhere in the list — independent of the hero banner above, which only
+// ever shows at the very top.
+export function initDetailCompactBar() {
+  const el   = document.getElementById('detailScrollBody')
+  const bar  = document.getElementById('detailCompactHeader')
+  const view = bar?.closest('.view')
+  if (!el || !bar) return
+
+  const MIN_SCROLL = 40, HIDE_DELTA = 8
+  const TRANSITION = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)'
+
+  // Toggled on the shared .view ancestor so the year-group-headers can dock
+  // at top:0 while the bar is hidden and top:114px while it's shown, in a
+  // CSS transition with matching duration/easing — same trick as pairing
+  // the bar's own show()/hide() below, so the two never drift out of sync.
+  view?.classList.remove('compact-bar-hidden')
   let lastTop = el.scrollTop
   let ticking = false
-  let forcedOpen = false   // true once we've done the "scrolled up from deep in the list" reveal
 
-  function setOffset(px, animated) {
-    hero.style.transition = animated ? TRANSITION : 'none'
-    hero.style.transform  = `translateY(-${px}px)`
-  }
+  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)'; view?.classList.remove('compact-bar-hidden') }
+  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)'; view?.classList.add('compact-bar-hidden') }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -282,21 +304,8 @@ export function initDetailHeroCollapse() {
       const dy  = top - lastTop
       lastTop   = top
 
-      if (top <= heroHeight) {
-        // In the hero's own zone — glue it to the scroll position exactly.
-        forcedOpen = false
-        setOffset(top, false)
-      } else if (forcedOpen) {
-        if (dy > HIDE_DELTA) { forcedOpen = false; setOffset(heroHeight, true) }
-        // else: stay revealed while idle or still scrolling up
-      } else if (dy < -HIDE_DELTA) {
-        forcedOpen = true
-        setOffset(0, true)
-      } else {
-        // Deep in the list, scrolling down (or a big jump past heroHeight in
-        // one event) — make sure it's fully hidden.
-        setOffset(heroHeight, false)
-      }
+      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
+      else if (dy > HIDE_DELTA)                  hide()
     })
   }, { passive: true })
 }

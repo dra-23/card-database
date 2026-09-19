@@ -89,8 +89,17 @@ export function openDetail(id) {
   if (totalPill) totalPill.style.display = 'none'
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
+  // Always start a freshly opened player's card list at the top — otherwise
+  // the hero/compact-bar scroll listeners below fire against whatever
+  // scrollTop was left over from a previous player and can hide either one
+  // immediately.
+  const detailScrollBody = document.getElementById('detailScrollBody')
+  if (detailScrollBody) detailScrollBody.scrollTop = 0
   const heroDecorative = document.getElementById('detailHeroDecorative')
   if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
+  const compactBar = document.getElementById('detailCompactHeader')
+  if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
+  document.getElementById('detail-view')?.classList.remove('compact-bar-hidden')
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
@@ -129,6 +138,9 @@ export function closeDetail() {
   dv.classList.add('tp-no-player')
   const heroDecorative = document.getElementById('detailHeroDecorative')
   if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
+  const compactBar = document.getElementById('detailCompactHeader')
+  if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
+  dv.classList.remove('compact-bar-hidden')
   state.setSelectedPlayer(null)
   // Restore top bar to page title + total count
   const topBarTitle = document.getElementById('topBarTitle')
