@@ -401,9 +401,8 @@ function wireNavButtons() {
   document.getElementById('addCardDetailFab')?.addEventListener('click', () => openCardSearch('player'))
 
   // Back buttons in player detail
-  document.getElementById('backBtn')?.addEventListener('click', closeDetail)
   document.getElementById('backBtnWide')?.addEventListener('click', closeDetail)
-  document.getElementById('stickyBackBtn')?.addEventListener('click', closeDetail)
+  document.getElementById('detailSearchBackBtn')?.addEventListener('click', closeDetail)
 }
 
 // ── Wire form buttons ──────────────────────────────────────────────────────
@@ -496,26 +495,10 @@ function wireFilterChips() {
   }, true)
   document.addEventListener('scroll', _closeDd, true)
 
-  // ── Sort dropdown ──────────────────────────────────────────────────
-  const SORT_LABELS = { year: 'Year', sport: 'Sport', set: 'Set' }
-  document.getElementById('sortDdBtn')?.addEventListener('click', () => {
-    _openDdWrap === 'sortDdWrap' ? _closeDd() : _openDd('sortDdWrap')
-  })
-  document.querySelectorAll('#sortDdPanel .dd-opt').forEach(opt => {
-    opt.addEventListener('click', () => {
-      document.querySelectorAll('#sortDdPanel .dd-opt').forEach(o => o.classList.remove('dd-active'))
-      opt.classList.add('dd-active')
-      const label = document.getElementById('sortDdLabel')
-      if (label) label.textContent = SORT_LABELS[opt.dataset.sort] || opt.dataset.sort
-      state.setCollSortBy(opt.dataset.sort)
-      renderCollectionView()
-      _closeDd()
-    })
-  })
-
   // ── Collection filter dropdown ─────────────────────────────────────
   const COLL_FILTERS = {
     collWishlist: { toggle: () => state.setCollShowWishlistOnly(!state.collShowWishlistOnly), get: () => state.collShowWishlistOnly, render: () => { updateOwnedCount(); renderCollectionView() } },
+    collFavorite: { toggle: () => state.setCollShowFavoriteOnly(!state.collShowFavoriteOnly), get: () => state.collShowFavoriteOnly, render: renderCollectionView },
     collGraded:   { toggle: () => state.setCollShowGradedOnly(!state.collShowGradedOnly),     get: () => state.collShowGradedOnly,   render: renderCollectionView },
     collRC:       { toggle: () => state.setCollFilterRC(!state.collFilterRC),                 get: () => state.collFilterRC,         render: renderCollectionView },
     collAuto:     { toggle: () => state.setCollFilterAuto(!state.collFilterAuto),             get: () => state.collFilterAuto,       render: renderCollectionView },
@@ -525,9 +508,7 @@ function wireFilterChips() {
   function _updateCollFilterBtn() {
     const count = Object.values(COLL_FILTERS).filter(f => f.get()).length
     const btn = document.getElementById('collFilterDdBtn')
-    const lbl = document.getElementById('collFilterDdLabel')
     if (btn) btn.classList.toggle('dd-active', count > 0)
-    if (lbl) lbl.textContent = count > 0 ? `Filter · ${count}` : 'Filter'
   }
   document.getElementById('collFilterDdBtn')?.addEventListener('click', () => {
     _openDdWrap === 'collFilterDdWrap' ? _closeDd() : _openDd('collFilterDdWrap')
@@ -546,14 +527,13 @@ function wireFilterChips() {
   // ── Detail (player) filter dropdown ───────────────────────────────
   const DETAIL_FILTERS = {
     wishlist: { toggle: () => state.setShowWishlistOnly(!state.showWishlistOnly), get: () => state.showWishlistOnly, render: () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) } },
+    favorite: { toggle: () => state.setShowFavoriteOnly(!state.showFavoriteOnly), get: () => state.showFavoriteOnly, render: () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) } },
     graded:   { toggle: () => state.setShowGradedOnly(!state.showGradedOnly),    get: () => state.showGradedOnly,   render: () => { if (state.selectedPlayer) renderDetail(state.selectedPlayer) } },
   }
   function _updateDetailFilterBtn() {
     const count = Object.values(DETAIL_FILTERS).filter(f => f.get()).length
     const btn = document.getElementById('detailFilterDdBtn')
-    const lbl = document.getElementById('detailFilterDdLabel')
     if (btn) btn.classList.toggle('dd-active', count > 0)
-    if (lbl) lbl.textContent = count > 0 ? `Filter · ${count}` : 'Filter'
   }
   document.getElementById('detailFilterDdBtn')?.addEventListener('click', () => {
     _openDdWrap === 'detailFilterDdWrap' ? _closeDd() : _openDd('detailFilterDdWrap')

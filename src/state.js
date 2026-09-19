@@ -16,11 +16,13 @@ export let activeCardContext  = 'player'
 export let cardSearchQuery    = ''
 export let showGradedOnly     = false
 export let showWishlistOnly   = false
+export let showFavoriteOnly   = false
 
 // Collection filters / search
 export let collSearchQuery       = ''
 export let collShowGradedOnly    = false
 export let collShowWishlistOnly  = false
+export let collShowFavoriteOnly  = false
 export let collFilterRC          = false
 export let collFilterAuto        = false
 export let collFilterMem         = false
@@ -44,10 +46,12 @@ export function setActiveCardContext(c) { activeCardContext = c }
 export function setCardSearchQuery(v)   { cardSearchQuery = v }
 export function setShowGradedOnly(v)    { showGradedOnly = v }
 export function setShowWishlistOnly(v)  { showWishlistOnly = v }
+export function setShowFavoriteOnly(v)  { showFavoriteOnly = v }
 
 export function setCollSearchQuery(v)      { collSearchQuery = v }
 export function setCollShowGradedOnly(v)   { collShowGradedOnly = v }
 export function setCollShowWishlistOnly(v) { collShowWishlistOnly = v }
+export function setCollShowFavoriteOnly(v) { collShowFavoriteOnly = v }
 export function setCollFilterRC(v)         { collFilterRC = v }
 export function setCollFilterAuto(v)       { collFilterAuto = v }
 export function setCollFilterMem(v)        { collFilterMem = v }

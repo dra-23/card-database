@@ -131,30 +131,18 @@ function appShellHTML() {
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
-                    <div class="dd-wrap" id="sortDdWrap">
-                      <button class="dd-btn" id="sortDdBtn">
-                        <span id="sortDdLabel">Year</span>
-                        <span class="material-symbols-outlined dd-chevron">expand_more</span>
-                      </button>
-                      <div class="dd-panel" id="sortDdPanel">
-                        <div class="dd-opt dd-active" data-sort="year">Year</div>
-                        <div class="dd-opt" data-sort="sport">Sport</div>
-                        <div class="dd-opt" data-sort="set">Set</div>
-                      </div>
-                    </div>
                     <div class="dd-wrap" id="collFilterDdWrap">
                       <button class="dd-btn" id="collFilterDdBtn">
-                        <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
-                        <span id="collFilterDdLabel">Filter</span>
-                        <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                        <span class="material-symbols-outlined">tune</span>
                       </button>
                       <div class="dd-panel" id="collFilterDdPanel">
-                        <div class="dd-check-opt" data-chip="collWishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
-                        <div class="dd-check-opt" data-chip="collGraded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
-                        <div class="dd-check-opt" data-chip="collRC"><span class="material-symbols-outlined dd-check-icon">check</span>RC</div>
-                        <div class="dd-check-opt" data-chip="collAuto"><span class="material-symbols-outlined dd-check-icon">check</span>AUTO</div>
-                        <div class="dd-check-opt" data-chip="collMem"><span class="material-symbols-outlined dd-check-icon">check</span>MEM</div>
-                        <div class="dd-check-opt" data-chip="collNumbered"><span class="material-symbols-outlined dd-check-icon">check</span>#'d</div>
+                        <div class="dd-check-opt" data-chip="collWishlist"><span class="material-symbols-outlined dd-check-opt-icon">bookmark_border</span><span class="dd-check-opt-label">unsleevd</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt" data-chip="collFavorite"><span class="material-symbols-outlined dd-check-opt-icon">star</span><span class="dd-check-opt-label">Favorite</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt" data-chip="collGraded"><span class="material-symbols-outlined dd-check-opt-icon">workspace_premium</span><span class="dd-check-opt-label">Graded</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt" data-chip="collRC"><span class="material-symbols-outlined dd-check-opt-icon">new_releases</span><span class="dd-check-opt-label">RC</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt" data-chip="collAuto"><span class="material-symbols-outlined dd-check-opt-icon">draw</span><span class="dd-check-opt-label">AUTO</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt" data-chip="collMem"><span class="material-symbols-outlined dd-check-opt-icon">checkroom</span><span class="dd-check-opt-label">MEM</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt" data-chip="collNumbered"><span class="material-symbols-outlined dd-check-opt-icon">tag</span><span class="dd-check-opt-label">#'d</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
                       </div>
                     </div>
                   </div>
@@ -264,9 +252,6 @@ function appShellHTML() {
             <div id="playerBannerSection" style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
               <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
               <div style="position:absolute; inset:0; background:linear-gradient(transparent, var(--md-surface));"></div>
-              <button class="back-btn" id="backBtn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-              </button>
               <button class="top-bar-icon-btn" id="editPlayerBtn" aria-label="Edit player" style="position:absolute; top:calc(env(safe-area-inset-top) + 12px); right:56px; background:rgba(0,0,0,0.28); color:#fff; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
                 <span class="material-symbols-outlined">edit</span>
               </button>
@@ -306,13 +291,10 @@ function appShellHTML() {
                  anywhere — identical technique to the floating nav toolbar
                  (initNavBarAutoHide). -->
             <div id="detailCompactHeader">
-              <div class="detail-sticky-namerow">
-                <button class="icon-btn" id="stickyBackBtn" aria-label="Back">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </button>
-                <span id="detailStickyName" class="detail-sticky-namebar-text"></span>
-              </div>
               <div class="search-filter-row" id="detailSearchRow">
+                <button class="detail-search-back-btn" id="detailSearchBackBtn" aria-label="Back">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
                 <div class="search-wrap">
                   <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
                   <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">
@@ -321,13 +303,12 @@ function appShellHTML() {
                 </div>
                 <div class="dd-wrap" id="detailFilterDdWrap">
                   <button class="dd-btn" id="detailFilterDdBtn">
-                    <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
-                    <span id="detailFilterDdLabel">Filter</span>
-                    <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                    <span class="material-symbols-outlined">tune</span>
                   </button>
                   <div class="dd-panel" id="detailFilterDdPanel">
-                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
-                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
+                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-opt-icon">bookmark_border</span><span class="dd-check-opt-label">unsleevd</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                    <div class="dd-check-opt" data-chip="favorite"><span class="material-symbols-outlined dd-check-opt-icon">star</span><span class="dd-check-opt-label">Favorite</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-opt-icon">workspace_premium</span><span class="dd-check-opt-label">Graded</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
                   </div>
                 </div>
               </div>

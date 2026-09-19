@@ -58,7 +58,7 @@ export function openDetail(id) {
   document.getElementById('playerName').innerText    = player.Player || player.id
   document.getElementById('playerBanner').src        = getCleanImg(player['Banner_Image'])
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
-  document.getElementById('detailStickyName').innerText = player.Player || player.id
+  document.getElementById('cardSearchInput').placeholder = `Search ${player.Player || player.id} Cards...`
 
   // Populate wide-layout hero and top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
@@ -244,6 +244,7 @@ export function renderDetail(player) {
   }
   if (state.showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   if (state.showWishlistOnly) cards = cards.filter(c => !isOwned(c))
+  if (state.showFavoriteOnly) cards = cards.filter(c => c.Favorite === true || c.Favorite === 'true')
 
   state.setCardSequence(cards.map(c => c.id))
 
