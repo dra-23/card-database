@@ -201,7 +201,7 @@ html, body {
    lockstep with the bar's own show()/hide() (same transition duration and
    easing on both), so the two always move together. */
 #detailScrollBody .year-group-header { top: 114px; }
-.view.compact-bar-hidden #detailScrollBody .year-group-header { top: 0; }
+.view.compact-bar-hidden #detailScrollBody .year-group-header { transform: translateY(-114px); }
 
 /* Collection / Graded headers: same technique as the player-detail compact
    bar above — native position:sticky for correct positioning (they're the
@@ -223,9 +223,9 @@ html, body {
    ~0 height, so the offset would otherwise leave a phantom gap. */
 @media (max-width: 767px) {
   #collectionList .year-group-header { top: 118px; }
-  .view.collectionHeaderWrap-hidden #collectionList .year-group-header { top: 0; }
+  .view.collectionHeaderWrap-hidden #collectionList .year-group-header { transform: translateY(-118px); }
   #gradedList .year-group-header { top: 118px; }
-  .view.gradedHeaderWrap-hidden #gradedList .year-group-header { top: 0; }
+  .view.gradedHeaderWrap-hidden #gradedList .year-group-header { transform: translateY(-118px); }
 }
 
 /* ================================================================
@@ -386,7 +386,7 @@ html, body {
    YEAR GROUP HEADERS
    ================================================================ */
 #playerDetailPill { display: block; }
-.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; transition: top 0.3s cubic-bezier(0.05, 0.7, 0.1, 1); }
+.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; transform: translateY(0); will-change: transform; transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1); }
 .year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
 .year-group-header .year-count { font-size: 16px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }
 .year-sub-header { position: sticky; top: var(--coll-h1); background: var(--md-surface); z-index: 9; padding: 5px 16px; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); border-bottom: 1px solid var(--md-surface-2); }
