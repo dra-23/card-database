@@ -206,16 +206,14 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
   sheet.addEventListener('touchcancel', onEnd, { passive: true })
 }
 
-// ── Collapsible header scroll-hide ─────────────────────────────────────────
+// ── Collapsible header scroll-hide (gallery / graded / stats) ──────────────
 export function initScrollHide() {
   const pairs = [
-    { bodyId: 'detailScrollBody',     wrapId: 'detailHeaderWrap'     },
     { bodyId: 'gradedScrollBody',     wrapId: 'gradedHeaderWrap'     },
     { bodyId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
     { bodyId: 'statsScrollBody',      wrapId: 'statsHeaderWrap'      },
   ]
   const COLLAPSE_THRESHOLD = 64, REVEAL_THRESHOLD = 24
-  const stickyNamebar = document.getElementById('detailStickyNamebar')
   pairs.forEach(({ bodyId, wrapId }) => {
     const el   = document.getElementById(bodyId)
     const wrap = document.getElementById(wrapId)
@@ -225,17 +223,60 @@ export function initScrollHide() {
       if (ticking) return; ticking = true
       requestAnimationFrame(() => {
         const y = el.scrollTop
-        if (y <= REVEAL_THRESHOLD) {
-          wrap.classList.remove('collapsed')
-          if (bodyId === 'detailScrollBody') stickyNamebar?.classList.remove('visible')
-        } else if (y > COLLAPSE_THRESHOLD) {
-          wrap.classList.add('collapsed')
-          if (bodyId === 'detailScrollBody' && !isWideLayout()) stickyNamebar?.classList.add('visible')
-        }
+        if (y <= REVEAL_THRESHOLD)       wrap.classList.remove('collapsed')
+        else if (y > COLLAPSE_THRESHOLD) wrap.classList.add('collapsed')
         ticking = false
       })
     }, { passive: true })
   })
+}
+
+// ── Player detail hero collapse ─────────────────────────────────────────────
+// Direction-based, like the floating toolbar (initNavBarAutoHide below):
+// hides the big banner on scroll-down, brings it back on scroll-up from
+// anywhere (not just at the very top), and both the banner (#detailHeaderWrap)
+// and the compact name bar (#detailStickyNamebar) animate on the exact same
+// max-height/transform transition so they move in lockstep instead of one
+// finishing before the other. The search row itself lives in the scrollable
+// list as a plain sticky element (see style.css), so it's visible up front
+// and simply docks below the compact bar once scrolled — no JS needed for it.
+export function initDetailHeroCollapse() {
+  const el     = document.getElementById('detailScrollBody')
+  const wrap   = document.getElementById('detailHeaderWrap')
+  const namebar = document.getElementById('detailStickyNamebar')
+  if (!el || !wrap) return
+
+  // Keep --hero-h in sync with the banner's actual rendered content (fixed
+  // banner image height, but the name/pill row can wrap to more lines) so
+  // the max-height collapse always starts from the true height, not a guess.
+  const heroContent = wrap.querySelector('.collapsible-header')
+  if (heroContent && 'ResizeObserver' in window) {
+    new ResizeObserver(([entry]) => {
+      wrap.style.setProperty('--hero-h', `${Math.ceil(entry.contentRect.height)}px`)
+    }).observe(heroContent)
+  }
+
+  const MIN_SCROLL = 40, HIDE_DELTA = 8
+  let lastTop = el.scrollTop
+  let ticking = false
+
+  el.addEventListener('scroll', () => {
+    if (ticking) return; ticking = true
+    requestAnimationFrame(() => {
+      ticking = false
+      const top = el.scrollTop
+      const dy  = top - lastTop
+      lastTop   = top
+
+      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) {
+        wrap.classList.remove('collapsed')
+        namebar?.classList.remove('visible')
+      } else if (dy > HIDE_DELTA) {
+        wrap.classList.add('collapsed')
+        if (!isWideLayout()) namebar?.classList.add('visible')
+      }
+    })
+  }, { passive: true })
 }
 
 // ── Floating toolbar auto-hide on scroll ───────────────────────────────────

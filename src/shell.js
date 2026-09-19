@@ -244,7 +244,7 @@ function appShellHTML() {
             <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             <p>Select a player to browse their cards</p>
           </div>
-          <div class="collapsible-header-wrap" id="detailHeaderWrap">
+          <div id="detailHeaderWrap">
             <div class="collapsible-header">
 
               <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
@@ -292,28 +292,30 @@ function appShellHTML() {
                   </div>
                 </div>
               </div>
-              <div class="search-filter-row" id="detailSearchRow">
-                <div class="search-wrap">
-                  <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
-                  <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">
-                    <span class="material-symbols-outlined" style="font-size:18px;">close</span>
-                  </button>
-                </div>
-                <div class="dd-wrap" id="detailFilterDdWrap">
-                  <button class="dd-btn" id="detailFilterDdBtn">
-                    <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
-                    <span id="detailFilterDdLabel">Filter</span>
-                    <span class="material-symbols-outlined dd-chevron">expand_more</span>
-                  </button>
-                  <div class="dd-panel" id="detailFilterDdPanel">
-                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
-                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
-                  </div>
+            </div>
+          </div>
+          <div class="scroll-body" id="detailScrollBody">
+            <div class="search-filter-row" id="detailSearchRow">
+              <div class="search-wrap">
+                <input type="text" id="cardSearchInput" class="search-input-expressive" placeholder="Search cards...">
+                <button class="search-clear-btn" tabindex="-1" id="cardSearchClear">
+                  <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+                </button>
+              </div>
+              <div class="dd-wrap" id="detailFilterDdWrap">
+                <button class="dd-btn" id="detailFilterDdBtn">
+                  <span class="material-symbols-outlined" style="font-size:16px;">tune</span>
+                  <span id="detailFilterDdLabel">Filter</span>
+                  <span class="material-symbols-outlined dd-chevron">expand_more</span>
+                </button>
+                <div class="dd-panel" id="detailFilterDdPanel">
+                  <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-icon">check</span>unsleevd</div>
+                  <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-icon">check</span>Graded</div>
                 </div>
               </div>
             </div>
+            <div id="cardList"></div>
           </div>
-          <div class="scroll-body" id="detailScrollBody"><div id="cardList"></div></div>
           <div class="fast-scroll-bar" id="detailFastScroll"><div class="fast-scroll-thumb"></div></div>
           <button class="wide-fab" id="addCardDetailFab" title="Add card">
             <span class="material-symbols-outlined" style="font-size:26px;">add</span>

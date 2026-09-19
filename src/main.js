@@ -4,7 +4,7 @@ import { auth, signInWithGoogle, signOutUser, onAuthStateChanged } from './fireb
 import { renderShell } from './shell.js'
 import * as state from './state.js'
 import { PAGE_NAMES, isWideLayout, isThreePaneLayout, _applyWideLayout, _applyMobileLayout, initPageSwipe, switchPage, _commitPageSwitch, _updateNavActive, _updateFloatingFab, _wideQuery, _foldQuery, _threePaneQuery } from './layout.js'
-import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initNavBarAutoHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
+import { attachSheetGestures, attachFormDismissGesture, initScrollHide, initDetailHeroCollapse, initNavBarAutoHide, initFastScroll, initCardLongPress, initInlinePanelSwipe, closeAllForms, closeCardSheets } from './gestures.js'
 import { renderGallery, openDetail, closeDetail, renderDetail, initCardListDelegation } from './pages/players.js'
 import { renderCollectionView } from './pages/collection.js'
 import { renderGradedView } from './pages/graded.js'
@@ -124,6 +124,7 @@ function startApp() {
   initCardLongPress()
   initInlinePanelSwipe()
   initScrollHide()
+  initDetailHeroCollapse()
   initNavBarAutoHide()
 
   // Card list delegation
