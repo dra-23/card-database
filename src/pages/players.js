@@ -90,7 +90,7 @@ export function openDetail(id) {
   state.setCardSearchQuery('')
   document.getElementById('cardSearchInput').value   = ''
   const heroDecorative = document.getElementById('detailHeroDecorative')
-  if (heroDecorative) heroDecorative.classList.remove('collapsed')
+  if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
@@ -127,7 +127,8 @@ export function closeDetail() {
   dv.style.position = 'absolute'; dv.style.inset = '0'
   dv.style.transform = ''; dv.style.transition = ''
   dv.classList.add('tp-no-player')
-  document.getElementById('detailHeroDecorative')?.classList.remove('collapsed')
+  const heroDecorative = document.getElementById('detailHeroDecorative')
+  if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
   state.setSelectedPlayer(null)
   // Restore top bar to page title + total count
   const topBarTitle = document.getElementById('topBarTitle')

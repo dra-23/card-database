@@ -232,25 +232,28 @@ export function initScrollHide() {
 }
 
 // ── Player detail hero collapse ─────────────────────────────────────────────
-// Direction-based, like the floating toolbar (initNavBarAutoHide below):
-// the decorative banner (#detailHeroDecorative) hides on scroll-down and
-// comes back on scroll-up from anywhere, not just at the very top. It's a
-// pure transform slide (GPU-composited) over a scroll list whose own size
-// never changes — #detailCompactHeader underneath is a plain in-flow sticky
-// element that's simply revealed as the banner slides away, so there's only
-// ever one thing animating instead of several needing to stay in sync.
+// The decorative banner (#detailHeroDecorative) retreats as the list
+// scrolls. Two regimes:
+//  1. While scrollTop is within the hero's own height, its transform tracks
+//     scrollTop 1:1 with no transition at all — exactly as fast as native
+//     #detailSearchRow's sticky reveal happens underneath (both are driven
+//     by the same scrollTop), so the two stay in perfect lockstep and there
+//     is never a gap (hero lagging behind) or a cover-up (hero outrunning
+//     it) — no threshold to tune, no timing to keep in sync.
+//  2. Once scrolled deeper than that, the hero is simply fully hidden — and
+//     scrolling up from anywhere brings it back with one smooth animated
+//     transition (like the floating toolbar), since 1:1 tracking doesn't
+//     apply way down in the list.
 export function initDetailHeroCollapse() {
   const el   = document.getElementById('detailScrollBody')
   const hero = document.getElementById('detailHeroDecorative')
   if (!el || !hero) return
 
-  // The hero is taller than the compact header it overlays (banner + thumb
-  // vs. just a name row) — keep --hero-h/heroHeight in sync with its true
-  // rendered height (name/pill text can wrap to more lines) so #cardList
-  // reserves exactly enough space below the compact header, and so the
-  // collapse-trigger threshold below stays correct too.
-  // Set on .master-col (common ancestor of the hero and #cardList) since
-  // custom properties only inherit down the tree from where they're set.
+  // Keep --hero-h/heroHeight in sync with the hero's true rendered height
+  // (name/pill text can wrap to more lines) so #cardList reserves exactly
+  // enough space below the compact header, and the 1:1 tracking zone below
+  // stays accurate. Set on .master-col (common ancestor of hero + #cardList)
+  // since custom properties only inherit down the tree from where they're set.
   let heroHeight = hero.offsetHeight || 232
   const masterCol = hero.closest('.master-col')
   if (masterCol && 'ResizeObserver' in window) {
@@ -260,9 +263,16 @@ export function initDetailHeroCollapse() {
     }).observe(hero)
   }
 
-  const NAMEROW_H = 52, HIDE_DELTA = 8
+  const TRANSITION = 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)'
+  const HIDE_DELTA = 8
   let lastTop = el.scrollTop
   let ticking = false
+  let forcedOpen = false   // true once we've done the "scrolled up from deep in the list" reveal
+
+  function setOffset(px, animated) {
+    hero.style.transition = animated ? TRANSITION : 'none'
+    hero.style.transform  = `translateY(-${px}px)`
+  }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -272,14 +282,21 @@ export function initDetailHeroCollapse() {
       const dy  = top - lastTop
       lastTop   = top
 
-      // #detailSearchRow only reaches its own stuck position once scrollTop
-      // passes (heroHeight - NAMEROW_H) — collapsing the hero any earlier
-      // than that would expose a gap between the compact header and the
-      // not-yet-docked search row underneath it.
-      const stickPoint = Math.max(0, heroHeight - NAMEROW_H)
-
-      if (top <= stickPoint || dy < -HIDE_DELTA)        hero.classList.remove('collapsed')
-      else if (top > stickPoint && dy > HIDE_DELTA)     hero.classList.add('collapsed')
+      if (top <= heroHeight) {
+        // In the hero's own zone — glue it to the scroll position exactly.
+        forcedOpen = false
+        setOffset(top, false)
+      } else if (forcedOpen) {
+        if (dy > HIDE_DELTA) { forcedOpen = false; setOffset(heroHeight, true) }
+        // else: stay revealed while idle or still scrolling up
+      } else if (dy < -HIDE_DELTA) {
+        forcedOpen = true
+        setOffset(0, true)
+      } else {
+        // Deep in the list, scrolling down (or a big jump past heroHeight in
+        // one event) — make sure it's fully hidden.
+        setOffset(heroHeight, false)
+      }
     })
   }, { passive: true })
 }

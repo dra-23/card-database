@@ -156,19 +156,20 @@ html, body {
    (banner/thumb/name/pill) that only ever animates via transform — GPU-
    composited, no layout/reflow, so it stays smooth regardless of content.
    It floats on top of #detailScrollBody (which never changes size) and
-   simply covers or uncovers #detailCompactHeader + the top of the list as
-   it slides. On desktop it never collapses, so it just stays a normal
-   in-flow header (matching the old behavior there) — only mobile gets the
-   overlay treatment. */
+   tracks scroll position directly (set in JS — see initDetailHeroCollapse)
+   so its retreat always stays in exact lockstep with the search row's own
+   native sticky reveal underneath, instead of a fixed-duration transition
+   that can outrun or lag behind it and expose a gap or a cover-up. On
+   desktop it never collapses, so it just stays a normal in-flow header
+   (matching the old behavior there) — only mobile gets the overlay
+   treatment. */
 #detailHeroDecorative { background: var(--md-surface); }
 @media (max-width: 767px) {
   #detailHeroDecorative {
     position: absolute; top: 0; left: 0; right: 0; z-index: 60;
     transform: translateY(0);
-    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
   }
-  #detailHeroDecorative.collapsed { transform: translateY(-100%); }
 }
 
 /* Compact name row: back + name. Lives in normal document flow as the first
