@@ -490,90 +490,116 @@ function appShellHTML() {
 </div>
 
 <!-- CARD FORM SHEET -->
-<div class="sheet" id="cardFormSheet">
+<div class="sheet cf2-sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-body">
-    <h2 id="cardFormTitle" style="margin-bottom:20px; font-family:'Google Sans Display';">Add Card</h2>
+  <div class="cf2-header">
+    <h2 id="cardFormTitle">Add Card</h2>
+  </div>
+  <div class="cf2-scroll">
     <input type="hidden" id="f_cardId">
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <div style="display:flex; gap:12px; align-items:stretch;">
-        <div id="imagePreviewContainer" style="width:90px; height:120px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-          <span id="previewPlaceholder" style="font-size:13px; color:var(--md-outline); text-align:center; padding:4px;">No<br>Image</span>
-          <img id="f_imagePreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-        </div>
-        <div style="flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center;">
-          <input type="file" id="f_fileInput" accept="image/*" style="display:none;">
-          <button class="expressive-btn" id="selectPhotoBtn" style="background:var(--md-surface-1); box-shadow:none; padding:12px; font-size:16px;">📷 Select Photo</button>
-          <div class="m3-field" id="f_player_field" style="height:48px;">
-            <label class="m3-label">Player</label>
-            <select id="f_player" class="m3-select" style="font-size:17px; padding-top:20px;"></select>
-          </div>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Year</label><input type="text" inputmode="numeric" id="f_year" class="m3-input" placeholder="e.g. 1991-92"></div>
-        <div class="m3-field"><label class="m3-label">Number</label><input type="text" id="f_number" class="m3-input" placeholder="e.g. MJ-23"></div>
-      </div>
-      <div class="m3-field field-suggest-wrap"><label class="m3-label">Set</label><input type="text" id="f_set" class="m3-input" autocomplete="off"><div class="field-suggest-list" id="f_set_suggest"></div></div>
-      <div class="m3-field field-suggest-wrap"><label class="m3-label">Manufacturer</label><input type="text" id="f_manufacturer" class="m3-input" autocomplete="off"><div class="field-suggest-list" id="f_manufacturer_suggest"></div></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Sport</label>
-          <select id="f_sport" class="m3-select">
-            <option value="">Select...</option>
-            <option value="Baseball">Baseball</option>
-            <option value="Basketball">Basketball</option>
-            <option value="Football">Football</option>
-            <option value="Hockey">Hockey</option>
-            <option value="Golf">Golf</option>
-            <option value="Soccer">Soccer</option>
-          </select>
-        </div>
-        <div class="m3-field"><label class="m3-label">Team</label><select id="f_team" class="m3-select"></select></div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Grading Co.</label>
-          <select id="f_grading" class="m3-select">
-            <option value="Raw">Raw</option>
-            <option value="PSA">PSA</option>
-            <option value="BGS">BGS</option>
-            <option value="SGC">SGC</option>
-            <option value="CGC">CGC</option>
-          </select>
-        </div>
-        <div class="m3-field"><label class="m3-label">Grade</label><select id="f_grade" class="m3-select"></select></div>
-      </div>
-      <div class="m3-field"><label class="m3-label">Purchase Price ($)</label><input type="text" inputmode="decimal" id="f_price" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Card Information (URL)</label><input type="text" id="f_url" class="m3-input"></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_rc_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:17px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#E8192C; color:#fff; font-size:14px; font-weight:800; padding:3px 8px; border-radius:6px;">RC</span>Rookie Card
-        </button>
-        <button type="button" id="f_auto_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:17px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#B8860B; color:#fff; font-size:14px; font-weight:800; padding:3px 8px; border-radius:6px;">AUTO</span>Autograph
-        </button>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <button type="button" id="f_mem_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:17px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#1565C0; color:#fff; font-size:14px; font-weight:800; padding:3px 8px; border-radius:6px;">MEM</span>Memorabilia
-        </button>
-        <button type="button" id="f_numbered_btn" style="height:56px; border-radius:12px; border:2px solid var(--md-outline); background:transparent; font-family:'Google Sans',sans-serif; font-size:17px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span style="background:#78909C; color:#fff; font-size:14px; font-weight:800; padding:3px 8px; border-radius:6px;">#'d</span>Numbered
-        </button>
-      </div>
-      <input type="hidden" id="f_rc"       value="false">
-      <input type="hidden" id="f_auto"     value="false">
-      <input type="hidden" id="f_mem"      value="false">
-      <input type="hidden" id="f_numbered" value="false">
-      <div class="m3-field">
-        <label class="m3-label">Serial # (if numbered, e.g. 47/99)</label>
-        <input type="text" id="f_serialnumber" class="m3-input" placeholder="e.g. 47/99" autocomplete="off">
-      </div>
-      <div style="display:flex; gap:12px; margin-top:4px;">
-        <button class="expressive-btn" id="cancelCardFormBtn" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Cancel</button>
-        <button class="expressive-btn" id="btnMarkUnsleevd" style="background:var(--md-surface-2); box-shadow:none; color:var(--md-on-surface); flex:0 0 auto; width:auto; padding:0 24px; height:56px; border-radius:28px;">Mark Unsleevd</button>
-        <button class="expressive-btn" id="btnSaveCard" style="background:var(--md-primary); color:white; flex:1; height:56px; border-radius:28px;">Save Card</button>
+    <input type="file" id="f_fileInput" accept="image/*" style="display:none;">
+
+    <div class="cf2-photo-wrap">
+      <div class="cf2-photo" id="imagePreviewContainer">
+        <span id="previewPlaceholder" class="cf2-photo-placeholder">No Image</span>
+        <img id="f_imagePreview" class="cf2-photo-img" style="display:none;">
+        <button type="button" class="cf2-photo-btn" id="selectPhotoBtn">📷 Select Photo</button>
       </div>
     </div>
+
+    <div class="cf2-field" id="f_player_field">
+      <label class="cf2-label">Player</label>
+      <select id="f_player" class="cf2-select"></select>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Year</label>
+      <input type="text" inputmode="numeric" id="f_year" class="cf2-input cf2-mono" placeholder="e.g. 1991-92">
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Card Number</label>
+      <input type="text" id="f_number" class="cf2-input cf2-mono" placeholder="e.g. MJ-23">
+    </div>
+    <div class="cf2-field field-suggest-wrap">
+      <label class="cf2-label">Set</label>
+      <input type="text" id="f_set" class="cf2-input" autocomplete="off">
+      <div class="field-suggest-list" id="f_set_suggest"></div>
+    </div>
+    <div class="cf2-field field-suggest-wrap">
+      <label class="cf2-label">Manufacturer</label>
+      <input type="text" id="f_manufacturer" class="cf2-input" autocomplete="off">
+      <div class="field-suggest-list" id="f_manufacturer_suggest"></div>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Sport</label>
+      <select id="f_sport" class="cf2-select">
+        <option value="">Select...</option>
+        <option value="Baseball">Baseball</option>
+        <option value="Basketball">Basketball</option>
+        <option value="Football">Football</option>
+        <option value="Hockey">Hockey</option>
+        <option value="Golf">Golf</option>
+        <option value="Soccer">Soccer</option>
+      </select>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Team</label>
+      <select id="f_team" class="cf2-select"></select>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Grading Co.</label>
+      <select id="f_grading" class="cf2-select">
+        <option value="Raw">Raw</option>
+        <option value="PSA">PSA</option>
+        <option value="BGS">BGS</option>
+        <option value="SGC">SGC</option>
+        <option value="CGC">CGC</option>
+      </select>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Grade</label>
+      <select id="f_grade" class="cf2-select cf2-mono"></select>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Purchase Price ($)</label>
+      <input type="text" inputmode="decimal" id="f_price" class="cf2-input cf2-mono">
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Card Information (URL)</label>
+      <input type="text" id="f_url" class="cf2-input">
+    </div>
+
+    <div class="cf2-section">
+      <span class="cf2-section-label">Attributes</span>
+      <div class="cf2-attr-grid">
+        <button type="button" id="f_rc_btn" class="cf2-attr-btn" data-attr="rc" aria-pressed="false">
+          <span class="cf2-attr-tag">RC</span><span class="cf2-attr-name">Rookie Card</span>
+        </button>
+        <button type="button" id="f_auto_btn" class="cf2-attr-btn" data-attr="auto" aria-pressed="false">
+          <span class="cf2-attr-tag">AUTO</span><span class="cf2-attr-name">Autograph</span>
+        </button>
+        <button type="button" id="f_mem_btn" class="cf2-attr-btn" data-attr="mem" aria-pressed="false">
+          <span class="cf2-attr-tag">MEM</span><span class="cf2-attr-name">Memorabilia</span>
+        </button>
+        <button type="button" id="f_numbered_btn" class="cf2-attr-btn" data-attr="numbered" aria-pressed="false">
+          <span class="cf2-attr-tag">#'d</span><span class="cf2-attr-name">Numbered</span>
+        </button>
+      </div>
+    </div>
+    <input type="hidden" id="f_rc"       value="false">
+    <input type="hidden" id="f_auto"     value="false">
+    <input type="hidden" id="f_mem"      value="false">
+    <input type="hidden" id="f_numbered" value="false">
+
+    <div class="cf2-field">
+      <label class="cf2-label">Serial # (if numbered, e.g. 47/99)</label>
+      <input type="text" id="f_serialnumber" class="cf2-input" placeholder="e.g. 47/99" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="cf2-footer">
+    <button class="cf2-btn cf2-btn-cancel" id="cancelCardFormBtn">Cancel</button>
+    <button class="cf2-btn cf2-btn-cancel" id="btnMarkUnsleevd">Mark Unsleevd</button>
+    <button class="cf2-btn cf2-btn-primary" id="btnSaveCard">Save Card</button>
   </div>
 </div>
 
@@ -610,44 +636,51 @@ function appShellHTML() {
 </div>
 
 <!-- PLAYER FORM SHEET -->
-<div class="sheet" id="playerFormSheet">
+<div class="sheet cf2-sheet" id="playerFormSheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-body">
-    <h2 style="margin-bottom:20px; font-family:'Google Sans Display';">New Player</h2>
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <div class="m3-field"><label class="m3-label">Player Name</label><input type="text" id="pf_name" class="m3-input"></div>
-      <div class="m3-field"><label class="m3-label">Default Sport</label>
-        <select id="pf_sport" class="m3-select">
-          <option value="Baseball">Baseball</option>
-          <option value="Basketball">Basketball</option>
-          <option value="Football">Football</option>
-          <option value="Hockey">Hockey</option>
-          <option value="Golf">Golf</option>
-          <option value="Soccer">Soccer</option>
-        </select>
+  <div class="cf2-header">
+    <h2>New Player</h2>
+  </div>
+  <div class="cf2-scroll">
+    <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">
+    <input type="file" id="pf_bannerFileInput" accept="image/*" style="display:none;">
+
+    <div class="cf2-photo-wrap">
+      <div class="cf2-photo" id="pf_mainImgContainer">
+        <span id="pf_mainImgPlaceholder" class="cf2-photo-placeholder">No Photo</span>
+        <img id="pf_mainImgPreview" class="cf2-photo-img" style="display:none;">
+        <button type="button" class="cf2-photo-btn" id="pf_selectMainBtn">📷 Select Player Photo</button>
       </div>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <div style="width:64px; height:88px; flex-shrink:0; background:#F0F0F0; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-          <span id="pf_mainImgPlaceholder" style="font-size:12px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
-          <img id="pf_mainImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-        </div>
-        <div style="flex:1;">
-          <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">
-          <button type="button" class="expressive-btn" id="pf_selectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:16px; width:100%;">Select Player Photo</button>
-        </div>
-      </div>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <div style="width:96px; height:36px; flex-shrink:0; background:#F0F0F0; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed var(--md-outline);">
-          <span id="pf_bannerImgPlaceholder" style="font-size:12px; color:var(--md-outline);">Banner</span>
-          <img id="pf_bannerImgPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-        </div>
-        <div style="flex:1;">
-          <input type="file" id="pf_bannerFileInput" accept="image/*" style="display:none;">
-          <button type="button" class="expressive-btn" id="pf_selectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:44px; border-radius:22px; font-size:16px; width:100%;">Select Banner Photo</button>
-        </div>
-      </div>
-      <button class="expressive-btn" id="btnSavePlayer" style="background:var(--md-primary); color:white; margin-top:12px; height:56px; border-radius:28px;">Add Player</button>
     </div>
+
+    <div class="cf2-field">
+      <label class="cf2-label">Player Name</label>
+      <input type="text" id="pf_name" class="cf2-input">
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Default Sport</label>
+      <select id="pf_sport" class="cf2-select">
+        <option value="Baseball">Baseball</option>
+        <option value="Basketball">Basketball</option>
+        <option value="Football">Football</option>
+        <option value="Hockey">Hockey</option>
+        <option value="Golf">Golf</option>
+        <option value="Soccer">Soccer</option>
+      </select>
+    </div>
+    <div class="cf2-field">
+      <label class="cf2-label">Banner Photo</label>
+      <div class="cf2-photo cf2-photo-banner" id="pf_bannerImgContainer">
+        <span id="pf_bannerImgPlaceholder" class="cf2-photo-placeholder">No Banner</span>
+        <img id="pf_bannerImgPreview" class="cf2-photo-img" style="display:none;">
+        <button type="button" class="cf2-photo-btn" id="pf_selectBannerBtn">📷 Select Banner Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cf2-footer">
+    <button class="cf2-btn cf2-btn-cancel" id="cancelPlayerFormBtn">Cancel</button>
+    <button class="cf2-btn cf2-btn-primary" id="btnSavePlayer">Add Player</button>
   </div>
 </div>
 `

@@ -12,7 +12,7 @@ import { renderStats } from './pages/stats.js'
 import { handleCardTap, navigateCard, closeCardSheet, refreshCurrentCardPanel } from './components/card-detail.js'
 import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFlag } from './components/card-form.js'
 import { openPlayerForm, savePlayer, handlePlayerFileSelect, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
-import { createOverflowMenu, openRowMenu } from './components/overflow-menu.js'
+import { createOverflowMenu, openRowMenu, showDeleteConfirm } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
 import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
@@ -281,6 +281,7 @@ function startApp() {
   window._navigateCard       = navigateCard
   window._closeCardSheet     = closeCardSheet
   window._openRowMenu        = openRowMenu
+  window._confirmDeleteCard  = showDeleteConfirm
   window._openCardForm       = openCardForm
   window._openPlayerEditMenu = openPlayerEditMenu
   window._openPSASheet       = openPSASheet
@@ -414,6 +415,7 @@ function wireFormButtons() {
   document.getElementById('btnSavePSA')?.addEventListener('click', savePSAData)
   document.getElementById('cancelPSABtn')?.addEventListener('click', closePSASheet)
   document.getElementById('cancelCardFormBtn')?.addEventListener('click', closeAllForms)
+  document.getElementById('cancelPlayerFormBtn')?.addEventListener('click', closeAllForms)
   document.getElementById('selectPhotoBtn')?.addEventListener('click', () => document.getElementById('f_fileInput').click())
   document.getElementById('f_fileInput')?.addEventListener('change', e => handleFileSelect(e.target))
   document.getElementById('pf_selectMainBtn')?.addEventListener('click', () => document.getElementById('pf_mainFileInput').click())

@@ -60,52 +60,56 @@ let _editPlayerId = null
 export function createPlayerEditSheet() {
   const sheet = document.createElement('div')
   sheet.id = 'playerEditSheet'
-  sheet.className = 'sheet'
+  sheet.className = 'sheet cf2-sheet'
   sheet.innerHTML = `
     <div class="sheet-handle"></div>
-    <div class="sheet-body" style="gap:0;">
-      <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
-        <img id="peThumb" style="width:56px; height:78px; border-radius:12px; object-fit:cover; background:var(--md-surface-2); flex-shrink:0;">
-        <div style="flex:1;">
-          <div id="peName" style="font-family:'Google Sans Display'; font-size:20px; font-weight:700;"></div>
-          <div id="peCount" style="font-size:15px; opacity:0.6; margin-top:2px;"></div>
+    <div class="cf2-header cf2-header-player">
+      <img id="peThumb" class="cf2-header-thumb">
+      <div class="cf2-header-info">
+        <div id="peName" class="cf2-header-name"></div>
+        <div id="peCount" class="cf2-header-count"></div>
+      </div>
+    </div>
+    <div class="cf2-scroll">
+      <input type="file" id="peMainFileInput" accept="image/*" style="display:none;">
+      <input type="file" id="peBannerFileInput" accept="image/*" style="display:none;">
+
+      <div class="cf2-photo-wrap">
+        <div class="cf2-photo" id="peMainPhotoBox">
+          <span id="peMainPlaceholder" class="cf2-photo-placeholder">No Photo</span>
+          <img id="peMainPreview" class="cf2-photo-img" style="display:none;">
+          <button type="button" class="cf2-photo-btn" id="peSelectMainBtn">📷 Change Photo</button>
         </div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div class="m3-field"><label class="m3-label">Player Name</label><input type="text" id="pe_name" class="m3-input"></div>
-        <div class="m3-field"><label class="m3-label">Default Sport</label>
-          <select id="pe_sport" class="m3-select">
-            <option value="Baseball">Baseball</option>
-            <option value="Basketball">Basketball</option>
-            <option value="Football">Football</option>
-            <option value="Hockey">Hockey</option>
-            <option value="Golf">Golf</option>
-            <option value="Soccer">Soccer</option>
-          </select>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <div style="display:flex; flex-direction:column; gap:6px; flex:1; align-items:center;">
-            <div style="width:64px; height:88px; border-radius:10px; overflow:hidden; background:var(--md-surface-2); border:1px dashed var(--md-outline); flex-shrink:0;">
-              <img id="peMainPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-              <span id="peMainPlaceholder" style="display:flex; align-items:center; justify-content:center; height:100%; font-size:12px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Player<br>Photo</span>
-            </div>
-            <input type="file" id="peMainFileInput" accept="image/*" style="display:none;">
-            <button type="button" class="expressive-btn" id="peSelectMainBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:36px; border-radius:18px; font-size:15px; width:100%; padding:0 12px;">Change Photo</button>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px; flex:1; align-items:center;">
-            <div style="width:64px; height:88px; border-radius:10px; overflow:hidden; background:var(--md-surface-2); border:1px dashed var(--md-outline); flex-shrink:0;">
-              <img id="peBannerPreview" style="width:100%; height:100%; object-fit:cover; display:none;">
-              <span id="peBannerPlaceholder" style="display:flex; align-items:center; justify-content:center; height:100%; font-size:12px; color:var(--md-outline); text-align:center; padding:4px; line-height:1.3;">Banner<br>Photo</span>
-            </div>
-            <input type="file" id="peBannerFileInput" accept="image/*" style="display:none;">
-            <button type="button" class="expressive-btn" id="peSelectBannerBtn" style="background:var(--md-surface-1); color:var(--md-on-surface); box-shadow:none; height:36px; border-radius:18px; font-size:15px; width:100%; padding:0 12px;">Change Banner</button>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:8px;">
-          <button id="peDeleteBtn" class="expressive-btn" style="background:rgba(239,83,80,0.08); color:var(--soft-red); box-shadow:none; flex:0 0 auto; width:auto; padding:0 24px; height:52px; border-radius:26px;">Delete</button>
-          <button id="peSaveBtn"   class="expressive-btn" style="background:var(--md-primary); color:#fff; flex:1; height:52px; border-radius:26px;">Save</button>
+
+      <div class="cf2-field">
+        <label class="cf2-label">Player Name</label>
+        <input type="text" id="pe_name" class="cf2-input">
+      </div>
+      <div class="cf2-field">
+        <label class="cf2-label">Default Sport</label>
+        <select id="pe_sport" class="cf2-select">
+          <option value="Baseball">Baseball</option>
+          <option value="Basketball">Basketball</option>
+          <option value="Football">Football</option>
+          <option value="Hockey">Hockey</option>
+          <option value="Golf">Golf</option>
+          <option value="Soccer">Soccer</option>
+        </select>
+      </div>
+      <div class="cf2-field">
+        <label class="cf2-label">Banner Photo</label>
+        <div class="cf2-photo cf2-photo-banner" id="peBannerPhotoBox">
+          <span id="peBannerPlaceholder" class="cf2-photo-placeholder">No Banner</span>
+          <img id="peBannerPreview" class="cf2-photo-img" style="display:none;">
+          <button type="button" class="cf2-photo-btn" id="peSelectBannerBtn">📷 Change Banner</button>
         </div>
       </div>
+    </div>
+
+    <div class="cf2-footer">
+      <button id="peDeleteBtn" class="cf2-btn cf2-btn-delete">Delete</button>
+      <button id="peSaveBtn"   class="cf2-btn cf2-btn-primary">Save</button>
     </div>
   `
   document.body.appendChild(sheet)

@@ -2,9 +2,8 @@ import { db, doc, setDoc, deleteDoc, storage, ref, uploadBytes, getDownloadURL }
 import * as state from '../state.js'
 import { isOwned } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
-import { renderCardPanelInto } from './card-detail.js'
+import { renderCardPanelInto, findAndLoadMarketValue } from './card-detail.js'
 import { openCardForm } from './card-form.js'
-import { cardsight } from '../cardsight.js'
 
 let _activeCardId = null
 
@@ -75,52 +74,16 @@ export function createOverflowMenu() {
     await setDoc(doc(db, 'Cards', id), updates, { merge: true })
   })
 
-  document.getElementById('omFindMarketValue').addEventListener('click', async () => {
+  document.getElementById('omFindMarketValue').addEventListener('click', () => {
     const id = _activeCardId; closeMenu()
-    const c = state.ALL_CARDS.find(x => x.id === id); if (!c) return
-    const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
-    const playerName = player ? (player.Player || player.id) : (c.Player || '')
-    // Find the visible market value cell to give live feedback
+    // Find the visible market value panel to give live feedback
     const panelCandidates = ['twoPane-panel','twoPane-coll-panel','twoPane-grad-panel','cardDetailPanel','collectionCardPanel','gradedCardPanel']
     let targetPanel = null
     for (const pid of panelCandidates) {
       const p = document.getElementById(pid)
       if (p?.querySelector('[data-mv-value]')) { targetPanel = p; break }
     }
-    const valEl = targetPanel?.querySelector('[data-mv-value]')
-    if (valEl) valEl.textContent = 'Searching…'
-
-    // Card number excluded — including it causes 0 results in CardSight text search.
-    // Year-first ordering matches CardSight's release indexing.
-    const seen = new Set()
-    const queries = [
-      [c.Year, playerName, c.Set          ],
-      [c.Year, playerName, c.Manufacturer ],
-      [c.Year, playerName                 ],
-      [playerName,         c.Manufacturer ],
-      [playerName,         c.Set          ],
-    ]
-      .map(parts => parts.filter(Boolean).join(' ').trim())
-      .filter(q => q && !seen.has(q) && seen.add(q))
-
-    try {
-      let cardsightId = null
-      for (const q of queries) {
-        const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
-        if (!error && data?.results?.length) {
-          cardsightId = data.results[0].id
-          break
-        }
-      }
-      if (!cardsightId) {
-        if (valEl && document.contains(valEl)) valEl.textContent = 'Not found'
-        return
-      }
-      await setDoc(doc(db, 'Cards', id), { CardsightId: cardsightId }, { merge: true })
-    } catch (e) {
-      console.error('[FindMarketValue]', e)
-      if (valEl && document.contains(valEl)) valEl.textContent = 'Error'
-    }
+    findAndLoadMarketValue(id, targetPanel)
   })
 
   document.getElementById('omDelete').addEventListener('click', () => {
@@ -134,7 +97,7 @@ export function createOverflowMenu() {
   })
 }
 
-function showDeleteConfirm(cardId) {
+export function showDeleteConfirm(cardId) {
   const overlay = document.createElement('div')
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;'
   overlay.innerHTML = `

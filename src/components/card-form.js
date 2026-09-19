@@ -84,27 +84,20 @@ export function initGradeDropdown() {
 }
 
 // ── Toggle badge flag buttons ──────────────────────────────────────────────
-const FLAG_STYLES = {
-  rc:       { hidden: 'f_rc',       btn: 'f_rc_btn',       bg: 'rgba(232,25,44,0.08)',  border: '#E8192C', color: '#E8192C' },
-  auto:     { hidden: 'f_auto',     btn: 'f_auto_btn',     bg: 'rgba(184,134,11,0.10)', border: '#B8860B', color: '#B8860B' },
-  mem:      { hidden: 'f_mem',      btn: 'f_mem_btn',      bg: 'rgba(21,101,192,0.08)', border: '#1565C0', color: '#1565C0' },
-  numbered: { hidden: 'f_numbered', btn: 'f_numbered_btn', bg: 'rgba(96,125,139,0.10)', border: '#607D8B', color: '#607D8B' },
+const FLAG_IDS = {
+  rc:       { hidden: 'f_rc',       btn: 'f_rc_btn' },
+  auto:     { hidden: 'f_auto',     btn: 'f_auto_btn' },
+  mem:      { hidden: 'f_mem',      btn: 'f_mem_btn' },
+  numbered: { hidden: 'f_numbered', btn: 'f_numbered_btn' },
 }
 export function setFormFlag(flag, active) {
-  const cfg = FLAG_STYLES[flag]; if (!cfg) return
+  const cfg = FLAG_IDS[flag]; if (!cfg) return
   const hidden = document.getElementById(cfg.hidden)
   const btn    = document.getElementById(cfg.btn)
   if (!hidden || !btn) return
   hidden.value = active ? 'true' : 'false'
-  if (active) {
-    btn.style.background  = cfg.bg
-    btn.style.borderColor = cfg.border
-    btn.style.color       = cfg.color
-  } else {
-    btn.style.background  = 'transparent'
-    btn.style.borderColor = 'var(--md-outline)'
-    btn.style.color       = 'var(--md-on-surface)'
-  }
+  btn.classList.toggle('selected', active)
+  btn.setAttribute('aria-pressed', active ? 'true' : 'false')
 }
 
 // ── Custom suggest dropdown ────────────────────────────────────────────────

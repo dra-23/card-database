@@ -2,10 +2,58 @@ import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../f
 import * as state from '../state.js'
 import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
+import { promptNotes } from './notes-prompt.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
 import { cardsight } from '../cardsight.js'
+
+// ── Icons (inline, currentColor so they theme for free) ───────────────────
+const ICON_KEBAB    = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.8" fill="currentColor"></circle><circle cx="12" cy="12" r="1.8" fill="currentColor"></circle><circle cx="12" cy="19" r="1.8" fill="currentColor"></circle></svg>`
+const ICON_ZOOM      = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="20" y1="20" x2="15.3" y2="15.3"></line></svg>`
+const ICON_CHECK     = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>`
+const ICON_STAR      = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.1 6.1-.6z"></path></svg>`
+const ICON_SHARE     = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.1"></circle><circle cx="17" cy="6" r="2.1"></circle><circle cx="17" cy="18" r="2.1"></circle><line x1="8" y1="10.8" x2="15" y2="7.2"></line><line x1="8" y1="13.2" x2="15" y2="16.8"></line></svg>`
+const ICON_PENCIL    = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>`
+const ICON_ARROW     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"></path><path d="M8 7h9v9"></path></svg>`
+const ICON_TRASH     = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path></svg>`
+const ICON_REFRESH   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"></path><path d="M20 5v6h-6"></path></svg>`
+const ICON_CALENDAR  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`
+const ICON_LAYERS    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>`
+const ICON_HASH      = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="9" y1="4" x2="7" y2="20"></line><line x1="17" y1="4" x2="15" y2="20"></line><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>`
+const ICON_BOX       = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path><line x1="12" y1="13" x2="12" y2="21"></line></svg>`
+const ICON_SPORT     = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M6 5.5c2 2 3 4.5 3 6.5s-1 4.5-3 6.5"></path><path d="M18 5.5c-2 2-3 4.5-3 6.5s1 4.5 3 6.5"></path></svg>`
+const ICON_TEAM      = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>`
+const ICON_TAG       = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.6L12.4 20.8a2 2 0 01-2.8 0L3 14.2V4h10.2l7.4 7.4a2 2 0 010 2.8z"></path><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"></circle></svg>`
+
+function isFavorite(card) {
+  return card.Favorite === true || card.Favorite === 'true'
+}
+
+function _showToast(msg) {
+  const el = document.createElement('div')
+  el.className = 'cd2-toast'
+  el.textContent = msg
+  document.body.appendChild(el)
+  requestAnimationFrame(() => el.classList.add('show'))
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 250) }, 1600)
+}
+
+async function _handleShare(card, playerName) {
+  const parts = [card.Year, card.Set, card.Number ? `#${card.Number}` : ''].filter(Boolean)
+  const text  = [playerName, parts.join(' ')].filter(Boolean).join(' — ')
+  const url   = card['Card Information'] || ''
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: playerName || 'Card', text, ...(url ? { url } : {}) })
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url ? `${text}\n${url}` : text)
+      _showToast('Copied to clipboard')
+    }
+  } catch (e) {
+    if (e?.name !== 'AbortError') console.error('[share]', e)
+  }
+}
 
 // ── Card detail HTML ───────────────────────────────────────────────────────
 export function buildCardDetailHTML(card, ctx) {
@@ -28,14 +76,14 @@ export function buildCardDetailHTML(card, ctx) {
   const tcdbUrl     = url  // Card Information field IS the TCDB link
 
   const stats = [
-    ['Year',         card.Year],
-    ['Set',          card.Set],
-    ['Card Number',  card.Number ? `#${card.Number}` : null],
-    ['Manufacturer', card.Manufacturer],
-    ['Sport',        card.Sport],
-    ['Team',         card.Team],
-    ...(parallel ? [['Parallel', parallel]] : []),
-    ...(serial   ? [['Serial',   serial]]   : []),
+    ['Year',         card.Year,                          ICON_CALENDAR],
+    ['Set',          card.Set,                            ICON_LAYERS],
+    ['Card Number',  card.Number ? `#${card.Number}` : null, ICON_HASH],
+    ['Manufacturer', card.Manufacturer,                   ICON_BOX],
+    ['Sport',        card.Sport,                          ICON_SPORT],
+    ['Team',         card.Team,                           ICON_TEAM],
+    ...(parallel ? [['Parallel', parallel, ICON_TAG]] : []),
+    ...(serial   ? [['Serial',   serial,   ICON_TAG]] : []),
   ]
 
   const isGraded    = co && co !== 'Raw'
@@ -51,18 +99,23 @@ export function buildCardDetailHTML(card, ctx) {
     }
   })() : ''
   const psaSection = isGraded ? `
-    <div class="psa-card" data-co="${co}">
-      <div class="psa-card-header">
-        <span class="psa-card-title">${co} Registry Data</span>
-        <button class="psa-edit-btn" data-psa-edit="${escapeAttr(card.id)}">${hasPSA ? 'Edit' : '+ Link'}</button>
+    <div class="cd2-section">
+      <div class="cd2-section-label-row">
+        <span class="cd2-section-label">${co} Registry Data</span>
+        <button class="cd2-edit-icon-btn" data-psa-edit="${escapeAttr(card.id)}" aria-label="Edit grading info">${ICON_PENCIL}</button>
       </div>
-      ${hasPSA ? `
-      <div class="psa-stat-row"><span class="psa-stat-lbl">Cert #</span><span class="psa-stat-val">${card.PSACert}</span></div>
-      ${card.PSAGrade ? `<div class="psa-stat-row"><span class="psa-stat-lbl">Grade</span><span class="psa-stat-val">${card.PSAGrade}</span></div>` : ''}
-      <div class="psa-stat-row"><span class="psa-stat-lbl">Pop Report</span><span class="psa-stat-val">${card.PSAPop ?? '—'}</span></div>
-      ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-        <button class="psa-registry-btn">${co} Registry ↗</button>
-      </a>` : ''}` : ''}
+      <div class="cd2-card" data-co="${co}">
+        ${hasPSA ? `
+        <div class="cd2-card-rows">
+          <div class="cd2-row"><span class="cd2-row-lbl">Cert #</span><span class="cd2-row-val">${card.PSACert}</span></div>
+          ${card.PSAGrade ? `<div class="cd2-row"><span class="cd2-row-lbl">Grade</span><span class="cd2-grade-pill" data-co="${co}">${card.PSAGrade}</span></div>` : ''}
+          <div class="cd2-row"><span class="cd2-row-lbl">Pop Report</span><span class="cd2-row-val">${card.PSAPop ?? '—'}</span></div>
+        </div>
+        ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" class="cd2-card-action cd2-btn-registry" data-co="${co}">${co} Registry ${ICON_ARROW}</a>` : ''}` : `
+        <button class="cd2-link-row" data-psa-edit="${escapeAttr(card.id)}">
+          <span>Link ${co} cert #</span>${ICON_ARROW}
+        </button>`}
+      </div>
     </div>` : ''
 
   const sameSetCards = (card.Year && card.Set)
@@ -99,80 +152,132 @@ export function buildCardDetailHTML(card, ctx) {
       }).join('')}
     </div>` : ''
 
-  const pricePaid = card.Price ? `$${parseFloat(card.Price).toFixed(2)}` : '—'
+  const pricePaid   = card.Price ? `$${parseFloat(card.Price).toFixed(2)}` : '—'
+  const fav         = isFavorite(card)
+  const yearSetNum  = [card.Year, card.Set].filter(Boolean).join(' ') + (card.Number ? ` #${card.Number}` : '')
+
+  const heroSection = hasPSAImages ? `
+    <div class="cd2-hero-imgs">
+      ${card.PSAImage     ? `<div class="cd2-hero-img-wrap cd2-hero-img-wrap-half"><img class="cd2-hero-img cd2-psa-main-img" src="${card.PSAImage}" alt="front"></div>` : ''}
+      ${card.PSAImageBack ? `<div class="cd2-hero-img-wrap cd2-hero-img-wrap-half"><img class="cd2-hero-img cd2-psa-main-img" src="${card.PSAImageBack}" alt="back"></div>` : ''}
+    </div>` : `
+    <div class="cd2-hero-img-wrap">
+      <img class="cd2-hero-img cd2-single-img" src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
+      <button type="button" class="cd2-zoom-btn" data-zoom-single aria-label="Zoom card image">${ICON_ZOOM}</button>
+    </div>`
+
   const marketSection = `
-    <div class="market-section">
-      <div class="market-header">
-        <span class="market-title">Market Value</span>
-        ${card.CardsightId ? `<button class="market-refresh-btn" data-mv-refresh>Refresh</button>` : ''}
-      </div>
-      <div class="market-stat-row">
-        <span class="market-stat-lbl">Purchase Price</span>
-        <span class="market-stat-val">${pricePaid}</span>
-      </div>
-      <div class="market-stat-row">
-        <span class="market-stat-lbl">Market Value</span>
-        <span class="market-stat-val" data-mv-value>${card.CardsightId ? 'Fetching…' : '—'}</span>
-      </div>
-      <div class="market-stat-row" data-mv-change-row style="display:none">
-        <span class="market-stat-lbl">Gain / Loss</span>
-        <span class="market-stat-val" data-mv-change></span>
+    <div class="cd2-section">
+      <span class="cd2-section-label">Market Value</span>
+      <div class="cd2-card cd2-market-card">
+        <div class="cd2-market-stats">
+          <div class="cd2-market-stat">
+            <span class="cd2-market-lbl">Purchase Price</span>
+            <span class="cd2-market-val">${pricePaid}</span>
+          </div>
+          <div class="cd2-market-divider"></div>
+          <div class="cd2-market-stat">
+            <span class="cd2-market-lbl">Market Value</span>
+            <span class="cd2-market-val ${card.CardsightId ? '' : 'cd2-market-muted'}" data-mv-value>${card.CardsightId ? 'Fetching…' : 'Not synced'}</span>
+          </div>
+        </div>
+        <div class="cd2-market-change-row" data-mv-change-row style="display:none">
+          <span class="cd2-market-lbl">Gain / Loss</span>
+          <span class="cd2-market-val" data-mv-change></span>
+        </div>
+        ${card.CardsightId
+          ? `<button type="button" class="cd2-check-value-btn" data-mv-refresh>${ICON_REFRESH} Refresh value</button>`
+          : `<button type="button" class="cd2-check-value-btn" data-mv-check>${ICON_REFRESH} Check current value</button>`}
       </div>
     </div>`
 
-  return `
-    ${hasPSAImages ? `
-    <div class="cd-psa-img-wrap">
-      ${card.PSAImage     ? `<img class="cd-psa-main-img" src="${card.PSAImage}"     alt="front">` : ''}
-      ${card.PSAImageBack ? `<img class="cd-psa-main-img" src="${card.PSAImageBack}" alt="back">`  : ''}
+  const notesSection = notes ? `
+    <div class="cd2-section">
+      <span class="cd2-section-label">Notes</span>
+      <button type="button" class="cd2-notes-btn cd2-notes-filled" data-notes-btn="${escapeAttr(card.id)}">
+        <span class="cd2-notes-text">${notes}</span>
+        ${ICON_PENCIL}
+      </button>
     </div>` : `
-    <div class="cd-img-wrap">
-      <img src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
-    </div>`}
-    <div class="cd-body">
-      <div class="cd-header">
-        <div class="cd-header-info">
-          <div class="cd-year-set">${card.Year || ''} ${card.Set || ''} #${card.Number || 'N/A'}</div>
-          <div class="cd-player">${playerName}</div>
-          <div class="cd-badge-row">
-            ${gradeStr   ? `<span class="badge-grade" data-co="${co}">${gradeStr}</span>`   : ''}
-            ${isRC       ? `<span class="badge-rc">RC</span>`               : ''}
-            ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
-            ${isMem      ? `<span class="badge-mem">MEM</span>`             : ''}
-            ${isNumbered ? `<span class="badge-numbered">#'d</span>`        : ''}
-          </div>
+    <div class="cd2-section">
+      <span class="cd2-section-label">Notes</span>
+      <button type="button" class="cd2-notes-btn" data-notes-btn="${escapeAttr(card.id)}">
+        <span class="cd2-notes-placeholder">Add notes on condition, provenance, or where you found this card…</span>
+        ${ICON_PENCIL}
+      </button>
+    </div>`
+
+  return `
+    <div class="cd2-hero">
+      <div class="cd2-hero-glow"></div>
+      ${heroSection}
+    </div>
+
+    <div class="cd2-title-block">
+      <h1 class="cd2-player-name">${playerName}</h1>
+      <p class="cd2-subtitle">${yearSetNum}</p>
+      ${(gradeStr || isRC || isAuto || isMem || isNumbered) ? `<div class="cd2-badge-row">
+        ${gradeStr   ? `<span class="badge-grade" data-co="${co}">${gradeStr}</span>`   : ''}
+        ${isRC       ? `<span class="badge-rc">RC</span>`               : ''}
+        ${isAuto     ? `<span class="badge-auto">AUTO</span>`           : ''}
+        ${isMem      ? `<span class="badge-mem">MEM</span>`             : ''}
+        ${isNumbered ? `<span class="badge-numbered">#'d</span>`        : ''}
+      </div>` : ''}
+    </div>
+
+    <div class="cd2-quick-actions">
+      <div class="cd2-qa-item">
+        <button type="button" class="cd2-qa-btn cd2-qa-sleeve ${owned ? 'active' : ''}" data-card-toggle="${escapeAttr(card.id)}" aria-pressed="${owned}" aria-label="Sleeved">${ICON_CHECK}</button>
+        <span class="cd2-qa-label">Sleeved</span>
+      </div>
+      <div class="cd2-qa-item">
+        <button type="button" class="cd2-qa-btn cd2-qa-fav ${fav ? 'active' : ''}" data-fav-toggle="${escapeAttr(card.id)}" aria-pressed="${fav}" aria-label="Favorite">${ICON_STAR}</button>
+        <span class="cd2-qa-label">Favorite</span>
+      </div>
+      <div class="cd2-qa-item">
+        <button type="button" class="cd2-qa-btn cd2-qa-share" data-share-btn aria-label="Share card">${ICON_SHARE}</button>
+        <span class="cd2-qa-label">Share</span>
+      </div>
+      <div class="cd2-qa-item">
+        <button type="button" class="cd2-qa-btn cd2-qa-more" data-card-menu="${escapeAttr(card.id)}" aria-label="Card options">${ICON_KEBAB}</button>
+        <span class="cd2-qa-label">Manage</span>
+      </div>
+    </div>
+
+    <div class="cd2-section">
+      <div class="cd2-section-label-row">
+        <span class="cd2-section-label">Card Details</span>
+        <button class="cd2-edit-icon-btn" data-card-edit="${escapeAttr(card.id)}" aria-label="Edit card details">${ICON_PENCIL}</button>
+      </div>
+      <div class="cd2-card">
+        <div class="cd2-card-rows">
+          ${stats.filter(([, val]) => val).map(([lbl, val, icon]) => `
+            <div class="cd2-row">
+              <span class="cd2-row-lbl">${icon}<span>${lbl}</span></span>
+              <span class="cd2-row-val">${val}</span>
+            </div>`).join('')}
         </div>
-        <button class="cd-menu-btn" data-card-menu="${escapeAttr(card.id)}" aria-label="Card options">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        <div class="cd2-card-action-row">
+          <a href="${ebayUrl}" target="_blank" rel="noopener" class="cd2-card-action cd2-btn-ebay">eBay Sold ${ICON_ARROW}</a>
+          ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" class="cd2-card-action cd2-btn-tcdb">TCDB ${ICON_ARROW}</a>` : ''}
+        </div>
+      </div>
+    </div>
+
+    ${psaSection}
+    ${marketSection}
+    ${notesSection}
+
+    <div class="cd2-section">
+      <span class="cd2-section-label">Manage</span>
+      <div class="cd2-card">
+        <button type="button" class="cd2-manage-row" data-manage-delete="${escapeAttr(card.id)}">
+          ${ICON_TRASH}<span>Remove from Collection</span>
         </button>
       </div>
-      <div class="cd-divider"></div>
-      <div class="cd-owned-row">
-        <span class="cd-owned-label">${owned ? 'sleevd' : 'unsleevd'}</span>
-        <button class="status-toggle-btn ${owned ? 'sleevd' : ''}" data-card-toggle="${escapeAttr(card.id)}"></button>
-      </div>
-      <div class="cd-stats-grid">
-        <div class="cd-stats-header">
-          <span class="cd-stats-title">Card Details</span>
-          <button class="cd-stats-edit-btn" data-card-edit="${escapeAttr(card.id)}">Edit</button>
-        </div>
-        ${stats.filter(([, val]) => val).map(([lbl, val]) => `
-          <div class="cd-stat">
-            <span class="cd-stat-lbl">${lbl}</span>
-            <span class="cd-stat-val">${val}</span>
-          </div>`).join('')}
-        <a href="${ebayUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-          <button class="cd-stats-action-btn cd-btn-ebay">eBay Sold ↗</button>
-        </a>
-        ${tcdbUrl ? `<a href="${tcdbUrl}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-          <button class="cd-stats-action-btn cd-btn-tcdb">TCDB ↗</button>
-        </a>` : ''}
-      </div>
-      ${psaSection}
-      ${marketSection}
-      ${notes ? `<div class="cd-notes">${notes}</div>` : ''}
-      ${setPreviewSection}
     </div>
+
+    ${setPreviewSection}
   `
 }
 
@@ -193,7 +298,7 @@ async function _loadMarketValue(panelEl, card) {
     const changeEl  = panelEl.querySelector('[data-mv-change]')
     if (!valEl) return
 
-    if (error || !data) { valEl.textContent = 'N/A'; return }
+    if (error || !data) { valEl.textContent = 'N/A'; valEl.classList.add('cd2-market-muted'); return }
 
     const co = card['Grading Company']
     const gr = String(card.Grade || '')
@@ -205,11 +310,12 @@ async function _loadMarketValue(panelEl, card) {
       if (gg?.records?.length) records = gg.records
     }
     if (!records?.length && data.raw?.records?.length) records = data.raw.records
-    if (!records?.length) { valEl.textContent = 'No data'; return }
+    if (!records?.length) { valEl.textContent = 'No data'; valEl.classList.add('cd2-market-muted'); return }
 
     const avg = records.reduce((s, r) => s + r.price, 0) / records.length
     const lastDate = records[0]?.date ? new Date(records[0].date).toLocaleDateString() : null
     valEl.textContent = `$${avg.toFixed(2)}`
+    valEl.classList.remove('cd2-market-muted')
     if (lastDate) valEl.title = `Avg of ${records.length} sale${records.length !== 1 ? 's' : ''} · Last: ${lastDate}`
 
     if (card.Price && changeRow && changeEl) {
@@ -219,14 +325,54 @@ async function _loadMarketValue(panelEl, card) {
         const pct  = ((diff / paid) * 100).toFixed(1)
         const sign = diff >= 0 ? '+' : ''
         changeEl.textContent = `${sign}$${diff.toFixed(2)} (${sign}${pct}%)`
-        changeEl.className = `market-stat-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
+        changeEl.className = `cd2-market-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
         changeRow.style.display = ''
       }
     }
   } catch {
     if (!alive()) return
     const v = panelEl.querySelector('[data-mv-value]')
-    if (v) v.textContent = 'N/A'
+    if (v) { v.textContent = 'N/A'; v.classList.add('cd2-market-muted') }
+  }
+}
+
+// ── Find a CardsightId via text search, then load pricing ─────────────────
+export async function findAndLoadMarketValue(cardId, panelEl) {
+  const c = state.ALL_CARDS.find(x => x.id === cardId)
+  if (!c) return
+  const player     = state.ALL_PLAYERS.find(p => p.id === c.Player)
+  const playerName = player ? (player.Player || player.id) : (c.Player || '')
+  const valEl = panelEl?.querySelector('[data-mv-value]')
+  if (valEl) { valEl.textContent = 'Searching…'; valEl.classList.add('cd2-market-muted') }
+
+  // Card number excluded — including it causes 0 results in CardSight text search.
+  // Year-first ordering matches CardSight's release indexing.
+  const seen = new Set()
+  const queries = [
+    [c.Year, playerName, c.Set          ],
+    [c.Year, playerName, c.Manufacturer ],
+    [c.Year, playerName                 ],
+    [playerName,         c.Manufacturer ],
+    [playerName,         c.Set          ],
+  ]
+    .map(parts => parts.filter(Boolean).join(' ').trim())
+    .filter(q => q && !seen.has(q) && seen.add(q))
+
+  try {
+    let cardsightId = null
+    for (const q of queries) {
+      const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
+      if (!error && data?.results?.length) { cardsightId = data.results[0].id; break }
+    }
+    if (!cardsightId) {
+      if (valEl && document.contains(valEl)) valEl.textContent = 'Not found'
+      return
+    }
+    await setDoc(doc(db, 'Cards', cardId), { CardsightId: cardsightId }, { merge: true })
+    if (panelEl && document.contains(panelEl)) _loadMarketValue(panelEl, { ...c, CardsightId: cardsightId })
+  } catch (e) {
+    console.error('[findAndLoadMarketValue]', e)
+    if (valEl && document.contains(valEl)) valEl.textContent = 'Error'
   }
 }
 
@@ -237,7 +383,7 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   panelEl.innerHTML = buildCardDetailHTML(card, ctx)
   panelEl.scrollTop = 0
 
-  // Toggle owned
+  // Toggle sleeved (owned)
   panelEl.querySelector(`[data-card-toggle]`)?.addEventListener('click', async () => {
     const c = state.ALL_CARDS.find(x => x.id === cardId)
     if (!c) return
@@ -250,6 +396,21 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     await setDoc(doc(db, 'Cards', cardId), updates, { merge: true })
   })
 
+  // Toggle favorite
+  panelEl.querySelector('[data-fav-toggle]')?.addEventListener('click', async () => {
+    const c = state.ALL_CARDS.find(x => x.id === cardId)
+    if (!c) return
+    await setDoc(doc(db, 'Cards', cardId), { Favorite: !isFavorite(c) }, { merge: true })
+  })
+
+  // Share
+  panelEl.querySelector('[data-share-btn]')?.addEventListener('click', () => {
+    const c = state.ALL_CARDS.find(x => x.id === cardId)
+    if (!c) return
+    const player = state.ALL_PLAYERS.find(p => p.id === c.Player)
+    _handleShare(c, player ? (player.Player || player.id) : (c.Player || ''))
+  })
+
   // Card details edit button
   panelEl.querySelector('[data-card-edit]')?.addEventListener('click', () => {
     openCardForm(cardId)
@@ -260,9 +421,22 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     window._openRowMenu?.(cardId, e.currentTarget)
   })
 
-  // PSA edit
+  // PSA edit / link
   panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
     window._openPSASheet?.(cardId)
+  })
+
+  // Notes add/edit
+  panelEl.querySelector('[data-notes-btn]')?.addEventListener('click', async () => {
+    const c = state.ALL_CARDS.find(x => x.id === cardId)
+    if (!c) return
+    const result = await promptNotes(c.Notes || '')
+    if (result !== null) await setDoc(doc(db, 'Cards', cardId), { Notes: result }, { merge: true })
+  })
+
+  // Remove from Collection (delete)
+  panelEl.querySelector('[data-manage-delete]')?.addEventListener('click', () => {
+    window._confirmDeleteCard?.(cardId)
   })
 
   // Same-set card preview taps
@@ -270,10 +444,13 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     el.addEventListener('click', () => handleCardTap(el.dataset.setCardId, ctx, true))
   })
 
-  // Market value refresh button
+  // Market value: check (no CardsightId yet) / refresh (already synced)
+  panelEl.querySelector('[data-mv-check]')?.addEventListener('click', () => {
+    findAndLoadMarketValue(cardId, panelEl)
+  })
   panelEl.querySelector('[data-mv-refresh]')?.addEventListener('click', () => {
     const valEl = panelEl.querySelector('[data-mv-value]')
-    if (valEl) valEl.textContent = 'Fetching…'
+    if (valEl) { valEl.textContent = 'Fetching…'; valEl.classList.add('cd2-market-muted') }
     const changeRow = panelEl.querySelector('[data-mv-change-row]')
     if (changeRow) changeRow.style.display = 'none'
     _loadMarketValue(panelEl, card)
@@ -282,19 +459,17 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   // Kick off pricing fetch if card has a CardsightId
   _loadMarketValue(panelEl, card)
 
-  // Main PSA images (front + back) — click to enlarge
-  const mainPSAImgs = [...panelEl.querySelectorAll('.cd-psa-main-img')]
+  // Hero image(s) — click to enlarge, consistent with graded front/back
+  const singleImg = panelEl.querySelector('.cd2-single-img')
+  if (singleImg) {
+    const openSingle = () => window._openLightbox?.([singleImg.src], 0)
+    singleImg.addEventListener('click', openSingle)
+    panelEl.querySelector('[data-zoom-single]')?.addEventListener('click', openSingle)
+  }
+  const mainPSAImgs = [...panelEl.querySelectorAll('.cd2-psa-main-img')]
   mainPSAImgs.forEach((img, i) => {
     img.addEventListener('click', () => {
       window._openLightbox?.(mainPSAImgs.map(im => im.src), i)
-    })
-  })
-
-  // Legacy PSA cert thumbnails in the PSA section
-  const certImgs = [...panelEl.querySelectorAll('.psa-cert-img')]
-  certImgs.forEach((img, i) => {
-    img.addEventListener('click', () => {
-      window._openLightbox?.(certImgs.map(im => im.src), i)
     })
   })
 }
