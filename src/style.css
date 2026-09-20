@@ -961,8 +961,10 @@ html, body {
 .badge-picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .badge-pick-btn { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 20px; border: 2px solid var(--md-outline); background: transparent; cursor: pointer; transition: border-color 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; }
 .badge-pick-btn .material-symbols-outlined { font-size: 28px; color: var(--md-on-surface-variant); transition: color 0.15s; }
+.badge-pick-btn .badge-pick-text { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; color: var(--md-on-surface-variant); transition: color 0.15s; }
 .badge-pick-btn.badge-pick-active { border-color: transparent; }
-.badge-pick-btn.badge-pick-active .material-symbols-outlined { color: #fff; }
+.badge-pick-btn.badge-pick-active .material-symbols-outlined,
+.badge-pick-btn.badge-pick-active .badge-pick-text { color: #fff; }
 .badge-pick-btn[data-badge="Owned"].badge-pick-active    { background: var(--md-accent); }
 .badge-pick-btn[data-badge="Favorite"].badge-pick-active { background: #C9A227; }
 .badge-pick-btn[data-badge="RC"].badge-pick-active        { background: #E8192C; }

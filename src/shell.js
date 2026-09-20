@@ -393,16 +393,16 @@ function appShellHTML() {
         <span class="material-symbols-outlined">star</span>
       </button>
       <button class="badge-pick-btn" data-badge="RC" aria-label="Rookie">
-        <span class="material-symbols-outlined">new_releases</span>
+        <span class="badge-pick-text">RC</span>
       </button>
       <button class="badge-pick-btn" data-badge="Auto" aria-label="Autograph">
-        <span class="material-symbols-outlined">draw</span>
+        <span class="badge-pick-text">AUTO</span>
       </button>
       <button class="badge-pick-btn" data-badge="Mem" aria-label="Memorabilia">
-        <span class="material-symbols-outlined">checkroom</span>
+        <span class="badge-pick-text">MEM</span>
       </button>
       <button class="badge-pick-btn" data-badge="Numbered" aria-label="Numbered">
-        <span class="material-symbols-outlined">tag</span>
+        <span class="badge-pick-text">#'d</span>
       </button>
     </div>
   </div>
