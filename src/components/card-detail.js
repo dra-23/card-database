@@ -227,8 +227,8 @@ export function buildCardDetailHTML(card, ctx) {
 
     <div class="cd2-quick-actions">
       <div class="cd2-qa-item">
-        <button type="button" class="cd2-qa-btn cd2-qa-sleeve ${owned ? 'active' : ''}" data-card-toggle="${escapeAttr(card.id)}" aria-pressed="${owned}" aria-label="Sleeved">${ICON_CHECK}</button>
-        <span class="cd2-qa-label">Sleeved</span>
+        <button type="button" class="cd2-qa-btn cd2-qa-sleeve ${owned ? 'active' : ''}" data-card-toggle="${escapeAttr(card.id)}" aria-pressed="${owned}" aria-label="Sleevd">${ICON_CHECK}</button>
+        <span class="cd2-qa-label">Sleevd</span>
       </div>
       <div class="cd2-qa-item">
         <button type="button" class="cd2-qa-btn cd2-qa-fav ${fav ? 'active' : ''}" data-fav-toggle="${escapeAttr(card.id)}" aria-pressed="${fav}" aria-label="Favorite">${ICON_STAR}</button>

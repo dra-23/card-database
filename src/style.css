@@ -625,7 +625,7 @@ html, body {
 .cd2-qa-label { font-size: 12px; color: var(--md-on-surface-variant); }
 .cd2-qa-sleeve, .cd2-qa-fav, .cd2-qa-share, .cd2-qa-more { background: var(--md-surface-2); color: var(--md-on-surface-variant); }
 .cd2-qa-more:active { opacity: 0.7; }
-.cd2-qa-sleeve.active { background: color-mix(in srgb, var(--md-accent) 16%, transparent); border-color: var(--md-accent); color: var(--md-accent); }
+.cd2-qa-sleeve.active { background: var(--md-accent); border-color: var(--md-accent); color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, var(--md-accent) 45%, transparent); }
 .cd2-qa-fav.active { background: rgba(201,162,39,0.16); border-color: #C9A227; color: #E7C766; }
 
 .cd2-section { display: flex; flex-direction: column; gap: 10px; }
