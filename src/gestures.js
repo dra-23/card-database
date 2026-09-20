@@ -323,6 +323,7 @@ export function initDetailCompactBar() {
 
   function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)' }
   function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)' }
+  function isHidden() { return bar.style.transform === 'translateY(-100%)' }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -335,12 +336,25 @@ export function initDetailCompactBar() {
       if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
       else if (dy > HIDE_DELTA)                  hide()
 
-      // Read the bar's actual current transform rather than a cached flag —
-      // openDetail() resets it directly (bypassing show()/hide()) whenever a
-      // new player opens, and a cached flag would go stale across that reset.
-      _updateStuckYearHeaders('#detailScrollBody .year-group-header', STICK_OFFSET, bar.style.transform === 'translateY(-100%)')
+      // The inline transform string reflects the bar's *target* state the
+      // instant hide()/show() sets it, so this is correct immediately —
+      // unlike getBoundingClientRect(), which mid-transition still reports
+      // the bar close to its start position (elapsed time ~0 right after
+      // the property changes), not where it's animating to.
+      _updateStuckYearHeaders('#detailScrollBody .year-group-header', STICK_OFFSET, isHidden())
     })
   }, { passive: true })
+
+  // Safety net for the case a scroll gesture stops the instant hide() fires:
+  // no further scroll event arrives to re-check once the bar's own 300ms
+  // transition actually finishes, so a header could theoretically be judged
+  // against a not-yet-settled state. transitionend fires regardless of
+  // subsequent scroll activity, giving one guaranteed final, authoritative
+  // re-check — geometry is trustworthy here since the animation is truly over.
+  bar.addEventListener('transitionend', (e) => {
+    if (e.propertyName !== 'transform') return
+    _updateStuckYearHeaders('#detailScrollBody .year-group-header', STICK_OFFSET, bar.getBoundingClientRect().bottom <= 1)
+  })
 }
 
 // ── Collection / Graded header auto-hide ────────────────────────────────────
@@ -362,6 +376,7 @@ export function initAutoHideHeader(bodyId, wrapId, yearHeaderSelector, stickOffs
 
   function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)' }
   function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)' }
+  function isHidden() { return bar.style.transform === 'translateY(-100%)' }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -378,9 +393,21 @@ export function initAutoHideHeader(bodyId, wrapId, yearHeaderSelector, stickOffs
       if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
       else if (dy > HIDE_DELTA)                  hide()
 
-      if (yearHeaderSelector) _updateStuckYearHeaders(yearHeaderSelector, stickOffset, bar.style.transform === 'translateY(-100%)')
+      // The inline transform string reflects the bar's target state
+      // instantly — see the matching comment in initDetailCompactBar.
+      if (yearHeaderSelector) _updateStuckYearHeaders(yearHeaderSelector, stickOffset, isHidden())
     })
   }, { passive: true })
+
+  // Safety net: guarantees one final, authoritative re-check once the bar's
+  // own transition genuinely completes, even if no further scroll event
+  // fires to trigger it — see the matching comment in initDetailCompactBar.
+  if (yearHeaderSelector) {
+    bar.addEventListener('transitionend', (e) => {
+      if (e.propertyName !== 'transform') return
+      _updateStuckYearHeaders(yearHeaderSelector, stickOffset, bar.getBoundingClientRect().bottom <= 1)
+    })
+  }
 }
 
 // ── Floating toolbar auto-hide on scroll ───────────────────────────────────
