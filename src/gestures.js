@@ -282,89 +282,41 @@ export function initDetailHeroCollapse() {
 }
 
 // ── Player detail compact bar (back + name + search) ────────────────────────
-// Same technique and feel as the floating nav toolbar (initNavBarAutoHide
-// below): hides on scroll-down, reveals immediately on scroll-up from
-// anywhere in the list — independent of the hero banner above, which only
-// ever shows at the very top.
-// Only the year-group-header currently pinned at its sticky boundary needs
-// the hidden-bar compensation transform (.yh-compensate) — any other header
-// still sitting in normal document flow further down the page must never
-// get it, or it visually jumps out of its own layout position and leaves a
-// gap before its own card list. A blanket ancestor-class selector (the
-// previous approach) applied the offset to every header on the page, stuck
-// or not, since CSS alone can't tell which one is actually docked.
-function _updateStuckYearHeaders(selector, stickOffset, hidden) {
-  document.querySelectorAll(selector).forEach(h => {
-    // A genuinely pinned header renders between 0 (already compensated) and
-    // stickOffset (not yet compensated) — never negative. Without the lower
-    // bound, a header long since scrolled past and pushed out by a later
-    // one (native sticky handoff) would also match "top <= stickOffset"
-    // (its top is deeply negative), and get the class for no reason.
-    const top = h.getBoundingClientRect().top
-    const stuck = top >= -1 && top <= stickOffset + 1
-    const shouldCompensate = hidden && stuck
-    if (shouldCompensate === h.classList.contains('yh-compensate')) return
-
-    // Instant, not the header's own CSS transition (used for its normal
-    // scroll-driven hide/show elsewhere) — with short adjacent year groups,
-    // a fast scroll can hand "stuck" duty from one header to the next several
-    // times a second, and animating each handoff over 300ms means the CSS
-    // transition can't keep up: it lags behind, overlapping the next header's
-    // own content mid-flight. There's nothing to visually sync with here
-    // (unlike the compact bar's own hide/show, which this same value also
-    // reacts to, but which the bar's higher z-index already occludes for the
-    // 300ms it takes to slide away, so an instant snap underneath it is
-    // never actually seen).
-    h.style.transition = 'none'
-    h.classList.toggle('yh-compensate', shouldCompensate)
-  })
-}
-
-// Keeps a header's .yh-compensate state in sync with the bar's *actual*
-// rendered position for a short window after scroll activity, instead of
-// checking once at a moment whose timing is hard to guarantee. A single
-// discrete check — even one timed off the scroll event or off the bar's own
-// transitionend — can still land at a moment that doesn't reflect where the
-// bar ends up: transitionend is not reliably delivered on every engine, and
-// a check made the instant hide()/show() runs sees the bar's pre-transition
-// position (elapsed time ~0), not its target. Polling live geometry every
-// frame for a window comfortably past the bar's 300ms transition sidesteps
-// both failure modes — whatever the true settled state turns out to be,
-// one of the polled frames will observe it and correct the header.
-function _startSettleLoop(state, sync) {
-  const SETTLE_MS = 450
-  state.settleUntil = performance.now() + SETTLE_MS
-  if (state.looping) return
-  state.looping = true
-  const tick = () => {
-    sync()
-    if (performance.now() < state.settleUntil) {
-      requestAnimationFrame(tick)
-    } else {
-      state.looping = false
-    }
-  }
-  requestAnimationFrame(tick)
-}
-
+// Hides on scroll-down, reveals immediately on scroll-up from anywhere in
+// the list — same technique and feel as the floating nav toolbar
+// (initNavBarAutoHide below), independent of the hero banner above, which
+// only ever shows at the very top.
+//
+// The bar's hide/show and the year-group-headers' compensation are both
+// driven by a single 'bar-hidden' class on the scroll body — see style.css.
+// This used to be a JS-driven transform on the bar (which visually hides it
+// but leaves its layout space in place) plus a separate step to detect that
+// and manually shift whichever header was currently pinned. That detection
+// had no reliable moment to run at: a check made the instant the bar's
+// transform changes sees its pre-transition position, transitionend isn't
+// reliably delivered on every mobile engine, and even polling every frame
+// for a few hundred ms after scroll activity (the last iteration of this)
+// still missed real devices where the check's paint-based read of the bar's
+// position raced its own compositor thread.
+//
+// Collapsing the bar's actual max-height instead sidesteps the whole class
+// of races: the year-group-headers' `top` is a genuinely native CSS
+// property, so position:sticky recomputes each header's clamped offset
+// itself, in lockstep with the bar's own transition, on every layout pass —
+// there's no JS-observed "is it done yet" moment to get wrong. And because
+// sticky's `top` only affects an element once it's actually clamped, toggling
+// it via one ancestor-class selector is safe — a header still in normal flow
+// further down the page is simply unaffected, unlike the old transform
+// approach, which shifted every matching header unconditionally and needed
+// per-element JS targeting to avoid corrupting ones that weren't stuck yet.
 export function initDetailCompactBar() {
   const el  = document.getElementById('detailScrollBody')
   const bar = document.getElementById('detailCompactHeader')
   if (!el || !bar) return
 
   const MIN_SCROLL = 40, HIDE_DELTA = 8
-  const STICK_OFFSET = 62 // matches .year-group-header's CSS `top` below
-  const TRANSITION = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)'
-
   let lastTop = el.scrollTop
   let ticking = false
-  const settle = { settleUntil: 0, looping: false }
-
-  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)' }
-  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)' }
-  function sync() {
-    _updateStuckYearHeaders('#detailScrollBody .year-group-header', STICK_OFFSET, bar.getBoundingClientRect().bottom <= 1)
-  }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -379,54 +331,41 @@ export function initDetailCompactBar() {
       const dy  = top - lastTop
       lastTop   = top
 
-      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
-      else if (dy > HIDE_DELTA)                  hide()
-
-      _startSettleLoop(settle, sync)
+      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) el.classList.remove('bar-hidden')
+      else if (dy > HIDE_DELTA)                  el.classList.add('bar-hidden')
     })
   }, { passive: true })
 }
 
 // ── Collection / Graded header auto-hide ────────────────────────────────────
-// Same technique as the player-detail compact bar / floating nav toolbar:
-// hides on scroll-down, reveals immediately on scroll-up from anywhere.
-// wrapId must already be `position: sticky` (see style.css). If given, the
-// year-group-header at yearHeaderSelector gets a matching stickOffset-based
-// compensation (via _updateStuckYearHeaders) while this header is hidden.
-export function initAutoHideHeader(bodyId, wrapId, yearHeaderSelector, stickOffset) {
+// Same technique as the player-detail compact bar above: hides on
+// scroll-down, reveals immediately on scroll-up from anywhere, via a single
+// 'bar-hidden' class on the scroll body that both collapses the bar's own
+// max-height and shifts the year-group-headers' native sticky `top` — see
+// style.css and the comment on initDetailCompactBar above.
+export function initAutoHideHeader(bodyId, wrapId) {
   const el  = document.getElementById(bodyId)
   const bar = document.getElementById(wrapId)
   if (!el || !bar) return
 
   const MIN_SCROLL = 40, HIDE_DELTA = 8
-  const TRANSITION = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)'
-
   let lastTop = el.scrollTop
   let ticking = false
-  const settle = { settleUntil: 0, looping: false }
-
-  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)' }
-  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)' }
-  function sync() {
-    if (yearHeaderSelector) _updateStuckYearHeaders(yearHeaderSelector, stickOffset, bar.getBoundingClientRect().bottom <= 1)
-  }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
     requestAnimationFrame(() => {
       ticking = false
       // Wide layout: header isn't sticky (its content is relocated into the
-      // global top bar instead — see style.css), so don't slide it via
-      // transform, that would just visually detach a normal static element.
+      // global top bar instead — see style.css), so don't collapse it, that
+      // would just visually detach a normal static element.
       if (isWideLayout()) return
       const top = el.scrollTop
       const dy  = top - lastTop
       lastTop   = top
 
-      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
-      else if (dy > HIDE_DELTA)                  hide()
-
-      if (yearHeaderSelector) _startSettleLoop(settle, sync)
+      if (top <= MIN_SCROLL || dy < -HIDE_DELTA) el.classList.remove('bar-hidden')
+      else if (dy > HIDE_DELTA)                  el.classList.add('bar-hidden')
     })
   }, { passive: true })
 }

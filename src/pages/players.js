@@ -84,11 +84,9 @@ export function openDetail(id) {
   // scrollTop was left over from a previous player and can hide either one
   // immediately.
   const detailScrollBody = document.getElementById('detailScrollBody')
-  if (detailScrollBody) detailScrollBody.scrollTop = 0
+  if (detailScrollBody) { detailScrollBody.scrollTop = 0; detailScrollBody.classList.remove('bar-hidden') }
   const heroDecorative = document.getElementById('detailHeroDecorative')
   if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
-  const compactBar = document.getElementById('detailCompactHeader')
-  if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
@@ -127,8 +125,7 @@ export function closeDetail() {
   dv.classList.add('tp-no-player')
   const heroDecorative = document.getElementById('detailHeroDecorative')
   if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
-  const compactBar = document.getElementById('detailCompactHeader')
-  if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
+  document.getElementById('detailScrollBody')?.classList.remove('bar-hidden')
   state.setSelectedPlayer(null)
   // Restore top bar to total count
   const topBarStats = document.getElementById('topBarStats')

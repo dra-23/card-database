@@ -256,17 +256,35 @@ html, body {
    right below the hero at rest via the margin-top spacer (sized to the
    hero's real height, --hero-h, measured live via ResizeObserver since the
    name/pill row can wrap to more lines), then pinned at top:0 once scrolled
-   past it. A separate JS-driven transform layers toolbar-style show/hide on
-   top of that — auto-hides on scroll-down, reveals on scroll-up from
-   anywhere — identical technique and feel to the floating nav toolbar
-   (initNavBarAutoHide). */
+   past it. Auto-hides on scroll-down, reveals on scroll-up from anywhere —
+   identical feel to the floating nav toolbar (initNavBarAutoHide) — via
+   #detailScrollBody's 'bar-hidden' class, which this rule and the
+   .year-group-header rule below both react to independently. Deliberately
+   a transform, not a height/max-height collapse: this element stays
+   sticky and keeps occupying its normal 62px of document flow even while
+   hidden, so hiding it can never change the list's total scrollable
+   height. A max-height collapse was tried first and caused exactly that —
+   shrinking the bar shifted what content sat at the current scrollTop,
+   which on some engines is itself enough to fire another native 'scroll'
+   event, which the handler below reads and reacts to, toggling the class
+   back, shrinking it back, shifting content again — a feedback loop
+   toggling every animation frame, indefinitely, confirmed via
+   MutationObserver during testing. Transform sidesteps this entirely: it's
+   purely a paint/compositing change, invisible to layout and to scrollTop.
+   The year-group-header's `top` doesn't need the bar's layout space
+   reclaimed either — position:sticky clamps purely against the scroll
+   container's own top edge, not against what else occupies that space, so
+   the header can dock at top:0 (the same coordinate the hidden bar is
+   still natively sticky at) and simply become visible there once the bar
+   has transformed out of the way. */
 #detailCompactHeader {
   position: sticky; top: 0; z-index: 20;
   margin-top: var(--hero-h, 232px);
   background: var(--md-surface-1);
   transform: translateY(0);
-  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1);
 }
+#detailScrollBody.bar-hidden #detailCompactHeader { transform: translateY(-100%); }
 @media (min-width: 768px) {
   #detailCompactHeader { position: static; margin-top: 0 !important; display: none; }
   /* The search row itself (including this back button) relocates into the
@@ -279,45 +297,42 @@ html, body {
 #detailEditBtn { display: none; }
 @media (min-width: 768px) { #detailEditBtn { display: flex; } }
 
-/* .yh-compensate is toggled per-element by JS (initDetailCompactBar), only
-   on whichever header is actually pinned at the sticky boundary right now —
-   never by a blanket ancestor selector, which would also catch headers
-   still sitting in normal flow further down the page and shift them out of
-   their own layout position, leaving a gap before their own card list.
-   Mobile only: on wide layout #detailCompactHeader is display:none (its
+/* Mobile only: on wide layout #detailCompactHeader is display:none (its
    content relocates into the global top bar instead), so there's no 62px
    sticky sibling above the header to dock below — the base .year-group-header
-   rule's top:0 is already correct there, and offsetting by 62px anyway would
-   leave a permanent gap where the previous group's last row peeks through. */
+   rule's top:0 is already correct there. */
 @media (max-width: 767px) {
   #detailScrollBody .year-group-header { top: 62px; }
-  #detailScrollBody .year-group-header.yh-compensate { transform: translateY(-62px); }
+  #detailScrollBody.bar-hidden .year-group-header { top: 0; }
 }
 
 /* Collection / Graded headers: same technique as the player-detail compact
    bar above — native position:sticky for correct positioning (they're the
-   first child of their scroll list), plus a JS-driven transform layered on
-   top for toolbar-style auto-hide (initAutoHideHeader). */
+   first child of their scroll list), auto-hide via a transform (not a
+   height collapse — see the comment on #detailCompactHeader above for why)
+   driven by the scroll body's 'bar-hidden' class (see initAutoHideHeader in
+   gestures.js). */
 #collectionHeaderWrap, #gradedHeaderWrap { background: var(--md-surface-1); }
 @media (max-width: 767px) {
+  /* 56px .top-bar + 62px .search-filter-row = 118px. */
   #collectionHeaderWrap, #gradedHeaderWrap {
     position: sticky; top: 0; z-index: 20;
     transform: translateY(0);
-    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1);
   }
+  #collectionScrollBody.bar-hidden #collectionHeaderWrap,
+  #gradedScrollBody.bar-hidden #gradedHeaderWrap { transform: translateY(-100%); }
 }
-/* Header height: 56px .top-bar + 62px .search-filter-row = 118px. Their
-   year-group-headers dock below it while shown, and reclaim top:0 while
-   it's hidden via .yh-compensate — same per-element approach as the player
-   detail compact bar above (see _updateStuckYearHeaders in gestures.js).
-   Mobile only: on wide layout the header's own content is relocated into
-   the global top bar (see _syncTopBarSearch), collapsing this wrapper to
-   ~0 height, so the offset would otherwise leave a phantom gap. */
+/* Their year-group-headers dock below the bar (top:118px) while it's shown,
+   and reclaim top:0 once 'bar-hidden' collapses it. Mobile only: on wide
+   layout the header's own content is relocated into the global top bar (see
+   _syncTopBarSearch), collapsing this wrapper to ~0 height, so the offset
+   would otherwise leave a phantom gap. */
 @media (max-width: 767px) {
   #collectionList .year-group-header { top: 118px; }
-  #collectionList .year-group-header.yh-compensate { transform: translateY(-118px); }
   #gradedList .year-group-header { top: 118px; }
-  #gradedList .year-group-header.yh-compensate { transform: translateY(-118px); }
+  #collectionScrollBody.bar-hidden #collectionList .year-group-header { top: 0; }
+  #gradedScrollBody.bar-hidden #gradedList .year-group-header { top: 0; }
 }
 
 /* ================================================================
@@ -471,7 +486,7 @@ html, body {
    YEAR GROUP HEADERS
    ================================================================ */
 #playerDetailPill { display: block; }
-.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; transform: translateY(0); will-change: transform; transition: transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1); }
+.year-group-header { padding: 0 16px; height: var(--coll-h1); font-family: 'Google Sans Display'; font-size: 22px; font-weight: 700; color: var(--md-on-surface); position: sticky; top: 0; background: var(--md-surface); z-index: 10; border-bottom: 1px solid var(--md-surface-2); display: flex; align-items: center; justify-content: space-between; overflow: hidden; transition: top 0.3s cubic-bezier(0.05, 0.7, 0.1, 1); }
 .year-group-key { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
 .year-group-header .year-count { font-size: 16px; font-weight: 700; opacity: 0.5; font-family: 'Google Sans'; flex-shrink: 0; }
 .year-sub-header { position: sticky; top: var(--coll-h1); background: var(--md-surface); z-index: 9; padding: 5px 16px; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-on-surface-variant); border-bottom: 1px solid var(--md-surface-2); }
