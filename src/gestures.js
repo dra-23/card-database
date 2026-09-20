@@ -291,7 +291,21 @@ function _updateStuckYearHeaders(selector, stickOffset, hidden) {
     // (its top is deeply negative), and get the class for no reason.
     const top = h.getBoundingClientRect().top
     const stuck = top >= -1 && top <= stickOffset + 1
-    h.classList.toggle('yh-compensate', hidden && stuck)
+    const shouldCompensate = hidden && stuck
+    if (shouldCompensate === h.classList.contains('yh-compensate')) return
+
+    // Instant, not the header's own CSS transition (used for its normal
+    // scroll-driven hide/show elsewhere) — with short adjacent year groups,
+    // a fast scroll can hand "stuck" duty from one header to the next several
+    // times a second, and animating each handoff over 300ms means the CSS
+    // transition can't keep up: it lags behind, overlapping the next header's
+    // own content mid-flight. There's nothing to visually sync with here
+    // (unlike the compact bar's own hide/show, which this same value also
+    // reacts to, but which the bar's higher z-index already occludes for the
+    // 300ms it takes to slide away, so an instant snap underneath it is
+    // never actually seen).
+    h.style.transition = 'none'
+    h.classList.toggle('yh-compensate', shouldCompensate)
   })
 }
 
