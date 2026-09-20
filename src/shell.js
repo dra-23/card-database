@@ -28,8 +28,10 @@ function appShellHTML() {
 
   <!-- GLOBAL TOP BAR (spans full width on desktop) -->
   <div id="top-bar-global">
-    <img src="/logo.png" style="width:40px; height:40px; border-radius:12px; flex-shrink:0;" onerror="this.style.display='none'">
-    <span id="topBarTitle" class="brand" style="font-size:20px; margin-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+    <div id="topBarLogoWrap">
+      <img src="/logo.png" style="width:40px; height:40px; border-radius:12px;" onerror="this.style.display='none'">
+    </div>
+    <span id="topBarTitle" class="brand" style="font-size:20px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
     <div id="topBarSearchSlot"></div>
     <div id="topBarStats" style="display:none; align-items:center; margin-right:8px;">
       <div class="player-stat-pill">

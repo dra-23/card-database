@@ -129,11 +129,6 @@ export function _commitPageSwitch(page, idx) {
       if (!slot) return
       slot.style.display = (i === idx) ? '' : 'none'
     })
-    const topBarTitle = document.getElementById('topBarTitle')
-    if (topBarTitle) {
-      const titles = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Profile' }
-      topBarTitle.textContent = titles[page] || 'Players'
-    }
   } else {
     const track = document.getElementById('page-track')
     if (!track) return

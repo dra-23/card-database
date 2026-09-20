@@ -85,9 +85,11 @@ function startApp() {
     if (page === 'collection') renderCollectionView({ preserveScroll: true })
     if (page === 'graded')     renderGradedView()
     if (page === 'stats')      renderStats()
-    const titleMap = { players: 'Players', collection: 'Collection', graded: 'Graded', stats: 'Profile' }
+    // The nav rail already names the current page, so topBarTitle is left
+    // blank here — it's only ever used to show the selected player's name
+    // (set directly in players.js openDetail/closeDetail).
     const tb = document.getElementById('topBarTitle')
-    if (tb && !(page === 'players' && state.selectedPlayer)) tb.textContent = titleMap[page] || page
+    if (tb && !(page === 'players' && state.selectedPlayer)) tb.textContent = ''
     _syncTopBarSearch(page)
     // Always reveal the floating toolbar on a fresh page — it should never
     // land hidden from a previous page's scroll position
@@ -287,10 +289,6 @@ function startApp() {
   window._openPSASheet       = openPSASheet
   window.closeDetail         = closeDetail
   window._afterPlayerDetail  = () => _syncTopBarSearch(state.currentPage)
-
-  // Initial title
-  const _tb = document.getElementById('topBarTitle')
-  if (_tb) _tb.textContent = 'Players'
 }
 
 // ── Top-bar search sync (desktop only) ────────────────────────────────────

@@ -133,11 +133,12 @@ export function closeDetail() {
   const compactBar = document.getElementById('detailCompactHeader')
   if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
   state.setSelectedPlayer(null)
-  // Restore top bar to page title + total count
+  // Restore top bar to total count — the nav rail already names the page,
+  // so topBarTitle just goes back to blank rather than showing "Players".
   const topBarTitle = document.getElementById('topBarTitle')
   const topBarStats = document.getElementById('topBarStats')
   const totalPill   = document.getElementById('totalOwnedCounterGlobal')
-  if (topBarTitle) topBarTitle.textContent = 'Players'
+  if (topBarTitle) topBarTitle.textContent = ''
   if (topBarStats) topBarStats.style.display = 'none'
   if (totalPill) totalPill.style.display = ''
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))
