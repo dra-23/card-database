@@ -272,13 +272,13 @@ html, body {
 .detail-search-back-btn:active { background: var(--md-surface-1); }
 #detailCompactHeader #detailSearchRow { position: static; background: var(--md-surface-1); }
 
-/* Docks below the compact bar while it's shown, and reclaims that space
-   (top:0) while it's hidden — .compact-bar-hidden is toggled on .view in
-   lockstep with the bar's own show()/hide() (same transition duration and
-   easing on both), so the two always move together. The bar is just the
-   search row now (constant height), so this offset never has to change. */
+/* .yh-compensate is toggled per-element by JS (initDetailCompactBar), only
+   on whichever header is actually pinned at the sticky boundary right now —
+   never by a blanket ancestor selector, which would also catch headers
+   still sitting in normal flow further down the page and shift them out of
+   their own layout position, leaving a gap before their own card list. */
 #detailScrollBody .year-group-header { top: 62px; }
-.view.compact-bar-hidden #detailScrollBody .year-group-header { transform: translateY(-62px); }
+#detailScrollBody .year-group-header.yh-compensate { transform: translateY(-62px); }
 
 /* Collection / Graded headers: same technique as the player-detail compact
    bar above — native position:sticky for correct positioning (they're the
@@ -294,15 +294,16 @@ html, body {
 }
 /* Header height: 56px .top-bar + 62px .search-filter-row = 118px. Their
    year-group-headers dock below it while shown, and reclaim top:0 while
-   it's hidden — same .<id>-hidden-on-.view trick as the compact bar.
+   it's hidden via .yh-compensate — same per-element approach as the player
+   detail compact bar above (see _updateStuckYearHeaders in gestures.js).
    Mobile only: on wide layout the header's own content is relocated into
    the global top bar (see _syncTopBarSearch), collapsing this wrapper to
    ~0 height, so the offset would otherwise leave a phantom gap. */
 @media (max-width: 767px) {
   #collectionList .year-group-header { top: 118px; }
-  .view.collectionHeaderWrap-hidden #collectionList .year-group-header { transform: translateY(-118px); }
+  #collectionList .year-group-header.yh-compensate { transform: translateY(-118px); }
   #gradedList .year-group-header { top: 118px; }
-  .view.gradedHeaderWrap-hidden #gradedList .year-group-header { transform: translateY(-118px); }
+  #gradedList .year-group-header.yh-compensate { transform: translateY(-118px); }
 }
 
 /* ================================================================

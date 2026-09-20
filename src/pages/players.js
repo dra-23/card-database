@@ -92,7 +92,6 @@ export function openDetail(id) {
   if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
   const compactBar = document.getElementById('detailCompactHeader')
   if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
-  document.getElementById('detail-view')?.classList.remove('compact-bar-hidden')
 
   if (isWideLayout()) {
     state.setCurrentCardId(null)
@@ -133,7 +132,6 @@ export function closeDetail() {
   if (heroDecorative) { heroDecorative.style.transition = 'none'; heroDecorative.style.transform = 'translateY(0)' }
   const compactBar = document.getElementById('detailCompactHeader')
   if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
-  dv.classList.remove('compact-bar-hidden')
   state.setSelectedPlayer(null)
   // Restore top bar to page title + total count
   const topBarTitle = document.getElementById('topBarTitle')

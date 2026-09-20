@@ -275,25 +275,40 @@ export function initDetailHeroCollapse() {
 // below): hides on scroll-down, reveals immediately on scroll-up from
 // anywhere in the list — independent of the hero banner above, which only
 // ever shows at the very top.
+// Only the year-group-header currently pinned at its sticky boundary needs
+// the hidden-bar compensation transform (.yh-compensate) — any other header
+// still sitting in normal document flow further down the page must never
+// get it, or it visually jumps out of its own layout position and leaves a
+// gap before its own card list. A blanket ancestor-class selector (the
+// previous approach) applied the offset to every header on the page, stuck
+// or not, since CSS alone can't tell which one is actually docked.
+function _updateStuckYearHeaders(selector, stickOffset, hidden) {
+  document.querySelectorAll(selector).forEach(h => {
+    // A genuinely pinned header renders between 0 (already compensated) and
+    // stickOffset (not yet compensated) — never negative. Without the lower
+    // bound, a header long since scrolled past and pushed out by a later
+    // one (native sticky handoff) would also match "top <= stickOffset"
+    // (its top is deeply negative), and get the class for no reason.
+    const top = h.getBoundingClientRect().top
+    const stuck = top >= -1 && top <= stickOffset + 1
+    h.classList.toggle('yh-compensate', hidden && stuck)
+  })
+}
+
 export function initDetailCompactBar() {
-  const el   = document.getElementById('detailScrollBody')
-  const bar  = document.getElementById('detailCompactHeader')
-  const view = bar?.closest('.view')
+  const el  = document.getElementById('detailScrollBody')
+  const bar = document.getElementById('detailCompactHeader')
   if (!el || !bar) return
 
   const MIN_SCROLL = 40, HIDE_DELTA = 8
+  const STICK_OFFSET = 62 // matches .year-group-header's CSS `top` below
   const TRANSITION = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)'
 
-  // Toggled on the shared .view ancestor so the year-group-headers can dock
-  // at top:0 while the bar is hidden and top:114px while it's shown, in a
-  // CSS transition with matching duration/easing — same trick as pairing
-  // the bar's own show()/hide() below, so the two never drift out of sync.
-  view?.classList.remove('compact-bar-hidden')
   let lastTop = el.scrollTop
   let ticking = false
 
-  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)'; view?.classList.remove('compact-bar-hidden') }
-  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)'; view?.classList.add('compact-bar-hidden') }
+  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)' }
+  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)' }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -305,6 +320,11 @@ export function initDetailCompactBar() {
 
       if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
       else if (dy > HIDE_DELTA)                  hide()
+
+      // Read the bar's actual current transform rather than a cached flag —
+      // openDetail() resets it directly (bypassing show()/hide()) whenever a
+      // new player opens, and a cached flag would go stale across that reset.
+      _updateStuckYearHeaders('#detailScrollBody .year-group-header', STICK_OFFSET, bar.style.transform === 'translateY(-100%)')
     })
   }, { passive: true })
 }
@@ -312,26 +332,22 @@ export function initDetailCompactBar() {
 // ── Collection / Graded header auto-hide ────────────────────────────────────
 // Same technique as the player-detail compact bar / floating nav toolbar:
 // hides on scroll-down, reveals immediately on scroll-up from anywhere.
-// wrapId must already be `position: sticky` (see style.css) — this only
-// layers the show/hide transform and toggles `${wrapId}-hidden` on the
-// shared .view so the year-group-headers can dock below it or reclaim its
-// space, in lockstep (matching transition duration/easing on both).
-export function initAutoHideHeader(bodyId, wrapId) {
-  const el   = document.getElementById(bodyId)
-  const bar  = document.getElementById(wrapId)
-  const view = bar?.closest('.view')
+// wrapId must already be `position: sticky` (see style.css). If given, the
+// year-group-header at yearHeaderSelector gets a matching stickOffset-based
+// compensation (via _updateStuckYearHeaders) while this header is hidden.
+export function initAutoHideHeader(bodyId, wrapId, yearHeaderSelector, stickOffset) {
+  const el  = document.getElementById(bodyId)
+  const bar = document.getElementById(wrapId)
   if (!el || !bar) return
 
   const MIN_SCROLL = 40, HIDE_DELTA = 8
   const TRANSITION = 'transform 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)'
-  const hiddenClass = `${wrapId}-hidden`
 
-  view?.classList.remove(hiddenClass)
   let lastTop = el.scrollTop
   let ticking = false
 
-  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)'; view?.classList.remove(hiddenClass) }
-  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)'; view?.classList.add(hiddenClass) }
+  function show() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(0)' }
+  function hide() { bar.style.transition = TRANSITION; bar.style.transform = 'translateY(-100%)' }
 
   el.addEventListener('scroll', () => {
     if (ticking) return; ticking = true
@@ -347,6 +363,8 @@ export function initAutoHideHeader(bodyId, wrapId) {
 
       if (top <= MIN_SCROLL || dy < -HIDE_DELTA) show()
       else if (dy > HIDE_DELTA)                  hide()
+
+      if (yearHeaderSelector) _updateStuckYearHeaders(yearHeaderSelector, stickOffset, bar.style.transform === 'translateY(-100%)')
     })
   }, { passive: true })
 }

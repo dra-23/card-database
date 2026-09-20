@@ -126,8 +126,8 @@ function startApp() {
   initScrollHide()
   initDetailHeroCollapse()
   initDetailCompactBar()
-  initAutoHideHeader('collectionScrollBody', 'collectionHeaderWrap')
-  initAutoHideHeader('gradedScrollBody', 'gradedHeaderWrap')
+  initAutoHideHeader('collectionScrollBody', 'collectionHeaderWrap', '#collectionList .year-group-header', 118)
+  initAutoHideHeader('gradedScrollBody', 'gradedHeaderWrap', '#gradedList .year-group-header', 118)
   initNavBarAutoHide()
 
   // Card list delegation
