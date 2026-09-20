@@ -276,9 +276,16 @@ html, body {
    on whichever header is actually pinned at the sticky boundary right now —
    never by a blanket ancestor selector, which would also catch headers
    still sitting in normal flow further down the page and shift them out of
-   their own layout position, leaving a gap before their own card list. */
-#detailScrollBody .year-group-header { top: 62px; }
-#detailScrollBody .year-group-header.yh-compensate { transform: translateY(-62px); }
+   their own layout position, leaving a gap before their own card list.
+   Mobile only: on wide layout #detailCompactHeader is display:none (its
+   content relocates into the global top bar instead), so there's no 62px
+   sticky sibling above the header to dock below — the base .year-group-header
+   rule's top:0 is already correct there, and offsetting by 62px anyway would
+   leave a permanent gap where the previous group's last row peeks through. */
+@media (max-width: 767px) {
+  #detailScrollBody .year-group-header { top: 62px; }
+  #detailScrollBody .year-group-header.yh-compensate { transform: translateY(-62px); }
+}
 
 /* Collection / Graded headers: same technique as the player-detail compact
    bar above — native position:sticky for correct positioning (they're the

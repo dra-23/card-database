@@ -329,6 +329,11 @@ export function initDetailCompactBar() {
     if (ticking) return; ticking = true
     requestAnimationFrame(() => {
       ticking = false
+      // Wide layout: #detailCompactHeader is display:none (its content
+      // relocates into the global top bar instead — see style.css), so
+      // there's nothing to slide and no compensation offset for the year
+      // headers to apply (their CSS top:62px is itself mobile-only there).
+      if (isWideLayout()) return
       const top = el.scrollTop
       const dy  = top - lastTop
       lastTop   = top
