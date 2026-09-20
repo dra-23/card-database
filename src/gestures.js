@@ -207,24 +207,35 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
 }
 
 // ── Collapsible header scroll-hide (gallery / stats) ────────────────────────
+// Same direction-based show/hide rule as initAutoHideHeader (Collection,
+// Graded, player detail): collapses on scroll-down, reveals immediately on
+// any scroll-up from anywhere in the list. Previously this used absolute
+// scroll-position thresholds instead (collapse past 64px, only reveal back
+// within 24px of the top) — scrolling up from partway down the page never
+// brought the header back until you'd scrolled nearly all the way to the
+// top, making it feel far slower to reappear here than on every other page
+// even though the underlying CSS transition is identical everywhere.
 export function initScrollHide() {
   const pairs = [
     { bodyId: 'galleryScrollBody',    wrapId: 'galleryHeaderWrap'    },
     { bodyId: 'statsScrollBody',      wrapId: 'statsHeaderWrap'      },
   ]
-  const COLLAPSE_THRESHOLD = 64, REVEAL_THRESHOLD = 24
+  const MIN_SCROLL = 40, HIDE_DELTA = 8
   pairs.forEach(({ bodyId, wrapId }) => {
     const el   = document.getElementById(bodyId)
     const wrap = document.getElementById(wrapId)
     if (!el || !wrap) return
+    let lastTop = el.scrollTop
     let ticking = false
     el.addEventListener('scroll', () => {
       if (ticking) return; ticking = true
       requestAnimationFrame(() => {
-        const y = el.scrollTop
-        if (y <= REVEAL_THRESHOLD)       wrap.classList.remove('collapsed')
-        else if (y > COLLAPSE_THRESHOLD) wrap.classList.add('collapsed')
         ticking = false
+        const top = el.scrollTop
+        const dy  = top - lastTop
+        lastTop   = top
+        if (top <= MIN_SCROLL || dy < -HIDE_DELTA) wrap.classList.remove('collapsed')
+        else if (dy > HIDE_DELTA)                  wrap.classList.add('collapsed')
       })
     }, { passive: true })
   })
