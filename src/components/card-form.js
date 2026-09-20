@@ -111,11 +111,30 @@ function attachSuggest(inputId, listId, rawValues) {
   if (input.dataset.suggestReady) return
   input.dataset.suggestReady = '1'
 
+  let activeIndex = -1
+
+  function items() { return [...listEl.querySelectorAll('.field-suggest-item')] }
+
+  function setActive(i) {
+    const all = items()
+    if (!all.length) { activeIndex = -1; return }
+    activeIndex = (i + all.length) % all.length
+    all.forEach((el, idx) => el.classList.toggle('field-suggest-active', idx === activeIndex))
+    all[activeIndex].scrollIntoView({ block: 'nearest' })
+  }
+
+  function pick(item) {
+    input.value = item.textContent
+    listEl.style.display = 'none'
+    activeIndex = -1
+  }
+
   function show(q) {
     const opts = input._suggestOpts || []
     const filtered = q
       ? opts.filter(v => v.toLowerCase().includes(q.toLowerCase()))
       : opts
+    activeIndex = -1
     if (!filtered.length) { listEl.style.display = 'none'; return }
     listEl.innerHTML = filtered.slice(0, 30).map(v =>
       `<div class="field-suggest-item">${v}</div>`
@@ -124,8 +143,7 @@ function attachSuggest(inputId, listId, rawValues) {
     listEl.querySelectorAll('.field-suggest-item').forEach(item => {
       item.addEventListener('mousedown', e => {
         e.preventDefault()
-        input.value = item.textContent
-        listEl.style.display = 'none'
+        pick(item)
       })
     })
   }
@@ -133,6 +151,29 @@ function attachSuggest(inputId, listId, rawValues) {
   input.addEventListener('focus', () => show(input.value))
   input.addEventListener('input', () => show(input.value))
   input.addEventListener('blur',  () => setTimeout(() => { listEl.style.display = 'none' }, 150))
+
+  // Arrow keys move the highlight through whichever items are currently
+  // showing; Enter picks the highlighted one (or just closes the list if
+  // nothing's highlighted, so a plain Enter still submits/tabs normally).
+  input.addEventListener('keydown', e => {
+    if (listEl.style.display === 'none') return
+    const all = items()
+    if (!all.length) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActive(activeIndex + 1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActive(activeIndex - 1)
+    } else if (e.key === 'Enter') {
+      if (activeIndex < 0) return
+      e.preventDefault()
+      pick(all[activeIndex])
+    } else if (e.key === 'Escape') {
+      listEl.style.display = 'none'
+      activeIndex = -1
+    }
+  })
 }
 
 // ── Save card ──────────────────────────────────────────────────────────────

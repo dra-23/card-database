@@ -6,6 +6,7 @@ body.pwa { user-select: none; -webkit-user-select: none; }
 body.pwa .allow-select, body.pwa .allow-select * { user-select: text; -webkit-user-select: text; }
 
 :root {
+  color-scheme: light;
   --md-primary: #E8192C;
   --md-surface: #FFFFFF;
   --md-surface-1: #c2caf0;
@@ -27,6 +28,7 @@ body.pwa .allow-select, body.pwa .allow-select * { user-select: text; -webkit-us
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --md-surface: #1D1E2C;
   --md-surface-1: #13141E;
   --md-surface-2: #262840;
@@ -62,7 +64,7 @@ html, body {
 .field-suggest-wrap { position: relative; }
 .field-suggest-list { display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--md-surface); border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.14); z-index: 2100; max-height: 220px; overflow-y: auto; }
 .field-suggest-item { padding: 13px 16px; font-size: 16px; cursor: pointer; color: var(--md-on-surface); }
-.field-suggest-item:hover { background: var(--md-surface-2); }
+.field-suggest-item:hover, .field-suggest-item.field-suggest-active { background: var(--md-surface-2); }
 
 /* ================================================================
    CARD FORM v2 (label-above fields, pinned header/footer)
