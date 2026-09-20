@@ -148,7 +148,7 @@ html, body {
    NAVIGATION RAIL (tablet/desktop ≥768px)
    ================================================================ */
 #nav-rail {
-  display: none; flex-direction: column; width: 72px;
+  display: none; flex-direction: column; width: 96px;
   background: var(--md-surface-1);
   padding-top: 12px; padding-bottom: 12px; flex-shrink: 0; z-index: 50;
   align-items: center; gap: 4px; border-right: 1px solid rgba(0,0,0,0.07);
