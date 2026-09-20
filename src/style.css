@@ -181,8 +181,8 @@ html, body {
 /* Matches #nav-rail's width so the logo centers directly above the page
    icons below it, rather than sitting at an arbitrary left offset. */
 #topBarLogoWrap { width: 96px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-#topBarTitle { flex: 1; min-width: 0; }
-#top-bar-global.search-active #topBarTitle { flex: 0 0 auto; max-width: 220px; }
+#topBarSpacer { flex: 1; min-width: 0; }
+#top-bar-global.search-active #topBarSpacer { flex: 0 0 auto; }
 /* 16px left padding matches #page-container's own content inset (e.g.
    .year-group-header's padding) so the search box lines up with where the
    page's own content starts, not with the raw edge of #page-container. */
@@ -269,14 +269,15 @@ html, body {
 }
 @media (min-width: 768px) {
   #detailCompactHeader { position: static; margin-top: 0 !important; display: none; }
-  /* The search row itself relocates into the global top bar on wide layout
-     (see _syncTopBarSearch), but the wide hero already has its own back
-     button (#backBtnWide) — showing this one there too would duplicate it. */
-  #detailSearchBackBtn { display: none !important; }
+  /* The search row itself (including this back button) relocates into the
+     global top bar on wide layout — see _syncTopBarSearch. */
 }
 .detail-search-back-btn { width: 48px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .detail-search-back-btn:active { background: var(--md-surface-1); }
 #detailCompactHeader #detailSearchRow { position: static; background: var(--md-surface-1); }
+/* Wide layout only — mobile already has its own edit button on the banner. */
+#detailEditBtn { display: none; }
+@media (min-width: 768px) { #detailEditBtn { display: flex; } }
 
 /* .yh-compensate is toggled per-element by JS (initDetailCompactBar), only
    on whichever header is actually pinned at the sticky boundary right now —
@@ -546,11 +547,6 @@ html, body {
 }
 #floating-fab.visible { display: flex; }
 
-/* Fold (840–1279px): hide inline wide FABs, standalone FAB takes over */
-@media (min-width: 840px) and (max-width: 1279px) {
-  #addPlayerFab, #addCardCollFab { display: none !important; }
-}
-
 /* Stats icon in page top bars (mobile only) */
 .top-bar-icon-btn {
   width: 40px; height: 40px; border-radius: 20px; border: none; flex-shrink: 0;
@@ -797,10 +793,8 @@ html, body {
 }
 
 /* ================================================================
-   PLAYER DETAIL — WIDE HERO
+   PLAYER DETAIL — WIDE LAYOUT
    ================================================================ */
-#playerWideHero { display: none; padding: 14px 20px; border-bottom: 1px solid var(--md-surface-2); }
-#playerWideHeroName { font-family: 'Google Sans Display'; font-size: 26px; font-weight: 700; color: var(--md-on-surface); }
 .player-tile.tile-selected { box-shadow: 0 4px 8px rgba(0,0,0,0.18), 0 10px 28px rgba(0,0,0,0.14); }
 .player-grid.has-selection .player-tile:not(.tile-selected) { opacity: 0.4; filter: grayscale(0.3); transition: opacity 0.2s, filter 0.2s; }
 .player-grid.has-selection .player-tile.tile-selected { transition: opacity 0.2s; }
@@ -824,15 +818,6 @@ html, body {
   .player-tile.tile-selected .tile-edit-btn { display: flex; }
 }
 
-/* Fold (840–1279px): gallery hidden — show a compact edit-only bar */
-@media (min-width: 840px) and (max-width: 1279px) {
-  #playerWideHero { display: flex; align-items: center; justify-content: flex-end; padding: 6px 12px; }
-  #backBtnWide, #playerWideHeroName { display: none; }
-}
-
-/* Tablet (768–839px) + three-pane (1280px+): gallery visible — hide the bar entirely */
-@media (min-width: 768px) and (max-width: 839px) { #playerWideHero { display: none !important; } }
-@media (min-width: 1280px) { #playerWideHero { display: none !important; } }
 
 /* ================================================================
    PLAYER EDIT SHEET (dynamically created)

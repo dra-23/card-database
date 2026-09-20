@@ -53,25 +53,22 @@ export function openDetail(id) {
   document.getElementById('playerThumb').src         = getCleanImg(player['Main Image'])
   document.getElementById('cardSearchInput').placeholder = `Search ${player.Player || player.id} Cards...`
 
-  // Populate wide-layout hero and top-bar stats
+  // Populate top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
   const heroSleevd    = allPlayerCards.filter(c => isOwned(c)).length
   const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
   const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
-  const heroName = document.getElementById('playerWideHeroName')
-  if (heroName) heroName.textContent = player.Player || player.id
 
-  // Wire edit buttons (both mobile and desktop)
+  // Wire edit buttons (mobile banner + wide-layout top bar)
   const _onEdit = () => window._openPlayerEditMenu?.(player.id)
   document.getElementById('editPlayerBtn')?.removeEventListener('click', _onEdit)
-  document.getElementById('editPlayerBtnWide')?.removeEventListener('click', _onEdit)
+  document.getElementById('detailEditBtn')?.removeEventListener('click', _onEdit)
   document.getElementById('editPlayerBtn')?.addEventListener('click', _onEdit)
-  document.getElementById('editPlayerBtnWide')?.addEventListener('click', _onEdit)
-  // Top bar: show player name + stat pill, hide total count
-  const topBarTitle = document.getElementById('topBarTitle')
+  document.getElementById('detailEditBtn')?.addEventListener('click', _onEdit)
+  // Top bar: show stat pill, hide total count (search bar already names
+  // the selected player via its placeholder, so no separate title needed)
   const topBarStats = document.getElementById('topBarStats')
   const totalPill   = document.getElementById('totalOwnedCounterGlobal')
-  if (topBarTitle) topBarTitle.textContent = player.Player || player.id
   if (topBarStats) {
     document.getElementById('topBarSleevd').textContent  = heroSleevd
     document.getElementById('topBarUnsleevd').textContent = heroUnsleevd
@@ -133,12 +130,9 @@ export function closeDetail() {
   const compactBar = document.getElementById('detailCompactHeader')
   if (compactBar) { compactBar.style.transition = 'none'; compactBar.style.transform = 'translateY(0)' }
   state.setSelectedPlayer(null)
-  // Restore top bar to total count — the nav rail already names the page,
-  // so topBarTitle just goes back to blank rather than showing "Players".
-  const topBarTitle = document.getElementById('topBarTitle')
+  // Restore top bar to total count
   const topBarStats = document.getElementById('topBarStats')
   const totalPill   = document.getElementById('totalOwnedCounterGlobal')
-  if (topBarTitle) topBarTitle.textContent = ''
   if (topBarStats) topBarStats.style.display = 'none'
   if (totalPill) totalPill.style.display = ''
   document.querySelectorAll('.player-tile').forEach(t => t.classList.remove('tile-selected'))

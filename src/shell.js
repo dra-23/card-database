@@ -31,7 +31,11 @@ function appShellHTML() {
     <div id="topBarLogoWrap">
       <img src="/logo.png" style="width:40px; height:40px; border-radius:12px;" onerror="this.style.display='none'">
     </div>
-    <span id="topBarTitle" class="brand" style="font-size:20px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+    <!-- Pure layout spacer, never given text: fills the row when
+         #topBarSearchSlot is hidden so the stats pill / count pill stay
+         pinned to the right edge; collapses to 0 width via .search-active
+         once the search box takes over that job. -->
+    <div id="topBarSpacer"></div>
     <div id="topBarSearchSlot"></div>
     <div id="topBarStats" style="display:none; align-items:center; margin-right:8px;">
       <div class="player-stat-pill">
@@ -237,19 +241,6 @@ function appShellHTML() {
                scrolled all the way back to the top. -->
           <div id="detailHeroDecorative">
 
-            <!-- DESKTOP HERO (replaces banner + thumb on wide layout) -->
-            <div id="playerWideHero">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <button class="icon-btn" id="backBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </button>
-                <div id="playerWideHeroName" style="flex:1;"></div>
-                <button class="icon-btn" id="editPlayerBtnWide" style="width:36px; height:36px; border-radius:12px; background:var(--md-surface-2); flex-shrink:0;" aria-label="Edit player">
-                  <span class="material-symbols-outlined" style="font-size:20px;">edit</span>
-                </button>
-              </div>
-            </div>
-
             <!-- MOBILE BANNER (hidden on desktop) -->
             <div id="playerBannerSection" style="height:160px; position:relative; flex-shrink:0; background:var(--md-surface-1);">
               <img id="playerBanner" style="width:100%; height:100%; object-fit:cover;">
@@ -303,6 +294,9 @@ function appShellHTML() {
                     <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                   </button>
                 </div>
+                <button class="dd-btn" id="detailEditBtn" aria-label="Edit player">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
                 <div class="dd-wrap" id="detailFilterDdWrap">
                   <button class="dd-btn" id="detailFilterDdBtn">
                     <span class="material-symbols-outlined">tune</span>

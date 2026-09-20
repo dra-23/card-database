@@ -85,11 +85,6 @@ function startApp() {
     if (page === 'collection') renderCollectionView({ preserveScroll: true })
     if (page === 'graded')     renderGradedView()
     if (page === 'stats')      renderStats()
-    // The nav rail already names the current page, so topBarTitle is left
-    // blank here — it's only ever used to show the selected player's name
-    // (set directly in players.js openDetail/closeDetail).
-    const tb = document.getElementById('topBarTitle')
-    if (tb && !(page === 'players' && state.selectedPlayer)) tb.textContent = ''
     _syncTopBarSearch(page)
     // Always reveal the floating toolbar on a fresh page — it should never
     // land hidden from a previous page's scroll position
@@ -398,8 +393,7 @@ function wireNavButtons() {
   document.getElementById('addCardCollFab')?.addEventListener('click', () => openCardSearch('collection'))
   document.getElementById('addCardDetailFab')?.addEventListener('click', () => openCardSearch('player'))
 
-  // Back buttons in player detail
-  document.getElementById('backBtnWide')?.addEventListener('click', closeDetail)
+  // Back button in player detail
   document.getElementById('detailSearchBackBtn')?.addEventListener('click', closeDetail)
 }
 

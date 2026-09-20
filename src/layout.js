@@ -164,21 +164,12 @@ export function _updateFloatingFab(page) {
     return
   }
 
-  // Tablet (768–839px) or desktop (1280px+): hide standalone, inline wide-fabs handle it
-  if (!isFoldLayout() || isThreePaneLayout()) {
-    fab.classList.remove('visible')
-    fab.style.display = 'none'
-    return
-  }
-
-  // Fold (840–1279px): show standalone FAB on players/collection
-  if (show) {
-    fab.classList.add('visible')
-    fab.style.display = 'flex'
-  } else {
-    fab.classList.remove('visible')
-    fab.style.display = 'none'
-  }
+  // Wide layout (≥768px, tablet/fold/desktop alike): each page already has
+  // its own inline .wide-fab button living in its own content (unconditional
+  // at this width — see style.css), so the standalone FAB is never needed
+  // and would otherwise stack a second "+" button on top of it.
+  fab.classList.remove('visible')
+  fab.style.display = 'none'
 }
 
 // ── Page swipe (mobile) ────────────────────────────────────────────────────

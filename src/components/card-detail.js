@@ -519,7 +519,7 @@ export function handleCardTap(cardId, ctx, replace = false) {
     const emptyEl = document.getElementById(emptyId)
     const panel   = document.getElementById(panelId)
     if (emptyEl) emptyEl.style.display = 'none'
-    if (panel)   { panel.style.display = 'block'; panel.classList.remove('animating'); panel.style.transform = ''; renderCardPanelInto(panel, cardId, ctx) }
+    if (panel)   { panel.style.display = 'flex'; panel.classList.remove('animating'); panel.style.transform = ''; renderCardPanelInto(panel, cardId, ctx) }
   } else {
     const sheetIds = { player: 'cardDetailSheet', collection: 'collectionCardSheet', graded: 'gradedCardSheet' }
     const panelIds = { player: 'cardDetailPanel', collection: 'collectionCardPanel', graded: 'gradedCardPanel' }
