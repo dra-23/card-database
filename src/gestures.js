@@ -153,18 +153,25 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
 }
 
 // ── Form dismiss gesture (swipe down) ─────────────────────────────────────
+// Pointer Events (not Touch Events) so this responds to mouse/trackpad drags
+// too, not just touch — a plain click-drag previously did nothing but select
+// page text, since nothing was listening for mouse input at all.
 export function attachFormDismissGesture(sheetId, dismissFn) {
   const sheet  = document.getElementById(sheetId)
   if (!sheet) return
   const handle = sheet.querySelector('.sheet-handle')
   const body   = sheet.querySelector('.sheet-body')
-  const fs = { active: false, startY: 0, lastY: 0, startedOnHandle: false }
+  const fs = { active: false, startY: 0, lastY: 0, startedOnHandle: false, pointerId: null }
 
-  function onStart(clientY, fromHandle) {
+  function onStart(clientY, fromHandle, pointerId, target) {
     if (!sheet.classList.contains('open')) return
-    fs.active = true; fs.startedOnHandle = fromHandle
+    fs.active = true; fs.startedOnHandle = fromHandle; fs.pointerId = pointerId
     fs.startY = clientY; fs.lastY = clientY
     sheet.style.transition = 'none'
+    // Keeps pointermove/pointerup firing on this target even if the pointer
+    // strays outside the sheet mid-drag — matters for mouse, where there's
+    // no separate implicit capture the way touch scrolling gets one.
+    target?.setPointerCapture?.(pointerId)
   }
   function onMove(clientY) {
     if (!fs.active) return
@@ -191,19 +198,22 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
       sheet.style.transform = sheetTransformY(0)
     }
   }
+  // Ignore non-primary mouse buttons (right/middle-click drags); touch and
+  // pen pointers report button -1 on down and are always allowed through.
+  const isPrimary = e => e.pointerType !== 'mouse' || e.button === 0
 
-  if (handle) handle.addEventListener('touchstart', e => onStart(e.touches[0].clientY, true), { passive: true })
-  if (body)   body.addEventListener('touchstart',   e => { if (body.scrollTop <= 0) onStart(e.touches[0].clientY, false) }, { passive: true })
+  if (handle) handle.addEventListener('pointerdown', e => { if (isPrimary(e)) onStart(e.clientY, true, e.pointerId, handle) })
+  if (body)   body.addEventListener('pointerdown',   e => { if (isPrimary(e) && body.scrollTop <= 0) onStart(e.clientY, false, e.pointerId, body) })
 
-  sheet.addEventListener('touchmove', e => {
-    if (!fs.active) return
-    const dy = e.touches[0].clientY - fs.startY
+  sheet.addEventListener('pointermove', e => {
+    if (!fs.active || e.pointerId !== fs.pointerId) return
+    const dy = e.clientY - fs.startY
     const atTop = !body || body.scrollTop <= 0
     if (dy > 8 && (fs.startedOnHandle || atTop) && e.cancelable) e.preventDefault()
-    onMove(e.touches[0].clientY)
+    onMove(e.clientY)
   }, { passive: false })
-  sheet.addEventListener('touchend',    onEnd, { passive: true })
-  sheet.addEventListener('touchcancel', onEnd, { passive: true })
+  sheet.addEventListener('pointerup',     e => { if (e.pointerId === fs.pointerId) onEnd() })
+  sheet.addEventListener('pointercancel', e => { if (e.pointerId === fs.pointerId) onEnd() })
 }
 
 // ── Collapsible header scroll-hide (gallery / stats) ────────────────────────
@@ -485,13 +495,15 @@ export function initCardLongPress() {
   containers.forEach(({ id, selector }) => {
     const container = document.getElementById(id)
     if (!container) return
-    let timer = null, startX = 0, startY = 0, fired = false
+    let timer = null, startX = 0, startY = 0, fired = false, pointerId = null
 
-    container.addEventListener('touchstart', e => {
+    // Pointer Events, not Touch Events — this used to be touch-only, so
+    // holding down with a mouse on desktop did nothing at all.
+    container.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
       const row = e.target.closest(selector)
       if (!row || e.target.closest('.card-row-menu-btn')) return
-      const t = e.touches[0]
-      startX = t.clientX; startY = t.clientY; fired = false
+      startX = e.clientX; startY = e.clientY; fired = false; pointerId = e.pointerId
       timer = setTimeout(() => {
         fired = true
         const cardId = row.dataset.cardId
@@ -499,17 +511,16 @@ export function initCardLongPress() {
         vibrate(50)
         window._openBadgePicker?.(cardId)
       }, LONG_PRESS_MS)
-    }, { passive: true })
+    })
 
-    container.addEventListener('touchmove', e => {
-      if (!timer) return
-      const t = e.touches[0]
-      if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) { clearTimeout(timer); timer = null }
-    }, { passive: true })
+    container.addEventListener('pointermove', e => {
+      if (!timer || e.pointerId !== pointerId) return
+      if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) { clearTimeout(timer); timer = null }
+    })
 
-    const cancel = () => { clearTimeout(timer); timer = null }
-    container.addEventListener('touchend',    cancel, { passive: true })
-    container.addEventListener('touchcancel', cancel, { passive: true })
+    const cancel = e => { if (pointerId !== null && e.pointerId !== pointerId) return; clearTimeout(timer); timer = null }
+    container.addEventListener('pointerup',     cancel)
+    container.addEventListener('pointercancel', cancel)
     container.addEventListener('click', e => { if (fired) { e.stopImmediatePropagation(); fired = false } }, true)
   })
 }

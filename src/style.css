@@ -448,6 +448,8 @@ html, body {
 .badge-grade[data-co="BGS"] { background: var(--co-bgs); }
 .badge-grade[data-co="SGC"] { background: var(--co-sgc); color: #1e1e1e; }
 .badge-grade[data-co="CGC"] { background: var(--co-cgc); }
+.badge-sleevd   { background: var(--md-accent); color: #fff; font-size: 15px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
+.badge-favorite { background: #C9A227; color: #fff; font-size: 15px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
 .badge-rc       { background: #E8192C; color: #fff; font-size: 15px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
 .badge-auto     { background: #B8860B; color: #fff; font-size: 15px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
 .badge-mem      { background: #1565C0; color: #fff; font-size: 15px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
@@ -956,10 +958,14 @@ html, body {
 /* ================================================================
    BADGE PICKER SHEET
    ================================================================ */
-.badge-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.badge-pick-btn { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; border-radius: 18px; border: 2px solid var(--md-outline); background: transparent; cursor: pointer; transition: border-color 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; }
-.badge-pick-btn.badge-pick-active { border-color: transparent; background: var(--md-surface-2); }
-.badge-pick-chip { font-size: 16px; font-weight: 800; padding: 5px 16px; border-radius: 8px; color: #fff; opacity: 0.25; letter-spacing: 0.5px; transition: opacity 0.15s; }
-.badge-pick-btn.badge-pick-active .badge-pick-chip { opacity: 1; }
-.badge-pick-lbl { font-size: 16px; font-weight: 600; font-family: 'Google Sans', sans-serif; color: var(--md-on-surface-variant); }
-.badge-pick-btn.badge-pick-active .badge-pick-lbl { color: var(--md-on-surface); }
+.badge-picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.badge-pick-btn { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 20px; border: 2px solid var(--md-outline); background: transparent; cursor: pointer; transition: border-color 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; }
+.badge-pick-btn .material-symbols-outlined { font-size: 28px; color: var(--md-on-surface-variant); transition: color 0.15s; }
+.badge-pick-btn.badge-pick-active { border-color: transparent; }
+.badge-pick-btn.badge-pick-active .material-symbols-outlined { color: #fff; }
+.badge-pick-btn[data-badge="Owned"].badge-pick-active    { background: var(--md-accent); }
+.badge-pick-btn[data-badge="Favorite"].badge-pick-active { background: #C9A227; }
+.badge-pick-btn[data-badge="RC"].badge-pick-active        { background: #E8192C; }
+.badge-pick-btn[data-badge="Auto"].badge-pick-active      { background: #B8860B; }
+.badge-pick-btn[data-badge="Mem"].badge-pick-active       { background: #1565C0; }
+.badge-pick-btn[data-badge="Numbered"].badge-pick-active  { background: #78909C; }

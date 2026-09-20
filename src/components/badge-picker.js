@@ -1,7 +1,10 @@
 import { db, doc, setDoc } from '../firebase.js'
 import * as state from '../state.js'
+import { promptPrice } from './price-prompt.js'
 
 const BADGES = [
+  { key: 'Owned',    label: 'Sleevd'   },
+  { key: 'Favorite', label: 'Favorite' },
   { key: 'RC',       label: 'RC'   },
   { key: 'Auto',     label: 'AUTO' },
   { key: 'Mem',      label: 'MEM'  },
@@ -44,8 +47,15 @@ export function initBadgePicker() {
       if (!card) return
       const key = btn.dataset.badge
       const newVal = !(card[key] === true || card[key] === 'true')
+      const updates = { [key]: newVal }
+      // Match the card-detail Sleevd toggle: marking a card sleevd offers a
+      // price prompt too, whichever surface you do it from.
+      if (key === 'Owned' && newVal) {
+        const price = await promptPrice()
+        if (price !== null) updates.Price = String(price)
+      }
       btn.classList.toggle('badge-pick-active', newVal)
-      await setDoc(doc(db, 'Cards', _cardId), { [key]: newVal }, { merge: true })
+      await setDoc(doc(db, 'Cards', _cardId), updates, { merge: true })
     })
   })
 }
