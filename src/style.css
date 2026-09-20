@@ -649,7 +649,10 @@ html, body {
 .cd2-btn-ebay { background: #0064D2; }
 .cd2-btn-tcdb { background: #E07020; }
 
-.cd2-grade-pill { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 6px; background: rgba(201,162,39,0.16); border: 1px solid rgba(201,162,39,0.5); color: #E7C766; font-size: 13px; font-weight: 700; font-family: 'Google Sans', sans-serif; }
+/* Solid fill, not a tinted/translucent pill — the previous light-gold-on-
+   transparent-gold look read fine in dark mode but had poor contrast in
+   light mode, since #E7C766 is itself a pale color. */
+.cd2-grade-pill { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 6px; background: #C9A227; color: #fff; font-size: 13px; font-weight: 700; font-family: 'Google Sans', sans-serif; }
 
 .cd2-link-row { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; background: none; border: none; color: var(--md-primary); font-size: 14px; font-weight: 700; font-family: 'Google Sans', sans-serif; cursor: pointer; }
 
@@ -676,6 +679,32 @@ html, body {
 .cd2-notes-text { font-size: 14px; line-height: 1.5; color: var(--md-on-surface); white-space: pre-wrap; }
 
 .cd2-manage-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: none; border: none; color: var(--soft-red); font-size: 14px; font-family: 'Google Sans', sans-serif; cursor: pointer; }
+
+/* Slightly larger body text on mobile, where this panel is the whole
+   screen rather than sharing space with a nav rail/list beside it. */
+@media (max-width: 767px) {
+  .cd2-subtitle,
+  .cd2-row-lbl,
+  .cd2-row-val,
+  .cd2-card-action,
+  .cd2-btn-registry,
+  .cd2-link-row,
+  .cd2-notes-text,
+  .cd2-manage-row          { font-size: 15px; }
+  .cd2-section-label,
+  .cd2-qa-label,
+  .cd2-market-lbl,
+  .cd2-check-value-btn,
+  .cd2-notes-placeholder   { font-size: 13px; }
+  .cd2-grade-pill,
+  .cd2-badge-row .badge-grade,
+  .cd2-badge-row .badge-rc,
+  .cd2-badge-row .badge-auto,
+  .cd2-badge-row .badge-mem,
+  .cd2-badge-row .badge-numbered { font-size: 14px; }
+  .cd2-market-val   { font-size: 21px; }
+  .cd2-market-muted { font-size: 17px; }
+}
 
 .cd2-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(12px); background: #202124; color: #fff; font-size: 14px; font-weight: 600; font-family: 'Google Sans', sans-serif; padding: 10px 18px; border-radius: 999px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); z-index: 3000; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
 .cd2-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
