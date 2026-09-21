@@ -87,23 +87,19 @@ export function renderStats() {
           <div class="stat-badge-item" style="--badge-color:#3D5AFE;">
             <span class="stat-badge-chip" style="background:#3D5AFE;">sleevd</span>
             <div class="stat-badge-count">${owned.length}</div>
-            <div class="stat-badge-label">In Collection</div>
           </div>
           <div class="stat-badge-item" style="--badge-color:${C_SILVER};">
             <span class="stat-badge-chip" style="background:${C_SILVER};">unsleevd</span>
             <div class="stat-badge-count">${wishlist.length}</div>
-            <div class="stat-badge-label">Wishlist</div>
           </div>
           <div class="stat-badge-item" style="--badge-color:${C_GREEN};">
             <span class="stat-badge-chip" style="background:${C_GREEN};">GRADED</span>
             <div class="stat-badge-count">${graded.length}</div>
-            <div class="stat-badge-label">Graded</div>
           </div>
           ${totalValue > 0 ? `
           <div class="stat-badge-item" style="--badge-color:${C_GOLD};">
             <span class="stat-badge-chip" style="background:${C_GOLD};">PAID</span>
             <div class="stat-badge-count" style="font-size:18px;">$${totalValue % 1 === 0 ? totalValue : totalValue.toFixed(0)}</div>
-            <div class="stat-badge-label">Total Paid</div>
           </div>` : ''}
         </div>
       </div>
@@ -116,22 +112,18 @@ export function renderStats() {
           <div class="stat-badge-item" style="--badge-color:#E8192C;">
             <span class="stat-badge-chip">RC</span>
             <div class="stat-badge-count">${rcCount}</div>
-            <div class="stat-badge-label">Rookie</div>
           </div>
           <div class="stat-badge-item" style="--badge-color:${C_GOLD};">
             <span class="stat-badge-chip" style="background:${C_GOLD};">AUTO</span>
             <div class="stat-badge-count">${autoCount}</div>
-            <div class="stat-badge-label">Autograph</div>
           </div>
           <div class="stat-badge-item" style="--badge-color:${C_MEM};">
             <span class="stat-badge-chip" style="background:${C_MEM};">MEM</span>
             <div class="stat-badge-count">${memCount}</div>
-            <div class="stat-badge-label">Memorabilia</div>
           </div>
           <div class="stat-badge-item" style="--badge-color:${C_SILVER};">
             <span class="stat-badge-chip" style="background:${C_SILVER};">#'d</span>
             <div class="stat-badge-count">${numberedCount}</div>
-            <div class="stat-badge-label">Numbered</div>
           </div>
         </div>
       </div>` : ''}

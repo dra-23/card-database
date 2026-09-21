@@ -832,7 +832,6 @@ html, body {
 .stat-badge-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; background: #fff; border-radius: 16px; }
 .stat-badge-chip { background: #E8192C; color: #fff; font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; letter-spacing: 0.3px; white-space: nowrap; }
 .stat-badge-count { font-family: 'Google Sans Display'; font-size: 24px; font-weight: 700; line-height: 1; color: var(--badge-color, #E8192C); }
-.stat-badge-label { font-size: 13px; font-weight: 600; color: var(--md-on-surface-variant); }
 .chart-container { position: relative; }
 @media (min-width: 768px) {
   #statsScrollBody { overflow-y: auto; }
