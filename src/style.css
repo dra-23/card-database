@@ -690,20 +690,20 @@ html, body {
   .cd2-btn-registry,
   .cd2-link-row,
   .cd2-notes-text,
-  .cd2-manage-row          { font-size: 15px; }
+  .cd2-manage-row          { font-size: 16px; }
   .cd2-section-label,
   .cd2-qa-label,
   .cd2-market-lbl,
   .cd2-check-value-btn,
-  .cd2-notes-placeholder   { font-size: 13px; }
+  .cd2-notes-placeholder   { font-size: 14px; }
   .cd2-grade-pill,
   .cd2-badge-row .badge-grade,
   .cd2-badge-row .badge-rc,
   .cd2-badge-row .badge-auto,
   .cd2-badge-row .badge-mem,
-  .cd2-badge-row .badge-numbered { font-size: 14px; }
-  .cd2-market-val   { font-size: 21px; }
-  .cd2-market-muted { font-size: 17px; }
+  .cd2-badge-row .badge-numbered { font-size: 15px; }
+  .cd2-market-val   { font-size: 22px; }
+  .cd2-market-muted { font-size: 18px; }
 }
 
 .cd2-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(12px); background: #202124; color: #fff; font-size: 14px; font-weight: 600; font-family: 'Google Sans', sans-serif; padding: 10px 18px; border-radius: 999px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); z-index: 3000; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
