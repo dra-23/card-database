@@ -163,15 +163,11 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
   const body   = sheet.querySelector('.sheet-body')
   const fs = { active: false, startY: 0, lastY: 0, startedOnHandle: false, pointerId: null }
 
-  function onStart(clientY, fromHandle, pointerId, target) {
+  function onStart(clientY, fromHandle, pointerId) {
     if (!sheet.classList.contains('open')) return
     fs.active = true; fs.startedOnHandle = fromHandle; fs.pointerId = pointerId
     fs.startY = clientY; fs.lastY = clientY
     sheet.style.transition = 'none'
-    // Keeps pointermove/pointerup firing on this target even if the pointer
-    // strays outside the sheet mid-drag — matters for mouse, where there's
-    // no separate implicit capture the way touch scrolling gets one.
-    target?.setPointerCapture?.(pointerId)
   }
   function onMove(clientY) {
     if (!fs.active) return
@@ -202,18 +198,25 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
   // pen pointers report button -1 on down and are always allowed through.
   const isPrimary = e => e.pointerType !== 'mouse' || e.button === 0
 
-  if (handle) handle.addEventListener('pointerdown', e => { if (isPrimary(e)) onStart(e.clientY, true, e.pointerId, handle) })
-  if (body)   body.addEventListener('pointerdown',   e => { if (isPrimary(e) && body.scrollTop <= 0) onStart(e.clientY, false, e.pointerId, body) })
+  if (handle) handle.addEventListener('pointerdown', e => { if (isPrimary(e)) onStart(e.clientY, true, e.pointerId) })
+  if (body)   body.addEventListener('pointerdown',   e => { if (isPrimary(e) && body.scrollTop <= 0) onStart(e.clientY, false, e.pointerId) })
 
-  sheet.addEventListener('pointermove', e => {
+  // Tracked on window, not the sheet itself, so the drag keeps following the
+  // pointer even if it strays outside the sheet's bounds mid-gesture — same
+  // robustness setPointerCapture was meant to give, without it: capturing a
+  // touch-sourced pointer turned out to disrupt how later touches on the
+  // page routed on some real mobile browsers (a tap anywhere in the sheet
+  // would leave subsequent taps outside it, and the swipe gesture itself,
+  // unresponsive until the page reloaded).
+  window.addEventListener('pointermove', e => {
     if (!fs.active || e.pointerId !== fs.pointerId) return
     const dy = e.clientY - fs.startY
     const atTop = !body || body.scrollTop <= 0
     if (dy > 8 && (fs.startedOnHandle || atTop) && e.cancelable) e.preventDefault()
     onMove(e.clientY)
   }, { passive: false })
-  sheet.addEventListener('pointerup',     e => { if (e.pointerId === fs.pointerId) onEnd() })
-  sheet.addEventListener('pointercancel', e => { if (e.pointerId === fs.pointerId) onEnd() })
+  window.addEventListener('pointerup',     e => { if (e.pointerId === fs.pointerId) onEnd() })
+  window.addEventListener('pointercancel', e => { if (e.pointerId === fs.pointerId) onEnd() })
 }
 
 // ── Collapsible header scroll-hide (gallery / stats) ────────────────────────
