@@ -485,6 +485,8 @@ html, body {
 .dd-check-icon { font-size: 16px; color: var(--md-accent); opacity: 0; flex-shrink: 0; transition: opacity 0.1s; }
 .dd-check-opt.dd-checked .dd-check-icon { opacity: 1; }
 .dd-check-opt.dd-checked .dd-check-opt-icon { color: var(--md-accent); }
+.dd-clear-opt { border-top: 1px solid var(--md-surface-2); color: var(--md-primary); }
+.dd-clear-opt .dd-check-opt-icon { color: var(--md-primary); }
 
 /* ================================================================
    YEAR GROUP HEADERS

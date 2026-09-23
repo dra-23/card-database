@@ -149,6 +149,7 @@ function appShellHTML() {
                         <div class="dd-check-opt" data-chip="collAuto"><span class="material-symbols-outlined dd-check-opt-icon">draw</span><span class="dd-check-opt-label">AUTO</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
                         <div class="dd-check-opt" data-chip="collMem"><span class="material-symbols-outlined dd-check-opt-icon">checkroom</span><span class="dd-check-opt-label">MEM</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
                         <div class="dd-check-opt" data-chip="collNumbered"><span class="material-symbols-outlined dd-check-opt-icon">tag</span><span class="dd-check-opt-label">#'d</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                        <div class="dd-check-opt dd-clear-opt" id="collFilterClear" style="display:none;"><span class="material-symbols-outlined dd-check-opt-icon">filter_alt_off</span><span class="dd-check-opt-label">Clear filters</span></div>
                       </div>
                     </div>
                   </div>
@@ -305,6 +306,7 @@ function appShellHTML() {
                     <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-opt-icon">bookmark_border</span><span class="dd-check-opt-label">unsleevd</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
                     <div class="dd-check-opt" data-chip="favorite"><span class="material-symbols-outlined dd-check-opt-icon">star</span><span class="dd-check-opt-label">Favorite</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
                     <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-opt-icon">workspace_premium</span><span class="dd-check-opt-label">Graded</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
+                    <div class="dd-check-opt dd-clear-opt" id="detailFilterClear" style="display:none;"><span class="material-symbols-outlined dd-check-opt-icon">filter_alt_off</span><span class="dd-check-opt-label">Clear filters</span></div>
                   </div>
                 </div>
               </div>

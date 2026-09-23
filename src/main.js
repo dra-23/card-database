@@ -501,11 +501,13 @@ function wireFilterChips() {
     const count = Object.values(COLL_FILTERS).filter(f => f.get()).length
     const btn = document.getElementById('collFilterDdBtn')
     if (btn) btn.classList.toggle('dd-active', count > 0)
+    const clearRow = document.getElementById('collFilterClear')
+    if (clearRow) clearRow.style.display = count > 0 ? 'flex' : 'none'
   }
   document.getElementById('collFilterDdBtn')?.addEventListener('click', () => {
     _openDdWrap === 'collFilterDdWrap' ? _closeDd() : _openDd('collFilterDdWrap')
   })
-  document.querySelectorAll('#collFilterDdPanel .dd-check-opt').forEach(opt => {
+  document.querySelectorAll('#collFilterDdPanel .dd-check-opt[data-chip]').forEach(opt => {
     opt.addEventListener('click', () => {
       const f = COLL_FILTERS[opt.dataset.chip]
       if (!f) return
@@ -514,6 +516,16 @@ function wireFilterChips() {
       _updateCollFilterBtn()
       f.render()
     })
+  })
+  document.getElementById('collFilterClear')?.addEventListener('click', () => {
+    Object.entries(COLL_FILTERS).forEach(([key, f]) => {
+      if (!f.get()) return
+      f.toggle()
+      document.querySelector(`#collFilterDdPanel .dd-check-opt[data-chip="${key}"]`)?.classList.remove('dd-checked')
+    })
+    _updateCollFilterBtn()
+    updateOwnedCount()
+    renderCollectionView()
   })
 
   // ── Detail (player) filter dropdown ───────────────────────────────
@@ -526,11 +538,13 @@ function wireFilterChips() {
     const count = Object.values(DETAIL_FILTERS).filter(f => f.get()).length
     const btn = document.getElementById('detailFilterDdBtn')
     if (btn) btn.classList.toggle('dd-active', count > 0)
+    const clearRow = document.getElementById('detailFilterClear')
+    if (clearRow) clearRow.style.display = count > 0 ? 'flex' : 'none'
   }
   document.getElementById('detailFilterDdBtn')?.addEventListener('click', () => {
     _openDdWrap === 'detailFilterDdWrap' ? _closeDd() : _openDd('detailFilterDdWrap')
   })
-  document.querySelectorAll('#detailFilterDdPanel .dd-check-opt').forEach(opt => {
+  document.querySelectorAll('#detailFilterDdPanel .dd-check-opt[data-chip]').forEach(opt => {
     opt.addEventListener('click', () => {
       const f = DETAIL_FILTERS[opt.dataset.chip]
       if (!f) return
@@ -539,5 +553,14 @@ function wireFilterChips() {
       _updateDetailFilterBtn()
       f.render()
     })
+  })
+  document.getElementById('detailFilterClear')?.addEventListener('click', () => {
+    Object.entries(DETAIL_FILTERS).forEach(([key, f]) => {
+      if (!f.get()) return
+      f.toggle()
+      document.querySelector(`#detailFilterDdPanel .dd-check-opt[data-chip="${key}"]`)?.classList.remove('dd-checked')
+    })
+    _updateDetailFilterBtn()
+    if (state.selectedPlayer) renderDetail(state.selectedPlayer)
   })
 }
