@@ -532,55 +532,7 @@ export function refreshCurrentCardPanel(cardId) {
 }
 
 // ── handleCardTap ─────────────────────────────────────────────────────────
-// Thumbnail elements a card can be opened from, by page
-const TAP_SOURCES = id => {
-  const s = CSS.escape(id)
-  return [
-    `.card-item[data-card-id="${s}"] .card-thumb`,
-    `.graded-tile[data-card-id="${s}"] .graded-tile-img`,
-    `.st-mv-row[data-st-card="${s}"] .st-mv-thumb`,
-  ].join(',')
-}
-
-// The copy of the thumbnail that's actually on screen — the same card can
-// be rendered on several pages of the page track at once
-function _visibleTapSource(cardId) {
-  return [...document.querySelectorAll(TAP_SOURCES(cardId))].find(el => {
-    const r = el.getBoundingClientRect()
-    return r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth
-  }) || null
-}
-
-// In the side-panel layouts, opening a card morphs the tapped thumbnail into
-// the detail image (View Transitions API). Slide-up sheets on phones keep
-// their own motion only — a morph on top of the slide reads as two
-// animations. In-place swaps (swipe, same-set taps) stay instant.
 export function handleCardTap(cardId, ctx, replace = false) {
-  const inline = (ctx || 'player') === 'player' ? isFoldLayout() : isWideLayout()
-  const source = inline && !replace && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches
-    ? _visibleTapSource(cardId) : null
-  if (!source) { _openCard(cardId, ctx, replace); return }
-
-  const panelIds = { player: 'twoPane-panel', collection: 'twoPane-coll-panel', graded: 'twoPane-grad-panel' }
-  let hero = null
-  source.style.viewTransitionName = 'card-hero'
-  const vt = document.startViewTransition(async () => {
-    source.style.viewTransitionName = ''
-    _openCard(cardId, ctx, replace)
-    hero = document.querySelector(`#${panelIds[ctx] || panelIds.player} :is(.cd2-single-img, .cd2-psa-main-img)`)
-    if (hero) {
-      hero.style.viewTransitionName = 'card-hero'
-      // Snapshotting an undecoded image would morph into a blank box
-      if (hero.decode) await Promise.race([hero.decode().catch(() => {}), new Promise(r => setTimeout(r, 150))])
-    }
-  })
-  vt.finished.finally(() => {
-    source.style.viewTransitionName = ''
-    if (hero) hero.style.viewTransitionName = ''
-  })
-}
-
-function _openCard(cardId, ctx, replace) {
   state.setCurrentCardId(cardId)
   state.setActiveCardContext(ctx || 'player')
 

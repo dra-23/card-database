@@ -1178,15 +1178,6 @@ html, body {
 [data-theme="dark"] .settings-signout-btn { background: rgba(232,25,44,0.14); }
 
 /* ================================================================
-   CARD OPEN TRANSITION (handleCardTap — View Transitions API, side-panel
-   layouts only). Only the tapped thumbnail animates; the rest of the page
-   swaps instantly underneath.
-   ================================================================ */
-::view-transition-old(root), ::view-transition-new(root) { animation: none; }
-::view-transition-group(card-hero) { animation-duration: 0.42s; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
-::view-transition-old(card-hero), ::view-transition-new(card-hero) { animation-duration: 0.42s; height: 100%; object-fit: cover; }
-
-/* ================================================================
    LOADING SKELETONS (shell.js — replaced by each page's first render)
    ================================================================ */
 .skel {
