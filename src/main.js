@@ -268,6 +268,10 @@ function startApp() {
       closeAllForms()
     } else if (['cardDetailSheet','collectionCardSheet','gradedCardSheet'].some(id => document.getElementById(id).classList.contains('open'))) {
       closeCardSheets()
+    } else if (e.state?.v === 'page' && e.state.page === 'stats' && state.currentPage !== 'stats') {
+      // Back from a page one of Profile's tiles jumped to
+      if (state.selectedPlayer) closeDetail()
+      switchPage('stats')
     } else if (e.state?.v !== 'detail' && state.selectedPlayer && (!isWideLayout() || !isThreePaneLayout())) {
       closeDetail()
     } else if (state.currentPage === 'stats') {

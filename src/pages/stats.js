@@ -192,14 +192,16 @@ function tilesHTML(d) {
   const tile = (icon, count, label, nav, extra = '', tint) => `
     <button class="st-tile" data-st-nav="${nav}" ${extra} style="--tint:${tint}">
       <span class="st-tile-icon material-symbols-outlined">${icon}</span>
-      <span class="st-tile-num" data-count="${count}">${fmt(count)}</span>
-      <span class="st-tile-lbl">${label}</span>
-      <span class="st-tile-go material-symbols-outlined">arrow_forward</span>
+      <span class="st-tile-text">
+        <span class="st-tile-num" data-count="${count}">${fmt(count)}</span>
+        <span class="st-tile-lbl">${label}</span>
+      </span>
+      <span class="st-tile-go material-symbols-outlined">chevron_right</span>
     </button>`
   return `
     <section class="st-tiles">
       ${tile('inventory_2', d.wishlist, 'Unsleevd', 'collection', 'data-filter="collWishlist"', '#78909C')}
-      ${tile('workspace_premium', d.graded, 'Graded', 'graded', '', '#2E7D32')}
+      ${tile('g_mobiledata_badge', d.graded, 'Graded', 'graded', '', '#2E7D32')}
       ${tile('star', d.favorites, 'Favorites', 'collection', 'data-filter="collFavorite"', '#C9A227')}
       ${tile('groups', d.playerCount, 'Players', 'players', '', '#6b7cde')}
     </section>`
@@ -593,9 +595,12 @@ function _wire(root) {
     if (!t || !_data) return
 
     if (t.hasAttribute('data-st-mv-refresh')) { refreshAllValues(); return }
+    // Jumps off Profile add a history entry, so Back pops onto Profile's own
+    // entry and main.js's popstate handler returns here
     if (t.dataset.stCard) {
-      // Wide layouts show card detail inside the Collection pane
-      if (isWideLayout()) switchPage('collection')
+      // Wide layouts show card detail inside the Collection pane; phones
+      // open it as a sheet over Profile, which pushes its own entry
+      if (isWideLayout()) { switchPage('collection'); _pushLeave('collection') }
       handleCardTap(t.dataset.stCard, 'collection')
       return
     }
@@ -603,11 +608,14 @@ function _wire(root) {
     if (t.dataset.stNav) {
       if (t.dataset.filter) window._showCollectionFiltered?.([t.dataset.filter])
       else switchPage(t.dataset.stNav)
+      _pushLeave(t.dataset.stNav)
       return
     }
     if (t.dataset.stPlayer) {
       switchPage('players')
       openDetail(t.dataset.stPlayer)
+      // Phone layouts push a detail entry already
+      if (history.state?.v !== 'detail') _pushLeave('players')
       return
     }
     if (t.dataset.stSport) {
@@ -631,6 +639,10 @@ function _wire(root) {
       _replaceSection('stTimeline', timelineHTML(_data))
     }
   })
+}
+
+function _pushLeave(page) {
+  history.pushState({ v: 'page', page, from: 'stats' }, '')
 }
 
 function _syncSport() {

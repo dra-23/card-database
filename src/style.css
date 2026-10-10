@@ -871,9 +871,7 @@ html, body {
 /* Hero */
 .st-hero {
   position: relative; overflow: hidden; color: #fff; border-radius: 32px; padding: 18px 20px 18px;
-  background:
-    radial-gradient(120% 90% at 105% -10%, rgba(232,25,44,0.55) 0%, transparent 55%),
-    linear-gradient(140deg, #3D5AFE 0%, #5866e0 50%, #7a5bd6 100%);
+  background: var(--md-accent);
   box-shadow: 0 2px 4px rgba(0,0,0,0.12), 0 6px 20px rgba(0,0,0,0.09);
 }
 .st-hero-top { display: flex; align-items: center; gap: 12px; }
@@ -893,20 +891,23 @@ html, body {
 
 /* Scorecard tiles */
 .st-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* Row tile: icon, number over label, chevron */
 .stats-content .st-tile {
-  position: relative; display: flex; flex-direction: column; padding: 16px; border-radius: 24px; background: var(--md-surface-2);
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 10px 14px 14px; border-radius: 24px; background: var(--md-surface-2);
   transition: transform 0.25s var(--st-ease), box-shadow 0.25s var(--st-ease);
 }
 .st-tile:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.10), 0 6px 16px rgba(0,0,0,0.08); }
 .st-tile:active { transform: scale(0.95); box-shadow: none; }
 .st-tile-icon {
-  width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 12px; font-size: 22px;
-  color: var(--tint); background: color-mix(in srgb, var(--tint) 18%, transparent); font-variation-settings: 'FILL' 1;
+  width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; font-size: 26px; flex-shrink: 0;
+  color: var(--tint); background: color-mix(in srgb, var(--tint) 18%, transparent);
 }
-.st-tile-num { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; line-height: 1.05; }
-.st-tile-lbl { font-size: 14px; font-weight: 500; color: var(--md-on-surface-variant); margin-top: 2px; }
-.st-tile-go { position: absolute; top: 18px; right: 16px; font-size: 18px; color: var(--md-on-surface-variant); opacity: 0.55; transition: transform 0.2s var(--st-ease), opacity 0.2s; }
-.st-tile:hover .st-tile-go { transform: translateX(3px); opacity: 1; }
+.st-tile-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.st-tile-num { font-family: 'Google Sans Display'; font-size: 28px; font-weight: 700; line-height: 1; }
+.st-tile-lbl { font-size: 14px; font-weight: 500; color: var(--md-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-tile-go { font-size: 22px; color: var(--md-on-surface-variant); opacity: 0.55; flex-shrink: 0; transition: transform 0.2s var(--st-ease), opacity 0.2s; }
+.st-tile:hover .st-tile-go { transform: translateX(2px); opacity: 1; }
 
 /* Market value */
 .stats-content .st-mv-refresh, .settings-usage .st-mv-refresh { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px 7px 10px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--md-accent); background: color-mix(in srgb, var(--md-accent) 14%, transparent); transition: background 0.15s, opacity 0.2s; }
