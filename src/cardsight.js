@@ -1,25 +1,43 @@
-import CardSightAI from 'cardsightai'
+import { auth } from './firebase.js'
 
-const apiKey = import.meta.env.VITE_CARDSIGHT_API_KEY
-
-// Recursively proxies every property access so call sites like
-// `cardsight.catalog.search(...)` or `cardsight.identify.card(...)` keep
-// working without a key configured — the call just rejects instead of the
-// whole app crashing at import time.
-function disabledClient() {
-  const reject = () => Promise.reject(new Error('Cardsight AI is not configured — set VITE_CARDSIGHT_API_KEY'))
-  const node = new Proxy(reject, {
-    get: (_target, prop) => (prop === 'then' ? undefined : node),
-  })
-  return node
+// Every call goes through our own /api/cardsight function (functions/index.js),
+// which holds the API key server-side — anything read from a VITE_ env var is
+// baked into the public JS bundle. Mirrors the subset of the cardsightai SDK
+// the app uses, with the same { data, error } return shape.
+async function call(path, { method = 'GET', query, body } = {}) {
+  try {
+    const token = await auth.currentUser?.getIdToken()
+    if (!token) return { data: null, error: new Error('Not signed in') }
+    const qs = query ? `?${new URLSearchParams(query)}` : ''
+    const res = await fetch(`/api/cardsight${path}${qs}`, {
+      method,
+      headers: { Authorization: `Bearer ${token}` },
+      body,
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) return { data: null, error: data || new Error(`Cardsight request failed (${res.status})`) }
+    return { data, error: null }
+  } catch (e) {
+    return { data: null, error: e }
+  }
 }
 
-let client
-try {
-  client = apiKey ? new CardSightAI({ apiKey }) : disabledClient()
-} catch (e) {
-  console.warn('[cardsight] failed to initialize, AI features disabled:', e)
-  client = disabledClient()
+export const cardsight = {
+  catalog: {
+    search: params => call('/v1/catalog/search', { query: params }),
+    cards: { get: id => call(`/v1/catalog/cards/${encodeURIComponent(id)}`) },
+  },
+  pricing: {
+    get: cardId => call(`/v1/pricing/${encodeURIComponent(cardId)}`),
+  },
+  images: {
+    getCard: (id, params) => call(`/v1/images/cards/${encodeURIComponent(id)}`, { query: params }),
+  },
+  identify: {
+    card: file => {
+      const form = new FormData()
+      form.append('image', file)
+      return call('/v1/identify/card', { method: 'POST', body: form })
+    },
+  },
 }
-
-export const cardsight = client

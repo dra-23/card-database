@@ -2,9 +2,6 @@ import { cardsight } from '../cardsight.js'
 import * as state from '../state.js'
 import { openCardForm } from './card-form.js'
 
-const API_BASE = 'https://api.cardsight.ai'
-const API_KEY  = () => import.meta.env.VITE_CARDSIGHT_API_KEY
-
 const SPORT_KEYWORDS = [
   ['baseball',   'Baseball'],
   ['basketball', 'Basketball'],
@@ -76,7 +73,7 @@ export async function doCardSearch() {
 
   try {
     const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 20 })
-    if (error || !data) { _setStatus('Search failed — check your API key', true); return }
+    if (error || !data) { _setStatus('Search failed', true); return }
     _setStatus('')
     _renderSearchResults(data.results || [])
   } catch (e) {
@@ -132,8 +129,7 @@ async function _selectSearchResult(r) {
   _setStatus('Fetching card details…')
 
   const [detailResult, imageResult] = await Promise.allSettled([
-    fetch(`${API_BASE}/v1/catalog/cards/${r.id}`, { headers: { 'X-API-Key': API_KEY() } })
-      .then(res => res.ok ? res.json() : null),
+    cardsight.catalog.cards.get(r.id).then(({ data }) => data),
     cardsight.images.getCard(r.id, { format: 'json' }),
   ])
 

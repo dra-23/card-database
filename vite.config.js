@@ -11,6 +11,11 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // /api/* are Cloud Functions behind Firebase Hosting rewrites (see
+    // firebase.json) — forward them to the deployed site in local dev.
+    proxy: {
+      '/api': { target: 'https://sleevd-7214c.web.app', changeOrigin: true },
+    },
   },
   plugins: [
     VitePWA({
