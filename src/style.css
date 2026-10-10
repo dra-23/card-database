@@ -170,6 +170,8 @@ html, body {
 .rail-item .rail-label { font-size: 13px; font-weight: 600; font-family: 'Google Sans', sans-serif; }
 .rail-item:hover { background: rgba(0,0,0,0.06); }
 .rail-item.active { background: var(--md-surface-2); color: var(--md-on-surface); }
+.rail-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; display: block; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--md-on-surface) 14%, transparent); transition: box-shadow 0.2s; }
+.rail-item.active .rail-avatar { box-shadow: 0 0 0 2px var(--md-accent); }
 
 /* ================================================================
    RIGHT COLUMN + PAGE CONTAINER
@@ -340,8 +342,7 @@ html, body {
 /* ================================================================
    PLAYER GRID
    ================================================================ */
-.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
-.player-grid.loaded { opacity: 1; }
+.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 12px; }
 .player-tile { display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; background: var(--md-surface-2); cursor: pointer;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 10px 26px rgba(0,0,0,0.14);
   transition: box-shadow 0.25s cubic-bezier(0.2,0,0,1), transform 0.25s cubic-bezier(0.2,0,0,1); }
@@ -442,6 +443,25 @@ html, body {
 .card-item:last-child::after { display: none; }
 .card-item.not-owned { opacity: 0.45; }
 .card-thumb { width: 60px; height: 80px; border-radius: 0; object-fit: cover; background: #eee; flex-shrink: 0; }
+
+/* Stand-in for a card image that failed to load (see initImagePlaceholders).
+   [data-theme] div outranks the dark-mode .card-thumb background. */
+[data-theme] div.img-ph, div.img-ph {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  padding: 4px; overflow: hidden; text-align: center; color: var(--md-on-surface-variant);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--md-on-surface) 4%, transparent) 6px 7px),
+    var(--md-surface-2);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-on-surface) 10%, transparent);
+}
+.img-ph-mark { font-size: 20px; opacity: 0.55; }
+.img-ph-text { font-size: 10px; font-weight: 600; line-height: 1.25; white-space: pre-line; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-word; }
+.graded-tile-img.img-ph .img-ph-mark, .cd2-single-img.img-ph .img-ph-mark, .cd2-psa-main-img.img-ph .img-ph-mark { font-size: 40px; }
+.graded-tile-img.img-ph .img-ph-text { font-size: 14px; }
+.cd2-single-img.img-ph, .cd2-psa-main-img.img-ph { width: 200px; aspect-ratio: 5 / 7; cursor: default; }
+.cd2-single-img.img-ph .img-ph-text, .cd2-psa-main-img.img-ph .img-ph-text { font-size: 15px; -webkit-line-clamp: 4; }
+.st-mv-thumb.img-ph .img-ph-text { display: none; }
+.st-mv-thumb.img-ph .img-ph-mark { font-size: 16px; }
 .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .card-info-row1 { font-weight: 700; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-info-row2 { font-size: 15px; opacity: 0.6; }
@@ -1156,6 +1176,40 @@ html, body {
   font-size: 16px; font-weight: 700; cursor: pointer; display: flex;
   align-items: center; justify-content: center; gap: 10px; }
 [data-theme="dark"] .settings-signout-btn { background: rgba(232,25,44,0.14); }
+
+/* ================================================================
+   CARD OPEN TRANSITION (handleCardTap — View Transitions API, side-panel
+   layouts only). Only the tapped thumbnail animates; the rest of the page
+   swaps instantly underneath.
+   ================================================================ */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(card-hero) { animation-duration: 0.42s; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+::view-transition-old(card-hero), ::view-transition-new(card-hero) { animation-duration: 0.42s; height: 100%; object-fit: cover; }
+
+/* ================================================================
+   LOADING SKELETONS (shell.js — replaced by each page's first render)
+   ================================================================ */
+.skel {
+  position: relative; overflow: hidden;
+  background: color-mix(in srgb, var(--md-on-surface) 8%, transparent) !important;
+}
+.skel::after {
+  content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--md-on-surface) 7%, transparent), transparent);
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skel-shimmer { to { transform: translateX(100%); } }
+.skel-line { height: 12px; border-radius: 6px; margin: 5px 0; }
+.skel-line-sm { height: 10px; }
+.skel-chip { width: 34px; height: 18px; border-radius: 6px; margin-top: 8px; }
+.skel-tile, .skel-row { pointer-events: none; box-shadow: none !important; }
+.skel-row::after { display: none; }
+.graded-tile.skel-tile .graded-tile-bar { background: var(--md-surface-2); }
+.skel-group-header { padding: 16px 16px 8px; }
+.skel-hero { height: 230px; border-radius: 32px; }
+.skel-box { height: 132px; border-radius: 24px; }
+.skel-panel { height: 260px; border-radius: 28px; }
+@media (prefers-reduced-motion: reduce) { .skel::after { display: none; } }
 
 /* ================================================================
    DARK MODE OVERRIDES

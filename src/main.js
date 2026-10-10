@@ -19,6 +19,7 @@ import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './com
 import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
 import { closeCardsightLink, initCardsightLink } from './components/cardsight-link.js'
 import { initCardsightUsage } from './components/cardsight-usage.js'
+import { initImagePlaceholders } from './utils.js'
 
 // ── Apply theme before first paint ─────────────────────────────────────────
 initTheme()
@@ -47,18 +48,25 @@ const navBar     = document.getElementById('nav-bar')
 
 document.getElementById('signInBtn').addEventListener('click', signInWithGoogle)
 
-// Top-bar Profile buttons show the signed-in Google photo instead of the
-// generic person icon (the icon stays if there's no photo or it fails to load)
+initImagePlaceholders()
+
+// Profile buttons (top bars and the nav rail) show the signed-in Google photo
+// instead of the generic person icon — the icon stays if there's no photo or
+// it fails to load
 function _showProfileAvatar(user) {
   if (!user?.photoURL) return
-  document.querySelectorAll('.top-bar-icon-btn[data-page="stats"]').forEach(btn => {
+  const swap = (iconEl, className) => {
+    if (!iconEl) return
     const img = document.createElement('img')
-    img.className = 'top-bar-avatar'
+    img.className = className
     img.alt = ''
     img.referrerPolicy = 'no-referrer'
-    img.onload = () => btn.replaceChildren(img)
+    img.onload = () => iconEl.replaceWith(img)
     img.src = user.photoURL
-  })
+  }
+  document.querySelectorAll('.top-bar-icon-btn[data-page="stats"] .material-symbols-outlined')
+    .forEach(icon => swap(icon, 'top-bar-avatar'))
+  swap(document.querySelector('#rail-stats .material-symbols-outlined'), 'rail-avatar')
 }
 
 onAuthStateChanged(auth, user => {

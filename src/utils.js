@@ -51,6 +51,36 @@ export function escapeAttr(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
+// Caption for the placeholder that replaces a card image if it fails to load
+// (or there isn't one): "1990 / Bowman / #378"
+export function imgPh(card) {
+  const lines = [String(card?.Year || ''), String(card?.Set || '').split(' - ')[0], card?.Number ? `#${card.Number}` : '']
+  return `data-ph="${escapeAttr(lines.filter(Boolean).join('\n'))}"`
+}
+
+const PH_IMG = '.card-thumb, .graded-tile-img, .cd2-single-img, .cd2-psa-main-img, .st-mv-thumb'
+
+// One capture-phase listener for every card image in the app — swaps a broken
+// or empty image for a styled placeholder so lists don't show grey boxes
+export function initImagePlaceholders() {
+  document.addEventListener('error', e => {
+    const img = e.target
+    if (!(img instanceof HTMLImageElement) || !img.matches(PH_IMG) || !img.isConnected) return
+    const ph = document.createElement('div')
+    ph.className = `${img.className} img-ph`
+    ph.setAttribute('role', 'img')
+    ph.setAttribute('aria-label', 'No image')
+    const mark = document.createElement('span')
+    mark.className = 'material-symbols-outlined img-ph-mark'
+    mark.textContent = 'style'
+    const text = document.createElement('span')
+    text.className = 'img-ph-text'
+    text.textContent = img.dataset.ph || ''
+    ph.append(mark, text)
+    img.replaceWith(ph)
+  }, true)
+}
+
 export function vibrate(ms = 10) {
   if (navigator.vibrate) navigator.vibrate(ms)
 }

@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, imgPh } from '../utils.js'
 
 export function renderGradedView() {
   if (!state.cardsLoaded) return
@@ -74,7 +74,7 @@ function buildGradedRow(c) {
   const imgSrc      = getCleanImg(c.PSAImage || c['App Image'])
 
   return `<div class="graded-tile ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}" data-co="${co}">
-    <img class="graded-tile-img" src="${imgSrc}" alt="">
+    <img class="graded-tile-img" src="${imgSrc}" alt="" ${imgPh(c)}>
     <div class="graded-tile-bar">
       <div class="graded-tile-grade">${gradeLabel}</div>
       <div class="graded-tile-set">${c.Year || ''} ${c.Set || ''}</div>

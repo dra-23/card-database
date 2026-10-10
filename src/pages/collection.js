@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, imgPh } from '../utils.js'
 
 export function renderCollectionView({ preserveScroll = false } = {}) {
   if (!state.cardsLoaded) return
@@ -101,7 +101,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
 
     const header = document.createElement('div')
     header.className = 'year-group-header'
-    header.innerHTML = `<span class="year-group-key">${key}</span><span class="year-count">${groupCards.length} cards</span>`
+    header.innerHTML = `<span class="year-group-key">${key}</span><span class="year-count">${groupCards.length} card${groupCards.length !== 1 ? 's' : ''}</span>`
     fragment.appendChild(header)
 
     if (sortBy !== 'year') {
@@ -194,7 +194,7 @@ function buildCollectionRow(c) {
   const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
-    <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy" decoding="async">
+    <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy" decoding="async" ${imgPh(c)}>
     <div class="card-info">
       <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
       <div class="card-info-row2">${playerName}</div>

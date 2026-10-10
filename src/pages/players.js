@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, imgPh } from '../utils.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
@@ -276,7 +276,7 @@ export function buildCardRow(c, ctx) {
   const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
   return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
-    <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="">
+    <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" ${imgPh(c)}>
     <div class="card-info">
       <div class="card-info-row1">${c.Year} ${c.Set || ''}</div>
       <div class="card-info-row2">#${c.Number || 'N/A'}</div>

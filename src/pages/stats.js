@@ -245,7 +245,7 @@ function marketHTML(d) {
       <div class="st-mv-top">
         ${m.top.map((c, i) => `
           <button class="st-mv-row" data-st-card="${escapeAttr(c.id)}" style="--i:${i}">
-            ${c.img ? `<img class="st-mv-thumb" src="${escapeAttr(c.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="st-mv-thumb"></span>`}
+            ${c.img ? `<img class="st-mv-thumb" src="${escapeAttr(c.img)}" alt="" loading="lazy">` : `<span class="st-mv-thumb"></span>`}
             <span class="st-mv-row-main">
               <span class="st-mv-row-title">${esc(c.title)}</span>
               <span class="st-mv-row-sub">${esc(c.player)}${c.grade ? ` · ${esc(c.grade)}` : ''}</span>

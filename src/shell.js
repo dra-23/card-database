@@ -3,6 +3,30 @@ export function renderShell() {
   document.getElementById('app').innerHTML = authScreenHTML() + appShellHTML()
 }
 
+// Loading skeletons — shown until Firestore's first snapshot, then replaced
+// wholesale by each page's first render
+const times = (n, fn) => Array.from({ length: n }, (_, i) => fn(i)).join('')
+const SKEL_PLAYERS = times(8, () => `
+  <div class="player-tile skel-tile" aria-hidden="true">
+    <div class="tile-img skel"></div>
+    <div class="tile-text-bar"><div class="skel skel-line" style="width:72%"></div><div class="skel skel-line skel-line-sm" style="width:42%"></div></div>
+  </div>`)
+const SKEL_ROWS = `<div class="skel-group-header" aria-hidden="true"><div class="skel skel-line" style="width:70px"></div></div>` + times(9, i => `
+  <div class="card-item skel-row" aria-hidden="true">
+    <div class="card-thumb skel"></div>
+    <div class="card-info"><div class="skel skel-line" style="width:${[62, 48, 70, 55][i % 4]}%"></div><div class="skel skel-line skel-line-sm" style="width:38%"></div><div class="skel skel-chip"></div></div>
+  </div>`)
+const SKEL_GRADED = `<div class="skel-group-header" aria-hidden="true"><div class="skel skel-line" style="width:110px"></div></div><div class="graded-grid">` + times(6, () => `
+  <div class="graded-tile skel-tile" aria-hidden="true">
+    <div class="graded-tile-img skel"></div>
+    <div class="graded-tile-bar"><div class="skel skel-line" style="width:46%"></div><div class="skel skel-line skel-line-sm" style="width:70%"></div></div>
+  </div>`) + `</div>`
+const SKEL_STATS = `<div class="stats-content" aria-hidden="true">
+  <div class="skel skel-hero"></div>
+  <div class="st-tiles">${times(4, () => '<div class="skel skel-box"></div>')}</div>
+  <div class="skel skel-panel"></div>
+</div>`
+
 function authScreenHTML() {
   return `
 <div id="auth-screen" style="display:none; position:fixed; inset:0; background:var(--md-surface-1); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:0;">
@@ -52,7 +76,7 @@ function appShellHTML() {
         <strong id="topBarTotal">0</strong>
       </div>
     </div>
-    <div class="total-count-pill" id="totalOwnedCounterGlobal">0</div>
+    <div class="total-count-pill" id="totalOwnedCounterGlobal">–</div>
   </div>
 
   <!-- CONTENT ROW: nav rail + page area -->
@@ -96,7 +120,7 @@ function appShellHTML() {
               <div class="collapsible-header">
                 <div class="top-bar">
                   <span class="brand">Players</span>
-                  <div class="total-count-pill" id="totalOwnedCounter">0</div>
+                  <div class="total-count-pill" id="totalOwnedCounter">–</div>
                   <button class="top-bar-icon-btn" data-page="stats" aria-label="Profile">
                     <span class="material-symbols-outlined">person</span>
                   </button>
@@ -104,7 +128,7 @@ function appShellHTML() {
               </div>
             </div>
             <div class="scroll-body" id="galleryScrollBody">
-              <div class="player-grid" id="playerGrid"></div>
+              <div class="player-grid" id="playerGrid">${SKEL_PLAYERS}</div>
             </div>
             <button class="wide-fab" id="addPlayerFab" title="Add player">
               <span class="material-symbols-outlined" style="font-size:26px;">person_add</span>
@@ -154,7 +178,7 @@ function appShellHTML() {
                     </div>
                   </div>
                 </div>
-                <div id="collectionList"></div>
+                <div id="collectionList">${SKEL_ROWS}</div>
               </div>
               <div class="fast-scroll-bar" id="collFastScroll"><div class="fast-scroll-thumb"></div></div>
               <button class="wide-fab" id="addCardCollFab" title="Add card">
@@ -193,7 +217,7 @@ function appShellHTML() {
                     </div>
                   </div>
                 </div>
-                <div id="gradedList"></div>
+                <div id="gradedList">${SKEL_GRADED}</div>
               </div>
             </div>
             <div id="twoPane-gradedDetail">
@@ -220,7 +244,7 @@ function appShellHTML() {
               </div>
             </div>
             <div class="scroll-body" id="statsScrollBody">
-              <div id="statsContent"></div>
+              <div id="statsContent">${SKEL_STATS}</div>
             </div>
           </div>
         </div>

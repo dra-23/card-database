@@ -1,6 +1,6 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate, imgPh } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
 import { promptNotes } from './notes-prompt.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
@@ -144,7 +144,7 @@ export function buildCardDetailHTML(card, ctx) {
         const cb5 = cNum ? `<span class="badge-numbered">#'d</span>`  : ''
         const cBadges = cb1 + cb2 + cb3 + cb4 + cb5
         return `<div class="card-item ${isOwned(c) ? '' : 'not-owned'} set-preview-row" data-set-card-id="${escapeAttr(c.id)}">
-          <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy">
+          <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy" ${imgPh(c)}>
           <div class="card-info">
             <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
             <div class="card-info-row2">${pName}</div>
@@ -164,7 +164,7 @@ export function buildCardDetailHTML(card, ctx) {
       ${card.PSAImageBack ? `<div class="cd2-hero-img-wrap cd2-hero-img-wrap-half"><img class="cd2-hero-img cd2-psa-main-img" src="${card.PSAImageBack}" alt="back"></div>` : ''}
     </div>` : `
     <div class="cd2-hero-img-wrap">
-      <img class="cd2-hero-img cd2-single-img" src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}">
+      <img class="cd2-hero-img cd2-single-img" src="${getCleanImg(card['App Image'])}" alt="${escapeAttr(card.Set)}" ${imgPh(card)}>
       <button type="button" class="cd2-zoom-btn" data-zoom-single aria-label="Zoom card image">${ICON_ZOOM}</button>
     </div>`
 
@@ -532,7 +532,55 @@ export function refreshCurrentCardPanel(cardId) {
 }
 
 // ── handleCardTap ─────────────────────────────────────────────────────────
+// Thumbnail elements a card can be opened from, by page
+const TAP_SOURCES = id => {
+  const s = CSS.escape(id)
+  return [
+    `.card-item[data-card-id="${s}"] .card-thumb`,
+    `.graded-tile[data-card-id="${s}"] .graded-tile-img`,
+    `.st-mv-row[data-st-card="${s}"] .st-mv-thumb`,
+  ].join(',')
+}
+
+// The copy of the thumbnail that's actually on screen — the same card can
+// be rendered on several pages of the page track at once
+function _visibleTapSource(cardId) {
+  return [...document.querySelectorAll(TAP_SOURCES(cardId))].find(el => {
+    const r = el.getBoundingClientRect()
+    return r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth
+  }) || null
+}
+
+// In the side-panel layouts, opening a card morphs the tapped thumbnail into
+// the detail image (View Transitions API). Slide-up sheets on phones keep
+// their own motion only — a morph on top of the slide reads as two
+// animations. In-place swaps (swipe, same-set taps) stay instant.
 export function handleCardTap(cardId, ctx, replace = false) {
+  const inline = (ctx || 'player') === 'player' ? isFoldLayout() : isWideLayout()
+  const source = inline && !replace && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? _visibleTapSource(cardId) : null
+  if (!source) { _openCard(cardId, ctx, replace); return }
+
+  const panelIds = { player: 'twoPane-panel', collection: 'twoPane-coll-panel', graded: 'twoPane-grad-panel' }
+  let hero = null
+  source.style.viewTransitionName = 'card-hero'
+  const vt = document.startViewTransition(async () => {
+    source.style.viewTransitionName = ''
+    _openCard(cardId, ctx, replace)
+    hero = document.querySelector(`#${panelIds[ctx] || panelIds.player} :is(.cd2-single-img, .cd2-psa-main-img)`)
+    if (hero) {
+      hero.style.viewTransitionName = 'card-hero'
+      // Snapshotting an undecoded image would morph into a blank box
+      if (hero.decode) await Promise.race([hero.decode().catch(() => {}), new Promise(r => setTimeout(r, 150))])
+    }
+  })
+  vt.finished.finally(() => {
+    source.style.viewTransitionName = ''
+    if (hero) hero.style.viewTransitionName = ''
+  })
+}
+
+function _openCard(cardId, ctx, replace) {
   state.setCurrentCardId(cardId)
   state.setActiveCardContext(ctx || 'player')
 
