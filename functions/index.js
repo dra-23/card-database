@@ -6,6 +6,7 @@ const { getAuth } = require('firebase-admin/auth')
 initializeApp()
 
 const CARDSIGHT_API_KEY = defineSecret('CARDSIGHT_API_KEY')
+const PSA_KEY = defineSecret('PSA_KEY')
 const CARDSIGHT_BASE = 'https://api.cardsight.ai'
 // Same single account firestore.rules and storage.rules allow — any Google
 // account can sign in, so a valid ID token alone isn't enough to gate a
@@ -91,21 +92,22 @@ function extractImages(raw) {
   }
 }
 
-exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5 }, async (req, res) => {
+exports.psalookup = onRequest({ region: 'us-central1', maxInstances: 5, secrets: [PSA_KEY] }, async (req, res) => {
   const authHeader = req.headers.authorization || ''
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
   if (!idToken) { res.status(401).json({ error: 'Unauthorized' }); return }
+  let decoded
   try {
-    await getAuth().verifyIdToken(idToken)
+    decoded = await getAuth().verifyIdToken(idToken)
   } catch (_) {
     res.status(401).json({ error: 'Invalid token' }); return
   }
+  if (decoded.uid !== OWNER_UID) { res.status(403).json({ error: 'Forbidden' }); return }
 
   const cert = String(req.query.cert || '').replace(/\D/g, '')
   if (!cert) { res.status(400).json({ error: 'cert query param required' }); return }
 
-  const KEY = process.env.PSA_KEY
-  if (!KEY) { res.status(500).json({ error: 'PSA_KEY not set in functions environment' }); return }
+  const KEY = PSA_KEY.value()
 
   try {
     const [certRaw, imgRaw] = await Promise.allSettled([
