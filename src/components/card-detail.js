@@ -7,6 +7,7 @@ import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
 import { priceCard, savedMarketValue, findCardsightMatch } from '../services/market-value.js'
+import { openCardsightLink } from './cardsight-link.js'
 
 // ── Icons (inline, currentColor so they theme for free) ───────────────────
 const ICON_KEBAB    = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.8" fill="currentColor"></circle><circle cx="12" cy="12" r="1.8" fill="currentColor"></circle><circle cx="12" cy="19" r="1.8" fill="currentColor"></circle></svg>`
@@ -18,6 +19,7 @@ const ICON_PENCIL    = `<svg width="14" height="14" viewBox="0 0 24 24" fill="no
 const ICON_ARROW     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"></path><path d="M8 7h9v9"></path></svg>`
 const ICON_TRASH     = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path></svg>`
 const ICON_REFRESH   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"></path><path d="M20 5v6h-6"></path></svg>`
+const ICON_LINK      = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"></path></svg>`
 const ICON_CALENDAR  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`
 const ICON_LAYERS    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>`
 const ICON_HASH      = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="9" y1="4" x2="7" y2="20"></line><line x1="17" y1="4" x2="15" y2="20"></line><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>`
@@ -185,9 +187,12 @@ export function buildCardDetailHTML(card, ctx) {
           <span class="cd2-market-lbl">Gain / Loss</span>
           <span class="cd2-market-val" data-mv-change></span>
         </div>
-        ${card.CardsightId
-          ? `<button type="button" class="cd2-check-value-btn" data-mv-refresh>${ICON_REFRESH} Refresh value</button>`
-          : `<button type="button" class="cd2-check-value-btn" data-mv-check>${ICON_REFRESH} Check current value</button>`}
+        <div class="cd2-mv-actions">
+          ${card.CardsightId
+            ? `<button type="button" class="cd2-check-value-btn" data-mv-refresh>${ICON_REFRESH} Refresh value</button>`
+            : `<button type="button" class="cd2-check-value-btn" data-mv-check>${ICON_REFRESH} Check current value</button>`}
+          <button type="button" class="cd2-check-value-btn" data-mv-link>${ICON_LINK} ${card.CardsightId ? 'Change match' : 'Find on Cardsight'}</button>
+        </div>
       </div>
     </div>`
 
@@ -427,6 +432,9 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
   // Market value: check (no CardsightId yet) / refresh (already synced)
   panelEl.querySelector('[data-mv-check]')?.addEventListener('click', () => {
     findAndLoadMarketValue(cardId, panelEl)
+  })
+  panelEl.querySelector('[data-mv-link]')?.addEventListener('click', () => {
+    openCardsightLink(cardId)
   })
   panelEl.querySelector('[data-mv-refresh]')?.addEventListener('click', () => {
     const valEl = panelEl.querySelector('[data-mv-value]')

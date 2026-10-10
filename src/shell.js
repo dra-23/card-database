@@ -470,6 +470,31 @@ function appShellHTML() {
   </div>
 </div>
 
+<!-- CARDSIGHT LINK SHEET -->
+<div class="sheet" id="cardsightLinkSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body">
+    <h2 style="margin-bottom:4px; font-family:'Google Sans Display';">Link to Cardsight</h2>
+    <div id="cslCardLabel" class="csl-card-label"></div>
+    <div class="cs-search-row">
+      <div class="cs-search-input-wrap">
+        <span class="material-symbols-outlined cs-search-icon">search</span>
+        <input type="text" id="csl_query" class="cs-search-input" placeholder="Year, name, set…" autocomplete="off" inputmode="search">
+      </div>
+      <button class="expressive-btn cs-go-btn" id="cslSearchBtn" aria-label="Search" style="flex-shrink:0;height:48px;width:48px;border-radius:14px;padding:0;background:var(--md-primary);color:#fff;box-shadow:none;">
+        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+      </button>
+    </div>
+    <div class="csl-hint">Pick the base card. Parallels like Tiffany are detected from your card's set name.</div>
+    <div id="csl_status" style="display:none; font-size:16px; padding:6px 2px; color:var(--md-on-surface-variant);"></div>
+    <div id="cslResults" class="cs-results"></div>
+    <div class="csl-actions">
+      <button type="button" class="csl-text-btn csl-danger" id="cslUnlinkBtn">Remove link</button>
+      <button type="button" class="csl-text-btn" id="cslCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- CARD FORM SHEET -->
 <div class="sheet cf2-sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>

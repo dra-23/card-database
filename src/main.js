@@ -17,6 +17,7 @@ import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
 import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
 import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
+import { closeCardsightLink, initCardsightLink } from './components/cardsight-link.js'
 
 // ── Apply theme before first paint ─────────────────────────────────────────
 initTheme()
@@ -110,6 +111,8 @@ function startApp() {
   attachFormDismissGesture('cardFormSheet',   closeAllForms)
   attachFormDismissGesture('playerFormSheet', closeAllForms)
   attachFormDismissGesture('psaSheet',        closePSASheet)
+  attachFormDismissGesture('cardsightLinkSheet', closeCardsightLink)
+  initCardsightLink()
   attachFormDismissGesture('badgePickerSheet', closeBadgePicker)
   initBadgePicker()
   initCardSearch()
@@ -229,6 +232,8 @@ function startApp() {
       closeSettingsPage()
     } else if (document.getElementById('psaSheet').classList.contains('open')) {
       closePSASheet()
+    } else if (document.getElementById('cardsightLinkSheet').classList.contains('open')) {
+      closeCardsightLink()
     } else if (document.getElementById('cardSearchSheet').classList.contains('open')) {
       closeCardSearch()
       const scrim = document.getElementById('globalScrim')
@@ -261,6 +266,9 @@ function startApp() {
     }
     if (document.getElementById('psaSheet')?.classList.contains('open')) {
       closePSASheet(); return
+    }
+    if (document.getElementById('cardsightLinkSheet')?.classList.contains('open')) {
+      closeCardsightLink(); return
     }
     const cardSheetOpen = ['cardDetailSheet','collectionCardSheet','gradedCardSheet']
       .some(id => document.getElementById(id)?.classList.contains('open'))
