@@ -73,6 +73,7 @@ export async function doCardSearch() {
 
   try {
     const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 20 })
+    if (error?.error === 'budget') { _setStatus('Monthly Cardsight limit reached — enter the card manually', true); return }
     if (error || !data) { _setStatus('Search failed', true); return }
     _setStatus('')
     _renderSearchResults(data.results || [])
@@ -109,9 +110,13 @@ function _renderSearchResults(results) {
   _fetchResultImages(results, el)
 }
 
+// Each image is its own Cardsight call, and the plan caps calls per month —
+// only the top few results get a thumbnail
+const THUMB_LIMIT = 3
+
 async function _fetchResultImages(results, el) {
   await Promise.allSettled(
-    results.map(async (r, i) => {
+    results.slice(0, THUMB_LIMIT).map(async (r, i) => {
       if (!r.id) return
       try {
         const { data } = await cardsight.images.getCard(r.id, { format: 'json' })
@@ -190,6 +195,7 @@ export async function doCardScan(file) {
 
   try {
     const { data, error } = await cardsight.identify.card(file)
+    if (error?.error === 'budget') { _setStatus('Monthly Cardsight limit reached — enter the card manually', true); return }
     if (error || !data) { _setStatus('Could not identify card', true); return }
 
     const detections = data.detections || []

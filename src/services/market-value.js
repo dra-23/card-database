@@ -6,10 +6,6 @@ import { deleteField } from '../firebase.js'
 const FRESH_MS = 5 * 60 * 1000
 const _cache = new Map()
 
-// Saved values older than this get rewritten even when unchanged, so
-// MarketValueAt stays a meaningful "last checked" time
-const RESAVE_MS = 24 * 60 * 60 * 1000
-
 async function cached(key, fetcher, force) {
   const hit = _cache.get(key)
   if (!force && hit && Date.now() - hit.at < FRESH_MS) return hit.res
@@ -52,7 +48,7 @@ async function resolveParallel(card, force) {
   if (card.CardsightParallel?.sig === sig) return { info: card.CardsightParallel, fresh: false }
 
   const { data, error } = await cached(`cat:${card.CardsightId}`, () => cardsight.catalog.cards.get(card.CardsightId), force)
-  if (error || !data) return { info: null, fresh: false }
+  if (error || !data) return { info: null, fresh: false, error }
 
   const set = card.Set || ''
   const parallels = (data.parallels || []).map(p => ({ id: p.id, name: p.name, terms: parallelTerms(p.name) }))
@@ -125,7 +121,9 @@ const MISLABEL_FLOOR = 1.5
 // match; fields is what to save on the card (null when nothing changed).
 export async function priceCard(card, { force = false } = {}) {
   if (!card.CardsightId) return { mv: null, fields: null, error: 'unlinked' }
-  const { info, fresh } = await resolveParallel(card, force)
+  const { info, fresh, error: catErr } = await resolveParallel(card, force)
+  // Pricing without knowing the parallel would value a Tiffany as a base card
+  if (isBudgetError(catErr)) return { mv: null, fields: null, error: catErr }
   const pid = info ? (info.id || 'null') : undefined // 'null' asks for the base card only
 
   const getPricing = p => cached(`price:${card.CardsightId}:${p ?? 'all'}`,
@@ -146,12 +144,14 @@ export async function priceCard(card, { force = false } = {}) {
     records = records.filter(r => mentions(r.title, info.terms))
     if (info.q) {
       const s = await cached(`search:${info.q}`, () => cardsight.pricing.search({ q: info.q, period: 'all', limit: 100 }), force)
+      if (isBudgetError(s.error)) return { mv: null, fields: null, error: s.error }
       const urls = new Set(records.map(r => r.url))
       const found = (s.data?.results || []).filter(r => typeof r.price === 'number' && !urls.has(r.url) && titleFitsCard(r.title, card, info))
       if (found.length) { records = [...records, ...found]; source = 'title-search' }
     }
     // Drop sales priced like the regular card — mislabeled base cards
     const base = await getPricing('null')
+    if (isBudgetError(base.error)) return { mv: null, fields: null, error: base.error }
     const baseRecs = exactGradeRecords(base.data, card).filter(r => !mentions(r.title, info.otherTerms))
     if (baseRecs.length >= 3) {
       const floor = median(baseRecs.map(r => r.price)) * MISLABEL_FLOOR
@@ -160,19 +160,35 @@ export async function priceCard(card, { force = false } = {}) {
     records.sort((a, b) => String(b.date).localeCompare(String(a.date)))
   }
 
-  const fields = fresh ? { CardsightParallel: info } : {}
-  const saved = savedMarketValue(card)
+  // MarketCheckedAt is saved even when there's no sales data, so the card
+  // isn't re-priced every time it's opened
+  const fields = { MarketCheckedAt: Date.now(), ...(fresh ? { CardsightParallel: info } : {}) }
   if (!records.length) {
     // Don't keep showing a value computed under looser rules
-    if (saved != null) Object.assign(fields, { MarketValue: deleteField(), MarketValueAt: deleteField() })
-    return { mv: null, fields: Object.keys(fields).length ? fields : null, parallel: info?.name || null }
+    if (savedMarketValue(card) != null) Object.assign(fields, { MarketValue: deleteField(), MarketValueAt: deleteField() })
+    return { mv: null, fields, parallel: info?.name || null }
   }
 
   const mv = { value: average(records), sales: records.length, lastDate: records[0]?.date || null, source }
-  const value = Math.round(mv.value * 100) / 100
-  const stale = !card.MarketValueAt || Date.now() - card.MarketValueAt > RESAVE_MS
-  if (force || stale || saved !== value) Object.assign(fields, { MarketValue: value, MarketValueAt: Date.now() })
-  return { mv, fields: Object.keys(fields).length ? fields : null, parallel: info?.name || null }
+  Object.assign(fields, { MarketValue: Math.round(mv.value * 100) / 100, MarketValueAt: Date.now() })
+  return { mv, fields, parallel: info?.name || null }
+}
+
+// Cardsight's plan caps calls per month, so saved values are reused and a
+// card is only re-priced automatically once its last check is this old
+export const VALUE_STALE_MS = 30 * 24 * 60 * 60 * 1000
+
+export function lastChecked(card) {
+  return card.MarketCheckedAt || card.MarketValueAt || 0
+}
+
+export function needsAutoPrice(card) {
+  return !!card.CardsightId && Date.now() - lastChecked(card) > VALUE_STALE_MS
+}
+
+// The proxy refuses calls once the monthly budget is used up
+export function isBudgetError(err) {
+  return err?.error === 'budget'
 }
 
 const digits = s => String(s ?? '').replace(/\D/g, '')
@@ -202,6 +218,7 @@ export async function findCardsightMatch(card, playerName) {
 
   for (const q of queries) {
     const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 20 })
+    if (isBudgetError(error)) throw Object.assign(new Error('Monthly Cardsight limit reached'), { budget: true })
     if (error) continue
     // A card without a number ("NNO") only matches catalog cards without one
     const hits = (data?.results || []).filter(r =>

@@ -18,6 +18,7 @@ import { openCardSearch, closeCardSearch, initCardSearch } from './components/ca
 import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
 import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
 import { closeCardsightLink, initCardsightLink } from './components/cardsight-link.js'
+import { initCardsightUsage } from './components/cardsight-usage.js'
 
 // ── Apply theme before first paint ─────────────────────────────────────────
 initTheme()
@@ -46,11 +47,26 @@ const navBar     = document.getElementById('nav-bar')
 
 document.getElementById('signInBtn').addEventListener('click', signInWithGoogle)
 
+// Top-bar Profile buttons show the signed-in Google photo instead of the
+// generic person icon (the icon stays if there's no photo or it fails to load)
+function _showProfileAvatar(user) {
+  if (!user?.photoURL) return
+  document.querySelectorAll('.top-bar-icon-btn[data-page="stats"]').forEach(btn => {
+    const img = document.createElement('img')
+    img.className = 'top-bar-avatar'
+    img.alt = ''
+    img.referrerPolicy = 'no-referrer'
+    img.onload = () => btn.replaceChildren(img)
+    img.src = user.photoURL
+  })
+}
+
 onAuthStateChanged(auth, user => {
   if (user) {
     authScreen.style.display = 'none'
     appShell.style.display   = 'flex'
     if (!isWideLayout()) navBar.style.display = 'flex'
+    _showProfileAvatar(user)
     startApp()
   } else {
     authScreen.style.display = 'flex'
@@ -69,6 +85,7 @@ function startApp() {
 
   // Firestore
   state.subscribeFirestore()
+  initCardsightUsage()
   state.on('players:updated', () => {
     updateOwnedCount()
   })

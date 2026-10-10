@@ -2,8 +2,10 @@ const { onRequest } = require('firebase-functions/v2/https')
 const { defineSecret } = require('firebase-functions/params')
 const { initializeApp } = require('firebase-admin/app')
 const { getAuth } = require('firebase-admin/auth')
+const { getFirestore, FieldValue } = require('firebase-admin/firestore')
 
 initializeApp()
+const db = getFirestore()
 
 const CARDSIGHT_API_KEY = defineSecret('CARDSIGHT_API_KEY')
 const PSA_KEY = defineSecret('PSA_KEY')
@@ -22,6 +24,54 @@ const CARDSIGHT_ALLOWED = [
   { method: 'POST', path: /^\/v1\/identify\/card$/ },
 ]
 
+// ── Monthly call budget ─────────────────────────────────────────────────────
+// Cardsight's plan caps calls per month. Every forwarded call is counted in
+// CardsightUsage/{period}; once usage reaches limit − reserve, only photo
+// identification (adding a card) is still allowed, and nothing past limit.
+// Limit, reserve and the billing reset day live in Settings/cardsight.
+const BUDGET_DEFAULTS = { monthlyLimit: 750, reserve: 50, resetDay: 1 }
+let _budgetCfg = null, _budgetCfgAt = 0
+
+async function budgetConfig() {
+  if (_budgetCfg && Date.now() - _budgetCfgAt < 60_000) return _budgetCfg
+  const snap = await db.doc('Settings/cardsight').get()
+  _budgetCfg = { ...BUDGET_DEFAULTS, ...(snap.exists ? snap.data() : {}) }
+  _budgetCfgAt = Date.now()
+  return _budgetCfg
+}
+
+// Billing period key, e.g. "2026-10" for a period that started in October
+function periodKey(resetDay, now = new Date()) {
+  let y = now.getUTCFullYear(), m = now.getUTCMonth()
+  if (now.getUTCDate() < resetDay) { m -= 1; if (m < 0) { m = 11; y -= 1 } }
+  return `${y}-${String(m + 1).padStart(2, '0')}`
+}
+
+const callKind = path =>
+  path.startsWith('/v1/identify') ? 'identify'
+  : path.startsWith('/v1/images') ? 'images'
+  : path === '/v1/pricing/search' ? 'salesSearch'
+  : path.startsWith('/v1/pricing') ? 'pricing'
+  : 'catalog'
+
+// Reserves one call, or returns why it can't
+async function takeBudget(kind) {
+  const cfg = await budgetConfig()
+  const ref = db.doc(`CardsightUsage/${periodKey(cfg.resetDay)}`)
+  return db.runTransaction(async tx => {
+    const snap = await tx.get(ref)
+    const used = snap.exists ? (snap.data().count || 0) : 0
+    const cap = kind === 'identify' ? cfg.monthlyLimit : cfg.monthlyLimit - cfg.reserve
+    if (used >= cap) return { ok: false, used, limit: cfg.monthlyLimit }
+    tx.set(ref, {
+      count: FieldValue.increment(1),
+      kinds: { [kind]: FieldValue.increment(1) },
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true })
+    return { ok: true, used: used + 1, limit: cfg.monthlyLimit }
+  })
+}
+
 exports.cardsight = onRequest({ region: 'us-central1', maxInstances: 5, secrets: [CARDSIGHT_API_KEY] }, async (req, res) => {
   const authHeader = req.headers.authorization || ''
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
@@ -39,6 +89,19 @@ exports.cardsight = onRequest({ region: 'us-central1', maxInstances: 5, secrets:
   if (!CARDSIGHT_ALLOWED.some(a => a.method === req.method && a.path.test(path))) {
     res.status(404).json({ error: 'Not found' }); return
   }
+
+  let budget
+  try {
+    budget = await takeBudget(callKind(path))
+  } catch (e) {
+    res.status(500).json({ error: 'Usage tracking failed: ' + e.message }); return
+  }
+  if (!budget.ok) {
+    res.set('Cache-Control', 'private, no-store')
+    res.status(429).json({ error: 'budget', message: 'Monthly Cardsight call budget reached', used: budget.used, limit: budget.limit })
+    return
+  }
+  res.set('X-Cardsight-Used', String(budget.used))
 
   const qIdx = req.originalUrl.indexOf('?')
   const query = qIdx >= 0 ? req.originalUrl.slice(qIdx) : ''

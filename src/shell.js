@@ -376,6 +376,9 @@ function appShellHTML() {
       </button>
     </div>
 
+    <div class="settings-section-title">Cardsight</div>
+    <div id="settingsUsage" class="settings-usage"></div>
+
     <button class="settings-signout-btn" id="settingsSignOutBtn">
       <span class="material-symbols-outlined">logout</span>Sign out
     </button>

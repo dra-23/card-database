@@ -9,6 +9,7 @@ import { escapeAttr } from '../utils.js'
 let _cardId = null
 let _scrimWasVisible = false
 let _searchGen = 0
+const THUMB_LIMIT = 3
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const digits = s => String(s ?? '').replace(/\D/g, '')
@@ -76,6 +77,7 @@ async function _search() {
 
   const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 25 })
   if (gen !== _searchGen) return
+  if (error?.error === 'budget') { _setStatus('Monthly Cardsight limit reached — try again next month'); return }
   if (error || !data) { _setStatus('Search failed — try again'); return }
 
   const card = _card()
@@ -99,8 +101,9 @@ async function _search() {
       <span class="material-symbols-outlined csl-chevron">${current ? 'check_circle' : 'chevron_right'}</span>
     </button>`).join('')
 
-  // Thumbnails load after the list renders
-  results.forEach(({ r }, i) => {
+  // Thumbnails load after the list renders. Each is a Cardsight call and the
+  // plan caps calls per month, so only the top few get one.
+  results.slice(0, THUMB_LIMIT).forEach(({ r }, i) => {
     cardsight.images.getCard(r.id, { format: 'json' }).then(({ data }) => {
       if (gen !== _searchGen || !data?.data) return
       const img = list.querySelector(`[data-csl-thumb="${i}"]`)

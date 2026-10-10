@@ -1,10 +1,11 @@
 import * as state from '../state.js'
 import { isOwned, getCleanImg, escapeAttr } from '../utils.js'
 import { auth, db, doc, writeBatch } from '../firebase.js'
+import { spendableCalls, onUsageChange } from '../components/cardsight-usage.js'
 import { switchPage, isWideLayout } from '../layout.js'
 import { openDetail } from './players.js'
 import { handleCardTap } from '../components/card-detail.js'
-import { priceCard, savedMarketValue } from '../services/market-value.js'
+import { priceCard, savedMarketValue, isBudgetError } from '../services/market-value.js'
 
 const truthy = v => v === true || v === 'true'
 const isGraded = c => c['Grading Company'] && c['Grading Company'] !== 'Raw'
@@ -223,7 +224,7 @@ function marketHTML(d) {
     <section class="stat-card st-mv-card" id="stMarket">
       <div class="st-card-head">
         <div class="stat-card-title">Market Value</div>
-        <button class="st-mv-refresh" data-st-mv-refresh ${_mvJob || !m.linked ? 'disabled' : ''} aria-label="Refresh market values">
+        <button class="st-mv-refresh" data-st-mv-refresh ${_mvJob || !m.linked || !spendableCalls() ? 'disabled' : ''} aria-label="Refresh market values">
           <span class="material-symbols-outlined${_mvJob ? ' st-spin' : ''}">refresh</span>${_mvJob ? 'Pricing…' : 'Refresh'}
         </button>
       </div>
@@ -269,7 +270,29 @@ function mvFootHTML(d) {
   if (_mvNote) parts.push(_mvNote)
   else if (m.updatedAt) parts.push(`Updated ${timeAgo(m.updatedAt)}`)
   if (m.linked < d.owned) parts.push(`${fmt(m.linked)} linked to Cardsight`)
+  if (!_mvNote && m.linked) parts.push(`Refresh ≈ ${fmt(estimateRefreshCalls(state.ALL_CARDS.filter(c => isOwned(c) && c.CardsightId)))} calls`)
   return `<span>${parts.join(' · ')}</span>`
+}
+
+// Re-render the Market Value card in place (e.g. when call usage changes)
+function _syncMarket() {
+  const mk = document.getElementById('stMarket')
+  if (!mk || !_data || _mvJob) return
+  const t = document.createElement('div')
+  t.innerHTML = marketHTML(_data).trim()
+  mk.replaceWith(t.firstElementChild)
+}
+onUsageChange(_syncMarket)
+
+// Rough count of calls a full Refresh will make: pricing for every card, a
+// catalog lookup for cards whose parallel isn't resolved yet, and a sales
+// search + base-price check for parallel cards
+function estimateRefreshCalls(cards) {
+  return cards.reduce((n, c) => {
+    const p = c.CardsightParallel
+    if (!p?.sig?.startsWith('2|')) return n + 2
+    return n + (p.id ? 3 : 1)
+  }, 0)
 }
 
 // Re-price every linked card, then save in one batch so the page re-renders
@@ -278,19 +301,27 @@ async function refreshAllValues() {
   if (_mvJob) return
   const cards = state.ALL_CARDS.filter(c => isOwned(c) && c.CardsightId)
   if (!cards.length) return
+  const est = estimateRefreshCalls(cards)
+  if (est > spendableCalls()) {
+    _mvNote = `Refresh needs about ${fmt(est)} calls — only ${fmt(spendableCalls())} available this month`
+    _syncMarket()
+    return
+  }
+  if (!confirm(`Refresh uses about ${fmt(est)} of your ${fmt(spendableCalls())} remaining Cardsight calls this month. Continue?`)) return
   _mvJob = { done: 0, total: cards.length }
   _mvNote = ''
   _replaceSection('stMarket', marketHTML(_data))
 
   const updates = []
-  let next = 0, priced = 0, missing = 0, failed = 0
+  let next = 0, priced = 0, missing = 0, failed = 0, outOfBudget = false
   const worker = async () => {
-    while (next < cards.length) {
+    while (next < cards.length && !outOfBudget) {
       const c = cards[next++]
       try {
         const { mv, fields, error } = await priceCard(c, { force: true })
         if (fields) updates.push([c.id, fields])
-        if (error) failed++
+        if (isBudgetError(error)) outOfBudget = true
+        else if (error) failed++
         else if (!mv) missing++
         else priced++
       } catch { failed++ }
@@ -310,6 +341,7 @@ async function refreshAllValues() {
     const notes = [`Priced ${fmt(priced)} ${priced === 1 ? 'card' : 'cards'}`]
     if (missing) notes.push(`${fmt(missing)} with no sales data`)
     if (failed) notes.push(`${fmt(failed)} failed`)
+    if (outOfBudget) notes.push('stopped — monthly limit reached')
     _mvNote = notes.join(' · ')
   } catch (e) {
     console.error('[refreshAllValues]', e)

@@ -6,7 +6,7 @@ import { promptNotes } from './notes-prompt.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
-import { priceCard, savedMarketValue, findCardsightMatch } from '../services/market-value.js'
+import { priceCard, savedMarketValue, findCardsightMatch, needsAutoPrice, lastChecked, isBudgetError } from '../services/market-value.js'
 import { openCardsightLink } from './cardsight-link.js'
 
 // ── Icons (inline, currentColor so they theme for free) ───────────────────
@@ -180,7 +180,8 @@ export function buildCardDetailHTML(card, ctx) {
           <div class="cd2-market-divider"></div>
           <div class="cd2-market-stat">
             <span class="cd2-market-lbl">Market Value</span>
-            <span class="cd2-market-val ${card.CardsightId ? '' : 'cd2-market-muted'}" data-mv-value>${!card.CardsightId ? 'Not synced' : savedMarketValue(card) != null ? `$${savedMarketValue(card).toFixed(2)}` : 'Fetching…'}</span>
+            <span class="cd2-market-val ${card.CardsightId ? '' : 'cd2-market-muted'}" data-mv-value>${card.CardsightId ? '—' : 'Not synced'}</span>
+            <span class="cd2-market-age" data-mv-age></span>
           </div>
         </div>
         <div class="cd2-market-change-row" data-mv-change-row style="display:none">
@@ -295,46 +296,90 @@ async function _loadMarketValue(panelEl, card, { force = false } = {}) {
   _mvGen.set(panelEl, gen)
   const alive = () => _mvGen.get(panelEl) === gen
 
+  const valEl = panelEl.querySelector('[data-mv-value]')
+  if (valEl) { valEl.textContent = 'Fetching…'; valEl.classList.add('cd2-market-muted') }
+  _paintAge(panelEl, '')
+
   try {
     const { mv, fields, parallel, error } = await priceCard(card, { force })
-    // Keep a copy on the card so the Profile page can total it without
-    // re-pricing the whole collection
+    // Keep a copy on the card so the Profile page can total it, and so
+    // opening the card again doesn't spend another Cardsight call
     if (fields) setDoc(doc(db, 'Cards', card.id), fields, { merge: true }).catch(e => console.error('[saveMarketValue]', e))
     if (!alive()) return
-    const valEl     = panelEl.querySelector('[data-mv-value]')
-    const changeRow = panelEl.querySelector('[data-mv-change-row]')
-    const changeEl  = panelEl.querySelector('[data-mv-change]')
-    if (!valEl) return
 
-    if (error) { valEl.textContent = 'N/A'; valEl.classList.add('cd2-market-muted'); return }
-    if (!mv) { valEl.textContent = 'No data'; valEl.classList.add('cd2-market-muted'); return }
+    if (isBudgetError(error)) {
+      // Keep showing whatever was saved before
+      _showSavedMarketValue(panelEl, card)
+      _paintAge(panelEl, 'Monthly Cardsight limit reached')
+      return
+    }
+    if (error) { _paintMarketValue(panelEl, card, null, 'N/A'); return }
+    if (!mv) { _paintMarketValue(panelEl, card, null, 'No data'); _paintAge(panelEl, 'Checked just now'); return }
 
-    const avg = mv.value
     const lastDate = mv.lastDate ? new Date(mv.lastDate).toLocaleDateString() : null
-    valEl.textContent = `$${avg.toFixed(2)}`
-    valEl.classList.remove('cd2-market-muted')
-    valEl.title = [
+    _paintMarketValue(panelEl, card, mv.value, null, [
       `Avg of ${mv.sales} sale${mv.sales !== 1 ? 's' : ''}`,
       parallel && `${parallel} parallel`,
       mv.source === 'title-search' && 'matched by listing title',
       lastDate && `Last: ${lastDate}`,
-    ].filter(Boolean).join(' · ')
-
-    if (card.Price && changeRow && changeEl) {
-      const paid = parseFloat(card.Price)
-      if (!isNaN(paid) && paid > 0) {
-        const diff = avg - paid
-        const pct  = ((diff / paid) * 100).toFixed(1)
-        const sign = diff >= 0 ? '+' : ''
-        changeEl.textContent = `${sign}$${diff.toFixed(2)} (${sign}${pct}%)`
-        changeEl.className = `cd2-market-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
-        changeRow.style.display = ''
-      }
-    }
+    ].filter(Boolean).join(' · '))
+    _paintAge(panelEl, 'Updated just now')
   } catch {
     if (!alive()) return
-    const v = panelEl.querySelector('[data-mv-value]')
-    if (v) { v.textContent = 'N/A'; v.classList.add('cd2-market-muted') }
+    _paintMarketValue(panelEl, card, null, 'N/A')
+  }
+}
+
+function _timeAgo(ms) {
+  const s = (Date.now() - ms) / 1000
+  if (s < 60) return 'just now'
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`
+  const d = Math.floor(s / 86400)
+  return d === 1 ? 'yesterday' : `${d}d ago`
+}
+
+function _paintAge(panelEl, text) {
+  const el = panelEl.querySelector('[data-mv-age]')
+  if (el) el.textContent = text
+}
+
+// Value (or a muted label like "No data") plus the gain/loss row
+function _paintMarketValue(panelEl, card, value, label, title = '') {
+  const valEl     = panelEl.querySelector('[data-mv-value]')
+  const changeRow = panelEl.querySelector('[data-mv-change-row]')
+  const changeEl  = panelEl.querySelector('[data-mv-change]')
+  if (!valEl) return
+  valEl.title = title
+  if (changeRow) changeRow.style.display = 'none'
+  if (value == null) { valEl.textContent = label; valEl.classList.add('cd2-market-muted'); return }
+
+  valEl.textContent = `$${value.toFixed(2)}`
+  valEl.classList.remove('cd2-market-muted')
+  const paid = parseFloat(card.Price)
+  if (changeRow && changeEl && paid > 0) {
+    const diff = value - paid
+    const pct  = ((diff / paid) * 100).toFixed(1)
+    const sign = diff >= 0 ? '+' : ''
+    changeEl.textContent = `${sign}$${diff.toFixed(2)} (${sign}${pct}%)`
+    changeEl.className = `cd2-market-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
+    changeRow.style.display = ''
+  }
+}
+
+// What's already saved on the card — no Cardsight call
+function _showSavedMarketValue(panelEl, card) {
+  if (!card.CardsightId) return
+  const saved = savedMarketValue(card)
+  const checked = lastChecked(card)
+  if (saved != null) {
+    _paintMarketValue(panelEl, card, saved, null)
+    _paintAge(panelEl, `Updated ${_timeAgo(card.MarketValueAt || checked)}`)
+  } else if (checked) {
+    _paintMarketValue(panelEl, card, null, 'No data')
+    _paintAge(panelEl, `Checked ${_timeAgo(checked)}`)
+  } else {
+    _paintMarketValue(panelEl, card, null, 'Not checked')
   }
 }
 
@@ -357,7 +402,7 @@ export async function findAndLoadMarketValue(cardId, panelEl) {
     if (panelEl && document.contains(panelEl)) _loadMarketValue(panelEl, { ...c, CardsightId: cardsightId })
   } catch (e) {
     console.error('[findAndLoadMarketValue]', e)
-    if (valEl && document.contains(valEl)) valEl.textContent = 'Error'
+    if (valEl && document.contains(valEl)) valEl.textContent = e.budget ? 'Limit reached' : 'Error'
   }
 }
 
@@ -444,8 +489,10 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     _loadMarketValue(panelEl, card, { force: true })
   })
 
-  // Kick off pricing fetch if card has a CardsightId
-  _loadMarketValue(panelEl, card)
+  // Show the saved value; only spend a Cardsight call if it's never been
+  // checked or the last check is over a month old
+  _showSavedMarketValue(panelEl, card)
+  if (needsAutoPrice(card)) _loadMarketValue(panelEl, card)
 
   // Hero image(s) — click to enlarge, consistent with graded front/back
   const singleImg = panelEl.querySelector('.cd2-single-img')
