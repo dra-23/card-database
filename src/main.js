@@ -84,7 +84,7 @@ function startApp() {
   state.on('page:changed', page => {
     if (page === 'collection') renderCollectionView({ preserveScroll: true })
     if (page === 'graded')     renderGradedView()
-    if (page === 'stats')      renderStats()
+    if (page === 'stats')      renderStats({ animate: true })
     _syncTopBarSearch(page)
     // Always reveal the floating toolbar on a fresh page — it should never
     // land hidden from a previous page's scroll position
@@ -384,7 +384,7 @@ function wireNavButtons() {
       _syncTopBarSearch(page)
       if (page === 'collection') renderCollectionView()
       if (page === 'graded')     renderGradedView()
-      if (page === 'stats')      renderStats()
+      if (page === 'stats')      renderStats({ animate: true })
     })
   })
 
@@ -527,6 +527,16 @@ function wireFilterChips() {
     updateOwnedCount()
     renderCollectionView()
   })
+  // Profile page scorecards jump here with exactly the given filters applied
+  window._showCollectionFiltered = keys => {
+    Object.entries(COLL_FILTERS).forEach(([key, f]) => {
+      if (f.get() !== keys.includes(key)) f.toggle()
+      document.querySelector(`#collFilterDdPanel .dd-check-opt[data-chip="${key}"]`)?.classList.toggle('dd-checked', f.get())
+    })
+    _updateCollFilterBtn()
+    updateOwnedCount()
+    switchPage('collection')
+  }
 
   // ── Detail (player) filter dropdown ───────────────────────────────
   const DETAIL_FILTERS = {

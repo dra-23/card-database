@@ -19,6 +19,7 @@ import {
   deleteField,
   query,
   where,
+  writeBatch,
 } from 'firebase/firestore'
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
@@ -54,4 +55,4 @@ export async function signOutUser() {
   await signOut(auth)
 }
 
-export { onAuthStateChanged, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, deleteField, query, where, ref, uploadBytes, getDownloadURL }
+export { onAuthStateChanged, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, deleteField, query, where, writeBatch, ref, uploadBytes, getDownloadURL }

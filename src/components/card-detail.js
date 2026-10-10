@@ -7,6 +7,7 @@ import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
 import { cardsight } from '../cardsight.js'
+import { fetchPricing, computeMarketValue, marketValueFields, savedMarketValue } from '../services/market-value.js'
 
 // ── Icons (inline, currentColor so they theme for free) ───────────────────
 const ICON_KEBAB    = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.8" fill="currentColor"></circle><circle cx="12" cy="12" r="1.8" fill="currentColor"></circle><circle cx="12" cy="19" r="1.8" fill="currentColor"></circle></svg>`
@@ -178,7 +179,7 @@ export function buildCardDetailHTML(card, ctx) {
           <div class="cd2-market-divider"></div>
           <div class="cd2-market-stat">
             <span class="cd2-market-lbl">Market Value</span>
-            <span class="cd2-market-val ${card.CardsightId ? '' : 'cd2-market-muted'}" data-mv-value>${card.CardsightId ? 'Fetching…' : 'Not synced'}</span>
+            <span class="cd2-market-val ${card.CardsightId ? '' : 'cd2-market-muted'}" data-mv-value>${!card.CardsightId ? 'Not synced' : savedMarketValue(card) != null ? `$${savedMarketValue(card).toFixed(2)}` : 'Fetching…'}</span>
           </div>
         </div>
         <div class="cd2-market-change-row" data-mv-change-row style="display:none">
@@ -284,14 +285,14 @@ export function buildCardDetailHTML(card, ctx) {
 // ── Market value async loader ──────────────────────────────────────────────
 const _mvGen = new WeakMap()
 
-async function _loadMarketValue(panelEl, card) {
+async function _loadMarketValue(panelEl, card, { force = false } = {}) {
   if (!card.CardsightId) return
   const gen = (_mvGen.get(panelEl) || 0) + 1
   _mvGen.set(panelEl, gen)
   const alive = () => _mvGen.get(panelEl) === gen
 
   try {
-    const { data, error } = await cardsight.pricing.get(card.CardsightId)
+    const { data, error } = await fetchPricing(card.CardsightId, { force })
     if (!alive()) return
     const valEl     = panelEl.querySelector('[data-mv-value]')
     const changeRow = panelEl.querySelector('[data-mv-change-row]')
@@ -300,23 +301,19 @@ async function _loadMarketValue(panelEl, card) {
 
     if (error || !data) { valEl.textContent = 'N/A'; valEl.classList.add('cd2-market-muted'); return }
 
-    const co = card['Grading Company']
-    const gr = String(card.Grade || '')
+    const mv = computeMarketValue(data, card)
+    if (!mv) { valEl.textContent = 'No data'; valEl.classList.add('cd2-market-muted'); return }
 
-    let records = null
-    if (co && co !== 'Raw' && data.graded?.length) {
-      const cg = data.graded.find(g => g.company_name === co) || data.graded[0]
-      const gg = cg?.grades?.find(g => g.grade_value === gr) || cg?.grades?.[0]
-      if (gg?.records?.length) records = gg.records
-    }
-    if (!records?.length && data.raw?.records?.length) records = data.raw.records
-    if (!records?.length) { valEl.textContent = 'No data'; valEl.classList.add('cd2-market-muted'); return }
-
-    const avg = records.reduce((s, r) => s + r.price, 0) / records.length
-    const lastDate = records[0]?.date ? new Date(records[0].date).toLocaleDateString() : null
+    const avg = mv.value
+    const lastDate = mv.lastDate ? new Date(mv.lastDate).toLocaleDateString() : null
     valEl.textContent = `$${avg.toFixed(2)}`
     valEl.classList.remove('cd2-market-muted')
-    if (lastDate) valEl.title = `Avg of ${records.length} sale${records.length !== 1 ? 's' : ''} · Last: ${lastDate}`
+    if (lastDate) valEl.title = `Avg of ${mv.sales} sale${mv.sales !== 1 ? 's' : ''} · Last: ${lastDate}`
+
+    // Keep a copy on the card so the Profile page can total it without
+    // re-pricing the whole collection
+    const fields = marketValueFields(card, mv, { force })
+    if (fields) setDoc(doc(db, 'Cards', card.id), fields, { merge: true }).catch(e => console.error('[saveMarketValue]', e))
 
     if (card.Price && changeRow && changeEl) {
       const paid = parseFloat(card.Price)
@@ -453,7 +450,7 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     if (valEl) { valEl.textContent = 'Fetching…'; valEl.classList.add('cd2-market-muted') }
     const changeRow = panelEl.querySelector('[data-mv-change-row]')
     if (changeRow) changeRow.style.display = 'none'
-    _loadMarketValue(panelEl, card)
+    _loadMarketValue(panelEl, card, { force: true })
   })
 
   // Kick off pricing fetch if card has a CardsightId
