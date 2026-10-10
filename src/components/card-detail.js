@@ -6,8 +6,7 @@ import { promptNotes } from './notes-prompt.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
 import { closeCardSheets } from '../gestures.js'
 import { openCardForm } from './card-form.js'
-import { cardsight } from '../cardsight.js'
-import { fetchPricing, computeMarketValue, marketValueFields, savedMarketValue } from '../services/market-value.js'
+import { priceCard, savedMarketValue, findCardsightMatch } from '../services/market-value.js'
 
 // ── Icons (inline, currentColor so they theme for free) ───────────────────
 const ICON_KEBAB    = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.8" fill="currentColor"></circle><circle cx="12" cy="12" r="1.8" fill="currentColor"></circle><circle cx="12" cy="19" r="1.8" fill="currentColor"></circle></svg>`
@@ -292,28 +291,29 @@ async function _loadMarketValue(panelEl, card, { force = false } = {}) {
   const alive = () => _mvGen.get(panelEl) === gen
 
   try {
-    const { data, error } = await fetchPricing(card.CardsightId, { force })
+    const { mv, fields, parallel, error } = await priceCard(card, { force })
+    // Keep a copy on the card so the Profile page can total it without
+    // re-pricing the whole collection
+    if (fields) setDoc(doc(db, 'Cards', card.id), fields, { merge: true }).catch(e => console.error('[saveMarketValue]', e))
     if (!alive()) return
     const valEl     = panelEl.querySelector('[data-mv-value]')
     const changeRow = panelEl.querySelector('[data-mv-change-row]')
     const changeEl  = panelEl.querySelector('[data-mv-change]')
     if (!valEl) return
 
-    if (error || !data) { valEl.textContent = 'N/A'; valEl.classList.add('cd2-market-muted'); return }
-
-    const mv = computeMarketValue(data, card)
+    if (error) { valEl.textContent = 'N/A'; valEl.classList.add('cd2-market-muted'); return }
     if (!mv) { valEl.textContent = 'No data'; valEl.classList.add('cd2-market-muted'); return }
 
     const avg = mv.value
     const lastDate = mv.lastDate ? new Date(mv.lastDate).toLocaleDateString() : null
     valEl.textContent = `$${avg.toFixed(2)}`
     valEl.classList.remove('cd2-market-muted')
-    if (lastDate) valEl.title = `Avg of ${mv.sales} sale${mv.sales !== 1 ? 's' : ''} · Last: ${lastDate}`
-
-    // Keep a copy on the card so the Profile page can total it without
-    // re-pricing the whole collection
-    const fields = marketValueFields(card, mv, { force })
-    if (fields) setDoc(doc(db, 'Cards', card.id), fields, { merge: true }).catch(e => console.error('[saveMarketValue]', e))
+    valEl.title = [
+      `Avg of ${mv.sales} sale${mv.sales !== 1 ? 's' : ''}`,
+      parallel && `${parallel} parallel`,
+      mv.source === 'title-search' && 'matched by listing title',
+      lastDate && `Last: ${lastDate}`,
+    ].filter(Boolean).join(' · ')
 
     if (card.Price && changeRow && changeEl) {
       const paid = parseFloat(card.Price)
@@ -342,25 +342,8 @@ export async function findAndLoadMarketValue(cardId, panelEl) {
   const valEl = panelEl?.querySelector('[data-mv-value]')
   if (valEl) { valEl.textContent = 'Searching…'; valEl.classList.add('cd2-market-muted') }
 
-  // Card number excluded — including it causes 0 results in CardSight text search.
-  // Year-first ordering matches CardSight's release indexing.
-  const seen = new Set()
-  const queries = [
-    [c.Year, playerName, c.Set          ],
-    [c.Year, playerName, c.Manufacturer ],
-    [c.Year, playerName                 ],
-    [playerName,         c.Manufacturer ],
-    [playerName,         c.Set          ],
-  ]
-    .map(parts => parts.filter(Boolean).join(' ').trim())
-    .filter(q => q && !seen.has(q) && seen.add(q))
-
   try {
-    let cardsightId = null
-    for (const q of queries) {
-      const { data, error } = await cardsight.catalog.search({ q, type: 'card', take: 5 })
-      if (!error && data?.results?.length) { cardsightId = data.results[0].id; break }
-    }
+    const cardsightId = await findCardsightMatch(c, playerName)
     if (!cardsightId) {
       if (valEl && document.contains(valEl)) valEl.textContent = 'Not found'
       return

@@ -28,7 +28,9 @@ export const cardsight = {
     cards: { get: id => call(`/v1/catalog/cards/${encodeURIComponent(id)}`) },
   },
   pricing: {
-    get: cardId => call(`/v1/pricing/${encodeURIComponent(cardId)}`),
+    get: (cardId, params) => call(`/v1/pricing/${encodeURIComponent(cardId)}`, { query: params }),
+    // Free-text search over sold-listing titles
+    search: params => call('/v1/pricing/search', { query: params }),
   },
   images: {
     getCard: (id, params) => call(`/v1/images/cards/${encodeURIComponent(id)}`, { query: params }),

@@ -4,7 +4,7 @@ import { auth, db, doc, writeBatch } from '../firebase.js'
 import { switchPage, isWideLayout } from '../layout.js'
 import { openDetail } from './players.js'
 import { handleCardTap } from '../components/card-detail.js'
-import { fetchPricing, computeMarketValue, savedMarketValue } from '../services/market-value.js'
+import { priceCard, savedMarketValue } from '../services/market-value.js'
 
 const truthy = v => v === true || v === 'true'
 const isGraded = c => c['Grading Company'] && c['Grading Company'] !== 'Raw'
@@ -283,16 +283,16 @@ async function refreshAllValues() {
   _replaceSection('stMarket', marketHTML(_data))
 
   const updates = []
-  let next = 0, missing = 0, failed = 0
+  let next = 0, priced = 0, missing = 0, failed = 0
   const worker = async () => {
     while (next < cards.length) {
       const c = cards[next++]
       try {
-        const { data, error } = await fetchPricing(c.CardsightId, { force: true })
-        const mv = !error && computeMarketValue(data, c)
-        if (mv) updates.push([c.id, { MarketValue: Math.round(mv.value * 100) / 100, MarketValueAt: Date.now() }])
-        else if (error) failed++
-        else missing++
+        const { mv, fields, error } = await priceCard(c, { force: true })
+        if (fields) updates.push([c.id, fields])
+        if (error) failed++
+        else if (!mv) missing++
+        else priced++
       } catch { failed++ }
       _mvJob.done++
       const foot = document.getElementById('stMvFoot')
@@ -307,7 +307,7 @@ async function refreshAllValues() {
       updates.slice(i, i + 400).forEach(([id, fields]) => batch.set(doc(db, 'Cards', id), fields, { merge: true }))
       await batch.commit()
     }
-    const notes = [`Priced ${fmt(updates.length)} ${updates.length === 1 ? 'card' : 'cards'}`]
+    const notes = [`Priced ${fmt(priced)} ${priced === 1 ? 'card' : 'cards'}`]
     if (missing) notes.push(`${fmt(missing)} with no sales data`)
     if (failed) notes.push(`${fmt(failed)} failed`)
     _mvNote = notes.join(' · ')
