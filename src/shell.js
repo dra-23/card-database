@@ -527,6 +527,7 @@ function appShellHTML() {
   <div class="sheet-handle"></div>
   <div class="cf2-header">
     <h2 id="cardFormTitle">Add Card</h2>
+    <button type="button" class="cf2-close" data-close-forms aria-label="Close"><span class="material-symbols-outlined">close</span></button>
   </div>
   <div class="cf2-scroll">
     <input type="hidden" id="f_cardId">
@@ -673,6 +674,7 @@ function appShellHTML() {
   <div class="sheet-handle"></div>
   <div class="cf2-header">
     <h2>New Player</h2>
+    <button type="button" class="cf2-close" data-close-forms aria-label="Close"><span class="material-symbols-outlined">close</span></button>
   </div>
   <div class="cf2-scroll">
     <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">

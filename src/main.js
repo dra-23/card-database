@@ -446,6 +446,7 @@ function wireFormButtons() {
   document.getElementById('btnSavePSA')?.addEventListener('click', savePSAData)
   document.getElementById('cancelPSABtn')?.addEventListener('click', closePSASheet)
   document.getElementById('cancelCardFormBtn')?.addEventListener('click', closeAllForms)
+  document.querySelectorAll('[data-close-forms]').forEach(b => b.addEventListener('click', () => closeAllForms()))
   document.getElementById('cancelPlayerFormBtn')?.addEventListener('click', closeAllForms)
   document.getElementById('selectPhotoBtn')?.addEventListener('click', () => document.getElementById('f_fileInput').click())
   document.getElementById('f_fileInput')?.addEventListener('change', e => handleFileSelect(e.target))

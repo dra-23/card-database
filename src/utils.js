@@ -37,13 +37,23 @@ export function isOwned(card) {
   return card.Owned === true || card.Owned === 'true'
 }
 
-/** Returns the transform string for a sheet at a given Y offset.
- *  On desktop (≥1280px) form sheets are right-side panels that slide on the X axis. */
-export function sheetTransformY(px) {
-  if (window.matchMedia('(min-width: 1280px)').matches) {
-    return (px === 0 || px === '0') ? 'translateX(0)' : 'translateX(100%)'
-  }
+// Form sheets that become right-side slide-in panels from tablet width up
+// (see the matching rule in style.css)
+const SIDE_PANEL_IDS = new Set(['cardFormSheet', 'playerFormSheet', 'cardSearchSheet', 'psaSheet', 'cardsightLinkSheet'])
+const _wideMQ = window.matchMedia('(min-width: 768px)')
+
+export function isSidePanel(sheet) {
+  return _wideMQ.matches && !!sheet && SIDE_PANEL_IDS.has(sheet.id)
+}
+
+/** Transform for `sheet` dragged/offset `px` down from open ('100%' = closed).
+ *  Side panels (tablet+) slide on the X axis instead; other sheets are
+ *  horizontally centered from tablet up, so keep that centering. */
+export function sheetTransformY(px, sheet) {
+  const closed = px === '100%'
+  if (isSidePanel(sheet)) return closed || (px !== 0 && px !== '0') ? 'translateX(100%)' : 'translateX(0)'
   const y = typeof px === 'number' ? `${px}px` : px
+  if (_wideMQ.matches) return `translateX(-50%) translateY(${closed ? 'calc(100% + 24px)' : y})`
   return `translateY(${y})`
 }
 

@@ -1,5 +1,5 @@
 import { isWideLayout, isThreePaneLayout, PAGE_NAMES } from './layout.js'
-import { sheetTransformY, vibrate } from './utils.js'
+import { sheetTransformY, isSidePanel, vibrate } from './utils.js'
 import * as state from './state.js'
 
 // ── Sheet open/close helpers ───────────────────────────────────────────────
@@ -24,7 +24,7 @@ export function closeAllForms(opts = {}) {
     const s = document.getElementById(id)
     if (!s || !s.classList.contains('open')) return
     s.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)'
-    s.style.transform = sheetTransformY('100%')
+    s.style.transform = sheetTransformY('100%', s)
     setTimeout(() => { s.classList.remove('open'); s.style.transform = '' }, 340)
   })
   // Player edit sheet
@@ -110,7 +110,7 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
       if (hintR) hintR.style.opacity = (dx < -40 && !atEnd)  ? '1' : '0'
     } else if (st.locked === 'vertical') {
       if (e.cancelable) e.preventDefault()
-      sheet.style.transform = sheetTransformY(Math.max(0, dy))
+      sheet.style.transform = sheetTransformY(Math.max(0, dy), sheet)
     }
     // 'scroll': no preventDefault — let native scroll handle it
   }, { passive: false })
@@ -132,11 +132,11 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
     } else if (st.locked === 'vertical') {
       sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)'
       if (dy > 150) window._closeCardSheet?.(ctxName)
-      else sheet.style.transform = sheetTransformY(0)
+      else sheet.style.transform = sheetTransformY(0, sheet)
     } else {
       // 'scroll' or no gesture — restore transforms without interfering with scroll position
       panel.style.transform = ''
-      sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0) : sheetTransformY('100%')
+      sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0, sheet) : sheetTransformY('100%', sheet)
     }
     st.locked = null
   })
@@ -147,7 +147,7 @@ export function attachSheetGestures(sheetId, panelId, hintLId, hintRId, ctxName)
     if (hintR) hintR.style.opacity = '0'
     panel.classList.add('animating'); panel.style.transform = 'translateX(0)'
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)'
-    sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0) : sheetTransformY('100%')
+    sheet.style.transform = sheet.classList.contains('open') ? sheetTransformY(0, sheet) : sheetTransformY('100%', sheet)
     setTimeout(() => panel.classList.remove('animating'), 320)
   }, { passive: true })
 }
@@ -165,6 +165,9 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
 
   function onStart(clientY, fromHandle, pointerId) {
     if (!sheet.classList.contains('open')) return
+    // Right-side panels (tablet+) close with Cancel / ✕ / the scrim instead —
+    // a downward drag on a sideways-sliding panel would just snap it shut
+    if (isSidePanel(sheet)) return
     fs.active = true; fs.startedOnHandle = fromHandle; fs.pointerId = pointerId
     fs.startY = clientY; fs.lastY = clientY
     sheet.style.transition = 'none'
@@ -176,9 +179,9 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
     const atTop = !body || body.scrollTop <= 0
     if (dy > 0 && (fs.startedOnHandle || atTop)) {
       const dampened = dy < 80 ? dy : 80 + (dy - 80) * 0.35
-      sheet.style.transform = sheetTransformY(dampened)
+      sheet.style.transform = sheetTransformY(dampened, sheet)
     } else if (dy <= 0) {
-      sheet.style.transform = sheetTransformY(0)
+      sheet.style.transform = sheetTransformY(0, sheet)
     }
   }
   function onEnd() {
@@ -188,10 +191,10 @@ export function attachFormDismissGesture(sheetId, dismissFn) {
     const atTop = !body || body.scrollTop <= 0
     sheet.style.transition = 'transform 0.35s cubic-bezier(0.1, 0.7, 0.1, 1)'
     if (dy > 110 && (fs.startedOnHandle || atTop)) {
-      sheet.style.transform = sheetTransformY('100%')
+      sheet.style.transform = sheetTransformY('100%', sheet)
       setTimeout(() => { dismissFn() }, 320)
     } else {
-      sheet.style.transform = sheetTransformY(0)
+      sheet.style.transform = sheetTransformY(0, sheet)
     }
   }
   // Ignore non-primary mouse buttons (right/middle-click drags); touch and

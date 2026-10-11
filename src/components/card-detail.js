@@ -1,6 +1,6 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, sheetTransformY, vibrate, imgPh } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, vibrate, imgPh } from '../utils.js'
 import { promptPrice } from './price-prompt.js'
 import { promptNotes } from './notes-prompt.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
