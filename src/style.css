@@ -292,9 +292,13 @@ html, body {
 }
 #detailScrollBody.bar-hidden #detailCompactHeader { transform: translateY(-100%); }
 @media (min-width: 768px) {
-  #detailCompactHeader { position: static; margin-top: 0 !important; display: none; }
-  /* The search row itself (including this back button) relocates into the
-     global top bar on wide layout — see _syncTopBarSearch. */
+  /* The search row itself (including the back button) relocates into the
+     global top bar on wide layout — see _syncTopBarSearch — leaving just the
+     filter chips here, pinned above the list (no auto-hide on wide). */
+  #detailCompactHeader { margin-top: 0 !important; transform: none !important; }
+  #detailScrollBody .year-group-header { top: 44px; }
+  #collectionHeaderWrap { position: sticky; top: 0; z-index: 20; }
+  #collectionList .year-group-header { top: 44px; }
 }
 .detail-search-back-btn { width: 48px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .detail-search-back-btn:active { background: var(--md-surface-1); }
@@ -308,7 +312,8 @@ html, body {
    sticky sibling above the header to dock below — the base .year-group-header
    rule's top:0 is already correct there. */
 @media (max-width: 767px) {
-  #detailScrollBody .year-group-header { top: 62px; }
+  /* 62px search row + 44px filter chips */
+  #detailScrollBody .year-group-header { top: 106px; }
   #detailScrollBody.bar-hidden .year-group-header { top: 0; }
 }
 
@@ -335,7 +340,8 @@ html, body {
    _syncTopBarSearch), collapsing this wrapper to ~0 height, so the offset
    would otherwise leave a phantom gap. */
 @media (max-width: 767px) {
-  #collectionList .year-group-header { top: 118px; }
+  /* Collection also has the 44px filter chip row */
+  #collectionList .year-group-header { top: 162px; }
   #gradedList .year-group-header { top: 118px; }
   #collectionScrollBody.bar-hidden #collectionList .year-group-header { top: 0; }
   #gradedScrollBody.bar-hidden #gradedList .year-group-header { top: 0; }
@@ -494,21 +500,41 @@ html, body {
 .search-clear-btn.visible { display: flex; }
 .search-clear-btn:active { opacity: 1; background: rgba(0,0,0,0.06); }
 /* ── Dropdown buttons + panels ──────────────────────────────────────────── */
-.dd-wrap { position: relative; flex-shrink: 0; }
 .dd-btn { display: flex; align-items: center; justify-content: center; height: 48px; width: 48px; padding: 0; border-radius: 24px; border: none; background: var(--md-surface-2); font-size: 15px; font-weight: 500; color: var(--md-on-surface); cursor: pointer; user-select: none; white-space: nowrap; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
 .dd-btn .material-symbols-outlined { font-size: 20px; line-height: 1; }
 .dd-btn:active { background: var(--md-surface-1); }
 .dd-btn.dd-active { background: var(--md-accent); color: #fff; }
-.dd-panel { display: none; position: fixed; z-index: 500; background: var(--md-surface); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; min-width: 140px; border: 1px solid var(--md-surface-2); }
-.dd-check-opt { display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 17px; cursor: pointer; color: var(--md-on-surface); white-space: nowrap; transition: background 0.1s; }
-.dd-check-opt:hover { background: var(--md-surface-1); }
-.dd-check-opt-icon { font-size: 18px; color: var(--md-on-surface-variant); flex-shrink: 0; }
-.dd-check-opt-label { flex: 1; }
-.dd-check-icon { font-size: 16px; color: var(--md-accent); opacity: 0; flex-shrink: 0; transition: opacity 0.1s; }
-.dd-check-opt.dd-checked .dd-check-icon { opacity: 1; }
-.dd-check-opt.dd-checked .dd-check-opt-icon { color: var(--md-accent); }
-.dd-clear-opt { border-top: 1px solid var(--md-surface-2); color: var(--md-primary); }
-.dd-clear-opt .dd-check-opt-icon { color: var(--md-primary); }
+/* One-tap filter chips under the search row (shell.js filterChips). Fixed
+   44px row height — the sticky year headers below are offset by it. */
+.filter-chips {
+  display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 6px;
+  background: var(--md-surface-1); overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.fchip {
+  display: inline-flex; align-items: center; gap: 0; height: 32px; padding: 0 13px; flex-shrink: 0;
+  border-radius: 10px; border: none; background: var(--md-surface-2); color: var(--md-on-surface-variant);
+  font-family: 'Google Sans', sans-serif; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  transition: background 0.15s, color 0.15s, padding 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.fchip:active { transform: scale(0.96); }
+.fchip-check { font-size: 16px; width: 0; opacity: 0; overflow: hidden; transition: width 0.15s, opacity 0.15s, margin 0.15s; }
+.fchip.on { background: var(--chip); color: #fff; padding-left: 9px; }
+.fchip.on .fchip-check { width: 16px; opacity: 1; margin-right: 4px; }
+.fchip-clear {
+  display: none; align-items: center; gap: 2px; height: 32px; padding: 0 10px 0 6px; flex-shrink: 0;
+  border: none; border-radius: 10px; background: transparent; color: var(--md-primary);
+  font-family: 'Google Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.fchip-clear .material-symbols-outlined { font-size: 18px; }
+.filter-chips.has-active .fchip-clear { display: inline-flex; }
+
+/* Player stats pill beside the search on wide layouts — same height and
+   shape as the top-bar search box */
+.row-stat-pill { height: 40px; border-radius: 20px; padding: 0 18px; flex-shrink: 0; }
+@media (max-width: 767px) { #topBarStats { display: none !important; } }
+#topBarSearchSlot .detail-search-back-btn,
+#topBarSearchSlot .dd-btn { width: 40px; height: 40px; border-radius: 20px; }
 
 /* ================================================================
    YEAR GROUP HEADERS

@@ -65,15 +65,14 @@ export function openDetail(id) {
   document.getElementById('detailEditBtn')?.removeEventListener('click', _onEdit)
   document.getElementById('editPlayerBtn')?.addEventListener('click', _onEdit)
   document.getElementById('detailEditBtn')?.addEventListener('click', _onEdit)
-  // Top bar: show stat pill, hide total count (search bar already names
-  // the selected player via its placeholder, so no separate title needed)
+  // Wide-layout search row: show this player's stat pill (beside the search,
+  // which already names the player via its placeholder), hide the total count
   const topBarStats = document.getElementById('topBarStats')
   const totalPill   = document.getElementById('totalOwnedCounterGlobal')
   if (topBarStats) {
     document.getElementById('topBarSleevd').textContent  = heroSleevd
     document.getElementById('topBarUnsleevd').textContent = heroUnsleevd
     document.getElementById('topBarGraded').textContent  = heroGraded
-    document.getElementById('topBarTotal').textContent   = state.ALL_CARDS.filter(c => isOwned(c)).length
     topBarStats.style.display = 'flex'
   }
   if (totalPill) totalPill.style.display = 'none'
@@ -228,6 +227,11 @@ export function renderDetail(player) {
   if (state.showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   if (state.showWishlistOnly) cards = cards.filter(c => !isOwned(c))
   if (state.showFavoriteOnly) cards = cards.filter(c => c.Favorite === true || c.Favorite === 'true')
+  const flag = v => v === true || v === 'true'
+  if (state.detailFilterRC)       cards = cards.filter(c => flag(c.RC))
+  if (state.detailFilterAuto)     cards = cards.filter(c => flag(c.Auto))
+  if (state.detailFilterMem)      cards = cards.filter(c => flag(c.Mem) || flag(c.Patch))
+  if (state.detailFilterNumbered) cards = cards.filter(c => flag(c.Numbered))
 
   state.setCardSequence(cards.map(c => c.id))
 

@@ -21,6 +21,18 @@ const SKEL_GRADED = `<div class="skel-group-header" aria-hidden="true"><div clas
     <div class="graded-tile-img skel"></div>
     <div class="graded-tile-bar"><div class="skel skel-line" style="width:46%"></div><div class="skel skel-line skel-line-sm" style="width:70%"></div></div>
   </div>`) + `</div>`
+// One-tap filter chips (wired in main.js → wireFilterChips). An active chip
+// fills with its badge color; "Clear" shows while any are on.
+const CHIP_SPECS = [
+  ['Unsleevd', 'var(--md-accent)'], ['Favorite', '#C9A227'], ['Graded', '#2E7D32'],
+  ['RC', '#E8192C'], ['AUTO', '#B8860B'], ['MEM', '#1565C0'], ["#'d", '#78909C'],
+]
+const filterChips = (id, keys) => `
+  <div class="filter-chips" id="${id}" role="toolbar" aria-label="Filters">
+    ${keys.map((key, i) => `<button type="button" class="fchip" data-chip="${key}" style="--chip:${CHIP_SPECS[i][1]}" aria-pressed="false"><span class="material-symbols-outlined fchip-check">check</span>${CHIP_SPECS[i][0]}</button>`).join('')}
+    <button type="button" class="fchip-clear"><span class="material-symbols-outlined">close</span>Clear</button>
+  </div>`
+
 const SKEL_STATS = `<div class="stats-content" aria-hidden="true">
   <div class="skel skel-hero"></div>
   <div class="st-tiles">${times(4, () => '<div class="skel skel-box"></div>')}</div>
@@ -61,21 +73,6 @@ function appShellHTML() {
          once the search box takes over that job. -->
     <div id="topBarSpacer"></div>
     <div id="topBarSearchSlot"></div>
-    <div id="topBarStats" style="display:none; align-items:center; margin-right:8px;">
-      <div class="player-stat-pill">
-        <span class="stat-pill-label">sleevd</span>
-        <strong id="topBarSleevd">0</strong>
-        <span class="stat-pill-sep">·</span>
-        <span class="stat-pill-label">unsleevd</span>
-        <strong id="topBarUnsleevd">0</strong>
-        <span class="stat-pill-sep">·</span>
-        <span class="stat-pill-label">graded</span>
-        <strong id="topBarGraded">0</strong>
-        <span class="stat-pill-sep">·</span>
-        <span class="stat-pill-label">total</span>
-        <strong id="topBarTotal">0</strong>
-      </div>
-    </div>
     <div class="total-count-pill" id="totalOwnedCounterGlobal">–</div>
   </div>
 
@@ -161,22 +158,8 @@ function appShellHTML() {
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
                     </div>
-                    <div class="dd-wrap" id="collFilterDdWrap">
-                      <button class="dd-btn" id="collFilterDdBtn">
-                        <span class="material-symbols-outlined">tune</span>
-                      </button>
-                      <div class="dd-panel" id="collFilterDdPanel">
-                        <div class="dd-check-opt" data-chip="collWishlist"><span class="material-symbols-outlined dd-check-opt-icon">bookmark_border</span><span class="dd-check-opt-label">unsleevd</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt" data-chip="collFavorite"><span class="material-symbols-outlined dd-check-opt-icon">star</span><span class="dd-check-opt-label">Favorite</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt" data-chip="collGraded"><span class="material-symbols-outlined dd-check-opt-icon">workspace_premium</span><span class="dd-check-opt-label">Graded</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt" data-chip="collRC"><span class="material-symbols-outlined dd-check-opt-icon">new_releases</span><span class="dd-check-opt-label">RC</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt" data-chip="collAuto"><span class="material-symbols-outlined dd-check-opt-icon">draw</span><span class="dd-check-opt-label">AUTO</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt" data-chip="collMem"><span class="material-symbols-outlined dd-check-opt-icon">checkroom</span><span class="dd-check-opt-label">MEM</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt" data-chip="collNumbered"><span class="material-symbols-outlined dd-check-opt-icon">tag</span><span class="dd-check-opt-label">#'d</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                        <div class="dd-check-opt dd-clear-opt" id="collFilterClear" style="display:none;"><span class="material-symbols-outlined dd-check-opt-icon">filter_alt_off</span><span class="dd-check-opt-label">Clear filters</span></div>
-                      </div>
-                    </div>
                   </div>
+                  ${filterChips('collFilterChips', ['collWishlist', 'collFavorite', 'collGraded', 'collRC', 'collAuto', 'collMem', 'collNumbered'])}
                 </div>
                 <div id="collectionList">${SKEL_ROWS}</div>
               </div>
@@ -319,21 +302,23 @@ function appShellHTML() {
                     <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                   </button>
                 </div>
+                <!-- Wide layout only (this row moves into the global top bar);
+                     the phone hero shows the same stats under the name -->
+                <div class="player-stat-pill row-stat-pill" id="topBarStats" style="display:none;">
+                  <span class="stat-pill-label">sleevd</span>
+                  <strong id="topBarSleevd">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">unsleevd</span>
+                  <strong id="topBarUnsleevd">0</strong>
+                  <span class="stat-pill-sep">·</span>
+                  <span class="stat-pill-label">graded</span>
+                  <strong id="topBarGraded">0</strong>
+                </div>
                 <button class="dd-btn" id="detailEditBtn" aria-label="Edit player">
                   <span class="material-symbols-outlined">edit</span>
                 </button>
-                <div class="dd-wrap" id="detailFilterDdWrap">
-                  <button class="dd-btn" id="detailFilterDdBtn">
-                    <span class="material-symbols-outlined">tune</span>
-                  </button>
-                  <div class="dd-panel" id="detailFilterDdPanel">
-                    <div class="dd-check-opt" data-chip="wishlist"><span class="material-symbols-outlined dd-check-opt-icon">bookmark_border</span><span class="dd-check-opt-label">unsleevd</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                    <div class="dd-check-opt" data-chip="favorite"><span class="material-symbols-outlined dd-check-opt-icon">star</span><span class="dd-check-opt-label">Favorite</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                    <div class="dd-check-opt" data-chip="graded"><span class="material-symbols-outlined dd-check-opt-icon">workspace_premium</span><span class="dd-check-opt-label">Graded</span><span class="material-symbols-outlined dd-check-icon">check</span></div>
-                    <div class="dd-check-opt dd-clear-opt" id="detailFilterClear" style="display:none;"><span class="material-symbols-outlined dd-check-opt-icon">filter_alt_off</span><span class="dd-check-opt-label">Clear filters</span></div>
-                  </div>
-                </div>
               </div>
+              ${filterChips('detailFilterChips', ['wishlist', 'favorite', 'graded', 'rc', 'auto', 'mem', 'numbered'])}
             </div>
             <div id="cardList"></div>
           </div>

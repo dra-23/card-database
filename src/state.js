@@ -17,6 +17,10 @@ export let cardSearchQuery    = ''
 export let showGradedOnly     = false
 export let showWishlistOnly   = false
 export let showFavoriteOnly   = false
+export let detailFilterRC       = false
+export let detailFilterAuto     = false
+export let detailFilterMem      = false
+export let detailFilterNumbered = false
 
 // Collection filters / search
 export let collSearchQuery       = ''
@@ -47,6 +51,10 @@ export function setCardSearchQuery(v)   { cardSearchQuery = v }
 export function setShowGradedOnly(v)    { showGradedOnly = v }
 export function setShowWishlistOnly(v)  { showWishlistOnly = v }
 export function setShowFavoriteOnly(v)  { showFavoriteOnly = v }
+export function setDetailFilterRC(v)       { detailFilterRC = v }
+export function setDetailFilterAuto(v)     { detailFilterAuto = v }
+export function setDetailFilterMem(v)      { detailFilterMem = v }
+export function setDetailFilterNumbered(v) { detailFilterNumbered = v }
 
 export function setCollSearchQuery(v)      { collSearchQuery = v }
 export function setCollShowGradedOnly(v)   { collShowGradedOnly = v }
