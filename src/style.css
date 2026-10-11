@@ -196,12 +196,17 @@ html, body {
 #topBarSearchSlot .search-filter-row { position: static !important; background: transparent !important; padding: 0 !important; z-index: auto !important; overflow: visible !important; width: 100%; }
 #topBarSearchSlot .search-input-expressive { height: 40px; border-radius: 20px; }
 #page-container { flex: 1; min-width: 0; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--md-surface-1); }
+/* Wide layout: the current page's filter chips, spanning every pane */
+#topChipsSlot { display: none; flex-shrink: 0; border-bottom: 1px solid rgba(0,0,0,0.07); }
+#topChipsSlot .filter-chips { flex: 1; min-width: 0; }
+#top-bar-global.chips-active { border-bottom-color: transparent; }
+[data-theme="dark"] #topChipsSlot { border-bottom-color: rgba(255,255,255,0.06); }
 
 /* ================================================================
    SWIPEABLE PAGE TRACK
    ================================================================ */
 #page-track {
-  display: flex; flex-direction: row; width: 400%; height: 100%;
+  display: flex; flex-direction: row; width: 400%; flex: 1 1 0; min-height: 0;
   will-change: transform;
   transition: transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -292,13 +297,9 @@ html, body {
 }
 #detailScrollBody.bar-hidden #detailCompactHeader { transform: translateY(-100%); }
 @media (min-width: 768px) {
-  /* The search row itself (including the back button) relocates into the
-     global top bar on wide layout — see _syncTopBarSearch — leaving just the
-     filter chips here, pinned above the list (no auto-hide on wide). */
-  #detailCompactHeader { margin-top: 0 !important; transform: none !important; }
-  #detailScrollBody .year-group-header { top: 44px; }
-  #collectionHeaderWrap { position: sticky; top: 0; z-index: 20; }
-  #collectionList .year-group-header { top: 44px; }
+  /* Its search row relocates into the global top bar and its filter chips
+     into the strip under it on wide layout — see _syncTopBarSearch. */
+  #detailCompactHeader { position: static; margin-top: 0 !important; display: none; }
 }
 .detail-search-back-btn { width: 48px; height: 48px; border-radius: 24px; border: none; background: var(--md-surface-2); color: var(--md-on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .detail-search-back-btn:active { background: var(--md-surface-1); }

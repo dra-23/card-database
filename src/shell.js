@@ -108,6 +108,9 @@ function appShellHTML() {
   </nav>
 
     <div id="page-container">
+      <!-- Wide layout: the current page's filter chips move here (see
+           _syncTopBarSearch) so they span every pane below the top bar -->
+      <div id="topChipsSlot"></div>
       <div id="page-track">
 
         <!-- SLOT 0: Players -->

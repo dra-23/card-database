@@ -323,52 +323,53 @@ function startApp() {
   window._afterPlayerDetail  = () => _syncTopBarSearch(state.currentPage)
 }
 
-// ── Top-bar search sync (desktop only) ────────────────────────────────────
+// ── Top-bar search + filter chip sync (desktop only) ──────────────────────
+// On wide layouts the current page's search row moves into the global top
+// bar, and its filter chips into the full-width strip under it (so the chips
+// span every pane, and list + detail panes start at the same height).
 const _searchAnchors = {}
+
+// Shows exactly `id` (or nothing) inside `slot`, moving it in on first use.
+// Returns whether something is shown.
+function _dockInto(slot, id) {
+  Array.from(slot.children).forEach(el => { el.style.display = 'none' })
+  const el = id && document.getElementById(id)
+  if (!el) { slot.style.display = 'none'; return false }
+  if (!_searchAnchors[id]) _searchAnchors[id] = { parent: el.parentElement, sibling: el.nextSibling }
+  if (el.parentElement !== slot) slot.appendChild(el)
+  el.style.display = ''
+  slot.style.display = 'flex'
+  return true
+}
+
 function _syncTopBarSearch(page) {
-  const slot   = document.getElementById('topBarSearchSlot')
-  const topBar = document.getElementById('top-bar-global')
-  if (!slot || !topBar) return
+  const slot      = document.getElementById('topBarSearchSlot')
+  const chipsSlot = document.getElementById('topChipsSlot')
+  const topBar    = document.getElementById('top-bar-global')
+  if (!slot || !chipsSlot || !topBar) return
 
   if (!_wideQuery.matches) {
-    // Restore ALL rows to their original positions when going mobile
-    Object.entries(_searchAnchors).forEach(([id, { parent, sibling }]) => {
+    // Restore everything to its original position when going mobile —
+    // newest first, since a search row's saved sibling is its chip row
+    Object.entries(_searchAnchors).reverse().forEach(([id, { parent, sibling }]) => {
       const el = document.getElementById(id)
-      if (el) { el.style.display = ''; parent.insertBefore(el, sibling) }
+      if (!el) return
+      el.style.display = ''
+      if (sibling && sibling.parentNode === parent) parent.insertBefore(el, sibling)
+      else parent.appendChild(el)
     })
     slot.style.display = 'none'
-    topBar.classList.remove('search-active')
+    chipsSlot.style.display = 'none'
+    topBar.classList.remove('search-active', 'chips-active')
     return
   }
 
-  const rowId = page === 'collection'                       ? 'collSearchRow'
-              : page === 'graded'                           ? 'gradedSearchRow'
-              : page === 'players' && state.selectedPlayer ? 'detailSearchRow'
-              : null
+  const detail = page === 'players' && state.selectedPlayer
+  const rowId   = page === 'collection' ? 'collSearchRow'   : page === 'graded' ? 'gradedSearchRow' : detail ? 'detailSearchRow'   : null
+  const chipsId = page === 'collection' ? 'collFilterChips' :                                         detail ? 'detailFilterChips' : null
 
-  // Hide all rows currently in slot — they stay in slot, just invisible
-  Array.from(slot.children).forEach(el => { el.style.display = 'none' })
-
-  if (!rowId) {
-    slot.style.display = 'none'
-    topBar.classList.remove('search-active')
-    return
-  }
-
-  const row = document.getElementById(rowId)
-  if (!row) { slot.style.display = 'none'; topBar.classList.remove('search-active'); return }
-
-  // Move to slot on first visit; on return visits it's already there
-  if (!_searchAnchors[rowId]) {
-    _searchAnchors[rowId] = { parent: row.parentElement, sibling: row.nextSibling }
-    slot.appendChild(row)
-  } else if (row.parentElement !== slot) {
-    slot.appendChild(row) // restored to mobile, now back on desktop
-  }
-
-  row.style.display = ''
-  slot.style.display = 'flex'
-  topBar.classList.add('search-active')
+  topBar.classList.toggle('search-active', _dockInto(slot, rowId))
+  topBar.classList.toggle('chips-active', _dockInto(chipsSlot, chipsId))
 }
 
 function onDataReady() {
