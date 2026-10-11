@@ -701,8 +701,6 @@ html, body {
 .overflow-menu-item.destructive { color: var(--soft-red); }
 .overflow-menu-item svg { flex-shrink: 0; opacity: 0.75; }
 .overflow-menu-item.destructive svg { opacity: 1; }
-.overflow-menu-item.sleevd-action { color: #2E7D32; }
-.overflow-menu-item.sleevd-action svg { opacity: 1; }
 
 /* ================================================================
    CARD DETAIL PANEL (inside sheet or two-pane)
@@ -778,11 +776,9 @@ html, body {
 .cd2-check-value-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; background: transparent; border: 1px solid color-mix(in srgb, var(--md-outline) 30%, transparent); color: var(--md-on-surface); font-size: 13px; font-weight: 600; font-family: 'Google Sans', sans-serif; cursor: pointer; }
 
 .cd2-notes-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--md-surface-2); border: 1px dashed color-mix(in srgb, var(--md-outline) 30%, transparent); border-radius: 18px; padding: 15px 16px; text-align: left; cursor: pointer; color: var(--md-on-surface-variant); }
-.cd2-notes-placeholder { font-size: 13px; font-style: italic; }
+.cd2-notes-empty { justify-content: flex-end; }
 .cd2-notes-filled { border-style: solid; border-color: color-mix(in srgb, var(--md-outline) 16%, transparent); }
 .cd2-notes-text { font-size: 14px; line-height: 1.5; color: var(--md-on-surface); white-space: pre-wrap; }
-
-.cd2-manage-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: none; border: none; color: var(--soft-red); font-size: 14px; font-family: 'Google Sans', sans-serif; cursor: pointer; }
 
 /* Slightly larger body text on mobile, where this panel is the whole
    screen rather than sharing space with a nav rail/list beside it. */
@@ -793,13 +789,11 @@ html, body {
   .cd2-card-action,
   .cd2-btn-registry,
   .cd2-link-row,
-  .cd2-notes-text,
-  .cd2-manage-row          { font-size: 16px; }
+  .cd2-notes-text          { font-size: 16px; }
   .cd2-section-label,
   .cd2-qa-label,
   .cd2-market-lbl,
-  .cd2-check-value-btn,
-  .cd2-notes-placeholder   { font-size: 14px; }
+  .cd2-check-value-btn     { font-size: 14px; }
   .cd2-grade-pill,
   .cd2-badge-row .badge-grade,
   .cd2-badge-row .badge-rc,

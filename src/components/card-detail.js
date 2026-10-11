@@ -17,7 +17,6 @@ const ICON_STAR      = `<svg width="16" height="16" viewBox="0 0 24 24" fill="cu
 const ICON_SHARE     = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.1"></circle><circle cx="17" cy="6" r="2.1"></circle><circle cx="17" cy="18" r="2.1"></circle><line x1="8" y1="10.8" x2="15" y2="7.2"></line><line x1="8" y1="13.2" x2="15" y2="16.8"></line></svg>`
 const ICON_PENCIL    = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>`
 const ICON_ARROW     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"></path><path d="M8 7h9v9"></path></svg>`
-const ICON_TRASH     = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path></svg>`
 const ICON_REFRESH   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"></path><path d="M20 5v6h-6"></path></svg>`
 const ICON_LINK      = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"></path></svg>`
 const ICON_CALENDAR  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`
@@ -207,8 +206,7 @@ export function buildCardDetailHTML(card, ctx) {
     </div>` : `
     <div class="cd2-section">
       <span class="cd2-section-label">Notes</span>
-      <button type="button" class="cd2-notes-btn" data-notes-btn="${escapeAttr(card.id)}">
-        <span class="cd2-notes-placeholder">Add notes on condition, provenance, or where you found this card…</span>
+      <button type="button" class="cd2-notes-btn cd2-notes-empty" data-notes-btn="${escapeAttr(card.id)}" aria-label="Add notes">
         ${ICON_PENCIL}
       </button>
     </div>`
@@ -273,15 +271,6 @@ export function buildCardDetailHTML(card, ctx) {
     ${psaSection}
     ${marketSection}
     ${notesSection}
-
-    <div class="cd2-section">
-      <span class="cd2-section-label">Manage</span>
-      <div class="cd2-card">
-        <button type="button" class="cd2-manage-row" data-manage-delete="${escapeAttr(card.id)}">
-          ${ICON_TRASH}<span>Remove from Collection</span>
-        </button>
-      </div>
-    </div>
 
     ${setPreviewSection}
   `
@@ -462,11 +451,6 @@ export function renderCardPanelInto(panelEl, cardId, ctx) {
     if (!c) return
     const result = await promptNotes(c.Notes || '')
     if (result !== null) await setDoc(doc(db, 'Cards', cardId), { Notes: result }, { merge: true })
-  })
-
-  // Remove from Collection (delete)
-  panelEl.querySelector('[data-manage-delete]')?.addEventListener('click', () => {
-    window._confirmDeleteCard?.(cardId)
   })
 
   // Same-set card preview taps
