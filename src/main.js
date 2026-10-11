@@ -127,6 +127,8 @@ function startApp() {
   wireNavButtons()
   wireSearchInputs()
   wireFilterChips()
+  wireCollectionSort()
+  wireEmptyStateActions()
 
   // Gestures
   attachSheetGestures('cardDetailSheet',    'cardDetailPanel',    'swipeHint',     'swipeHintRight',     'player')
@@ -515,10 +517,103 @@ function _wireChipRow(rowId, filters, render) {
   }
 }
 
+const _chipRows = {}
+
+function _clearSearch(inputId, clearId, setQuery) {
+  const input = document.getElementById(inputId)
+  if (input) input.value = ''
+  document.getElementById(clearId)?.classList.remove('visible')
+  setQuery('')
+}
+
+// "Clear filters" buttons on empty list states (utils.js → emptyStateHTML)
+function wireEmptyStateActions() {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-empty-clear]')
+    if (!btn) return
+    const scope = btn.dataset.emptyClear
+    if (scope === 'collection') {
+      _chipRows.coll?.set([])
+      _clearSearch('collSearchInput', 'collSearchClear', state.setCollSearchQuery)
+      updateOwnedCount()
+      renderCollectionView()
+    } else if (scope === 'detail') {
+      _chipRows.detail?.set([])
+      _clearSearch('cardSearchInput', 'cardSearchClear', state.setCardSearchQuery)
+      if (state.selectedPlayer) renderDetail(state.selectedPlayer)
+    } else if (scope === 'graded') {
+      _clearSearch('gradedSearchInput', 'gradedSearchClear', state.setGradedSearchQuery)
+      renderGradedView()
+    }
+  })
+}
+
+// ── Collection sort menu ───────────────────────────────────────────────────
+const COLL_SORTS = [
+  ['year',  'Year',        'calendar_month'],
+  ['set',   'Set',         'layers'],
+  ['sport', 'Sport',       'sports_baseball'],
+  ['value', 'Value',       'payments'],
+  ['gain',  'Gain / Loss', 'trending_up'],
+]
+const SORT_KEY = 'sleevd.collSort'
+
+function wireCollectionSort() {
+  const btn  = document.getElementById('collSortBtn')
+  const menu = document.getElementById('collSortMenu')
+  const label = document.getElementById('collSortLabel')
+  if (!btn || !menu) return
+
+  // Remembered per device — a convenience, so failures just fall back to Year
+  try {
+    const saved = localStorage.getItem(SORT_KEY)
+    if (COLL_SORTS.some(([k]) => k === saved)) state.setCollSortBy(saved)
+  } catch {}
+
+  const sync = () => {
+    const cur = state.collSortBy || 'year'
+    label.textContent = (COLL_SORTS.find(([k]) => k === cur) || COLL_SORTS[0])[1]
+    menu.innerHTML = COLL_SORTS.map(([k, name, icon]) => `
+      <button type="button" class="sort-menu-opt${k === cur ? ' on' : ''}" role="menuitemradio" aria-checked="${k === cur}" data-sort="${k}">
+        <span class="material-symbols-outlined">${icon}</span><span class="sort-menu-label">${name}</span><span class="material-symbols-outlined sort-menu-check">check</span>
+      </button>`).join('')
+  }
+  const close = () => {
+    if (!menu.classList.contains('open')) return
+    menu.classList.remove('open')
+    btn.setAttribute('aria-expanded', 'false')
+  }
+  const open = () => {
+    sync()
+    const r = btn.getBoundingClientRect()
+    menu.style.left = Math.max(8, Math.min(r.left, innerWidth - 220)) + 'px'
+    menu.style.top  = (r.bottom + 6) + 'px'
+    menu.classList.add('open')
+    btn.setAttribute('aria-expanded', 'true')
+  }
+
+  btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.contains('open') ? close() : open() })
+  menu.addEventListener('click', e => {
+    const opt = e.target.closest('[data-sort]')
+    if (!opt) return
+    state.setCollSortBy(opt.dataset.sort)
+    try { localStorage.setItem(SORT_KEY, opt.dataset.sort) } catch {}
+    sync()
+    close()
+    renderCollectionView()
+    document.getElementById('collectionScrollBody')?.scrollTo({ top: 0 })
+  })
+  document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target !== btn) close() })
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close() })
+  document.addEventListener('scroll', e => { if (!menu.contains(e.target)) close() }, true)
+  addEventListener('resize', close)
+  sync()
+}
+
 function wireFilterChips() {
   const flag = (get, set) => ({ get, toggle: () => set(!get()) })
 
-  const coll = _wireChipRow('collFilterChips', {
+  const coll = _chipRows.coll = _wireChipRow('collFilterChips', {
     collWishlist: flag(() => state.collShowWishlistOnly, state.setCollShowWishlistOnly),
     collFavorite: flag(() => state.collShowFavoriteOnly, state.setCollShowFavoriteOnly),
     collGraded:   flag(() => state.collShowGradedOnly,   state.setCollShowGradedOnly),
@@ -535,7 +630,7 @@ function wireFilterChips() {
     switchPage('collection')
   }
 
-  _wireChipRow('detailFilterChips', {
+  _chipRows.detail = _wireChipRow('detailFilterChips', {
     wishlist: flag(() => state.showWishlistOnly,   state.setShowWishlistOnly),
     favorite: flag(() => state.showFavoriteOnly,   state.setShowFavoriteOnly),
     graded:   flag(() => state.showGradedOnly,     state.setShowGradedOnly),

@@ -1,5 +1,6 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, imgPh } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
+import { savedMarketValue } from '../services/market-value.js'
 
 export function renderCollectionView({ preserveScroll = false } = {}) {
   if (!state.cardsLoaded) return
@@ -47,7 +48,24 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     return String(a.Number ?? '').localeCompare(String(b.Number ?? ''), undefined, { numeric: true })
   }
 
-  if (sortBy === 'sport') {
+  // Value / Gain-Loss use market values saved on each card (no API calls);
+  // cards without one sort after, in normal year order
+  const gainOf = c => {
+    const mv = savedMarketValue(c), paid = parseFloat(c.Price)
+    return mv != null && paid > 0 ? mv - paid : null
+  }
+  const byMetric = metric => (a, b) => {
+    const mA = metric(a), mB = metric(b)
+    if (mA != null && mB != null && mA !== mB) return mB - mA
+    if ((mA == null) !== (mB == null)) return mA == null ? 1 : -1
+    return subSort(a, b)
+  }
+
+  if (sortBy === 'value') {
+    cards.sort(byMetric(savedMarketValue))
+  } else if (sortBy === 'gain') {
+    cards.sort(byMetric(gainOf))
+  } else if (sortBy === 'sport') {
     cards.sort((a, b) => {
       const sA = (a.Sport || '').toLowerCase(), sB = (b.Sport || '').toLowerCase()
       if (sA !== sB) return sA.localeCompare(sB)
@@ -76,7 +94,13 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   const groups = new Map()
   cards.forEach(c => {
     let key
-    if (sortBy === 'sport') key = c.Sport || '(Unknown Sport)'
+    if (sortBy === 'value') {
+      const mv = savedMarketValue(c)
+      key = mv == null ? 'No value yet' : (VALUE_BANDS.find(([min]) => mv >= min) || VALUE_BANDS[VALUE_BANDS.length - 1])[1]
+    } else if (sortBy === 'gain') {
+      const g = gainOf(c)
+      key = g == null ? 'No value or purchase price' : g >= 0 ? 'Gaining' : 'Losing'
+    } else if (sortBy === 'sport') key = c.Sport || '(Unknown Sport)'
     else if (sortBy === 'set') key = c.Set || '(Unknown Set)'
     else key = c.Year?.toString() || 'Unknown'
     if (!groups.has(key)) groups.set(key, [])
@@ -84,9 +108,15 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   })
 
   if (groups.size === 0) {
-    container.innerHTML = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">📦</div><div style="font-weight:700;">No cards found</div></div>`
+    const hasFilters = state.collShowWishlistOnly || state.collShowGradedOnly || state.collShowFavoriteOnly ||
+      state.collFilterRC || state.collFilterAuto || state.collFilterMem || state.collFilterNumbered
+    const hasSearch = !!state.collSearchQuery
+    container.innerHTML = hasFilters || hasSearch
+      ? emptyStateHTML({ icon: 'filter_alt_off', title: 'No cards match', body: `Nothing in your collection matches ${hasFilters && hasSearch ? 'these filters and search' : hasFilters ? 'these filters' : 'this search'}.`, action: { scope: 'collection', label: clearLabel(hasFilters, hasSearch) } })
+      : emptyStateHTML({ icon: 'inventory_2', title: 'No cards yet', body: 'Add your first card with the + button.' })
     return
   }
+  const showValue = sortBy === 'value' || sortBy === 'gain'
 
   const groupKeys = Array.from(groups.keys())
   let currentGroupIdx = 0
@@ -104,8 +134,9 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     header.innerHTML = `<span class="year-group-key">${key}</span><span class="year-count">${groupCards.length} card${groupCards.length !== 1 ? 's' : ''}</span>`
     fragment.appendChild(header)
 
-    if (sortBy !== 'year') {
-      // Sub-group by year within each primary group
+    if (sortBy !== 'year' && !showValue) {
+      // Sub-group by year within each primary group (value sorts keep their
+      // high-to-low order instead)
       const yearGroups = new Map()
       groupCards.forEach(c => {
         const yr = c.Year?.toString() || 'Unknown'
@@ -134,7 +165,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
       listDiv.className = 'collection-card-list'
       groupCards.forEach(card => {
         const wrapper = document.createElement('div')
-        wrapper.innerHTML = buildCollectionRow(card)
+        wrapper.innerHTML = buildCollectionRow(card, showValue)
         listDiv.appendChild(wrapper.firstElementChild)
       })
       fragment.appendChild(listDiv)
@@ -177,7 +208,20 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   }
 }
 
-function buildCollectionRow(c) {
+const VALUE_BANDS = [[1000, '$1,000+'], [250, '$250 – $999'], [100, '$100 – $249'], [25, '$25 – $99'], [-Infinity, 'Under $25']]
+const money = n => '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+// Market value (and gain/loss vs. paid) under the row, for the value sorts
+function valueLine(c) {
+  const mv = savedMarketValue(c)
+  if (mv == null) return ''
+  const paid = parseFloat(c.Price)
+  const gain = paid > 0 ? mv - paid : null
+  const g = gain == null ? '' : ` <span class="card-row-gain ${gain >= 0 ? 'up' : 'down'}">${gain >= 0 ? '+' : '−'}${money(Math.abs(gain))}</span>`
+  return `<div class="card-row-value">${money(mv)}${g}</div>`
+}
+
+function buildCollectionRow(c, showValue = false) {
   const owned       = isOwned(c)
   const player      = state.ALL_PLAYERS.find(p => p.id === c.Player)
   const playerName  = player ? (player.Player || player.id) : (c.Player || '')
@@ -199,6 +243,7 @@ function buildCollectionRow(c) {
       <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
       <div class="card-info-row2">${playerName}</div>
       ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
+      ${showValue ? valueLine(c) : ''}
     </div>
     <button class="card-row-menu-btn" data-menu-card="${escapeAttr(c.id)}" aria-label="Card options">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>

@@ -27,11 +27,20 @@ const CHIP_SPECS = [
   ['Unsleevd', 'var(--md-accent)'], ['Favorite', '#C9A227'], ['Graded', '#2E7D32'],
   ['RC', '#E8192C'], ['AUTO', '#B8860B'], ['MEM', '#1565C0'], ["#'d", '#78909C'],
 ]
-const filterChips = (id, keys) => `
+const filterChips = (id, keys, lead = '') => `
   <div class="filter-chips" id="${id}" role="toolbar" aria-label="Filters">
+    ${lead}
     ${keys.map((key, i) => `<button type="button" class="fchip" data-chip="${key}" style="--chip:${CHIP_SPECS[i][1]}" aria-pressed="false"><span class="material-symbols-outlined fchip-check">check</span>${CHIP_SPECS[i][0]}</button>`).join('')}
     <button type="button" class="fchip-clear"><span class="material-symbols-outlined">close</span>Clear</button>
   </div>`
+
+// Collection sort — leads the chip row so it's visible without scrolling;
+// opens #collSortMenu (main.js → wireCollectionSort)
+const SORT_CHIP = `
+    <button type="button" class="fchip fchip-sort" id="collSortBtn" aria-haspopup="menu" aria-expanded="false">
+      <span class="material-symbols-outlined">swap_vert</span><span id="collSortLabel">Year</span><span class="material-symbols-outlined fchip-caret">arrow_drop_down</span>
+    </button>
+    <span class="fchip-divider" aria-hidden="true"></span>`
 
 const SKEL_STATS = `<div class="stats-content" aria-hidden="true">
   <div class="skel skel-hero"></div>
@@ -162,7 +171,7 @@ function appShellHTML() {
                       </button>
                     </div>
                   </div>
-                  ${filterChips('collFilterChips', ['collWishlist', 'collFavorite', 'collGraded', 'collRC', 'collAuto', 'collMem', 'collNumbered'])}
+                  ${filterChips('collFilterChips', ['collWishlist', 'collFavorite', 'collGraded', 'collRC', 'collAuto', 'collMem', 'collNumbered'], SORT_CHIP)}
                 </div>
                 <div id="collectionList">${SKEL_ROWS}</div>
               </div>
@@ -484,6 +493,9 @@ function appShellHTML() {
     <button class="cs-manual-btn" id="csManualBtn">Enter manually</button>
   </div>
 </div>
+
+<!-- COLLECTION SORT MENU (positioned under #collSortBtn by main.js) -->
+<div class="sort-menu" id="collSortMenu" role="menu" aria-label="Sort collection"></div>
 
 <!-- CARDSIGHT LINK SHEET -->
 <div class="sheet" id="cardsightLinkSheet">

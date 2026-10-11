@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, imgPh } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
@@ -260,7 +260,14 @@ export function renderDetail(player) {
     html += '</div>'
   })
 
-  if (!html) html = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">🃏</div><div style="font-weight:700;">No cards found</div></div>`
+  if (!html) {
+    const hasFilters = state.showGradedOnly || state.showWishlistOnly || state.showFavoriteOnly ||
+      state.detailFilterRC || state.detailFilterAuto || state.detailFilterMem || state.detailFilterNumbered
+    const hasSearch = !!state.cardSearchQuery
+    html = hasFilters || hasSearch
+      ? emptyStateHTML({ icon: 'filter_alt_off', title: 'No cards match', body: `None of ${escapeAttr(player.Player || player.id)}'s cards match ${hasFilters && hasSearch ? 'these filters and search' : hasFilters ? 'these filters' : 'this search'}.`, action: { scope: 'detail', label: clearLabel(hasFilters, hasSearch) } })
+      : emptyStateHTML({ icon: 'style', title: 'No cards yet', body: 'Add a card for this player with the + button.' })
+  }
   document.getElementById('cardList').innerHTML = html
 }
 

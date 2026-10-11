@@ -81,6 +81,22 @@ export function initImagePlaceholders() {
   }, true)
 }
 
+// Empty list state. `action` adds a button handled in main.js by its
+// data-empty-clear scope ('collection' | 'detail' | 'graded').
+export function emptyStateHTML({ icon, title, body = '', action = null }) {
+  return `<div class="empty-state">
+    <span class="material-symbols-outlined empty-state-icon">${icon}</span>
+    <div class="empty-state-title">${title}</div>
+    ${body ? `<div class="empty-state-body">${body}</div>` : ''}
+    ${action ? `<button type="button" class="empty-state-btn" data-empty-clear="${action.scope}"><span class="material-symbols-outlined">filter_alt_off</span>${action.label}</button>` : ''}
+  </div>`
+}
+
+// "Clear filters" / "Clear search" / "Clear filters and search"
+export function clearLabel(hasFilters, hasSearch) {
+  return hasFilters && hasSearch ? 'Clear filters and search' : hasFilters ? 'Clear filters' : 'Clear search'
+}
+
 export function vibrate(ms = 10) {
   if (navigator.vibrate) navigator.vibrate(ms)
 }

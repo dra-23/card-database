@@ -530,6 +530,57 @@ html, body {
 .fchip-clear .material-symbols-outlined { font-size: 18px; }
 .filter-chips.has-active .fchip-clear { display: inline-flex; }
 
+/* Sort chip (Collection) + its menu */
+.fchip-sort { gap: 4px; padding: 0 6px 0 10px; color: var(--md-on-surface); }
+.fchip-sort .material-symbols-outlined { font-size: 18px; }
+.fchip-sort .fchip-caret { font-size: 20px; margin-left: -2px; }
+.fchip-sort[aria-expanded="true"] { background: color-mix(in srgb, var(--md-accent) 18%, var(--md-surface-2)); }
+.fchip-divider { width: 1px; height: 20px; background: color-mix(in srgb, var(--md-on-surface) 14%, transparent); flex-shrink: 0; margin: 0 2px; }
+.sort-menu {
+  position: fixed; z-index: 1400; min-width: 200px; padding: 6px; border-radius: 16px;
+  background: var(--md-surface); border: 1px solid var(--md-surface-2);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+  opacity: 0; transform: translateY(-4px) scale(0.98); transform-origin: top left; pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
+.sort-menu.open { opacity: 1; transform: none; pointer-events: auto; }
+.sort-menu-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: none; border-radius: 10px;
+  background: none; color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; font-size: 15px; font-weight: 500;
+  text-align: left; cursor: pointer;
+}
+.sort-menu-opt:hover { background: var(--md-surface-1); }
+.sort-menu-opt .material-symbols-outlined { font-size: 20px; color: var(--md-on-surface-variant); }
+.sort-menu-label { flex: 1; }
+.sort-menu-opt .sort-menu-check { color: var(--md-accent); opacity: 0; }
+.sort-menu-opt.on { color: var(--md-accent); font-weight: 700; }
+.sort-menu-opt.on .material-symbols-outlined { color: var(--md-accent); }
+.sort-menu-opt.on .sort-menu-check { opacity: 1; }
+[data-theme="dark"] .sort-menu-opt:hover { background: var(--md-surface-2); }
+
+/* Market value under a Collection row (Value / Gain-Loss sorts) */
+.card-row-value { font-size: 14px; font-weight: 700; color: var(--md-on-surface); margin-top: 4px; }
+.card-row-gain { font-size: 13px; font-weight: 600; margin-left: 6px; }
+.card-row-gain.up { color: #2E7D32; }
+.card-row-gain.down { color: #C62828; }
+[data-theme="dark"] .card-row-gain.up { color: #81C784; }
+[data-theme="dark"] .card-row-gain.down { color: #EF9A9A; }
+
+/* Empty list states (utils.js → emptyStateHTML) */
+.empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 56px 32px; }
+.empty-state-icon {
+  font-size: 30px; width: 60px; height: 60px; border-radius: 20px; display: grid; place-items: center; margin-bottom: 8px;
+  color: var(--md-accent); background: color-mix(in srgb, var(--md-accent) 14%, transparent);
+}
+.empty-state-title { font-family: 'Google Sans Display'; font-size: 20px; font-weight: 700; color: var(--md-on-surface); }
+.empty-state-body { font-size: 15px; color: var(--md-on-surface-variant); max-width: 300px; line-height: 1.45; }
+.empty-state-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; height: 44px; padding: 0 20px; border: none; border-radius: 22px;
+  background: var(--md-accent); color: #fff; font-family: 'Google Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.empty-state-btn .material-symbols-outlined { font-size: 20px; }
+.empty-state-btn:active { transform: scale(0.97); }
+
 /* Player stats pill beside the search on wide layouts — same height and
    shape as the top-bar search box */
 .row-stat-pill { height: 40px; border-radius: 20px; padding: 0 18px; flex-shrink: 0; }

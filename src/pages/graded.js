@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, imgPh } from '../utils.js'
+import { getCleanImg, isOwned, escapeAttr, imgPh, emptyStateHTML } from '../utils.js'
 
 export function renderGradedView() {
   if (!state.cardsLoaded) return
@@ -49,7 +49,9 @@ export function renderGradedView() {
   if (!container) return
 
   if (sortedGroups.length === 0) {
-    container.innerHTML = `<div style="padding:48px 24px; text-align:center; opacity:0.4;"><div style="font-size:40px; margin-bottom:12px;">🏆</div><div style="font-weight:700;">No graded cards found</div></div>`
+    container.innerHTML = state.gradedSearchQuery
+      ? emptyStateHTML({ icon: 'search_off', title: 'No graded cards match', body: `Nothing matches “${escapeAttr(state.gradedSearchQuery)}”.`, action: { scope: 'graded', label: 'Clear search' } })
+      : emptyStateHTML({ icon: 'workspace_premium', title: 'No graded cards yet', body: 'Cards with a PSA, BGS, SGC or CGC grade show up here.' })
     return
   }
 
