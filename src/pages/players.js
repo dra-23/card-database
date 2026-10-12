@@ -59,12 +59,14 @@ export function openDetail(id) {
   const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
   const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
 
-  // Wire edit buttons (mobile banner + wide-layout top bar)
+  // Wire edit buttons (mobile banner + fold-layout top bar). Assigned, not
+  // added — a fresh listener per player would stack up and open the edit
+  // sheet once for every player viewed this session.
   const _onEdit = () => window._openPlayerEditMenu?.(player.id)
-  document.getElementById('editPlayerBtn')?.removeEventListener('click', _onEdit)
-  document.getElementById('detailEditBtn')?.removeEventListener('click', _onEdit)
-  document.getElementById('editPlayerBtn')?.addEventListener('click', _onEdit)
-  document.getElementById('detailEditBtn')?.addEventListener('click', _onEdit)
+  const bannerEdit = document.getElementById('editPlayerBtn')
+  const topBarEdit = document.getElementById('detailEditBtn')
+  if (bannerEdit) bannerEdit.onclick = _onEdit
+  if (topBarEdit) topBarEdit.onclick = _onEdit
   // Wide-layout search row: show this player's stat pill (beside the search,
   // which already names the player via its placeholder), hide the total count
   const topBarStats = document.getElementById('topBarStats')

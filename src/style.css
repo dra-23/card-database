@@ -455,8 +455,11 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 .detail-search-back-btn:active { background: var(--md-surface-1); }
 #detailCompactHeader #detailSearchRow { position: static; background: var(--md-surface-1); }
 /* Wide layout only — mobile already has its own edit button on the banner. */
+/* Wide layouts: edit lives on the selected player tile instead — except the
+   fold layout (840–1279px), which hides the player grid while a player is
+   open, so the top-bar button is the only way in there. */
 #detailEditBtn { display: none; }
-@media (min-width: 768px) { #detailEditBtn { display: flex; } }
+@media (min-width: 840px) and (max-width: 1279px) { #detailEditBtn { display: flex; } }
 
 /* Mobile only: on wide layout #detailCompactHeader is display:none (its
    content relocates into the global top bar instead), so there's no 62px
@@ -1306,10 +1309,13 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 .player-grid.has-selection .player-tile:not(.tile-selected) { opacity: 0.4; filter: grayscale(0.3); transition: opacity 0.2s, filter 0.2s; }
 .player-grid.has-selection .player-tile.tile-selected { transition: opacity 0.2s; }
 
-/* Tile edit button — hidden by default, shown on selected tile in wide layout */
-.tile-edit-btn { display: none; position: absolute; top: 7px; right: 7px; width: 28px; height: 28px; border-radius: 8px; border: none; background: rgba(0,0,0,0.42); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; align-items: center; justify-content: center; cursor: pointer; z-index: 2; padding: 0; }
-.tile-edit-btn .material-symbols-outlined { font-size: 16px; }
-.tile-edit-btn:active { background: rgba(0,0,0,0.6); }
+/* Tile edit button — hidden by default, shown on the selected tile in wide
+   layouts (top-right corner of the tile, so the tile must anchor it) */
+.player-tile { position: relative; }
+.tile-edit-btn { display: none; position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 17px; border: none; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; align-items: center; justify-content: center; cursor: pointer; z-index: 2; padding: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: background 0.15s, transform 0.15s; }
+.tile-edit-btn .material-symbols-outlined { font-size: 18px; }
+.tile-edit-btn:hover { background: rgba(0,0,0,0.62); }
+.tile-edit-btn:active { background: rgba(0,0,0,0.7); transform: scale(0.92); }
 
 @media (min-width: 768px) {
   #playerBannerSection, #playerThumbSection, #playerDetailPill { display: none !important; }
