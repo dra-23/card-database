@@ -221,12 +221,22 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 .cf2-banner .material-symbols-outlined.cf2-cam { top: 10px; right: 10px; }
 .cf2-avatar .material-symbols-outlined.cf2-cam { right: -10px; bottom: -10px; width: 28px; height: 28px; font-size: 16px; border: 2px solid var(--md-surface); }
 
-.cf2-pick-link {
-  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin: -6px 0 0 100px; padding: 6px 12px 6px 8px;
-  border: none; border-radius: 16px; background: color-mix(in srgb, var(--md-accent) 12%, transparent); color: var(--md-accent);
-  font-family: 'Google Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+/* Photo source menu on the Edit player photo/banner (player-forms.js) */
+.photo-menu {
+  position: fixed; z-index: 1950; min-width: 220px; padding: 6px; border-radius: 16px;
+  background: var(--md-surface); border: 1px solid var(--md-surface-2);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.16), 0 2px 6px rgba(0,0,0,0.08);
+  animation: photo-menu-in 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
-.cf2-pick-link .material-symbols-outlined { font-size: 17px; }
+@keyframes photo-menu-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+.photo-menu-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border: none; border-radius: 10px; background: none;
+  color: var(--md-on-surface); font-family: 'Google Sans', sans-serif; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
+}
+.photo-menu-opt:hover, .photo-menu-opt:active { background: var(--md-surface-1); }
+.photo-menu-opt .material-symbols-outlined { font-size: 20px; color: var(--md-on-surface-variant); }
+.photo-menu-opt.danger, .photo-menu-opt.danger .material-symbols-outlined { color: var(--md-primary); }
+[data-theme="dark"] .photo-menu-opt:hover, [data-theme="dark"] .photo-menu-opt:active { background: var(--md-surface-2); }
 /* "Use one of their card images" picker */
 .picker-overlay { position: fixed; inset: 0; z-index: 1900; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,0.45); }
 .picker-box {

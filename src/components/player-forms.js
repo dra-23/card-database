@@ -84,7 +84,67 @@ export async function savePlayer() {
 
 // ── Player edit sheet ──────────────────────────────────────────────────────
 let _editPlayerId = null
-let _pickedMainUrl = null // a card image chosen as the player photo (no upload needed)
+// Per image slot: null = unchanged (or an upload is pending in the file
+// input), { url } = a card image picked for it (no upload needed),
+// { remove: true } = cleared
+const _choice = { main: null, banner: null }
+
+const SLOT = {
+  main:   { input: 'peMainFileInput',   preview: 'peMainPreview',   placeholder: 'peMainPlaceholder',   field: 'Main Image',   noun: 'photo' },
+  banner: { input: 'peBannerFileInput', preview: 'peBannerPreview', placeholder: 'peBannerPlaceholder', field: 'Banner_Image', noun: 'banner' },
+}
+
+function _slotHasImage(slot) {
+  return document.getElementById(SLOT[slot].preview)?.style.display === 'block'
+}
+
+function _closePhotoMenu() {
+  document.querySelector('.photo-menu')?.remove()
+  document.removeEventListener('pointerdown', _onMenuOutside, true)
+}
+function _onMenuOutside(e) {
+  if (!e.target.closest('.photo-menu')) _closePhotoMenu()
+}
+
+// Small menu anchored to the tapped photo/banner: Upload / Choose from
+// their cards / Remove
+function _openPhotoMenu(anchor, slot) {
+  _closePhotoMenu()
+  const s = SLOT[slot]
+  const canPick = _playerCardImages(_editPlayerId).length > 0
+  const items = [
+    ['upload', 'upload', `Upload a ${s.noun}`],
+    canPick && ['pick', 'style', 'Choose from their cards'],
+    _slotHasImage(slot) && ['remove', 'delete', `Remove ${s.noun}`],
+  ].filter(Boolean)
+
+  const menu = document.createElement('div')
+  menu.className = 'photo-menu'
+  menu.setAttribute('role', 'menu')
+  menu.innerHTML = items.map(([act, icon, label]) =>
+    `<button type="button" role="menuitem" class="photo-menu-opt${act === 'remove' ? ' danger' : ''}" data-act="${act}"><span class="material-symbols-outlined">${icon}</span>${label}</button>`).join('')
+  menu.addEventListener('click', e => {
+    const act = e.target.closest('[data-act]')?.dataset.act
+    if (!act) return
+    _closePhotoMenu()
+    if (act === 'upload') document.getElementById(s.input).click()
+    else if (act === 'pick') _openCardImagePicker(slot)
+    else if (act === 'remove') {
+      _choice[slot] = { remove: true }
+      document.getElementById(s.input).value = ''
+      _setPreview(s.preview, s.placeholder, '')
+    }
+  })
+  document.body.appendChild(menu)
+
+  // Below the photo, or above it if there's no room
+  const r = anchor.getBoundingClientRect()
+  const mh = menu.offsetHeight, mw = menu.offsetWidth
+  const top = r.bottom + 8 + mh > innerHeight - 8 ? r.top - mh - 8 : r.bottom + 8
+  menu.style.top  = Math.max(8, top) + 'px'
+  menu.style.left = Math.max(8, Math.min(r.left, innerWidth - mw - 8)) + 'px'
+  setTimeout(() => document.addEventListener('pointerdown', _onMenuOutside, true))
+}
 
 // This player's card images, owned cards first, de-duplicated
 function _playerCardImages(playerId) {
@@ -96,15 +156,16 @@ function _playerCardImages(playerId) {
     .filter(x => x.url && !seen.has(x.url) && seen.add(x.url))
 }
 
-function _openCardImagePicker() {
+function _openCardImagePicker(slot = 'main') {
   const images = _playerCardImages(_editPlayerId)
   if (!images.length) return
+  const s = SLOT[slot]
   const overlay = document.createElement('div')
   overlay.className = 'picker-overlay'
   overlay.innerHTML = `
-    <div class="picker-box" role="dialog" aria-modal="true" aria-label="Pick a card image">
+    <div class="picker-box" role="dialog" aria-modal="true" aria-label="Choose a card image">
       <div class="picker-head">
-        <div class="picker-title">Pick a card image</div>
+        <div class="picker-title">Choose a ${s.noun} from their cards</div>
         <button type="button" class="cf2-close picker-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
       </div>
       <div class="picker-grid"></div>
@@ -122,9 +183,9 @@ function _openCardImagePicker() {
     img.src = url
     tile.appendChild(img)
     tile.addEventListener('click', () => {
-      _pickedMainUrl = url
-      document.getElementById('peMainFileInput').value = ''
-      _setPreview('peMainPreview', 'peMainPlaceholder', url)
+      _choice[slot] = { url }
+      document.getElementById(s.input).value = ''
+      _setPreview(s.preview, s.placeholder, url)
       overlay.remove()
     })
     grid.appendChild(tile)
@@ -164,10 +225,6 @@ export function createPlayerEditSheet() {
         </button>
       </div>
 
-      <button type="button" class="cf2-pick-link" id="pePickFromCards">
-        <span class="material-symbols-outlined">style</span>Use one of their card images
-      </button>
-
       <div class="cf2-field" id="pe_name_field">
         <label class="cf2-label" for="pe_name">Player name</label>
         <input type="text" id="pe_name" class="cf2-input" autocomplete="off">
@@ -196,14 +253,15 @@ export function createPlayerEditSheet() {
   document.getElementById('peCancelBtn').addEventListener('click', closePlayerEdit)
   document.getElementById('peCloseBtn').addEventListener('click', closePlayerEdit)
   document.getElementById('pe_name').addEventListener('input', () => _showError('pe_name_field', false))
-  document.getElementById('peSelectMainBtn').addEventListener('click', () => document.getElementById('peMainFileInput').click())
-  document.getElementById('peSelectBannerBtn').addEventListener('click', () => document.getElementById('peBannerFileInput').click())
+  // Tapping the photo or banner opens a menu of where the image comes from
+  document.getElementById('peSelectMainBtn').addEventListener('click', e => _openPhotoMenu(e.currentTarget, 'main'))
+  document.getElementById('peSelectBannerBtn').addEventListener('click', e => _openPhotoMenu(e.currentTarget, 'banner'))
   document.getElementById('peMainFileInput').addEventListener('change', e => {
-    _pickedMainUrl = null // an uploaded photo wins over a picked card image
+    _choice.main = null // an uploaded photo replaces any picked/removed choice
     handlePlayerFileSelect(e.target, 'peMainPreview', 'peMainPlaceholder')
   })
-  document.getElementById('pePickFromCards').addEventListener('click', _openCardImagePicker)
   document.getElementById('peBannerFileInput').addEventListener('change', e => {
+    _choice.banner = null
     handlePlayerFileSelect(e.target, 'peBannerPreview', 'peBannerPlaceholder')
   })
 }
@@ -224,8 +282,8 @@ export function openPlayerEditMenu(playerId) {
     ? `Delete player and all ${pC.length.toLocaleString()} ${pC.length === 1 ? 'card' : 'cards'}`
     : 'Delete player'
 
-  _pickedMainUrl = null
-  document.getElementById('pePickFromCards').style.display = _playerCardImages(playerId).length ? '' : 'none'
+  _choice.main = null
+  _choice.banner = null
   _setPreview('peMainPreview', 'peMainPlaceholder', getCleanImg(p['Main Image']))
   _setPreview('peBannerPreview', 'peBannerPlaceholder', getCleanImg(p['Banner_Image']))
   ;['peMainFileInput', 'peBannerFileInput'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '' })
@@ -242,6 +300,7 @@ export function openPlayerEditMenu(playerId) {
 }
 
 export function closePlayerEdit() {
+  _closePhotoMenu()
   const sheet = document.getElementById('playerEditSheet')
   if (sheet) sheet.classList.remove('open')
   const scrim = document.getElementById('globalScrim')
@@ -269,11 +328,19 @@ async function savePlayerEdit() {
     ])
 
     const p = state.ALL_PLAYERS.find(x => x.id === _editPlayerId)
+    // Upload > picked card image > removed > unchanged
+    const resolve = (slot, uploaded) => {
+      if (uploaded) return uploaded
+      const c = _choice[slot]
+      if (c?.url) return c.url
+      if (c?.remove) return ''
+      return p?.[SLOT[slot].field] || ''
+    }
     const data = {
       Player: newName,
       Sport:  document.getElementById('pe_sport').value,
-      'Main Image':   mainUrl   || _pickedMainUrl || p?.['Main Image'] || '',
-      'Banner_Image': bannerUrl || p?.['Banner_Image'] || '',
+      'Main Image':   resolve('main', mainUrl),
+      'Banner_Image': resolve('banner', bannerUrl),
     }
     await setDoc(doc(db, 'Players', _editPlayerId), data, { merge: true })
     closePlayerEdit()
