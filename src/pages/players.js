@@ -108,12 +108,31 @@ export function openDetail(id) {
   renderDetail(player)
   window._afterPlayerDetail?.()
 
+  // The gallery narrows into a sidebar once a player opens, so its tiles
+  // reflow and the selected one can land offscreen — bring it back into view
+  if (isWideLayout()) requestAnimationFrame(() => _revealSelectedTile())
+
   if (!isWideLayout()) {
     const dv = document.getElementById('detail-view')
     dv.style.display = 'flex'; dv.style.flexDirection = 'column'
     _updateFloatingFab('players')
     history.pushState({ v: 'detail', p: id }, '')
   }
+}
+
+// Scrolls only the gallery's own list (scrollIntoView could also nudge the
+// overflow:hidden page containers around it). Leaves it alone if the tile is
+// already fully visible; otherwise centers it. Instant rather than smooth:
+// the whole layout changes in this same moment anyway, and a smooth scroll
+// would only start once the player's (possibly long) card list had rendered.
+function _revealSelectedTile() {
+  const body = document.getElementById('galleryScrollBody')
+  const tile = document.querySelector('.player-tile.tile-selected')
+  if (!body || !tile || !body.clientHeight) return
+  const b = body.getBoundingClientRect(), t = tile.getBoundingClientRect()
+  if (t.top >= b.top && t.bottom <= b.bottom) return
+  const target = body.scrollTop + (t.top - b.top) - (b.height - t.height) / 2
+  body.scrollTop = Math.max(0, target)
 }
 
 export function closeDetail() {
