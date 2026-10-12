@@ -396,11 +396,25 @@ export async function findAndLoadMarketValue(cardId, panelEl) {
 }
 
 // ── Render card into a panel element ──────────────────────────────────────
-export function renderCardPanelInto(panelEl, cardId, ctx) {
+// `keepScroll` is for in-place refreshes of the card already on screen (a
+// saved market value, a favorite toggle…): the panel re-renders from
+// scratch, so without it every data change would jump back to the top.
+export function renderCardPanelInto(panelEl, cardId, ctx, { keepScroll = false } = {}) {
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
+  // Depending on layout either the panel or the pane around it scrolls
+  const scrollers = [panelEl, panelEl.parentElement].filter(Boolean)
+  const saved = keepScroll ? scrollers.map(el => el.scrollTop) : null
   panelEl.innerHTML = buildCardDetailHTML(card, ctx)
-  panelEl.scrollTop = 0
+  if (saved) {
+    const restore = () => scrollers.forEach((el, i) => { el.scrollTop = saved[i] })
+    restore()
+    // The hero image can take a moment to get its height back; until it
+    // does the page is shorter and the restored position gets clamped
+    panelEl.querySelector('.cd2-hero-img')?.addEventListener('load', restore, { once: true })
+  } else {
+    panelEl.scrollTop = 0
+  }
 
   // Toggle sleeved (owned)
   panelEl.querySelector(`[data-card-toggle]`)?.addEventListener('click', async () => {
@@ -501,17 +515,17 @@ export function refreshCurrentCardPanel(cardId) {
     const panel = isFoldLayout()
       ? document.getElementById('twoPane-panel')
       : document.getElementById('cardDetailPanel')
-    if (panel) renderCardPanelInto(panel, cardId, ctx)
+    if (panel) renderCardPanelInto(panel, cardId, ctx, { keepScroll: true })
   } else if (ctx === 'collection') {
     const panel = isWideLayout()
       ? document.getElementById('twoPane-coll-panel')
       : document.getElementById('collectionCardPanel')
-    if (panel) renderCardPanelInto(panel, cardId, ctx)
+    if (panel) renderCardPanelInto(panel, cardId, ctx, { keepScroll: true })
   } else {
     const panel = isWideLayout()
       ? document.getElementById('twoPane-grad-panel')
       : document.getElementById('gradedCardPanel')
-    if (panel) renderCardPanelInto(panel, cardId, ctx)
+    if (panel) renderCardPanelInto(panel, cardId, ctx, { keepScroll: true })
   }
 }
 
