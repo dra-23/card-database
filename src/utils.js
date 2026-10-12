@@ -125,7 +125,9 @@ export const sportChipsHTML = () =>
 
 // ── Confirm dialog ─────────────────────────────────────────────────────────
 // Resolves true if confirmed. Tap outside or Cancel resolves false.
-export function confirmDialog({ title, body, confirmLabel = 'Delete', danger = true }) {
+// `requireText` (e.g. 'DELETE') adds a field the word must be typed into
+// before the confirm button enables — for destructive, hard-to-undo actions.
+export function confirmDialog({ title, body, confirmLabel = 'Delete', danger = true, requireText = '' }) {
   return new Promise(resolve => {
     const overlay = document.createElement('div')
     overlay.className = 'confirm-overlay'
@@ -133,19 +135,34 @@ export function confirmDialog({ title, body, confirmLabel = 'Delete', danger = t
       <div class="confirm-box" role="alertdialog" aria-modal="true">
         <div class="confirm-title"></div>
         <div class="confirm-body"></div>
+        ${requireText ? `
+        <label class="confirm-type">
+          <span class="confirm-type-label">Type <b></b> to confirm</span>
+          <input type="text" class="confirm-type-input" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        </label>` : ''}
         <div class="confirm-actions">
           <button type="button" class="confirm-btn confirm-cancel">Cancel</button>
-          <button type="button" class="confirm-btn ${danger ? 'confirm-danger' : 'confirm-ok'}"></button>
+          <button type="button" class="confirm-btn confirm-go ${danger ? 'confirm-danger' : 'confirm-ok'}"></button>
         </div>
       </div>`
     overlay.querySelector('.confirm-title').textContent = title
     overlay.querySelector('.confirm-body').textContent = body
-    overlay.querySelector('.confirm-btn:last-child').textContent = confirmLabel
+    const go = overlay.querySelector('.confirm-go')
+    go.textContent = confirmLabel
+    const input = overlay.querySelector('.confirm-type-input')
+    const matches = () => !requireText || input.value.trim().toUpperCase() === requireText.toUpperCase()
+    if (input) {
+      overlay.querySelector('.confirm-type-label b').textContent = requireText
+      go.disabled = true
+      input.addEventListener('input', () => { go.disabled = !matches() })
+      input.addEventListener('keydown', e => { if (e.key === 'Enter' && matches()) done(true) })
+    }
     const done = ok => { overlay.remove(); resolve(ok) }
     overlay.querySelector('.confirm-cancel').onclick = () => done(false)
-    overlay.querySelector('.confirm-btn:last-child').onclick = () => done(true)
+    go.onclick = () => { if (matches()) done(true) }
     overlay.addEventListener('pointerdown', e => { if (e.target === overlay) done(false) })
     document.body.appendChild(overlay)
+    input?.focus()
   })
 }
 

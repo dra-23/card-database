@@ -297,6 +297,7 @@ async function deletePlayer() {
       ? `This permanently deletes ${name} and all ${cards.length.toLocaleString()} of their cards. This can't be undone.`
       : `This permanently deletes ${name}. This can't be undone.`,
     confirmLabel: cards.length ? `Delete ${cards.length.toLocaleString()} ${cards.length === 1 ? 'card' : 'cards'}` : 'Delete',
+    requireText: 'DELETE',
   })
   if (!ok) return
   await deleteDoc(doc(db, 'Players', _editPlayerId))
