@@ -39,7 +39,7 @@ export function isOwned(card) {
 
 // Form sheets that become right-side slide-in panels from tablet width up
 // (see the matching rule in style.css)
-const SIDE_PANEL_IDS = new Set(['cardFormSheet', 'playerFormSheet', 'cardSearchSheet', 'psaSheet', 'cardsightLinkSheet'])
+const SIDE_PANEL_IDS = new Set(['cardFormSheet', 'playerFormSheet', 'cardSearchSheet', 'psaSheet', 'cardsightLinkSheet', 'playerEditSheet'])
 const _wideMQ = window.matchMedia('(min-width: 768px)')
 
 export function isSidePanel(sheet) {
@@ -89,6 +89,64 @@ export function initImagePlaceholders() {
     ph.append(mark, text)
     img.replaceWith(ph)
   }, true)
+}
+
+// ── Choice chips ───────────────────────────────────────────────────────────
+// Single-select chips backed by a hidden input, so form code keeps reading
+// and setting `input.value`:
+//   <input type="hidden" id="pf_sport" value="Baseball">
+//   <div class="cf2-chips" data-choice-for="pf_sport"><button data-value="Baseball">…</button>…</div>
+// Tapping a chip sets the input and fires 'change' on it. After setting
+// the value in code, call syncChoice(inputId) to update the chips.
+export function syncChoice(inputId) {
+  const input = document.getElementById(inputId)
+  document.querySelectorAll(`[data-choice-for="${inputId}"] [data-value]`).forEach(chip => {
+    const on = chip.dataset.value === input?.value
+    chip.classList.toggle('on', on)
+    chip.setAttribute('aria-checked', on)
+  })
+}
+export function initChoiceChips() {
+  document.addEventListener('click', e => {
+    const chip = e.target.closest('[data-choice-for] [data-value]')
+    if (!chip) return
+    const inputId = chip.closest('[data-choice-for]').dataset.choiceFor
+    const input = document.getElementById(inputId)
+    if (!input || input.value === chip.dataset.value) return
+    input.value = chip.dataset.value
+    syncChoice(inputId)
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+}
+
+export const SPORTS = ['Baseball', 'Basketball', 'Football', 'Hockey', 'Golf', 'Soccer']
+export const sportChipsHTML = () =>
+  SPORTS.map(s => `<button type="button" class="cf2-chip" role="radio" data-value="${s}">${s}</button>`).join('')
+
+// ── Confirm dialog ─────────────────────────────────────────────────────────
+// Resolves true if confirmed. Tap outside or Cancel resolves false.
+export function confirmDialog({ title, body, confirmLabel = 'Delete', danger = true }) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div')
+    overlay.className = 'confirm-overlay'
+    overlay.innerHTML = `
+      <div class="confirm-box" role="alertdialog" aria-modal="true">
+        <div class="confirm-title"></div>
+        <div class="confirm-body"></div>
+        <div class="confirm-actions">
+          <button type="button" class="confirm-btn confirm-cancel">Cancel</button>
+          <button type="button" class="confirm-btn ${danger ? 'confirm-danger' : 'confirm-ok'}"></button>
+        </div>
+      </div>`
+    overlay.querySelector('.confirm-title').textContent = title
+    overlay.querySelector('.confirm-body').textContent = body
+    overlay.querySelector('.confirm-btn:last-child').textContent = confirmLabel
+    const done = ok => { overlay.remove(); resolve(ok) }
+    overlay.querySelector('.confirm-cancel').onclick = () => done(false)
+    overlay.querySelector('.confirm-btn:last-child').onclick = () => done(true)
+    overlay.addEventListener('pointerdown', e => { if (e.target === overlay) done(false) })
+    document.body.appendChild(overlay)
+  })
 }
 
 // Empty list state. `action` adds a button handled in main.js by its

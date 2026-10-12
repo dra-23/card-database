@@ -1,7 +1,7 @@
 import { db, doc, setDoc, addDoc, collection, deleteField, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import { auth } from '../firebase.js'
 import * as state from '../state.js'
-import { isOwned, getCleanImg } from '../utils.js'
+import { isOwned, getCleanImg, syncChoice } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
 import { cardsight } from '../cardsight.js'
 
@@ -16,14 +16,36 @@ function _sportFromName(name) {
   return ''
 }
 
+// Photo button + AI status line beside the thumbnail
+function _setPhotoStatus(status, note = '') {
+  const btn   = document.getElementById('selectPhotoBtn')
+  const icon  = document.getElementById('selectPhotoIcon')
+  const label = document.getElementById('selectPhotoLabel')
+  const tag   = document.getElementById('f_ai_tag')
+  const hint  = document.getElementById('f_photo_hint')
+  const hasPhoto = document.getElementById('f_imagePreview')?.style.display === 'block'
+  const isEdit = !!document.getElementById('f_cardId')?.value
+  if (btn) btn.disabled = status === 'identifying'
+  if (icon) icon.textContent = status === 'identifying' ? 'progress_activity' : 'photo_camera'
+  icon?.classList.toggle('cf2-spin', status === 'identifying')
+  if (label) label.textContent = status === 'identifying' ? 'Identifying…' : hasPhoto ? 'Change photo' : 'Add photo'
+  if (tag) {
+    tag.style.display = status === 'matched' || status === 'nomatch' ? '' : 'none'
+    tag.className = `cf2-ai-tag${status === 'nomatch' ? ' cf2-ai-miss' : ''}`
+    tag.innerHTML = status === 'matched'
+      ? '<span class="material-symbols-outlined">auto_awesome</span>Matched by AI'
+      : status === 'nomatch' ? `<span class="material-symbols-outlined">help</span>${note || 'No match, fill in below'}` : ''
+  }
+  if (hint) hint.style.display = !isEdit && status === 'idle' ? '' : 'none'
+}
+
 async function _identifyAndPrefill(file) {
-  const btn = document.getElementById('selectPhotoBtn')
-  if (btn) { btn.textContent = '🔍 Identifying…'; btn.disabled = true }
+  _setPhotoStatus('identifying')
 
   try {
     const { data, error } = await cardsight.identify.card(file)
     if (error || !data?.detections?.length) {
-      if (btn) { btn.textContent = '📷 Change Photo'; btn.disabled = false }
+      _setPhotoStatus('nomatch', error?.error === 'budget' ? 'Monthly AI limit reached' : '')
       return
     }
 
@@ -58,17 +80,42 @@ async function _identifyAndPrefill(file) {
 
     const gradingEl = document.getElementById('f_grading')
     if (grading?.company?.name && gradingEl && gradingEl.value === 'Raw') {
-      gradingEl.value = grading.company.name
+      setGrading(grading.company.name)
       if (grading.grade?.value) document.getElementById('f_grade').value = grading.grade.value
     }
 
     if (card.numberedTo || card.parallel?.numberedTo) setFormFlag('numbered', true)
     if (card.id) _pendingCardsightId = card.id
 
-    if (btn) { btn.textContent = '✓ AI matched'; btn.disabled = false }
+    _setPhotoStatus('matched')
   } catch (_) {
-    if (btn) { btn.textContent = '📷 Change Photo'; btn.disabled = false }
+    _setPhotoStatus('nomatch')
   }
+}
+
+// Grading company chips (hidden #f_grading). Grade only applies to slabs.
+export function setGrading(company) {
+  const input = document.getElementById('f_grading')
+  if (!input) return
+  input.value = ['PSA', 'BGS', 'SGC', 'CGC'].includes(company) ? company : 'Raw'
+  syncChoice('f_grading')
+  _syncGradeField()
+}
+function _syncGradeField() {
+  const raw = document.getElementById('f_grading').value === 'Raw'
+  document.getElementById('f_grade_field').style.display = raw ? 'none' : ''
+  if (raw) document.getElementById('f_grade').value = 'N/A'
+}
+
+function _showError(fieldId, show) {
+  document.getElementById(fieldId)?.classList.toggle('has-error', show)
+}
+
+// One-time wiring (main.js → wireFormButtons)
+export function initCardForm() {
+  document.getElementById('f_grading')?.addEventListener('change', _syncGradeField)
+  document.getElementById('imagePreviewContainer')?.addEventListener('click', () => document.getElementById('f_fileInput').click())
+  document.getElementById('f_player')?.addEventListener('change', () => _showError('f_player_field', false))
 }
 
 // ── Grade dropdown init ────────────────────────────────────────────────────
@@ -98,6 +145,11 @@ export function setFormFlag(flag, active) {
   hidden.value = active ? 'true' : 'false'
   btn.classList.toggle('selected', active)
   btn.setAttribute('aria-pressed', active ? 'true' : 'false')
+  // Serial # only applies to numbered cards
+  if (flag === 'numbered') {
+    const serial = document.getElementById('f_serial_field')
+    if (serial) serial.style.display = active ? '' : 'none'
+  }
 }
 
 // ── Custom suggest dropdown ────────────────────────────────────────────────
@@ -194,15 +246,28 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
   }
 
   const isEdit = !!cardId
-  document.getElementById('cardFormTitle').innerText = isEdit ? 'Edit Card' : 'Add Card'
+  const editCard = isEdit ? state.ALL_CARDS.find(x => x.id === cardId) : null
+  document.getElementById('cardFormTitle').innerText = isEdit ? 'Edit card' : 'Add card'
+  document.getElementById('cardFormSub').innerText = editCard
+    ? [contextPlayer?.Player, [editCard.Year, editCard.Set].filter(Boolean).join(' ') + (editCard.Number ? ` #${editCard.Number}` : '')].filter(Boolean).join(' · ')
+    : contextPlayer && ctx === 'player' ? `For ${contextPlayer.Player || contextPlayer.id}` : 'Snap a photo and AI fills in the details'
   document.getElementById('f_cardId').value = cardId || ''
 
   const saveBtn = document.getElementById('btnSaveCard')
   saveBtn.disabled = false
-  saveBtn.innerText = isEdit ? 'Save Card' : 'Mark Sleevd'
+  saveBtn.innerText = isEdit ? 'Save changes' : 'Add card'
+  document.getElementById('f_owned').checked = editCard ? isOwned(editCard) : true
+  _showError('f_player_field', false)
+  document.querySelector('#cardFormSheet .cf2-scroll').scrollTop = 0
 
-  const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
-  if (unsleevdBtn) { unsleevdBtn.style.display = isEdit ? 'none' : ''; unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+  // Photo always starts from this card's own image (or none) — never a
+  // leftover preview from the last card opened
+  const preview = document.getElementById('f_imagePreview')
+  const existingImg = editCard ? getCleanImg(editCard['App Image']) : ''
+  preview.src = existingImg || ''
+  preview.style.display = existingImg ? 'block' : 'none'
+  document.getElementById('previewPlaceholder').style.display = existingImg ? 'none' : ''
+  document.getElementById('f_fileInput').value = ''
 
   // Custom suggest dropdowns for Set and Manufacturer
   attachSuggest('f_set',          'f_set_suggest',          state.ALL_CARDS.map(c => c.Set))
@@ -238,16 +303,15 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
   refreshTeams()
 
   if (isEdit) {
-    const c = state.ALL_CARDS.find(x => x.id === cardId)
+    const c = editCard
     if (!c) return
-    document.getElementById('f_fileInput').value = ''
     document.getElementById('f_year').value         = c.Year || ''
     document.getElementById('f_set').value          = c.Set || ''
     document.getElementById('f_number').value       = c.Number || ''
     document.getElementById('f_manufacturer').value = c.Manufacturer || ''
     document.getElementById('f_sport').value        = c.Sport || ''
     document.getElementById('f_team').value         = c.Team || ''
-    document.getElementById('f_grading').value      = c['Grading Company'] || 'Raw'
+    setGrading(c['Grading Company'] || 'Raw')
     document.getElementById('f_grade').value        = c.Grade || 'N/A'
     document.getElementById('f_price').value        = c.Price || ''
     document.getElementById('f_url').value          = c['Card Information'] || ''
@@ -256,23 +320,12 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     setFormFlag('auto',     c.Auto     === true || c.Auto     === 'true')
     setFormFlag('mem',      c.Mem === true || c.Mem === 'true' || c.Patch === true || c.Patch === 'true')
     setFormFlag('numbered', c.Numbered === true || c.Numbered === 'true')
-    if (c['App Image']) {
-      document.getElementById('f_imagePreview').src   = getCleanImg(c['App Image'])
-      document.getElementById('f_imagePreview').style.display     = 'block'
-      document.getElementById('previewPlaceholder').style.display = 'none'
-    }
   } else {
     ;['f_year','f_set','f_number','f_manufacturer','f_price','f_url'].forEach(id => { document.getElementById(id).value = '' })
     document.getElementById('f_sport').value   = (ctx === 'player' && contextPlayer) ? (contextPlayer.Sport || '') : ''
-    document.getElementById('f_grading').value = 'Raw'
-    document.getElementById('f_grade').value   = 'N/A'
+    setGrading('Raw')
     setFormFlag('rc', false); setFormFlag('auto', false)
     setFormFlag('mem', false); setFormFlag('numbered', false)
-    document.getElementById('f_imagePreview').style.display     = 'none'
-    document.getElementById('previewPlaceholder').style.display = 'block'
-    document.getElementById('f_fileInput').value = ''
-    const photoBtn = document.getElementById('selectPhotoBtn')
-    if (photoBtn) { photoBtn.textContent = '📷 Select Photo'; photoBtn.disabled = false }
     document.getElementById('f_serialnumber').value = ''
     _pendingImageFile   = null
     _pendingCardsightId = null
@@ -289,7 +342,7 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
       if (prefill.auto)         setFormFlag('auto', true)
       if (prefill.mem)          setFormFlag('mem',  true)
       if (prefill.gradingCompany) {
-        document.getElementById('f_grading').value = prefill.gradingCompany
+        setGrading(prefill.gradingCompany)
         if (prefill.grade) document.getElementById('f_grade').value = prefill.grade
       }
       if (prefill.imageFile) {
@@ -319,6 +372,8 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     }
   }
 
+  _setPhotoStatus(prefill?.cardsightId ? 'matched' : 'idle')
+
   const sheet = document.getElementById('cardFormSheet')
   sheet.classList.add('open')
   const scrim = document.getElementById('globalScrim')
@@ -329,19 +384,24 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
 // ── Save card ──────────────────────────────────────────────────────────────
 let _saving = false
 
-export async function saveCard(owned = true) {
+export async function saveCard() {
   if (_saving) return
+
+  // Every card belongs to a player
+  if (!document.getElementById('f_player').value) {
+    _showError('f_player_field', true)
+    document.getElementById('f_player_field').scrollIntoView({ behavior: 'smooth', block: 'center' })
+    return
+  }
   _saving = true
 
-  const saveBtn     = document.getElementById('btnSaveCard')
-  const unsleevdBtn = document.getElementById('btnMarkUnsleevd')
-  if (saveBtn)    { saveBtn.disabled = true;    saveBtn.innerText    = 'Saving…' }
-  if (unsleevdBtn){ unsleevdBtn.disabled = true; unsleevdBtn.innerText = 'Saving…' }
+  const saveBtn   = document.getElementById('btnSaveCard')
+  const idleLabel = document.getElementById('f_cardId').value ? 'Save changes' : 'Add card'
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Saving…' }
 
   // Safety net: always re-enable after 15s regardless
   const safetyTimer = setTimeout(() => {
-    if (saveBtn)    { saveBtn.disabled = false; saveBtn.innerText = 'Save Card' }
-    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerText = idleLabel }
     _saving = false
   }, 15000)
 
@@ -380,7 +440,7 @@ export async function saveCard(owned = true) {
       Mem:      document.getElementById('f_mem').value      === 'true',
       Numbered:     document.getElementById('f_numbered').value === 'true',
       SerialNumber: document.getElementById('f_serialnumber').value,
-      Owned: id ? (state.ALL_CARDS.find(x => x.id === id)?.Owned ?? true) : owned,
+      Owned: document.getElementById('f_owned').checked,
       ...(cardsightId && !id ? { CardsightId: cardsightId } : {}),
     }
 
@@ -397,12 +457,12 @@ export async function saveCard(owned = true) {
   } finally {
     clearTimeout(safetyTimer)
     _saving = false
-    if (saveBtn)    { saveBtn.disabled = false;    saveBtn.innerText    = errorMsg ? `⚠ ${errorMsg}` : 'Saved!' }
-    if (unsleevdBtn){ unsleevdBtn.disabled = false; unsleevdBtn.innerText = 'Mark Unsleevd' }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerText = errorMsg ? `Couldn't save. Try again` : idleLabel }
   }
 }
 
 // ── File preview ───────────────────────────────────────────────────────────
+let _identifying = false
 export function handleFileSelect(input) {
   const file = input.files[0]
   if (!file) return
@@ -412,9 +472,13 @@ export function handleFileSelect(input) {
     document.getElementById('f_imagePreview').src           = e.target.result
     document.getElementById('f_imagePreview').style.display = 'block'
     document.getElementById('previewPlaceholder').style.display = 'none'
+    if (!_identifying) _setPhotoStatus('idle')
   }
   reader.readAsDataURL(file)
 
   // Auto-identify only when adding a new card
-  if (!document.getElementById('f_cardId').value) _identifyAndPrefill(file)
+  if (!document.getElementById('f_cardId').value) {
+    _identifying = true
+    _identifyAndPrefill(file).finally(() => { _identifying = false })
+  }
 }

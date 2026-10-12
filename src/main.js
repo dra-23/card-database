@@ -10,7 +10,7 @@ import { renderCollectionView } from './pages/collection.js'
 import { renderGradedView } from './pages/graded.js'
 import { renderStats } from './pages/stats.js'
 import { handleCardTap, navigateCard, closeCardSheet, refreshCurrentCardPanel } from './components/card-detail.js'
-import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFlag } from './components/card-form.js'
+import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFlag, initCardForm } from './components/card-form.js'
 import { openPlayerForm, savePlayer, handlePlayerFileSelect, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
 import { createOverflowMenu, openRowMenu, showDeleteConfirm } from './components/overflow-menu.js'
 import { openPSASheet, closePSASheet, fetchAndPreviewPSA, savePSAData } from './components/psa-sheet.js'
@@ -19,7 +19,7 @@ import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './com
 import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
 import { closeCardsightLink, initCardsightLink } from './components/cardsight-link.js'
 import { initCardsightUsage } from './components/cardsight-usage.js'
-import { initImagePlaceholders } from './utils.js'
+import { initImagePlaceholders, initChoiceChips } from './utils.js'
 
 // ── Apply theme before first paint ─────────────────────────────────────────
 initTheme()
@@ -439,9 +439,11 @@ function wireNavButtons() {
 
 // ── Wire form buttons ──────────────────────────────────────────────────────
 function wireFormButtons() {
-  document.getElementById('btnSaveCard')?.addEventListener('click', () => saveCard(true))
-  document.getElementById('btnMarkUnsleevd')?.addEventListener('click', () => saveCard(false))
+  document.getElementById('btnSaveCard')?.addEventListener('click', () => saveCard())
   document.getElementById('btnSavePlayer')?.addEventListener('click', savePlayer)
+  initChoiceChips()
+  initCardForm()
+  document.getElementById('pf_name')?.addEventListener('input', () => document.getElementById('pf_name_field')?.classList.remove('has-error'))
   document.getElementById('btnLookupPSA')?.addEventListener('click', fetchAndPreviewPSA)
   document.getElementById('btnSavePSA')?.addEventListener('click', savePSAData)
   document.getElementById('cancelPSABtn')?.addEventListener('click', closePSASheet)

@@ -1,7 +1,11 @@
+import { sportChipsHTML } from './utils.js'
+
 /** Renders the full app HTML into #app */
 export function renderShell() {
   document.getElementById('app').innerHTML = authScreenHTML() + appShellHTML()
 }
+
+const SPORT_CHIPS = sportChipsHTML()
 
 // Loading skeletons — shown until Firestore's first snapshot, then replaced
 // wholesale by each page's first render
@@ -526,87 +530,98 @@ function appShellHTML() {
 <div class="sheet cf2-sheet" id="cardFormSheet">
   <div class="sheet-handle"></div>
   <div class="cf2-header">
-    <h2 id="cardFormTitle">Add Card</h2>
+    <div class="cf2-titles">
+      <h2 id="cardFormTitle">Add card</h2>
+      <p class="cf2-sub" id="cardFormSub"></p>
+    </div>
     <button type="button" class="cf2-close" data-close-forms aria-label="Close"><span class="material-symbols-outlined">close</span></button>
   </div>
   <div class="cf2-scroll">
     <input type="hidden" id="f_cardId">
     <input type="file" id="f_fileInput" accept="image/*" style="display:none;">
 
-    <div class="cf2-photo-wrap">
-      <div class="cf2-photo" id="imagePreviewContainer">
-        <span id="previewPlaceholder" class="cf2-photo-placeholder">No Image</span>
-        <img id="f_imagePreview" class="cf2-photo-img" style="display:none;">
-        <button type="button" class="cf2-photo-btn" id="selectPhotoBtn">📷 Select Photo</button>
+    <div class="cf2-photo-row">
+      <button type="button" class="cf2-photo cf2-photo-sm" id="imagePreviewContainer" aria-label="Change photo">
+        <span id="previewPlaceholder" class="cf2-photo-placeholder"><span class="material-symbols-outlined">add_a_photo</span></span>
+        <img id="f_imagePreview" class="cf2-photo-img" style="display:none;" alt="">
+      </button>
+      <div class="cf2-photo-side">
+        <button type="button" class="cf2-photo-action" id="selectPhotoBtn">
+          <span class="material-symbols-outlined" id="selectPhotoIcon">photo_camera</span><span id="selectPhotoLabel">Add photo</span>
+        </button>
+        <span class="cf2-ai-tag" id="f_ai_tag" style="display:none;"></span>
+        <span class="cf2-photo-hint" id="f_photo_hint">AI fills in the details from a photo</span>
       </div>
     </div>
 
-    <div class="cf2-field" id="f_player_field">
-      <label class="cf2-label">Player</label>
-      <select id="f_player" class="cf2-select"></select>
+    <div class="cf2-section">
+      <span class="cf2-section-label">Card</span>
+      <div class="cf2-field" id="f_player_field">
+        <label class="cf2-label" for="f_player">Player</label>
+        <select id="f_player" class="cf2-select"></select>
+        <span class="cf2-error" id="f_player_error">Pick a player</span>
+      </div>
+      <div class="cf2-row2">
+        <div class="cf2-field">
+          <label class="cf2-label" for="f_year">Year</label>
+          <input type="text" inputmode="numeric" id="f_year" class="cf2-input cf2-mono" placeholder="1991-92">
+        </div>
+        <div class="cf2-field">
+          <label class="cf2-label" for="f_number">Card #</label>
+          <input type="text" id="f_number" class="cf2-input cf2-mono">
+        </div>
+      </div>
+      <div class="cf2-field field-suggest-wrap">
+        <label class="cf2-label" for="f_set">Set</label>
+        <input type="text" id="f_set" class="cf2-input" autocomplete="off">
+        <div class="field-suggest-list" id="f_set_suggest"></div>
+      </div>
+      <div class="cf2-row2">
+        <div class="cf2-field field-suggest-wrap">
+          <label class="cf2-label" for="f_manufacturer">Manufacturer</label>
+          <input type="text" id="f_manufacturer" class="cf2-input" autocomplete="off">
+          <div class="field-suggest-list" id="f_manufacturer_suggest"></div>
+        </div>
+        <div class="cf2-field">
+          <label class="cf2-label" for="f_sport">Sport</label>
+          <select id="f_sport" class="cf2-select">
+            <option value="">Select…</option>
+            <option value="Baseball">Baseball</option>
+            <option value="Basketball">Basketball</option>
+            <option value="Football">Football</option>
+            <option value="Hockey">Hockey</option>
+            <option value="Golf">Golf</option>
+            <option value="Soccer">Soccer</option>
+          </select>
+        </div>
+      </div>
+      <div class="cf2-field">
+        <label class="cf2-label" for="f_team">Team</label>
+        <select id="f_team" class="cf2-select"></select>
+      </div>
     </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Year</label>
-      <input type="text" inputmode="numeric" id="f_year" class="cf2-input cf2-mono" placeholder="e.g. 1991-92">
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Card Number</label>
-      <input type="text" id="f_number" class="cf2-input cf2-mono" placeholder="e.g. MJ-23">
-    </div>
-    <div class="cf2-field field-suggest-wrap">
-      <label class="cf2-label">Set</label>
-      <input type="text" id="f_set" class="cf2-input" autocomplete="off">
-      <div class="field-suggest-list" id="f_set_suggest"></div>
-    </div>
-    <div class="cf2-field field-suggest-wrap">
-      <label class="cf2-label">Manufacturer</label>
-      <input type="text" id="f_manufacturer" class="cf2-input" autocomplete="off">
-      <div class="field-suggest-list" id="f_manufacturer_suggest"></div>
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Sport</label>
-      <select id="f_sport" class="cf2-select">
-        <option value="">Select...</option>
-        <option value="Baseball">Baseball</option>
-        <option value="Basketball">Basketball</option>
-        <option value="Football">Football</option>
-        <option value="Hockey">Hockey</option>
-        <option value="Golf">Golf</option>
-        <option value="Soccer">Soccer</option>
-      </select>
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Team</label>
-      <select id="f_team" class="cf2-select"></select>
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Grading Co.</label>
-      <select id="f_grading" class="cf2-select">
-        <option value="Raw">Raw</option>
-        <option value="PSA">PSA</option>
-        <option value="BGS">BGS</option>
-        <option value="SGC">SGC</option>
-        <option value="CGC">CGC</option>
-      </select>
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Grade</label>
-      <select id="f_grade" class="cf2-select cf2-mono"></select>
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Purchase Price ($)</label>
-      <input type="text" inputmode="decimal" id="f_price" class="cf2-input cf2-mono">
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Card Information (URL)</label>
-      <input type="text" id="f_url" class="cf2-input">
+
+    <div class="cf2-section">
+      <span class="cf2-section-label">Grading</span>
+      <input type="hidden" id="f_grading" value="Raw">
+      <div class="cf2-chips" data-choice-for="f_grading" role="radiogroup" aria-label="Grading company">
+        <button type="button" class="cf2-chip" role="radio" data-value="Raw">Raw</button>
+        <button type="button" class="cf2-chip" role="radio" data-value="PSA">PSA</button>
+        <button type="button" class="cf2-chip" role="radio" data-value="BGS">BGS</button>
+        <button type="button" class="cf2-chip" role="radio" data-value="SGC">SGC</button>
+        <button type="button" class="cf2-chip" role="radio" data-value="CGC">CGC</button>
+      </div>
+      <div class="cf2-field" id="f_grade_field">
+        <label class="cf2-label" for="f_grade">Grade</label>
+        <select id="f_grade" class="cf2-select cf2-mono"></select>
+      </div>
     </div>
 
     <div class="cf2-section">
       <span class="cf2-section-label">Attributes</span>
       <div class="cf2-attr-grid">
         <button type="button" id="f_rc_btn" class="cf2-attr-btn" data-attr="rc" aria-pressed="false">
-          <span class="cf2-attr-tag">RC</span><span class="cf2-attr-name">Rookie Card</span>
+          <span class="cf2-attr-tag">RC</span><span class="cf2-attr-name">Rookie</span>
         </button>
         <button type="button" id="f_auto_btn" class="cf2-attr-btn" data-attr="auto" aria-pressed="false">
           <span class="cf2-attr-tag">AUTO</span><span class="cf2-attr-name">Autograph</span>
@@ -618,22 +633,41 @@ function appShellHTML() {
           <span class="cf2-attr-tag">#'d</span><span class="cf2-attr-name">Numbered</span>
         </button>
       </div>
+      <input type="hidden" id="f_rc"       value="false">
+      <input type="hidden" id="f_auto"     value="false">
+      <input type="hidden" id="f_mem"      value="false">
+      <input type="hidden" id="f_numbered" value="false">
+      <div class="cf2-field" id="f_serial_field">
+        <label class="cf2-label" for="f_serialnumber">Serial #</label>
+        <input type="text" id="f_serialnumber" class="cf2-input cf2-mono" placeholder="47/99" autocomplete="off">
+      </div>
     </div>
-    <input type="hidden" id="f_rc"       value="false">
-    <input type="hidden" id="f_auto"     value="false">
-    <input type="hidden" id="f_mem"      value="false">
-    <input type="hidden" id="f_numbered" value="false">
 
-    <div class="cf2-field">
-      <label class="cf2-label">Serial # (if numbered, e.g. 47/99)</label>
-      <input type="text" id="f_serialnumber" class="cf2-input" placeholder="e.g. 47/99" autocomplete="off">
+    <div class="cf2-section">
+      <span class="cf2-section-label">Purchase</span>
+      <div class="cf2-row2">
+        <div class="cf2-field">
+          <label class="cf2-label" for="f_price">Price paid</label>
+          <div class="cf2-prefixed"><span class="cf2-prefix">$</span><input type="text" inputmode="decimal" id="f_price" class="cf2-input cf2-mono" placeholder="0.00"></div>
+        </div>
+        <div class="cf2-field">
+          <label class="cf2-label" for="f_url">Reference link</label>
+          <input type="url" id="f_url" class="cf2-input" placeholder="tcdb.com/…" autocomplete="off">
+        </div>
+      </div>
+      <label class="cf2-switch-row" for="f_owned">
+        <span class="cf2-switch-text">
+          <span class="cf2-switch-title">I own this card</span>
+          <span class="cf2-switch-sub">Marks it Sleevd. Turn off to track it as unsleevd.</span>
+        </span>
+        <input type="checkbox" id="f_owned" class="cf2-switch" checked>
+      </label>
     </div>
   </div>
 
   <div class="cf2-footer">
     <button class="cf2-btn cf2-btn-cancel" id="cancelCardFormBtn">Cancel</button>
-    <button class="cf2-btn cf2-btn-cancel" id="btnMarkUnsleevd">Mark Unsleevd</button>
-    <button class="cf2-btn cf2-btn-primary" id="btnSaveCard">Save Card</button>
+    <button class="cf2-btn cf2-btn-primary" id="btnSaveCard">Add card</button>
   </div>
 </div>
 
@@ -673,50 +707,47 @@ function appShellHTML() {
 <div class="sheet cf2-sheet" id="playerFormSheet">
   <div class="sheet-handle"></div>
   <div class="cf2-header">
-    <h2>New Player</h2>
+    <div class="cf2-titles">
+      <h2>Add player</h2>
+      <p class="cf2-sub">Set up their page: photo, banner and sport</p>
+    </div>
     <button type="button" class="cf2-close" data-close-forms aria-label="Close"><span class="material-symbols-outlined">close</span></button>
   </div>
   <div class="cf2-scroll">
     <input type="file" id="pf_mainFileInput" accept="image/*" style="display:none;">
     <input type="file" id="pf_bannerFileInput" accept="image/*" style="display:none;">
 
-    <div class="cf2-photo-wrap">
-      <div class="cf2-photo" id="pf_mainImgContainer">
-        <span id="pf_mainImgPlaceholder" class="cf2-photo-placeholder">No Photo</span>
-        <img id="pf_mainImgPreview" class="cf2-photo-img" style="display:none;">
-        <button type="button" class="cf2-photo-btn" id="pf_selectMainBtn">📷 Select Player Photo</button>
-      </div>
+    <!-- Live preview of the player page header -->
+    <div class="cf2-page-preview">
+      <button type="button" class="cf2-banner" id="pf_selectBannerBtn" aria-label="Choose banner photo">
+        <img id="pf_bannerImgPreview" class="cf2-photo-img" style="display:none;" alt="">
+        <span id="pf_bannerImgPlaceholder" class="cf2-banner-ph">Add a banner photo</span>
+        <span class="cf2-cam material-symbols-outlined">photo_camera</span>
+      </button>
+      <button type="button" class="cf2-avatar" id="pf_selectMainBtn" aria-label="Choose player photo">
+        <img id="pf_mainImgPreview" class="cf2-photo-img" style="display:none;" alt="">
+        <span id="pf_mainImgPlaceholder" class="cf2-avatar-ph material-symbols-outlined">person</span>
+        <span class="cf2-cam material-symbols-outlined">photo_camera</span>
+      </button>
     </div>
 
-    <div class="cf2-field">
-      <label class="cf2-label">Player Name</label>
-      <input type="text" id="pf_name" class="cf2-input">
+    <div class="cf2-field" id="pf_name_field">
+      <label class="cf2-label" for="pf_name">Player name</label>
+      <input type="text" id="pf_name" class="cf2-input" autocomplete="off">
+      <span class="cf2-error" id="pf_name_error">Enter a name</span>
     </div>
     <div class="cf2-field">
-      <label class="cf2-label">Default Sport</label>
-      <select id="pf_sport" class="cf2-select">
-        <option value="Baseball">Baseball</option>
-        <option value="Basketball">Basketball</option>
-        <option value="Football">Football</option>
-        <option value="Hockey">Hockey</option>
-        <option value="Golf">Golf</option>
-        <option value="Soccer">Soccer</option>
-      </select>
-    </div>
-    <div class="cf2-field">
-      <label class="cf2-label">Banner Photo</label>
-      <div class="cf2-photo cf2-photo-banner" id="pf_bannerImgContainer">
-        <span id="pf_bannerImgPlaceholder" class="cf2-photo-placeholder">No Banner</span>
-        <img id="pf_bannerImgPreview" class="cf2-photo-img" style="display:none;">
-        <button type="button" class="cf2-photo-btn" id="pf_selectBannerBtn">📷 Select Banner Photo</button>
-      </div>
+      <span class="cf2-label">Default sport</span>
+      <input type="hidden" id="pf_sport" value="Baseball">
+      <div class="cf2-chips" data-choice-for="pf_sport" role="radiogroup" aria-label="Default sport">${SPORT_CHIPS}</div>
     </div>
   </div>
 
   <div class="cf2-footer">
     <button class="cf2-btn cf2-btn-cancel" id="cancelPlayerFormBtn">Cancel</button>
-    <button class="cf2-btn cf2-btn-primary" id="btnSavePlayer">Add Player</button>
+    <button class="cf2-btn cf2-btn-primary" id="btnSavePlayer">Add player</button>
   </div>
 </div>
+
 `
 }
