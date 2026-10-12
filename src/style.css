@@ -714,6 +714,7 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 /* Market value under a Collection row (Value / Gain-Loss sorts) */
 .card-row-value { font-size: 14px; font-weight: 700; color: var(--md-on-surface); margin-top: 4px; }
 .card-row-gain { font-size: 13px; font-weight: 600; margin-left: 6px; }
+.card-row-worth { font-size: 13px; font-weight: 500; color: var(--md-on-surface-variant); margin-left: 2px; }
 .card-row-gain.up { color: #2E7D32; }
 .card-row-gain.down { color: #C62828; }
 [data-theme="dark"] .card-row-gain.up { color: #81C784; }

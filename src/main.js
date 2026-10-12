@@ -557,6 +557,7 @@ const COLL_SORTS = [
   ['set',   'Set',         'layers'],
   ['sport', 'Sport',       'sports_baseball'],
   ['value', 'Value',       'payments'],
+  ['paid',  'Price paid',  'sell'],
   ['gain',  'Gain / Loss', 'trending_up'],
 ]
 const SORT_KEY = 'sleevd.collSort'

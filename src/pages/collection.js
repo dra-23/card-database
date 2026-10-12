@@ -54,6 +54,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     const mv = savedMarketValue(c), paid = parseFloat(c.Price)
     return mv != null && paid > 0 ? mv - paid : null
   }
+  const paidOf = c => { const p = parseFloat(c.Price); return p > 0 ? p : null }
   const byMetric = metric => (a, b) => {
     const mA = metric(a), mB = metric(b)
     if (mA != null && mB != null && mA !== mB) return mB - mA
@@ -65,6 +66,8 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     cards.sort(byMetric(savedMarketValue))
   } else if (sortBy === 'gain') {
     cards.sort(byMetric(gainOf))
+  } else if (sortBy === 'paid') {
+    cards.sort(byMetric(paidOf))
   } else if (sortBy === 'sport') {
     cards.sort((a, b) => {
       const sA = (a.Sport || '').toLowerCase(), sB = (b.Sport || '').toLowerCase()
@@ -100,6 +103,9 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
     } else if (sortBy === 'gain') {
       const g = gainOf(c)
       key = g == null ? 'No value or purchase price' : g >= 0 ? 'Gaining' : 'Losing'
+    } else if (sortBy === 'paid') {
+      const p = paidOf(c)
+      key = p == null ? 'No purchase price' : (VALUE_BANDS.find(([min]) => p >= min) || VALUE_BANDS[VALUE_BANDS.length - 1])[1]
     } else if (sortBy === 'sport') key = c.Sport || '(Unknown Sport)'
     else if (sortBy === 'set') key = c.Set || '(Unknown Set)'
     else key = c.Year?.toString() || 'Unknown'
@@ -116,7 +122,9 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
       : emptyStateHTML({ icon: 'inventory_2', title: 'No cards yet', body: 'Add your first card with the + button.' })
     return
   }
-  const showValue = sortBy === 'value' || sortBy === 'gain'
+  // Money sorts keep their high-to-low order and show the amount on each row
+  const rowMoney = sortBy === 'value' || sortBy === 'gain' ? 'value' : sortBy === 'paid' ? 'paid' : null
+  const showValue = !!rowMoney
 
   const groupKeys = Array.from(groups.keys())
   let currentGroupIdx = 0
@@ -165,7 +173,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
       listDiv.className = 'collection-card-list'
       groupCards.forEach(card => {
         const wrapper = document.createElement('div')
-        wrapper.innerHTML = buildCollectionRow(card, showValue)
+        wrapper.innerHTML = buildCollectionRow(card, rowMoney)
         listDiv.appendChild(wrapper.firstElementChild)
       })
       fragment.appendChild(listDiv)
@@ -221,7 +229,16 @@ function valueLine(c) {
   return `<div class="card-row-value">${money(mv)}${g}</div>`
 }
 
-function buildCollectionRow(c, showValue = false) {
+// Purchase price under the row (and current value if one's saved), for the
+// Price paid sort
+function paidLine(c) {
+  const paid = parseFloat(c.Price)
+  if (!(paid > 0)) return ''
+  const mv = savedMarketValue(c)
+  return `<div class="card-row-value">Paid ${money(paid)}${mv != null ? ` <span class="card-row-worth">· worth ${money(mv)}</span>` : ''}</div>`
+}
+
+function buildCollectionRow(c, rowMoney = null) {
   const owned       = isOwned(c)
   const player      = state.ALL_PLAYERS.find(p => p.id === c.Player)
   const playerName  = player ? (player.Player || player.id) : (c.Player || '')
@@ -243,7 +260,7 @@ function buildCollectionRow(c, showValue = false) {
       <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
       <div class="card-info-row2">${playerName}</div>
       ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
-      ${showValue ? valueLine(c) : ''}
+      ${rowMoney === 'value' ? valueLine(c) : rowMoney === 'paid' ? paidLine(c) : ''}
     </div>
     <button class="card-row-menu-btn" data-menu-card="${escapeAttr(c.id)}" aria-label="Card options">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
