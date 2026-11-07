@@ -16,7 +16,8 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   if (state.collShowGradedOnly) {
     cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   }
-  if (state.collShowSoldOnly)     cards = cards.filter(isSold)
+  // Sold cards are hidden unless the Sold chip is on
+  cards = state.collShowSoldOnly ? cards.filter(isSold) : cards.filter(c => !isSold(c))
   if (state.collShowFavoriteOnly) cards = cards.filter(c => c.Favorite === true || c.Favorite === 'true')
   if (state.collFilterRC)       cards = cards.filter(c => c.RC       === true || c.RC       === 'true')
   if (state.collFilterAuto)     cards = cards.filter(c => c.Auto     === true || c.Auto     === 'true')
