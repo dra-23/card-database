@@ -87,7 +87,22 @@ const PH_IMG = '.card-thumb, .graded-tile-img, .cd2-single-img, .cd2-psa-main-im
 
 // One capture-phase listener for every card image in the app — swaps a broken
 // or empty image for a styled placeholder so lists don't show grey boxes
+const FADE_IMG = 'img.card-thumb, img.tile-img, img.graded-tile-img, img.cd2-hero-img, img.st-mv-thumb'
+
 export function initImagePlaceholders() {
+  // Fade images in as they load (style.css → .img-fade). Images already
+  // complete when rendered (cache hits) are marked right away by the observer.
+  document.documentElement.classList.add('img-fade')
+  const markLoaded = img => { if (img.matches?.(FADE_IMG)) img.dataset.loaded = '' }
+  document.addEventListener('load', e => { if (e.target instanceof HTMLImageElement) markLoaded(e.target) }, true)
+  new MutationObserver(muts => {
+    for (const m of muts) for (const n of m.addedNodes) {
+      if (!(n instanceof Element)) continue
+      const imgs = n.matches(FADE_IMG) ? [n] : n.querySelectorAll(FADE_IMG)
+      imgs.forEach(img => { if (img.complete && img.naturalWidth) markLoaded(img) })
+    }
+  }).observe(document.body, { childList: true, subtree: true })
+
   document.addEventListener('error', e => {
     const img = e.target
     if (!(img instanceof HTMLImageElement) || !img.matches(PH_IMG) || !img.isConnected) return

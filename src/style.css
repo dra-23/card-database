@@ -1529,3 +1529,50 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 .st-sale-profit { font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 999px; }
 [data-theme="dark"] .badge-sold,
 [data-theme="dark"] .cd2-sold-banner { background: #8D6E63; }
+
+/* ================================================================
+   VISUAL POLISH
+   ================================================================ */
+/* Card thumbnails: a hairline edge + soft lift so white-bordered cards
+   don't melt into the page. Corners stay square. */
+.card-thumb { box-shadow: 0 0 0 1px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.14); }
+[data-theme="dark"] .card-thumb { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 1px 4px rgba(0,0,0,0.5); }
+
+/* Images ease in once loaded instead of popping (utils.js → initImagePlaceholders
+   adds .img-fade to <html> and data-loaded to each image) */
+.img-fade :is(.card-thumb, .tile-img, .graded-tile-img, .cd2-hero-img, .st-mv-thumb):is(img) {
+  transition: opacity 0.35s cubic-bezier(0.2,0,0,1);
+}
+.img-fade :is(.card-thumb, .tile-img, .graded-tile-img, .cd2-hero-img, .st-mv-thumb):is(img):not([data-loaded]) { opacity: 0; }
+
+/* Chip rows: fade the trailing edge to hint there's more to scroll */
+.filter-chips {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+          mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+}
+
+/* Pointer hover feedback (desktop / tablet with a mouse) */
+@media (hover: hover) and (pointer: fine) {
+  .card-item { transition: background 0.15s; }
+  .card-item:not(.skel-row):not(.tp-selected):hover { background: color-mix(in srgb, var(--md-on-surface) 4%, transparent); }
+  .card-row-menu-btn { transition: opacity 0.15s, background 0.15s; }
+  .card-item:hover .card-row-menu-btn { opacity: 0.9; }
+  .player-tile:not(.skel-tile):hover,
+  .graded-tile:not(.skel-tile):hover { transform: translateY(-2px); }
+  .player-tile:not(.skel-tile):hover:active,
+  .graded-tile:not(.skel-tile):hover:active { transform: scale(0.95); }
+}
+
+/* Keyboard focus: a clear ring, never shown for taps/clicks */
+:is(button, a, [data-card-id], .player-tile):focus-visible {
+  outline: 2px solid var(--md-accent); outline-offset: 2px;
+}
+
+/* Numbers that sit in columns or count up shouldn't jitter */
+.total-count-pill, .year-count, .card-row-value, .st-hero-num, .st-hero-paid-num,
+.st-mv-num, .st-mv-row-val, .st-tile-num, .st-sale-profit, .cd2-market-val {
+  font-variant-numeric: tabular-nums;
+}
+
+/* BGS's black badge disappears on the dark surface: give it a hairline edge */
+[data-theme="dark"] .badge-grade[data-co="BGS"] { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22); }
