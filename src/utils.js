@@ -33,8 +33,23 @@ export function yearSortKey(year) {
   return s
 }
 
+// A sold card keeps its Owned flag (so un-marking a sale restores it) but is
+// no longer counted as in the collection.
+export function isSold(card) {
+  return card.Sold === true || card.Sold === 'true'
+}
+
 export function isOwned(card) {
-  return card.Owned === true || card.Owned === 'true'
+  return (card.Owned === true || card.Owned === 'true') && !isSold(card)
+}
+
+// Unsleevd = still wanted: not in hand and not already sold
+export function isWanted(card) {
+  return !isOwned(card) && !isSold(card)
+}
+
+export function soldBadgeHTML(card) {
+  return isSold(card) ? `<span class="badge-sold">SOLD</span>` : ''
 }
 
 // Form sheets that become right-side slide-in panels from tablet width up

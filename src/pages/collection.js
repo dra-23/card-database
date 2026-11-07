@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
+import { getCleanImg, isOwned, isWanted, isSold, soldBadgeHTML, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
 import { savedMarketValue } from '../services/market-value.js'
 
 export function renderCollectionView({ preserveScroll = false } = {}) {
@@ -10,12 +10,14 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
 
   // 1. Filter
   let cards = state.collShowWishlistOnly
-    ? state.ALL_CARDS.filter(c => !isOwned(c))
+    ? state.ALL_CARDS.filter(isWanted)
     : [...state.ALL_CARDS]
 
   if (state.collShowGradedOnly) {
     cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   }
+  // Sold cards are hidden unless the Sold chip is on
+  cards = state.collShowSoldOnly ? cards.filter(isSold) : cards.filter(c => !isSold(c))
   if (state.collShowFavoriteOnly) cards = cards.filter(c => c.Favorite === true || c.Favorite === 'true')
   if (state.collFilterRC)       cards = cards.filter(c => c.RC       === true || c.RC       === 'true')
   if (state.collFilterAuto)     cards = cards.filter(c => c.Auto     === true || c.Auto     === 'true')
@@ -114,7 +116,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   })
 
   if (groups.size === 0) {
-    const hasFilters = state.collShowWishlistOnly || state.collShowGradedOnly || state.collShowFavoriteOnly ||
+    const hasFilters = state.collShowWishlistOnly || state.collShowSoldOnly || state.collShowGradedOnly || state.collShowFavoriteOnly ||
       state.collFilterRC || state.collFilterAuto || state.collFilterMem || state.collFilterNumbered
     const hasSearch = !!state.collSearchQuery
     container.innerHTML = hasFilters || hasSearch
@@ -238,6 +240,14 @@ function paidLine(c) {
   return `<div class="card-row-value">Paid ${money(paid)}${mv != null ? ` <span class="card-row-worth">· worth ${money(mv)}</span>` : ''}</div>`
 }
 
+// Sale price (and profit vs. paid, when both are known) under a sold row
+function soldLine(c) {
+  const sold = parseFloat(c.SoldPrice), paid = parseFloat(c.Price)
+  if (!(sold >= 0) || isNaN(sold)) return ''
+  const profit = paid > 0 ? sold - paid : null
+  return `<div class="card-row-value">Sold ${money(sold)}${profit != null ? ` <span class="card-row-worth ${profit >= 0 ? 'market-gain' : 'market-loss'}">· ${profit >= 0 ? '+' : '−'}${money(Math.abs(profit))}</span>` : ''}</div>`
+}
+
 function buildCollectionRow(c, rowMoney = null) {
   const owned       = isOwned(c)
   const player      = state.ALL_PLAYERS.find(p => p.id === c.Player)
@@ -252,15 +262,16 @@ function buildCollectionRow(c, rowMoney = null) {
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
   const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''
   const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d</span>` : ''
-  const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
+  const soldBadge     = soldBadgeHTML(c)
+  const hasBadges     = soldBadge || gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
-  return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
+  return `<div class="card-item ${!owned ? 'not-owned' : ''} ${isSold(c) ? 'is-sold' : ''}" data-card-id="${escapeAttr(c.id)}">
     <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" loading="lazy" decoding="async" ${imgPh(c)}>
     <div class="card-info">
       <div class="card-info-row1">${c.Set || ''} #${c.Number || 'N/A'}</div>
       <div class="card-info-row2">${playerName}</div>
-      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
-      ${rowMoney === 'value' ? valueLine(c) : rowMoney === 'paid' ? paidLine(c) : ''}
+      ${hasBadges ? `<div class="card-badge-tray">${soldBadge}${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
+      ${isSold(c) ? soldLine(c) : rowMoney === 'value' ? valueLine(c) : rowMoney === 'paid' ? paidLine(c) : ''}
     </div>
     <button class="card-row-menu-btn" data-menu-card="${escapeAttr(c.id)}" aria-label="Card options">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>

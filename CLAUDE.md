@@ -147,8 +147,10 @@ Bottom of card detail shows other cards from same Year + Set + Sport. Tapping us
 Player (ref id), Year, Set, Number, Manufacturer, Sport, Team,
 Grading Company, Grade, Price, Card Information (URL), App Image (URL),
 RC (bool), Auto (bool), Mem (bool), Numbered (bool), Owned (bool),
-CardsightId (string), PSACert, PSAPop
+CardsightId (string), PSACert, PSAPop,
+Sold (bool), SoldPrice (string), SoldDate (YYYY-MM-DD)
 ```
+A sold card keeps its `Owned` flag; `isOwned()` returns false while `Sold` is set, and `isWanted()` (unsleevd) excludes sold cards. Sale prompt + helpers live in `src/components/sold-prompt.js`.
 
 **Collection: `Players`**
 ```

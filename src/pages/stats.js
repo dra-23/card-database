@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { isOwned, getCleanImg, escapeAttr } from '../utils.js'
+import { isOwned, isSold, isWanted, getCleanImg, escapeAttr } from '../utils.js'
 import { auth, db, doc, writeBatch } from '../firebase.js'
 import { spendableCalls, onUsageChange } from '../components/cardsight-usage.js'
 import { switchPage, isWideLayout } from '../layout.js'
@@ -56,7 +56,9 @@ const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 
 // ── Data ────────────────────────────────────────────────────────────────────
 function compute() {
-  const all      = state.ALL_CARDS
+  // Sold cards have left the collection; they only feed the Sales card
+  const soldCards = state.ALL_CARDS.filter(isSold)
+  const all      = state.ALL_CARDS.filter(c => !isSold(c))
   const owned    = all.filter(isOwned)
   const graded   = owned.filter(isGraded)
   const priced   = owned.filter(c => parseFloat(c.Price) > 0)
@@ -137,11 +139,39 @@ function compute() {
     }),
   }
 
+  const soldPriced = soldCards.filter(c => !isNaN(parseFloat(c.SoldPrice)))
+  const soldBasis  = soldPriced.filter(c => parseFloat(c.Price) > 0)
+  const sales = {
+    count: soldCards.length,
+    revenue: soldPriced.reduce((s, c) => s + parseFloat(c.SoldPrice), 0),
+    profit: soldBasis.reduce((s, c) => s + parseFloat(c.SoldPrice) - parseFloat(c.Price), 0),
+    costBasis: soldBasis.reduce((s, c) => s + parseFloat(c.Price), 0),
+    basisCount: soldBasis.length,
+    recent: [...soldCards]
+      .sort((a, b) => String(b.SoldDate || '').localeCompare(String(a.SoldDate || '')))
+      .slice(0, 3)
+      .map(c => {
+        const p = state.ALL_PLAYERS.find(pl => pl.id === c.Player)
+        const sp = parseFloat(c.SoldPrice), pd = parseFloat(c.Price)
+        const dt = c.SoldDate ? new Date(`${c.SoldDate}T00:00:00`) : null
+        return {
+          id: c.id,
+          title: [c.Year, c.Set].filter(Boolean).join(' ') + (c.Number ? ` #${c.Number}` : ''),
+          player: p?.Player || c.Player || '',
+          img: c.PSAImage || getCleanImg(c['App Image']),
+          price: isNaN(sp) ? null : sp,
+          profit: !isNaN(sp) && pd > 0 ? sp - pd : null,
+          date: dt && !isNaN(dt) ? dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+        }
+      }),
+  }
+
   return {
     market,
+    sales,
     total: all.length,
     owned: owned.length,
-    wishlist: all.length - owned.length,
+    wishlist: all.filter(isWanted).length,
     graded: graded.length,
     favorites: all.filter(c => truthy(c.Favorite)).length,
     playerCount: state.ALL_PLAYERS.length,
@@ -214,6 +244,44 @@ function timeAgo(ms) {
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`
   const days = Math.floor(s / 86400)
   return days === 1 ? 'yesterday' : `${days}d ago`
+}
+
+function salesHTML(d) {
+  const s = d.sales
+  if (!s.count) return ''
+  const up = s.profit >= 0
+  const pct = s.costBasis ? (s.profit / s.costBasis) * 100 : 0
+  const money = n => '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return `
+    <section class="stat-card st-mv-card" id="stSales">
+      <div class="st-card-head">
+        <div class="stat-card-title">Sales</div>
+        <button class="st-link" data-st-nav="collection" data-filter="collSold">View all<span class="material-symbols-outlined">chevron_right</span></button>
+      </div>
+      <div class="st-mv-figure">
+        <div class="st-mv-num" data-count="${s.revenue}" data-money>${fmtMoney(s.revenue)}</div>
+        ${s.basisCount ? `
+        <div class="st-mv-delta ${up ? 'st-up' : 'st-down'}">
+          <span class="material-symbols-outlined">${up ? 'trending_up' : 'trending_down'}</span>
+          ${up ? '+' : '−'}${fmtMoney(Math.abs(s.profit))} (${up ? '+' : '−'}${Math.abs(pct).toFixed(0)}%)
+        </div>` : ''}
+        <div class="st-mv-sub">from ${fmt(s.count)} ${s.count === 1 ? 'card' : 'cards'} sold${s.basisCount ? ` · profit on ${fmt(s.basisCount)} with a purchase price` : ''}</div>
+      </div>
+      <div class="st-mv-top">
+        ${s.recent.map((c, i) => `
+          <button class="st-mv-row" data-st-card="${escapeAttr(c.id)}" style="--i:${i}">
+            ${c.img ? `<img class="st-mv-thumb" src="${escapeAttr(c.img)}" alt="" loading="lazy">` : `<span class="st-mv-thumb"></span>`}
+            <span class="st-mv-row-main">
+              <span class="st-mv-row-title">${esc(c.title)}</span>
+              <span class="st-mv-row-sub">${esc(c.player)}${c.date ? ` · ${esc(c.date)}` : ''}</span>
+            </span>
+            <span class="st-sale-val">
+              <span class="st-mv-row-val">${c.price != null ? money(c.price) : '—'}</span>
+              ${c.profit != null ? `<span class="st-sale-profit ${c.profit >= 0 ? 'st-up' : 'st-down'}">${c.profit >= 0 ? '+' : '−'}${money(Math.abs(c.profit))}</span>` : ''}
+            </span>
+          </button>`).join('')}
+      </div>
+    </section>`
 }
 
 function marketHTML(d) {
@@ -533,6 +601,7 @@ export function renderStats({ animate = false } = {}) {
       ${heroHTML(d, auth.currentUser)}
       ${tilesHTML(d)}
       ${marketHTML(d)}
+      ${salesHTML(d)}
       <div class="stats-row-2col">
         ${sportHTML(d)}
         ${badgesHTML(d)}

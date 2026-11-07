@@ -30,6 +30,7 @@ const SKEL_GRADED = `<div class="skel-group-header" aria-hidden="true"><div clas
 const CHIP_SPECS = [
   ['Unsleevd', 'var(--md-accent)'], ['Favorite', '#C9A227'], ['Graded', '#2E7D32'],
   ['RC', '#E8192C'], ['AUTO', '#B8860B'], ['MEM', '#1565C0'], ["#'d", '#78909C'],
+  ['Sold', '#6D4C41'],
 ]
 const filterChips = (id, keys, lead = '') => `
   <div class="filter-chips" id="${id}" role="toolbar" aria-label="Filters">
@@ -175,7 +176,7 @@ function appShellHTML() {
                       </button>
                     </div>
                   </div>
-                  ${filterChips('collFilterChips', ['collWishlist', 'collFavorite', 'collGraded', 'collRC', 'collAuto', 'collMem', 'collNumbered'], SORT_CHIP)}
+                  ${filterChips('collFilterChips', ['collWishlist', 'collFavorite', 'collGraded', 'collRC', 'collAuto', 'collMem', 'collNumbered', 'collSold'], SORT_CHIP)}
                 </div>
                 <div id="collectionList">${SKEL_ROWS}</div>
               </div>

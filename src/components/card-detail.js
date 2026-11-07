@@ -1,6 +1,7 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, vibrate, imgPh } from '../utils.js'
+import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh } from '../utils.js'
+import { markCardSold, unmarkCardSold } from './sold-prompt.js'
 import { promptPrice } from './price-prompt.js'
 import { promptNotes } from './notes-prompt.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout } from '../layout.js'
@@ -192,9 +193,45 @@ export function buildCardDetailHTML(card, ctx) {
             ? `<button type="button" class="cd2-check-value-btn" data-mv-refresh>${ICON_REFRESH} Refresh value</button>`
             : `<button type="button" class="cd2-check-value-btn" data-mv-check>${ICON_REFRESH} Check current value</button>`}
           <button type="button" class="cd2-check-value-btn" data-mv-link>${ICON_LINK} ${card.CardsightId ? 'Change match' : 'Find on Cardsight'}</button>
+          ${owned ? `<button type="button" class="cd2-check-value-btn" data-sold-mark>${ICON_TAG} Mark as Sold</button>` : ''}
         </div>
       </div>
     </div>`
+
+  const sold = isSold(card)
+  const soldPrice = parseFloat(card.SoldPrice)
+  const paidNum   = parseFloat(card.Price)
+  const profit    = sold && !isNaN(soldPrice) && paidNum > 0 ? soldPrice - paidNum : null
+  const soldDate  = card.SoldDate ? new Date(`${card.SoldDate}T00:00:00`) : null
+  const soldDateOk  = soldDate && !isNaN(soldDate)
+  const soldDateStr = soldDateOk ? soldDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—'
+  const fmt2 = n => `$${Math.abs(n).toFixed(2)}`
+  const soldSection = sold ? `
+    <div class="cd2-section">
+      <span class="cd2-section-label">Sale</span>
+      <div class="cd2-card cd2-sold-card">
+        <div class="cd2-market-stats">
+          <div class="cd2-market-stat">
+            <span class="cd2-market-lbl">Sold For</span>
+            <span class="cd2-market-val">${isNaN(soldPrice) ? '—' : fmt2(soldPrice)}</span>
+          </div>
+          <div class="cd2-market-divider"></div>
+          <div class="cd2-market-stat">
+            <span class="cd2-market-lbl">Date Sold</span>
+            <span class="cd2-market-val">${soldDateStr}</span>
+          </div>
+        </div>
+        ${profit != null ? `
+        <div class="cd2-market-change-row">
+          <span class="cd2-market-lbl">Profit / Loss</span>
+          <span class="cd2-market-val ${profit >= 0 ? 'market-gain' : 'market-loss'}">${profit >= 0 ? '+' : '−'}${fmt2(profit)}</span>
+        </div>` : ''}
+        <div class="cd2-mv-actions">
+          <button type="button" class="cd2-check-value-btn" data-sold-edit>${ICON_PENCIL} Edit sale</button>
+          <button type="button" class="cd2-check-value-btn" data-sold-undo>${ICON_REFRESH} Undo sale</button>
+        </div>
+      </div>
+    </div>` : ''
 
   const notesSection = notes ? `
     <div class="cd2-section">
@@ -220,6 +257,7 @@ export function buildCardDetailHTML(card, ctx) {
     <div class="cd2-title-block">
       <h1 class="cd2-player-name">${playerName}</h1>
       <p class="cd2-subtitle">${yearSetNum}</p>
+      ${sold ? `<div class="cd2-sold-banner">${ICON_TAG}<span>Sold${soldDateOk ? ` · ${soldDateStr}` : ''}</span></div>` : ''}
       ${(gradeStr || isRC || isAuto || isMem || isNumbered) ? `<div class="cd2-badge-row">
         ${gradeStr   ? `<span class="badge-grade" data-co="${co}">${gradeStr}</span>`   : ''}
         ${isRC       ? `<span class="badge-rc">RC</span>`               : ''}
@@ -268,6 +306,7 @@ export function buildCardDetailHTML(card, ctx) {
       </div>
     </div>
 
+    ${soldSection}
     ${psaSection}
     ${marketSection}
     ${notesSection}
@@ -422,12 +461,20 @@ export function renderCardPanelInto(panelEl, cardId, ctx, { keepScroll = false }
     if (!c) return
     const markingSleevd = !isOwned(c)
     const updates = { Owned: markingSleevd }
-    if (markingSleevd) {
+    if (markingSleevd && isSold(c)) {
+      // Back in hand: clear the sale (keeps the original purchase price)
+      Object.assign(updates, { Sold: false, SoldPrice: '', SoldDate: '' })
+    } else if (markingSleevd) {
       const price = await promptPrice()
       if (price !== null) updates.Price = String(price)
     }
     await setDoc(doc(db, 'Cards', cardId), updates, { merge: true })
   })
+
+  // Sold: mark / edit / undo
+  panelEl.querySelector('[data-sold-mark]')?.addEventListener('click', () => markCardSold(cardId))
+  panelEl.querySelector('[data-sold-edit]')?.addEventListener('click', () => markCardSold(cardId))
+  panelEl.querySelector('[data-sold-undo]')?.addEventListener('click', () => unmarkCardSold(cardId))
 
   // Toggle favorite
   panelEl.querySelector('[data-fav-toggle]')?.addEventListener('click', async () => {
