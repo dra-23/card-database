@@ -1,6 +1,10 @@
 import { db, doc, setDoc } from '../firebase.js'
 import * as state from '../state.js'
 import { promptPrice } from './price-prompt.js'
+import { isOwned } from '../utils.js'
+
+// Sleevd follows isOwned so a sold card reads as not sleevd
+const isOn = (card, key) => key === 'Owned' ? isOwned(card) : (card[key] === true || card[key] === 'true')
 
 const BADGES = [
   { key: 'Owned',    label: 'Sleevd'   },
@@ -21,7 +25,7 @@ export function openBadgePicker(cardId) {
   BADGES.forEach(({ key }) => {
     const btn = document.querySelector(`#badgePickerSheet [data-badge="${key}"]`)
     if (!btn) return
-    const on = card[key] === true || card[key] === 'true'
+    const on = isOn(card, key)
     btn.classList.toggle('badge-pick-active', on)
   })
 
@@ -46,11 +50,14 @@ export function initBadgePicker() {
       const card = state.ALL_CARDS.find(c => c.id === _cardId)
       if (!card) return
       const key = btn.dataset.badge
-      const newVal = !(card[key] === true || card[key] === 'true')
+      const newVal = !isOn(card, key)
       const updates = { [key]: newVal }
       // Match the card-detail Sleevd toggle: marking a card sleevd offers a
       // price prompt too, whichever surface you do it from.
-      if (key === 'Owned' && newVal) {
+      if (key === 'Owned' && newVal && (card.Sold === true || card.Sold === 'true')) {
+        // Re-sleeving a sold card means it's back in hand: clear the sale
+        Object.assign(updates, { Sold: false, SoldPrice: '', SoldDate: '' })
+      } else if (key === 'Owned' && newVal) {
         const price = await promptPrice()
         if (price !== null) updates.Price = String(price)
       }

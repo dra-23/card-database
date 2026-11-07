@@ -2,6 +2,8 @@ import { db, doc, setDoc, deleteDoc, storage, ref, uploadBytes, getDownloadURL }
 import * as state from '../state.js'
 import { renderCardPanelInto } from './card-detail.js'
 import { openCardForm } from './card-form.js'
+import { markCardSold, unmarkCardSold } from './sold-prompt.js'
+import { isSold } from '../utils.js'
 
 let _activeCardId = null
 
@@ -17,6 +19,10 @@ export function createOverflowMenu() {
     <button class="overflow-menu-item" id="omChangeImage">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
       Change Image
+    </button>
+    <button class="overflow-menu-item" id="omSold">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+      <span id="omSoldLabel">Mark as Sold</span>
     </button>
     <div style="height:1px; background:var(--md-outline); opacity:0.12; margin:4px 0;"></div>
     <button class="overflow-menu-item destructive" id="omDelete">
@@ -50,6 +56,14 @@ export function createOverflowMenu() {
       const panel = document.getElementById(panelIds[state.activeCardContext])
       if (panel) renderCardPanelInto(panel, _activeCardId, state.activeCardContext)
     }
+  })
+
+  document.getElementById('omSold').addEventListener('click', () => {
+    const id = _activeCardId
+    closeMenu()
+    const card = state.ALL_CARDS.find(c => c.id === id)
+    if (card && isSold(card)) unmarkCardSold(id)
+    else markCardSold(id)
   })
 
   document.getElementById('omDelete').addEventListener('click', () => {
@@ -104,7 +118,10 @@ export function openRowMenu(cardId, anchorBtn, clientX, clientY) {
 
   const popup = document.getElementById('overflowMenuPopup')
   const popupW = 220
-  const popupH = 150 // Edit, Change Image, divider, Delete
+  const popupH = 200 // Edit, Change Image, Sold, divider, Delete
+  const card = state.ALL_CARDS.find(c => c.id === cardId)
+  const soldLabel = document.getElementById('omSoldLabel')
+  if (soldLabel) soldLabel.textContent = card && isSold(card) ? 'Undo Sold' : 'Mark as Sold'
   let left, top
 
   if (clientX !== undefined && clientX !== null) {

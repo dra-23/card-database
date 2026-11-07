@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
+import { getCleanImg, isOwned, isWanted, isSold, soldBadgeHTML, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
@@ -56,7 +56,7 @@ export function openDetail(id) {
   // Populate top-bar stats
   const allPlayerCards = state.ALL_CARDS.filter(c => c.Player === player.id)
   const heroSleevd    = allPlayerCards.filter(c => isOwned(c)).length
-  const heroUnsleevd  = allPlayerCards.filter(c => !isOwned(c)).length
+  const heroUnsleevd  = allPlayerCards.filter(isWanted).length
   const heroGraded    = allPlayerCards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw').length
 
   // Wire edit buttons (mobile banner + fold-layout top bar). Assigned, not
@@ -227,7 +227,7 @@ export function renderDetail(player) {
   const tbU = document.getElementById('topBarUnsleevd')
   const tbG = document.getElementById('topBarGraded')
   if (tbS) tbS.textContent = ownedCards.length
-  if (tbU) tbU.textContent = allPlayerCards.length - ownedCards.length
+  if (tbU) tbU.textContent = allPlayerCards.filter(isWanted).length
   if (tbG) tbG.textContent = gradedCards.length
   const tbT = document.getElementById('topBarTotal')
   if (tbT) tbT.textContent = state.ALL_CARDS.filter(c => isOwned(c)).length
@@ -246,7 +246,7 @@ export function renderDetail(player) {
     cards = cards.filter(c => (c.Year || '').toString().toLowerCase().includes(q) || (c.Set || '').toLowerCase().includes(q))
   }
   if (state.showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
-  if (state.showWishlistOnly) cards = cards.filter(c => !isOwned(c))
+  if (state.showWishlistOnly) cards = cards.filter(isWanted)
   if (state.showFavoriteOnly) cards = cards.filter(c => c.Favorite === true || c.Favorite === 'true')
   const flag = v => v === true || v === 'true'
   if (state.detailFilterRC)       cards = cards.filter(c => flag(c.RC))
@@ -268,7 +268,7 @@ export function renderDetail(player) {
   const pu = document.getElementById('detailPillUnsleevd')
   const pg = document.getElementById('detailPillGraded')
   if (ps) ps.textContent = ownedCards.length
-  if (pu) pu.textContent = allPlayerCards.length - ownedCards.length
+  if (pu) pu.textContent = allPlayerCards.filter(isWanted).length
   if (pg) pg.textContent = gradedCards.length
 
   let html = ``
@@ -305,14 +305,15 @@ export function buildCardRow(c, ctx) {
   const autoBadge     = isAuto     ? `<span class="badge-auto">AUTO</span>`     : ''
   const memBadge      = isMem      ? `<span class="badge-mem">MEM</span>`       : ''
   const numberedBadge = isNumbered ? `<span class="badge-numbered">#'d${serialNum ? ` ${serialNum}` : ''}</span>` : ''
-  const hasBadges     = gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
+  const soldBadge     = soldBadgeHTML(c)
+  const hasBadges     = soldBadge || gradeBadge || rcBadge || autoBadge || memBadge || numberedBadge
 
-  return `<div class="card-item ${!owned ? 'not-owned' : ''}" data-card-id="${escapeAttr(c.id)}">
+  return `<div class="card-item ${!owned ? 'not-owned' : ''} ${isSold(c) ? 'is-sold' : ''}" data-card-id="${escapeAttr(c.id)}">
     <img class="card-thumb" src="${getCleanImg(c['App Image'])}" alt="" ${imgPh(c)}>
     <div class="card-info">
       <div class="card-info-row1">${c.Year} ${c.Set || ''}</div>
       <div class="card-info-row2">#${c.Number || 'N/A'}</div>
-      ${hasBadges ? `<div class="card-badge-tray">${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
+      ${hasBadges ? `<div class="card-badge-tray">${soldBadge}${gradeBadge}${rcBadge}${autoBadge}${memBadge}${numberedBadge}</div>` : ''}
     </div>
     <button class="card-row-menu-btn" data-menu-card="${escapeAttr(c.id)}" aria-label="Card options">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>

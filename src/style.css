@@ -1515,3 +1515,17 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 .badge-pick-btn[data-badge="Auto"].badge-pick-active      { background: #B8860B; }
 .badge-pick-btn[data-badge="Mem"].badge-pick-active       { background: #1565C0; }
 .badge-pick-btn[data-badge="Numbered"].badge-pick-active  { background: #78909C; }
+
+/* ================================================================
+   SOLD CARDS
+   ================================================================ */
+.badge-sold { background: #6D4C41; color: #fff; font-size: 15px; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: 0.5px; }
+/* Sold rows stay readable (unlike unsleevd), the badge carries the state */
+.card-item.is-sold { opacity: 0.7; }
+.graded-tile.is-sold { opacity: 0.7; }
+.graded-tile-sold { position: absolute; top: 8px; left: 8px; font-size: 12px; padding: 2px 7px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.cd2-sold-banner { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 5px 12px; border-radius: 999px; background: #6D4C41; color: #fff; font-family: 'Google Sans', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.3px; }
+.st-sale-val { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.st-sale-profit { font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 999px; }
+[data-theme="dark"] .badge-sold,
+[data-theme="dark"] .cd2-sold-banner { background: #8D6E63; }

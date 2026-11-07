@@ -19,7 +19,7 @@ import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './com
 import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
 import { closeCardsightLink, initCardsightLink } from './components/cardsight-link.js'
 import { initCardsightUsage } from './components/cardsight-usage.js'
-import { initImagePlaceholders, initChoiceChips } from './utils.js'
+import { initImagePlaceholders, initChoiceChips, isOwned, isWanted } from './utils.js'
 
 // ── Apply theme before first paint ─────────────────────────────────────────
 initTheme()
@@ -395,8 +395,8 @@ function _reRenderCurrentPage() {
 
 function updateOwnedCount() {
   const count = state.collShowWishlistOnly
-    ? state.ALL_CARDS.filter(c => c.Owned !== true && c.Owned !== 'true').length
-    : state.ALL_CARDS.filter(c => c.Owned === true || c.Owned === 'true').length
+    ? state.ALL_CARDS.filter(isWanted).length
+    : state.ALL_CARDS.filter(isOwned).length
   const el  = document.getElementById('totalOwnedCounter')
   const el2 = document.getElementById('totalOwnedCounterGlobal')
   if (el)  el.innerText  = count
@@ -625,6 +625,7 @@ function wireFilterChips() {
     collAuto:     flag(() => state.collFilterAuto,       state.setCollFilterAuto),
     collMem:      flag(() => state.collFilterMem,        state.setCollFilterMem),
     collNumbered: flag(() => state.collFilterNumbered,   state.setCollFilterNumbered),
+    collSold:     flag(() => state.collShowSoldOnly,     state.setCollShowSoldOnly),
   }, () => { updateOwnedCount(); renderCollectionView() })
 
   // Profile page scorecards jump here with exactly the given filters applied
