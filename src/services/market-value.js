@@ -43,7 +43,7 @@ const PARALLEL_V = 2
 
 // Which Cardsight parallel this card is, matched from its Set name. Saved on
 // the card (keyed to its CardsightId + Set) so it's only looked up once.
-async function resolveParallel(card, force) {
+export async function resolveParallel(card, force) {
   const sig = `${PARALLEL_V}|${card.CardsightId}|${card.Set || ''}`
   if (card.CardsightParallel?.sig === sig) return { info: card.CardsightParallel, fresh: false }
 

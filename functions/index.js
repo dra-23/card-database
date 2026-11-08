@@ -21,6 +21,7 @@ const CARDSIGHT_ALLOWED = [
   { method: 'GET',  path: /^\/v1\/catalog\/cards\/[\w-]+$/ },
   { method: 'GET',  path: /^\/v1\/pricing\/[\w-]+$/ },
   { method: 'GET',  path: /^\/v1\/images\/cards\/[\w-]+$/ },
+  { method: 'GET',  path: /^\/v1\/population\/card\/[\w-]+$/ },
   { method: 'POST', path: /^\/v1\/identify\/card$/ },
 ]
 

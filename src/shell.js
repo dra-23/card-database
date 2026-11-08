@@ -695,9 +695,9 @@ function appShellHTML() {
         <label class="m3-label">Pop Report</label>
         <input type="text" id="reg_pop" class="m3-input" placeholder="Population count" inputmode="numeric">
       </div>
-      <div id="psaFetchStatus" style="display:none; font-size:16px; padding:0 4px;"></div>
-      <div id="psaImagePreview" style="display:none; justify-content:center; gap:8px; margin:4px 0;"></div>
-      <button class="expressive-btn" id="btnLookupPSA" style="display:none; background:#002D62; color:white; height:52px; border-radius:26px;">Look Up from PSA</button>
+      <div id="psaFetchStatus" style="display:none; font-size:16px; padding:0 4px; line-height:1.45;"></div>
+      <button class="expressive-btn" id="btnLookupPop" style="background:#002D62; color:white; height:52px; border-radius:26px;">Get pop from Cardsight</button>
+      <a class="expressive-btn" id="btnOpenRegistry" target="_blank" rel="noopener" style="display:none; align-items:center; justify-content:center; text-decoration:none; background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Open on PSA</a>
       <button class="expressive-btn" id="btnSavePSA" style="background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
       <button class="expressive-btn" id="cancelPSABtn" style="background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Cancel</button>
     </div>

@@ -35,6 +35,10 @@ export const cardsight = {
   images: {
     getCard: (id, params) => call(`/v1/images/cards/${encodeURIComponent(id)}`, { query: params }),
   },
+  population: {
+    // Graded population across grading companies, split by base / parallel
+    card: (cardId, params) => call(`/v1/population/card/${encodeURIComponent(cardId)}`, { query: params }),
+  },
   identify: {
     card: file => {
       const form = new FormData()

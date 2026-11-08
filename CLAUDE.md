@@ -67,7 +67,7 @@ src/
     badge-picker.js    — long-press badge quick-picker sheet
     overflow-menu.js   — card row context menu
     player-forms.js    — add/edit player forms
-    psa-sheet.js       — PSA/grading registry sheet
+    psa-sheet.js       — registry sheet: company, cert, pop (pop via Cardsight)
     lightbox.js        — image lightbox
     price-prompt.js    — price entry prompt
     notes-prompt.js    — notes entry prompt
@@ -77,10 +77,10 @@ src/
     cardsight-usage.js — monthly Cardsight call budget
 
   services/
-    psa.js             — PSA registry API calls
-    market-value.js    — Cardsight pricing → saved MarketValue on cards
+    market-value.js    — Cardsight pricing → saved MarketValue on cards; resolveParallel()
+    population.js      — lookupPopulation(card): pop + pop higher from Cardsight
 
-functions/index.js     — Cloud Run: `cardsight` (/api/cardsight/**) and `psalookup` (/api/psa)
+functions/index.js     — Cloud Run: `cardsight` (/api/cardsight/**); `psalookup` (/api/psa) is unused since PSA ended its free API
 ```
 
 ---
@@ -117,6 +117,7 @@ transition: box-shadow 0.25s cubic-bezier(0.2,0,0,1), transform 0.25s cubic-bezi
 | Text search | `card-search.js` | `cardsight.catalog.search()` |
 | Photo identify | `card-search.js` + `card-form.js` | `cardsight.identify.card(file)` |
 | Card image fetch | `card-search.js` | `cardsight.images.getCard(id, { format: 'json' })` |
+| Population (pop report) | `psa-sheet.js` → `services/population.js` | `cardsight.population.card(id)`, picks base/parallel via `resolveParallel`, then company → Standard type → grade |
 
 ### AI photo identification in card form
 When adding a new card and selecting a photo, `card-form.js` automatically calls `cardsight.identify.card(file)`. On match: fills year, set, number, manufacturer, sport, player (if in collection), grading company/grade, numbered flag, and stores `CardsightId`. Button shows "🔍 Identifying…" → "✓ AI matched".
@@ -159,8 +160,12 @@ Player (ref id), Year, Set, Number, Manufacturer, Sport, Team,
 Grading Company, Grade, Price, Card Information (URL), App Image (URL),
 RC (bool), Auto (bool), Mem (bool), Numbered (bool), Owned (bool),
 CardsightId (string), PSACert, PSAPop,
-Sold (bool), SoldPrice (string), SoldDate (YYYY-MM-DD)
+Sold (bool), SoldPrice (string), SoldDate (YYYY-MM-DD),
+PSAPopHigher (number), PSAPopAt (ms timestamp), PSAGrade/PSAImage/PSAImageBack (legacy, from the old PSA lookup)
 ```
+Pop fields keep their `PSA` prefix but hold whichever company's pop (from Cardsight). PSA's free cert API was discontinued in Oct 2026 (paid tiers from $179/yr), so the app no longer calls it; the cert is checked on the grader's website via `registryUrl()` in `utils.js`.
+
+Adding a Cardsight endpoint means adding it to `CARDSIGHT_ALLOWED` in `functions/index.js` **and deploying functions** (`firebase deploy --only functions:cardsight`); the GitHub workflow deploys hosting only.
 A sold card keeps its `Owned` flag; `isOwned()` returns false while `Sold` is set, and `isWanted()` (unsleevd) excludes sold cards. Sale prompt + helpers live in `src/components/sold-prompt.js`.
 
 **Collection: `Players`** (document id = player name at creation; renaming changes `Player`, not the id)

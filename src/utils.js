@@ -1,3 +1,16 @@
+// Cert lookup page on the grading company's own (free) website
+export function registryUrl(company, cert) {
+  const c = encodeURIComponent(String(cert || '').trim())
+  if (!c) return ''
+  switch (company) {
+    case 'PSA': return `https://www.psacard.com/cert/${c}`
+    case 'BGS': return `https://www.beckett.com/grading/card-lookup?item_id=${c}`
+    case 'SGC': return `https://www.gosgc.com/cert-code-lookup?cert_code=${c}`
+    case 'CGC': return `https://www.cgccards.com/certlookup/${c}`
+    default:    return ''
+  }
+}
+
 // ── Card search ────────────────────────────────────────────────────────────
 // Space-separated tokens must all match (AND). Matches the player's current
 // name as well as their id (ids are the name at creation, so a renamed player
