@@ -1,0 +1,47 @@
+# Builds the app and publishes it to Firebase Hosting on every push to main.
+#
+# One-time setup: add a repository secret named FIREBASE_SERVICE_ACCOUNT
+# containing the JSON key of a service account on project sleevd-7214c with the
+# roles "Firebase Hosting Admin", "Cloud Run Viewer" (the /api/* rewrites point
+# at Cloud Run) and "API Keys Viewer". `firebase init hosting:github` creates
+# one with these roles; it names the secret FIREBASE_SERVICE_ACCOUNT_SLEEVD_7214C,
+# so either rename that secret or change the line below to match.
+#
+# This deploys hosting only (the app files). Firestore/Storage rules and the
+# Cloud Run services behind /api/* are not touched.
+
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-hosting-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # package-lock.json is gitignored, so install fresh rather than `npm ci`
+      - run: npm install --no-audit --no-fund
+
+      - run: npm run build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: sleevd-7214c
+          channelId: live
