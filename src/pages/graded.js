@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, isSold, escapeAttr, imgPh, emptyStateHTML } from '../utils.js'
+import { getCleanImg, isOwned, isSold, matchesSearch, escapeAttr, imgPh, emptyStateHTML } from '../utils.js'
 
 export function renderGradedView() {
   if (!state.cardsLoaded) return
@@ -10,13 +10,7 @@ export function renderGradedView() {
   })
 
   if (state.gradedSearchQuery) {
-    const q = state.gradedSearchQuery.toLowerCase()
-    cards = cards.filter(c =>
-      (c.Year || '').toString().toLowerCase().includes(q) ||
-      (c.Set || '').toLowerCase().includes(q) ||
-      (c.Player || '').toLowerCase().includes(q) ||
-      (c['Grading Company'] || '').toLowerCase().includes(q)
-    )
+    cards = cards.filter(c => matchesSearch(c, state.gradedSearchQuery, state.ALL_PLAYERS))
   }
 
   cards.sort((a, b) => {

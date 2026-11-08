@@ -3,8 +3,8 @@
 ## What This Is
 **sleevd** is a sports card collection PWA. Users sign in with Google, manage a card collection organized by player, track graded cards, and get AI-powered card identification and pricing via Cardsight AI.
 
-**Stack:** Vite 5 + Vanilla JS (ES modules) + Firebase (Firestore + Storage + Auth) + `cardsightai` npm package  
-**Dev branch:** `claude/move-to-projects-y7djP`  
+**Stack:** Vite 5 + Vanilla JS (ES modules) + Firebase (Firestore + Storage + Auth + Hosting) + Cloud Run functions (`functions/`) for the Cardsight and PSA proxies  
+**Branches:** `main` is production. Work on a feature branch and open a PR into `main`; merging deploys.  
 **Run:** `npm run dev`  
 **Deploy:** pushing to `main` builds and publishes to Firebase Hosting via `.github/workflows/deploy.yml` (needs the `FIREBASE_SERVICE_ACCOUNT` repo secret: a service account key with Firebase Hosting Admin, Cloud Run Viewer, API Keys Viewer and Service Usage Consumer). Manual fallback: `npm run build && firebase deploy --only hosting`.
 
@@ -49,10 +49,10 @@ src/
   style.css            — all styles (Material Design 3 Expressive tokens)
   layout.js            — page switching, breakpoints, two/three-pane logic
   state.js             — Firestore subscriptions, global state
-  cardsight.js         — `new CardSightAI({ apiKey })` singleton
+  cardsight.js         — Cardsight client: calls /api/cardsight (key held server-side)
   theme.js             — light/dark/system theme, localStorage persist
   gestures.js          — sheet drag-to-dismiss, card swipe navigation, long-press
-  utils.js             — isOwned(), getCleanImg(), escapeAttr()
+  utils.js             — isOwned()/isSold()/isWanted(), matchesSearch(), getCleanImg(), escapeAttr(), confirmDialog()
 
   pages/
     players.js         — player tile grid, openDetail, renderDetail
@@ -70,9 +70,17 @@ src/
     psa-sheet.js       — PSA/grading registry sheet
     lightbox.js        — image lightbox
     price-prompt.js    — price entry prompt
+    notes-prompt.js    — notes entry prompt
+    sold-prompt.js     — Mark as Sold prompt + markCardSold()/unmarkCardSold()
+    undo-bar.js        — showUndo(message, onUndo) snackbar
+    cardsight-link.js  — match a card to a Cardsight catalog entry
+    cardsight-usage.js — monthly Cardsight call budget
 
   services/
     psa.js             — PSA registry API calls
+    market-value.js    — Cardsight pricing → saved MarketValue on cards
+
+functions/index.js     — Cloud Run: `cardsight` (/api/cardsight/**) and `psalookup` (/api/psa)
 ```
 
 ---
@@ -99,8 +107,7 @@ transition: box-shadow 0.25s cubic-bezier(0.2,0,0,1), transform 0.25s cubic-bezi
 
 ## Cardsight AI Integration
 
-**SDK:** `cardsightai` npm package, singleton in `src/cardsight.js`  
-**API key env var:** `VITE_CARDSIGHT_API_KEY`  
+**Client:** `src/cardsight.js` mirrors the subset of the `cardsightai` SDK the app uses (same `{ data, error }` shape) but sends every call to `/api/cardsight/...` with the user's Firebase ID token. The Cloud Run function in `functions/index.js` checks the path against an allowlist and adds the API key from the `CARDSIGHT_API_KEY` secret. Never put the key in a `VITE_` env var: those are baked into the public bundle.
 **MCP server:** configured in `.claude/settings.json` for Claude Code sessions
 
 ### Current integrations
@@ -124,14 +131,17 @@ When adding a new card and selecting a photo, `card-form.js` automatically calls
 ### Card navigation context
 `handleCardTap(cardId, ctx, replace = false)` — `ctx` is `'player'`, `'collection'`, or `'graded'`. Pass `replace = true` for in-place swaps (set preview). Each ctx has its own sheet (`cardDetailSheet`, `collectionCardSheet`, `gradedCardSheet`).
 
-### Collection search
-AND-token matching: query splits on spaces, all tokens must match against joined haystack of `Year + Set + Manufacturer + Player`.
+### Search
+`matchesSearch(card, query, players)` in `utils.js`, used by Collection, Graded and player detail. AND-token matching: the query splits on spaces and every token must appear in the card's text: year, set, manufacturer, sport, team, player name and id, number (with or without `#`), parallel, serial, and grading company + grade. Player ids are the name at creation, so a renamed player is only found by name via the `players` lookup.
 
 ### Settings page
 Full-screen push page (`#settings-page`), not a sheet. Uses `history.pushState({ v: 'settings' })`, slides in from right with CSS `translateX(100%) → translateX(0)`.
 
 ### Badge picker
-Long-press on any card row calls `window._openBadgePicker(cardId)`. Sheet (`#badgePickerSheet`) shows RC/AUTO/MEM/#'d toggles. Saves to Firestore immediately on tap via `setDoc` merge.
+Long-press on any card row calls `window._openBadgePicker(cardId)`. Sheet (`#badgePickerSheet`) shows Sleevd/Favorite/RC/AUTO/MEM/#'d toggles. Saves to Firestore immediately on tap via `setDoc` merge. Sleevd follows `isOwned()`, so turning it on for a sold card clears the sale.
+
+### Undo bar
+`showUndo(message, onUndo)` from `components/undo-bar.js` after reversible changes: mark sold / edit sale / remove sale (restores the previous sale fields) and delete card (re-creates the document from the copy in `state.ALL_CARDS`). Removing a sale has no confirm dialog because the undo bar covers it.
 
 ### Same-set preview in card detail
 Bottom of card detail shows other cards from same Year + Set + Sport. Tapping uses `handleCardTap(id, ctx, true)` (replaceState) + `panelEl.scrollTop = 0`.
@@ -153,9 +163,9 @@ Sold (bool), SoldPrice (string), SoldDate (YYYY-MM-DD)
 ```
 A sold card keeps its `Owned` flag; `isOwned()` returns false while `Sold` is set, and `isWanted()` (unsleevd) excludes sold cards. Sale prompt + helpers live in `src/components/sold-prompt.js`.
 
-**Collection: `Players`**
+**Collection: `Players`** (document id = player name at creation; renaming changes `Player`, not the id)
 ```
-Player (name), Sport, Image (URL), BannerImage (URL)
+Player (name), Sport, Main Image (URL), Banner_Image (URL)
 ```
 
 ---

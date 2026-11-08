@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, isWanted, isSold, soldBadgeHTML, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
+import { getCleanImg, isOwned, isWanted, isSold, soldBadgeHTML, matchesSearch, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
 import { savedMarketValue } from '../services/market-value.js'
 
 export function renderCollectionView({ preserveScroll = false } = {}) {
@@ -25,16 +25,7 @@ export function renderCollectionView({ preserveScroll = false } = {}) {
   if (state.collFilterNumbered) cards = cards.filter(c => c.Numbered === true || c.Numbered === 'true')
 
   if (state.collSearchQuery) {
-    const tokens = state.collSearchQuery.toLowerCase().trim().split(/\s+/)
-    cards = cards.filter(c => {
-      const haystack = [
-        (c.Year || '').toString(),
-        c.Set || '',
-        c.Manufacturer || '',
-        c.Player || '',
-      ].join(' ').toLowerCase()
-      return tokens.every(t => haystack.includes(t))
-    })
+    cards = cards.filter(c => matchesSearch(c, state.collSearchQuery, state.ALL_PLAYERS))
   }
 
   // 2. Sort — primary key determined by chip, sub-order always: year → set → number
