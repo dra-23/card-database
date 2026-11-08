@@ -1,7 +1,8 @@
-import { db, doc, setDoc } from '../firebase.js'
+import { db, doc, setDoc, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import * as state from '../state.js'
-import { registryUrl, slabFields, subgradesText, labelTierName } from '../utils.js'
+import { registryUrl, slabFields, subgradesText, labelTierName, getCleanImg, popAge } from '../utils.js'
 import { lookupPopulation } from '../services/population.js'
+import { findCardsightMatch } from '../services/market-value.js'
 import { cardsight } from '../cardsight.js'
 
 // Registry sheet: grading company, cert number and pop report for a graded
@@ -12,6 +13,8 @@ let _cardId          = null
 let _popHigher       = undefined   // set by a Cardsight lookup; undefined = untouched
 let _slab            = null        // { grade, fields } read by Scan slab label
 let _popVariant      = undefined   // version picked for the pop ('base' or parallel id)
+let _linkId          = null        // Cardsight id found by a scan or auto-match, saved with the card
+let _photos          = {}          // { front, back }: File to upload, null to remove; absent = unchanged
 let _scrimWasVisible = false
 
 const $ = id => document.getElementById(id)
@@ -43,6 +46,47 @@ function renderChoices(choices) {
   }
 }
 
+// ── Your own slab photos (front / back) ────────────────────────────────────
+function photoSrc(card, side) {
+  const p = _photos[side]
+  if (p instanceof File) return URL.createObjectURL(p)
+  if (p === null) return ''
+  return getCleanImg(side === 'front' ? card.PSAImage : card.PSAImageBack) || ''
+}
+
+function renderPhotos(card) {
+  for (const side of ['front', 'back']) {
+    const tile = document.querySelector(`.slab-photo[data-side="${side}"]`)
+    if (!tile) continue
+    const src = photoSrc(card, side)
+    tile.classList.toggle('has-photo', !!src)
+    tile.querySelector('img').src = src || ''
+    tile.querySelector('.slab-photo-remove').hidden = !src
+  }
+}
+
+export function pickSlabPhoto(side) {
+  const input = $('slabPhotoInput')
+  input.value = ''
+  input.onchange = () => {
+    const file = input.files?.[0]
+    if (!file) return
+    _photos[side] = file
+    renderPhotos(state.ALL_CARDS.find(c => c.id === _cardId) || {})
+  }
+  input.click()
+}
+
+export function removeSlabPhoto(side) {
+  _photos[side] = null
+  renderPhotos(state.ALL_CARDS.find(c => c.id === _cardId) || {})
+}
+
+async function uploadPhoto(file) {
+  const snap = await uploadBytes(ref(storage, `slabs/${Date.now()}_${file.name || 'slab.jpg'}`), file)
+  return getDownloadURL(snap.ref)
+}
+
 function setStatus(text, error = false) {
   const el = $('psaFetchStatus')
   el.style.display = text ? 'block' : 'none'
@@ -55,9 +99,12 @@ export function openPSASheet(cardId) {
   _popHigher = undefined
   _slab      = null
   _popVariant = undefined
+  _linkId    = null
+  _photos    = {}
   renderChoices(null)
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
+  renderPhotos(card)
 
   const co = card['Grading Company'] || 'PSA'
   const companyEl = $('reg_company')
@@ -67,7 +114,7 @@ export function openPSASheet(cardId) {
   $('psa_cert').oninput = syncRegistryLink
   $('reg_pop').value    = card.PSAPop != null ? String(card.PSAPop) : ''
 
-  setStatus(card.PSAPopAt ? `Pop last updated ${new Date(card.PSAPopAt).toLocaleDateString()}` : '')
+  setStatus(card.PSAPopAt ? `Pop last updated ${popAge(card.PSAPopAt)}` : '')
   const titleEl = $('registrySheetTitle')
   if (titleEl) titleEl.textContent = `${co} Registry`
 
@@ -99,14 +146,17 @@ export function closePSASheet() {
 function _pendingCard(card) {
   return {
     ...card,
+    ...(_linkId && !card.CardsightId ? { CardsightId: _linkId } : {}),
     ...(_slab?.fields || {}),
     ...(_slab?.grade ? { Grade: _slab.grade } : {}),
     'Grading Company': $('reg_company').value,
   }
 }
 
-// Read the slab label from a photo: company, grade, cert, subgrades, label
-// tier. One Cardsight call; nothing is saved until Save to Card.
+// One photo of the slab does it all: Cardsight identifies the card (linking
+// it if it isn't yet) and reads the label (company, grade, cert, subgrades,
+// label tier), then the pop is fetched. The photo also becomes the slab's
+// front picture if it has none. Nothing is saved until Save to Card.
 export function scanSlab() {
   const input = $('slabFileInput')
   input.value = ''
@@ -118,9 +168,10 @@ export function scanSlab() {
     btn.lastChild.textContent = 'Reading label…'
     setStatus('')
     try {
-      const { data, error } = await cardsight.identify.card(file, { slabOnly: 'true' })
+      const { data, error } = await cardsight.identify.card(file)
       if (error) throw new Error(error?.error === 'budget' ? 'Monthly Cardsight limit reached.' : 'Couldn’t reach Cardsight. Try again later.')
-      const grading = data?.detections?.[0]?.grading
+      const det = data?.detections?.[0]
+      const grading = det?.grading
       if (!grading?.company?.name) throw new Error('Couldn’t read a slab label in that photo. Try a straight-on shot of the label.')
 
       const company = grading.company.name.toUpperCase()
@@ -132,6 +183,11 @@ export function scanSlab() {
       syncRegistryLink()
 
       const card = state.ALL_CARDS.find(c => c.id === _cardId)
+      // Link to Cardsight from the same photo; an existing link is kept
+      let linkNote = ''
+      if (det.card?.id && !card?.CardsightId) { _linkId = det.card.id; linkNote = ' Matched on Cardsight.' }
+      // Use the photo as the slab picture if there isn't one
+      if (card && !card.PSAImage && !(_photos.front instanceof File)) { _photos.front = file; renderPhotos(card) }
       const parts = [
         `${company}${_slab.grade ? ' ' + _slab.grade : ''}`,
         labelTierName(fields.LabelTier),
@@ -142,7 +198,11 @@ export function scanSlab() {
       const gradeChange = _slab.grade && card && String(card.Grade) !== String(_slab.grade)
         ? ` Grade will change from ${card.Grade || 'none'} to ${_slab.grade} when saved.` : ''
       const lowConf = grading.confidence === 'Low' ? ' (low confidence, please check)' : ''
-      setStatus(`Read: ${parts.join(' · ')}${lowConf}.${gradeChange}${known.includes(company) ? '' : ` ${company} isn't supported here.`}`)
+      const readMsg = `Read: ${parts.join(' · ')}${lowConf}.${gradeChange}${linkNote}`
+      setStatus(readMsg + (known.includes(company) ? '' : ` ${company} isn't supported here.`))
+      btn.disabled = false
+      btn.lastChild.textContent = 'Scan slab label'
+      if (known.includes(company)) await fetchPopulation(undefined, readMsg)
     } catch (err) {
       setStatus(err.message || 'Scan failed', true)
     } finally {
@@ -153,26 +213,39 @@ export function scanSlab() {
   input.click()
 }
 
-export async function fetchPopulation(variantId) {
+export async function fetchPopulation(variantId, prefix = '') {
   const card = state.ALL_CARDS.find(c => c.id === _cardId)
   if (!card) return
   const btn = $('btnLookupPop')
   btn.disabled    = true
   btn.textContent = 'Checking Cardsight…'
-  setStatus('')
+  const lead = typeof prefix === 'string' && prefix ? prefix + '\n' : ''
+  setStatus(lead)
   try {
+    renderChoices(null)
+    // Not linked to Cardsight yet: try to match it now rather than stopping
+    if (!card.CardsightId && !_linkId) {
+      const player = state.ALL_PLAYERS.find(p => p.id === card.Player)
+      btn.textContent = 'Finding card on Cardsight…'
+      _linkId = await findCardsightMatch(card, player?.Player || card.Player || '')
+        .catch(e => { throw new Error(e.budget ? 'Monthly Cardsight limit reached.' : 'Couldn’t reach Cardsight. Try again later.') })
+      if (!_linkId) throw Object.assign(new Error('Couldn’t find this card on Cardsight automatically. Try Scan slab label, or match it under Market Value → Find on Cardsight.'), { manual: true })
+      btn.textContent = 'Checking Cardsight…'
+    }
     // Use what the sheet will save: a scanned grade / label tier and the
     // company picked here, in case they differ from the card's
-    renderChoices(null)
     const r = await lookupPopulation(_pendingCard(card), { variantId: typeof variantId === 'string' ? variantId : undefined })
     $('reg_pop').value = String(r.pop)
     _popHigher = r.popHigher
     _popVariant = r.variantId
     const synced = r.syncedAt ? ` · synced ${new Date(r.syncedAt).toLocaleDateString()}` : ''
-    setStatus(`${r.company} ${r.grade}: ${r.pop.toLocaleString()} graded, ${r.popHigher.toLocaleString()} higher (${r.variant})${synced}`)
+    setStatus(`${lead}${r.company} ${r.grade}: ${r.pop.toLocaleString()} graded, ${r.popHigher.toLocaleString()} higher (${r.variant})${synced}`)
   } catch (err) {
     // A version question isn't an error, so it isn't shown in red
-    setStatus(err.message || 'Lookup failed', !err.choices?.length)
+    const co = $('reg_company').value
+    const manual = !err.choices?.length && $('psa_cert').value.trim()
+      ? ` You can copy the pop from ${co}'s site with Open on ${co} and type it in above.` : ''
+    setStatus(lead + (err.message || 'Lookup failed') + manual, !err.choices?.length)
     renderChoices(err.choices)
   } finally {
     btn.disabled    = false
@@ -203,6 +276,11 @@ export async function savePSAData() {
     }
     const card = state.ALL_CARDS.find(c => c.id === _cardId)
     if (card && card['Grading Company'] !== companyVal) updates['Grading Company'] = companyVal
+    if (_linkId && card && !card.CardsightId) updates.CardsightId = _linkId
+    for (const [side, field] of [['front', 'PSAImage'], ['back', 'PSAImageBack']]) {
+      if (_photos[side] === null) updates[field] = null
+      else if (_photos[side] instanceof File) { btn.textContent = 'Uploading photo…'; updates[field] = await uploadPhoto(_photos[side]) }
+    }
 
     await setDoc(doc(db, 'Cards', _cardId), updates, { merge: true })
     closePSASheet()
