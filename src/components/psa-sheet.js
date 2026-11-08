@@ -11,6 +11,7 @@ import { cardsight } from '../cardsight.js'
 let _cardId          = null
 let _popHigher       = undefined   // set by a Cardsight lookup; undefined = untouched
 let _slab            = null        // { grade, fields } read by Scan slab label
+let _popVariant      = undefined   // version picked for the pop ('base' or parallel id)
 let _scrimWasVisible = false
 
 const $ = id => document.getElementById(id)
@@ -25,6 +26,23 @@ function syncRegistryLink() {
   if (url) link.href = url
 }
 
+// "Which version is this card?" buttons, when Cardsight only has pop for
+// other versions than the one expected
+function renderChoices(choices) {
+  const el = $('popChoices')
+  if (!el) return
+  el.innerHTML = ''
+  el.style.display = choices?.length ? 'flex' : 'none'
+  for (const c of choices || []) {
+    const b = document.createElement('button')
+    b.type = 'button'
+    b.className = 'pop-choice'
+    b.textContent = `${c.name} · ${c.total.toLocaleString()} graded`
+    b.onclick = () => fetchPopulation(c.id)
+    el.appendChild(b)
+  }
+}
+
 function setStatus(text, error = false) {
   const el = $('psaFetchStatus')
   el.style.display = text ? 'block' : 'none'
@@ -36,6 +54,8 @@ export function openPSASheet(cardId) {
   _cardId    = cardId
   _popHigher = undefined
   _slab      = null
+  _popVariant = undefined
+  renderChoices(null)
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
 
@@ -133,7 +153,7 @@ export function scanSlab() {
   input.click()
 }
 
-export async function fetchPopulation() {
+export async function fetchPopulation(variantId) {
   const card = state.ALL_CARDS.find(c => c.id === _cardId)
   if (!card) return
   const btn = $('btnLookupPop')
@@ -143,13 +163,17 @@ export async function fetchPopulation() {
   try {
     // Use what the sheet will save: a scanned grade / label tier and the
     // company picked here, in case they differ from the card's
-    const r = await lookupPopulation(_pendingCard(card))
+    renderChoices(null)
+    const r = await lookupPopulation(_pendingCard(card), { variantId: typeof variantId === 'string' ? variantId : undefined })
     $('reg_pop').value = String(r.pop)
     _popHigher = r.popHigher
+    _popVariant = r.variantId
     const synced = r.syncedAt ? ` · synced ${new Date(r.syncedAt).toLocaleDateString()}` : ''
     setStatus(`${r.company} ${r.grade}: ${r.pop.toLocaleString()} graded, ${r.popHigher.toLocaleString()} higher (${r.variant})${synced}`)
   } catch (err) {
-    setStatus(err.message || 'Lookup failed', true)
+    // A version question isn't an error, so it isn't shown in red
+    setStatus(err.message || 'Lookup failed', !err.choices?.length)
+    renderChoices(err.choices)
   } finally {
     btn.disabled    = false
     btn.textContent = 'Get pop from Cardsight'
@@ -170,7 +194,7 @@ export async function savePSAData() {
       PSACert: certVal || null,
       PSAPop:  popVal ? Number(popVal) : null,
     }
-    if (_popHigher !== undefined) Object.assign(updates, { PSAPopHigher: _popHigher, PSAPopAt: Date.now() })
+    if (_popHigher !== undefined) Object.assign(updates, { PSAPopHigher: _popHigher, PSAPopAt: Date.now(), PopVariant: _popVariant })
     if (_slab) {
       // A fresh scan replaces the old label details (a re-slab or regrade)
       Object.assign(updates, { Subgrades: null, LabelTier: null, AutoGrade: null, GradeQualifier: null }, _slab.fields)

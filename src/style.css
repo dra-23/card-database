@@ -1615,3 +1615,11 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 [data-theme="dark"] .undo-bar-btn { color: #3d4fd6; }
 [data-theme="dark"] .undo-bar-btn:hover { background: rgba(0,0,0,0.06); }
 @media (min-width: 768px) { .undo-bar { bottom: calc(24px + env(safe-area-inset-bottom)); } }
+
+/* Registry sheet: pick which version of the card the pop is for */
+.pop-choices { flex-wrap: wrap; gap: 8px; padding: 0 2px; }
+.pop-choice {
+  height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--md-outline) 35%, transparent);
+  background: var(--md-surface-2); color: var(--md-on-surface); font: 600 14px 'Google Sans', sans-serif; cursor: pointer;
+}
+.pop-choice:hover { background: color-mix(in srgb, var(--md-on-surface) 6%, var(--md-surface-2)); }

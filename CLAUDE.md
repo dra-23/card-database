@@ -163,7 +163,8 @@ RC (bool), Auto (bool), Mem (bool), Numbered (bool), Owned (bool),
 CardsightId (string), PSACert, PSAPop,
 Sold (bool), SoldPrice (string), SoldDate (YYYY-MM-DD),
 PSAPopHigher (number), PSAPopAt (ms timestamp), PSAGrade/PSAImage/PSAImageBack (legacy, from the old PSA lookup),
-Subgrades ({centering, corners, edges, surface}), LabelTier ('black' | 'gold'), AutoGrade, GradeQualifier
+Subgrades ({centering, corners, edges, surface}), LabelTier ('black' | 'gold'), AutoGrade, GradeQualifier,
+PopVariant ('base' | Cardsight parallel id: version picked for the pop lookup)
 ```
 Pop fields keep their `PSA` prefix but hold whichever company's pop (from Cardsight). PSA's free cert API was discontinued in Oct 2026 (paid tiers from $179/yr), so the app no longer calls it; the cert is checked on the grader's website via `registryUrl()` in `utils.js`.
 
