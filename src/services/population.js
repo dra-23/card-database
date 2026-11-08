@@ -31,9 +31,13 @@ export async function lookupPopulation(card) {
   const co = (variant.grading_companies || []).find(g => g.name?.toUpperCase() === company.toUpperCase())
   if (!co) throw new Error(`Cardsight has no ${company} population for ${variantName}.`)
 
-  // Standard grading scale (BGS Black Label etc. are separate types)
+  // Standard grading scale; BGS Black Label is a separate grading type
   const types = co.grading_types || []
-  const type = types.find(t => /standard/i.test(t.name)) || types[0]
+  const black = card.LabelTier === 'black'
+  const type = black
+    ? types.find(t => /black/i.test(t.name))
+    : types.find(t => /standard/i.test(t.name)) || types.find(t => !/black/i.test(t.name)) || types[0]
+  if (!type) throw new Error(`Cardsight has no ${company} Black Label population for ${variantName}.`)
   const entries = (type?.grades || []).map(g => ({ ...g, n: parseFloat(g.grade) })).filter(g => !isNaN(g.n))
   const at = entries.find(g => g.n === grade)
   if (!at) throw new Error(`Cardsight has no ${company} ${grade} grade for this card.`)
@@ -44,7 +48,7 @@ export async function lookupPopulation(card) {
     popHigher: entries.filter(g => g.n > grade).reduce((s, g) => s + count(g), 0),
     total: co.total_population || 0,
     company,
-    grade: at.grade,
+    grade: black ? `${at.grade} Black Label` : at.grade,
     variant: variantName,
     syncedAt: co.last_synced_at || null,
   }

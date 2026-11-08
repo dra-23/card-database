@@ -1,6 +1,6 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
-import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh, registryUrl as certUrl } from '../utils.js'
+import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh, registryUrl as certUrl, subgradesText, labelTierName } from '../utils.js'
 import { markCardSold, unmarkCardSold } from './sold-prompt.js'
 import { promptPrice } from './price-prompt.js'
 import { promptNotes } from './notes-prompt.js'
@@ -92,6 +92,14 @@ export function buildCardDetailHTML(card, ctx) {
   const hasPSA      = isGraded && !!card.PSACert
   const hasPSAImages = !!(card.PSAImage || card.PSAImageBack)
   const registryUrl = hasPSA ? certUrl(co, card.PSACert) : ''
+  // From a slab scan: subgrades, Beckett label tier, autograph grade, qualifier
+  const slabRows = [
+    labelTierName(card.LabelTier) && ['Label', escapeAttr(labelTierName(card.LabelTier))],
+    card.Subgrades && ['Subgrades', escapeAttr(subgradesText(card.Subgrades))],
+    card.AutoGrade && ['Auto Grade', escapeAttr(card.AutoGrade)],
+    card.GradeQualifier && ['Qualifier', escapeAttr(card.GradeQualifier)],
+  ].filter(Boolean).map(([l, v]) => `<div class="cd2-row"><span class="cd2-row-lbl">${l}</span><span class="cd2-row-val">${v}</span></div>`).join('')
+
   const psaSection = isGraded ? `
     <div class="cd2-section">
       <div class="cd2-section-label-row">
@@ -105,6 +113,7 @@ export function buildCardDetailHTML(card, ctx) {
           ${card.PSAGrade ? `<div class="cd2-row"><span class="cd2-row-lbl">Grade</span><span class="cd2-grade-pill" data-co="${co}">${card.PSAGrade}</span></div>` : ''}
           <div class="cd2-row"><span class="cd2-row-lbl">Pop Report</span><span class="cd2-row-val">${card.PSAPop ?? '—'}</span></div>
           ${card.PSAPopHigher != null ? `<div class="cd2-row"><span class="cd2-row-lbl">Pop Higher</span><span class="cd2-row-val">${card.PSAPopHigher}</span></div>` : ''}
+          ${slabRows}
         </div>
         ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" class="cd2-card-action cd2-btn-registry" data-co="${co}">${co} Registry ${ICON_ARROW}</a>` : ''}` : `
         <button class="cd2-link-row" data-psa-edit="${escapeAttr(card.id)}">

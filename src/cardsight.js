@@ -40,10 +40,12 @@ export const cardsight = {
     card: (cardId, params) => call(`/v1/population/card/${encodeURIComponent(cardId)}`, { query: params }),
   },
   identify: {
-    card: file => {
+    // { slabOnly: true } reads just the slab label (company, grade, cert,
+    // subgrades, label tier) without identifying the card
+    card: (file, params) => {
       const form = new FormData()
       form.append('image', file)
-      return call('/v1/identify/card', { method: 'POST', body: form })
+      return call('/v1/identify/card', { method: 'POST', body: form, query: params })
     },
   },
 }
