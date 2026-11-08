@@ -1590,3 +1590,28 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
           mask: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%) no-repeat;
 }
 [data-theme="dark"] .cd2-hero-glow { opacity: 0.75; }
+
+/* ================================================================
+   UNDO BAR (components/undo-bar.js)
+   ================================================================ */
+/* Sits above the floating bottom nav on phones; bottom-centre on wide layouts */
+.undo-bar {
+  position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(16px); opacity: 0;
+  display: flex; align-items: center; gap: 4px; max-width: calc(100vw - 32px);
+  padding: 6px 6px 6px 18px; border-radius: 16px;
+  background: #2b2c31; color: #f1f1f4; box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+  font-family: 'Google Sans', sans-serif; font-size: 15px; font-weight: 500;
+  z-index: 3000; transition: opacity 0.2s, transform 0.25s cubic-bezier(0.2,0,0,1);
+}
+.undo-bar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.undo-bar-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; }
+.undo-bar-btn {
+  flex-shrink: 0; height: 36px; padding: 0 14px; border: none; border-radius: 12px;
+  background: transparent; color: #b6bef8; font: inherit; font-weight: 700; cursor: pointer;
+}
+.undo-bar-btn:hover { background: rgba(255,255,255,0.08); }
+[data-theme="dark"] .undo-bar { background: #e6e7ee; color: #1b1c22; }
+[data-theme="dark"] .undo-bar-btn { color: #3d4fd6; }
+[data-theme="dark"] .undo-bar-btn:hover { background: rgba(0,0,0,0.06); }
+@media (min-width: 768px) { .undo-bar { bottom: calc(24px + env(safe-area-inset-bottom)); } }

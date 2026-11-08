@@ -170,7 +170,7 @@ function appShellHTML() {
                   </div>
                   <div class="search-filter-row" id="collSearchRow">
                     <div class="search-wrap">
-                      <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search year, set...">
+                      <input type="text" id="collSearchInput" class="search-input-expressive" placeholder="Search player, set, team, #…">
                       <button class="search-clear-btn" tabindex="-1" id="collSearchClear">
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>
@@ -210,7 +210,7 @@ function appShellHTML() {
                   </div>
                   <div class="search-filter-row" id="gradedSearchRow">
                     <div class="search-wrap">
-                      <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set...">
+                      <input type="text" id="gradedSearchInput" class="search-input-expressive" placeholder="Search player, set, grade…">
                       <button class="search-clear-btn" tabindex="-1" id="gradedSearchClear">
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>
                       </button>

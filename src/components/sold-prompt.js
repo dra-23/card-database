@@ -1,6 +1,10 @@
 import { db, doc, setDoc } from '../firebase.js'
 import * as state from '../state.js'
 import { isSold, confirmDialog } from '../utils.js'
+import { showUndo } from './undo-bar.js'
+
+// The sale fields as they are now, to put back on Undo
+const saleFields = c => ({ Sold: isSold(c), SoldPrice: c.SoldPrice ?? '', SoldDate: c.SoldDate ?? '' })
 
 const todayISO = () => {
   const d = new Date()
@@ -68,15 +72,19 @@ export async function markCardSold(cardId) {
   if (!card) return false
   const sale = await promptSale(card)
   if (!sale) return false
+  const before = saleFields(card)
+  const wasSold = before.Sold
   await setDoc(doc(db, 'Cards', cardId), {
     Sold: true,
     SoldPrice: sale.price != null ? String(sale.price) : '',
     SoldDate: sale.date,
   }, { merge: true })
+  showUndo(wasSold ? 'Sale updated' : 'Marked as sold', () => setDoc(doc(db, 'Cards', cardId), before, { merge: true }))
   return true
 }
 
-export async function unmarkCardSold(cardId, { confirm = true } = {}) {
+// No confirm by default: the Undo bar covers a mis-tap
+export async function unmarkCardSold(cardId, { confirm = false } = {}) {
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card || !isSold(card)) return false
   if (confirm) {
@@ -88,6 +96,8 @@ export async function unmarkCardSold(cardId, { confirm = true } = {}) {
     })
     if (!ok) return false
   }
+  const before = saleFields(card)
   await setDoc(doc(db, 'Cards', cardId), { Sold: false, SoldPrice: '', SoldDate: '' }, { merge: true })
+  showUndo('Sale removed', () => setDoc(doc(db, 'Cards', cardId), before, { merge: true }))
   return true
 }

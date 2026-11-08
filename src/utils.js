@@ -1,3 +1,27 @@
+// ── Card search ────────────────────────────────────────────────────────────
+// Space-separated tokens must all match (AND). Matches the player's current
+// name as well as their id (ids are the name at creation, so a renamed player
+// would otherwise be unsearchable), plus team, number (with or without #),
+// parallel, grade and the usual year/set/maker.
+export function cardSearchText(card, players = []) {
+  const p = players.find(pl => pl.id === card.Player)
+  const co = card['Grading Company'] && card['Grading Company'] !== 'Raw' ? card['Grading Company'] : ''
+  return [
+    card.Year, card.Set, card.Manufacturer, card.Sport, card.Team,
+    p?.Player, card.Player,
+    card.Number, card.Number ? `#${card.Number}` : '',
+    card.Parallel, card.SerialNumber,
+    co, co && card.Grade ? `${co} ${card.Grade}` : '',
+  ].filter(Boolean).join(' ').toLowerCase()
+}
+
+export function matchesSearch(card, query, players = []) {
+  const tokens = String(query || '').toLowerCase().trim().split(/\s+/).filter(Boolean)
+  if (!tokens.length) return true
+  const hay = cardSearchText(card, players)
+  return tokens.every(t => hay.includes(t))
+}
+
 export const SPORT_ICONS = {
   Basketball: 'BSK',
   Football:   'FB',

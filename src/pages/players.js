@@ -1,5 +1,5 @@
 import * as state from '../state.js'
-import { getCleanImg, isOwned, isWanted, isSold, soldBadgeHTML, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
+import { getCleanImg, isOwned, isWanted, isSold, soldBadgeHTML, matchesSearch, escapeAttr, imgPh, emptyStateHTML, clearLabel } from '../utils.js'
 import { isWideLayout, isFoldLayout, isThreePaneLayout, _applyWideLayout, _updateFloatingFab } from '../layout.js'
 import { handleCardTap } from '../components/card-detail.js'
 
@@ -244,8 +244,7 @@ export function renderDetail(player) {
     })
 
   if (state.cardSearchQuery) {
-    const q = state.cardSearchQuery.toLowerCase()
-    cards = cards.filter(c => (c.Year || '').toString().toLowerCase().includes(q) || (c.Set || '').toLowerCase().includes(q))
+    cards = cards.filter(c => matchesSearch(c, state.cardSearchQuery))
   }
   if (state.showGradedOnly)   cards = cards.filter(c => c['Grading Company'] && c['Grading Company'] !== 'Raw')
   if (state.showWishlistOnly) cards = cards.filter(isWanted)
