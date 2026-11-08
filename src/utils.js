@@ -22,6 +22,16 @@ export function subgradesText(sg) {
 
 export const labelTierName = t => t === 'black' ? 'Black Label' : t === 'gold' ? 'Gold Label' : ''
 
+// "today", "3 days ago", "2 months ago"
+export function popAge(ms) {
+  const days = Math.floor((Date.now() - ms) / 86400000)
+  if (days < 1) return 'today'
+  if (days < 2) return 'yesterday'
+  if (days < 45) return `${days} days ago`
+  const months = Math.round(days / 30)
+  return months < 18 ? `${months} months ago` : `${Math.round(days / 365)} years ago`
+}
+
 // Cert lookup page on the grading company's own (free) website
 export function registryUrl(company, cert) {
   const c = encodeURIComponent(String(cert || '').trim())

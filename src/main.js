@@ -13,7 +13,7 @@ import { handleCardTap, navigateCard, closeCardSheet, refreshCurrentCardPanel } 
 import { initGradeDropdown, openCardForm, saveCard, handleFileSelect, setFormFlag, initCardForm } from './components/card-form.js'
 import { openPlayerForm, savePlayer, handlePlayerFileSelect, createPlayerEditSheet, openPlayerEditMenu, closePlayerEdit } from './components/player-forms.js'
 import { createOverflowMenu, openRowMenu, showDeleteConfirm } from './components/overflow-menu.js'
-import { openPSASheet, closePSASheet, fetchPopulation, savePSAData, scanSlab } from './components/psa-sheet.js'
+import { openPSASheet, closePSASheet, fetchPopulation, savePSAData, scanSlab, pickSlabPhoto, removeSlabPhoto } from './components/psa-sheet.js'
 import { openCardSearch, closeCardSearch, initCardSearch } from './components/card-search.js'
 import { openLightbox, closeLightbox, isLightboxOpen, initLightbox } from './components/lightbox.js'
 import { openBadgePicker, closeBadgePicker, initBadgePicker } from './components/badge-picker.js'
@@ -446,6 +446,12 @@ function wireFormButtons() {
   document.getElementById('pf_name')?.addEventListener('input', () => document.getElementById('pf_name_field')?.classList.remove('has-error'))
   document.getElementById('btnLookupPop')?.addEventListener('click', fetchPopulation)
   document.getElementById('btnScanSlab')?.addEventListener('click', scanSlab)
+  document.getElementById('psaSheet')?.addEventListener('click', e => {
+    const pick = e.target.closest('[data-slab-photo]')
+    if (pick) return pickSlabPhoto(pick.dataset.slabPhoto)
+    const rm = e.target.closest('[data-slab-photo-remove]')
+    if (rm) removeSlabPhoto(rm.dataset.slabPhotoRemove)
+  })
   document.getElementById('btnSavePSA')?.addEventListener('click', savePSAData)
   document.getElementById('cancelPSABtn')?.addEventListener('click', closePSASheet)
   document.getElementById('cancelCardFormBtn')?.addEventListener('click', closeAllForms)

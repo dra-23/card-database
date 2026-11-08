@@ -695,12 +695,25 @@ function appShellHTML() {
         <label class="m3-label">Pop Report</label>
         <input type="text" id="reg_pop" class="m3-input" placeholder="Population count" inputmode="numeric">
       </div>
-      <div id="psaFetchStatus" style="display:none; font-size:16px; padding:0 4px; line-height:1.45;"></div>
+      <div id="psaFetchStatus" style="display:none; font-size:16px; padding:0 4px; line-height:1.45; white-space:pre-line;"></div>
       <div id="popChoices" class="pop-choices" style="display:none;"></div>
       <button class="expressive-btn" id="btnScanSlab" style="display:flex; align-items:center; justify-content:center; gap:8px; background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;"><span class="material-symbols-outlined">photo_camera</span>Scan slab label</button>
+      <div class="cf2-hint" style="margin:-6px 4px 0; font-size:13px; color:var(--md-on-surface-variant);">One photo of the slab: matches the card, reads the label and gets the pop.</div>
       <input type="file" id="slabFileInput" accept="image/*" capture="environment" hidden>
       <button class="expressive-btn" id="btnLookupPop" style="background:#002D62; color:white; height:52px; border-radius:26px;">Get pop from Cardsight</button>
       <a class="expressive-btn" id="btnOpenRegistry" target="_blank" rel="noopener" style="display:none; align-items:center; justify-content:center; text-decoration:none; background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Open on PSA</a>
+      <div style="font-size:13px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--md-on-surface-variant); margin:4px 4px -6px;">Slab photos</div>
+      <div class="slab-photos" aria-label="Slab photos">
+        ${['front', 'back'].map(side => `
+        <div class="slab-photo" data-side="${side}">
+          <button type="button" class="slab-photo-pick" data-slab-photo="${side}" aria-label="Choose ${side} slab photo">
+            <img alt="">
+            <span class="slab-photo-empty"><span class="material-symbols-outlined">add_a_photo</span>${side === 'front' ? 'Front' : 'Back'}</span>
+          </button>
+          <button type="button" class="slab-photo-remove" data-slab-photo-remove="${side}" aria-label="Remove ${side} photo" hidden><span class="material-symbols-outlined">close</span></button>
+        </div>`).join('')}
+        <input type="file" id="slabPhotoInput" accept="image/*" hidden>
+      </div>
       <button class="expressive-btn" id="btnSavePSA" style="background:var(--md-primary); color:white; height:52px; border-radius:26px;">Save to Card</button>
       <button class="expressive-btn" id="cancelPSABtn" style="background:var(--md-surface-2); color:var(--md-on-surface); height:52px; border-radius:26px;">Cancel</button>
     </div>

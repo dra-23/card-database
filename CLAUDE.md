@@ -67,7 +67,7 @@ src/
     badge-picker.js    — long-press badge quick-picker sheet
     overflow-menu.js   — card row context menu
     player-forms.js    — add/edit player forms
-    psa-sheet.js       — registry sheet: company, cert, pop (via Cardsight), Scan slab label
+    psa-sheet.js       — registry sheet: company, cert, pop (via Cardsight), Scan slab label, slab photos
     lightbox.js        — image lightbox
     price-prompt.js    — price entry prompt
     notes-prompt.js    — notes entry prompt
@@ -117,8 +117,8 @@ transition: box-shadow 0.25s cubic-bezier(0.2,0,0,1), transform 0.25s cubic-bezi
 | Text search | `card-search.js` | `cardsight.catalog.search()` |
 | Photo identify | `card-search.js` + `card-form.js` | `cardsight.identify.card(file)` |
 | Card image fetch | `card-search.js` | `cardsight.images.getCard(id, { format: 'json' })` |
-| Slab label read | `card-form.js` (add by photo) + `psa-sheet.js` (Scan slab label) | `cardsight.identify.card(file, { slabOnly: 'true' })` in the sheet; `slabFields(grading)` in `utils.js` maps cert, subgrades, label tier, auto grade, qualifier |
-| Population (pop report) | `psa-sheet.js` → `services/population.js` | `cardsight.population.card(id)`, picks base/parallel via `resolveParallel`, then company → grading type (Black Label when `LabelTier` is black, else Standard) → grade |
+| Slab label read | `card-form.js` (add by photo) + `psa-sheet.js` (Scan slab label) | Full `cardsight.identify.card(file)`: links an unlinked card (`CardsightId`) and reads the label; `slabFields(grading)` in `utils.js` maps cert, subgrades, label tier, auto grade, qualifier. The sheet then fetches the pop and uses the photo as the slab's front picture if it has none |
+| Population (pop report) | `psa-sheet.js` → `services/population.js` (an unlinked card is matched first with `findCardsightMatch`) | `cardsight.population.card(id)`, picks base/parallel via `resolveParallel`, then company → grading type (Black Label when `LabelTier` is black, else Standard) → grade |
 
 ### AI photo identification in card form
 When adding a new card and selecting a photo, `card-form.js` automatically calls `cardsight.identify.card(file)`. On match: fills year, set, number, manufacturer, sport, player (if in collection), grading company/grade, numbered flag, and stores `CardsightId`. Button shows "🔍 Identifying…" → "✓ AI matched".
@@ -162,7 +162,7 @@ Grading Company, Grade, Price, Card Information (URL), App Image (URL),
 RC (bool), Auto (bool), Mem (bool), Numbered (bool), Owned (bool),
 CardsightId (string), PSACert, PSAPop,
 Sold (bool), SoldPrice (string), SoldDate (YYYY-MM-DD),
-PSAPopHigher (number), PSAPopAt (ms timestamp), PSAGrade/PSAImage/PSAImageBack (legacy, from the old PSA lookup),
+PSAPopHigher (number), PSAPopAt (ms timestamp), PSAImage/PSAImageBack (slab photos: uploaded on the registry sheet to Storage `slabs/`, or legacy PSA scans), PSAGrade (legacy),
 Subgrades ({centering, corners, edges, surface}), LabelTier ('black' | 'gold'), AutoGrade, GradeQualifier,
 PopVariant ('base' | Cardsight parallel id: version picked for the pop lookup)
 ```

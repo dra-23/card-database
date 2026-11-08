@@ -1,6 +1,6 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
-import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh, registryUrl as certUrl, subgradesText, labelTierName } from '../utils.js'
+import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh, registryUrl as certUrl, subgradesText, labelTierName, popAge } from '../utils.js'
 import { markCardSold, unmarkCardSold } from './sold-prompt.js'
 import { promptPrice } from './price-prompt.js'
 import { promptNotes } from './notes-prompt.js'
@@ -111,7 +111,7 @@ export function buildCardDetailHTML(card, ctx) {
         <div class="cd2-card-rows">
           <div class="cd2-row"><span class="cd2-row-lbl">Cert #</span><span class="cd2-row-val">${card.PSACert}</span></div>
           ${card.PSAGrade ? `<div class="cd2-row"><span class="cd2-row-lbl">Grade</span><span class="cd2-grade-pill" data-co="${co}">${card.PSAGrade}</span></div>` : ''}
-          <div class="cd2-row"><span class="cd2-row-lbl">Pop Report</span><span class="cd2-row-val">${card.PSAPop ?? '—'}</span></div>
+          <div class="cd2-row"><span class="cd2-row-lbl">Pop Report</span><span class="cd2-row-val">${card.PSAPop ?? '—'}${card.PSAPop != null && card.PSAPopAt ? `<span class="cd2-row-age">${popAge(card.PSAPopAt)}</span>` : ''}</span></div>
           ${card.PSAPopHigher != null ? `<div class="cd2-row"><span class="cd2-row-lbl">Pop Higher</span><span class="cd2-row-val">${card.PSAPopHigher}</span></div>` : ''}
           ${slabRows}
         </div>
