@@ -1580,11 +1580,13 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 /* Card detail glow: a heavily blurred copy of the card image (set inline as
    --glow), so the halo takes each card's own colors instead of brand red */
 .cd2-hero-glow {
-  left: 50%; right: auto; top: -10px; width: 340px; height: 380px; transform: translateX(-50%) scale(1.1);
-  background: var(--glow) center / contain no-repeat;
-  filter: blur(40px) saturate(1.9); opacity: 0.65;
-  /* fade out toward the top so the panel edge doesn't cut it off sharply */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%);
-          mask-image: linear-gradient(to bottom, transparent, #000 30%);
+  /* Box is larger than the image so the blur dies out inside it; the mask
+     fades top and bottom to fully transparent and doesn't tile, so nothing
+     reaches the scroll area's top edge (just under the grab bar) */
+  left: 50%; right: auto; top: -12px; width: 460px; height: 460px; transform: translateX(-50%);
+  background: var(--glow) center 45% / auto 88% no-repeat;
+  filter: blur(34px) saturate(2); opacity: 0.85;
+  -webkit-mask: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%) no-repeat;
+          mask: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%) no-repeat;
 }
-[data-theme="dark"] .cd2-hero-glow { opacity: 0.6; }
+[data-theme="dark"] .cd2-hero-glow { opacity: 0.75; }
