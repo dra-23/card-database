@@ -6,7 +6,7 @@
 **Stack:** Vite 5 + Vanilla JS (ES modules) + Firebase (Firestore + Storage + Auth) + `cardsightai` npm package  
 **Dev branch:** `claude/move-to-projects-y7djP`  
 **Run:** `npm run dev`  
-**Deploy:** pushing to `main` builds and publishes to Firebase Hosting via `.github/workflows/deploy.yml` (needs the `FIREBASE_SERVICE_ACCOUNT` repo secret). Manual fallback: `npm run build && firebase deploy --only hosting`.
+**Deploy:** pushing to `main` builds and publishes to Firebase Hosting via `.github/workflows/deploy.yml` (needs the `FIREBASE_SERVICE_ACCOUNT` repo secret: a service account key with Firebase Hosting Admin, Cloud Run Viewer, API Keys Viewer and Service Usage Consumer). Manual fallback: `npm run build && firebase deploy --only hosting`.
 
 ---
 

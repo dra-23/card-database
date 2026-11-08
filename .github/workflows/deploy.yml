@@ -3,9 +3,9 @@
 # One-time setup: add a repository secret named FIREBASE_SERVICE_ACCOUNT
 # containing the JSON key of a service account on project sleevd-7214c with the
 # roles "Firebase Hosting Admin", "Cloud Run Viewer" (the /api/* rewrites point
-# at Cloud Run) and "API Keys Viewer". `firebase init hosting:github` creates
-# one with these roles; it names the secret FIREBASE_SERVICE_ACCOUNT_SLEEVD_7214C,
-# so either rename that secret or change the line below to match.
+# at Cloud Run), "API Keys Viewer" and "Service Usage Consumer" (the CLI checks
+# that the Hosting API is enabled; without it the deploy fails with a 403 on
+# serviceusage.services.get).
 #
 # This deploys hosting only (the app files). Firestore/Storage rules and the
 # Cloud Run services behind /api/* are not touched.
