@@ -1,3 +1,27 @@
+// Fields to save from a slab label read by Cardsight identify (`grading` on a
+// detection). Only what was actually read is returned.
+export function slabFields(grading) {
+  if (!grading?.company?.name) return {}
+  const out = {}
+  if (grading.certNumber) out.PSACert = String(grading.certNumber)
+  const sg = grading.subgrades
+  if (sg && ['centering', 'corners', 'edges', 'surface'].every(k => sg[k])) {
+    out.Subgrades = { centering: sg.centering, corners: sg.corners, edges: sg.edges, surface: sg.surface }
+  }
+  if (grading.labelTier) out.LabelTier = grading.labelTier
+  if (grading.autoGrade?.value) out.AutoGrade = String(grading.autoGrade.value)
+  if (grading.qualifier?.code) out.GradeQualifier = grading.qualifier.code
+  return out
+}
+
+export function subgradesText(sg) {
+  if (!sg) return ''
+  return [['CEN', sg.centering], ['COR', sg.corners], ['EDG', sg.edges], ['SUR', sg.surface]]
+    .filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ')
+}
+
+export const labelTierName = t => t === 'black' ? 'Black Label' : t === 'gold' ? 'Gold Label' : ''
+
 // Cert lookup page on the grading company's own (free) website
 export function registryUrl(company, cert) {
   const c = encodeURIComponent(String(cert || '').trim())

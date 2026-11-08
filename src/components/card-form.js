@@ -1,7 +1,7 @@
 import { db, doc, setDoc, addDoc, collection, deleteField, storage, ref, uploadBytes, getDownloadURL } from '../firebase.js'
 import { auth } from '../firebase.js'
 import * as state from '../state.js'
-import { isOwned, getCleanImg, syncChoice } from '../utils.js'
+import { isOwned, getCleanImg, syncChoice, slabFields } from '../utils.js'
 import { closeAllForms } from '../gestures.js'
 import { cardsight } from '../cardsight.js'
 
@@ -41,6 +41,7 @@ function _setPhotoStatus(status, note = '') {
 
 async function _identifyAndPrefill(file) {
   _setPhotoStatus('identifying')
+  _pendingSlab = null
 
   try {
     const { data, error } = await cardsight.identify.card(file)
@@ -83,6 +84,9 @@ async function _identifyAndPrefill(file) {
       setGrading(grading.company.name)
       if (grading.grade?.value) document.getElementById('f_grade').value = grading.grade.value
     }
+    // Cert number, subgrades, label tier: saved with the new card if it's
+    // still graded by the same company when saved
+    if (grading?.company?.name) _pendingSlab = { company: grading.company.name, fields: slabFields(grading) }
 
     if (card.numberedTo || card.parallel?.numberedTo) setFormFlag('numbered', true)
     if (card.id) _pendingCardsightId = card.id
@@ -231,6 +235,7 @@ function attachSuggest(inputId, listId, rawValues) {
 // ── Save card ──────────────────────────────────────────────────────────────
 let _pendingImageFile    = null  // set by card-search when scan image should be uploaded
 let _pendingCardsightId  = null  // set by card-search when a CardSight result is selected
+let _pendingSlab         = null  // { company, fields } read from a slab photo by identify
 
 export function setPendingImageFile(file) { _pendingImageFile = file }
 
@@ -329,6 +334,7 @@ export function openCardForm(cardId = null, formCtx = null, prefill = null) {
     document.getElementById('f_serialnumber').value = ''
     _pendingImageFile   = null
     _pendingCardsightId = null
+    _pendingSlab        = null
 
     // Apply CardSight prefill if provided
     if (prefill) {
@@ -412,6 +418,8 @@ export async function saveCard() {
     _pendingImageFile   = null
     const cardsightId   = _pendingCardsightId
     _pendingCardsightId = null
+    const slab          = _pendingSlab
+    _pendingSlab        = null
     let imageUrl = id ? (state.ALL_CARDS.find(x => x.id === id)?.['App Image'] || '') : ''
 
     if (file) {
@@ -443,6 +451,7 @@ export async function saveCard() {
       Owned: document.getElementById('f_owned').checked,
       ...(cardsightId && !id ? { CardsightId: cardsightId } : {}),
     }
+    if (slab && !id && slab.company === cardData['Grading Company']) Object.assign(cardData, slab.fields)
 
     // deleteField() is only valid in setDoc/updateDoc, not addDoc
     if (id) cardData.Patch = deleteField()

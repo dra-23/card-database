@@ -1,7 +1,8 @@
 import { db, doc, setDoc } from '../firebase.js'
 import * as state from '../state.js'
-import { registryUrl } from '../utils.js'
+import { registryUrl, slabFields, subgradesText, labelTierName } from '../utils.js'
 import { lookupPopulation } from '../services/population.js'
+import { cardsight } from '../cardsight.js'
 
 // Registry sheet: grading company, cert number and pop report for a graded
 // card. Pop comes from Cardsight (PSA's free cert API was discontinued in
@@ -9,6 +10,7 @@ import { lookupPopulation } from '../services/population.js'
 
 let _cardId          = null
 let _popHigher       = undefined   // set by a Cardsight lookup; undefined = untouched
+let _slab            = null        // { grade, fields } read by Scan slab label
 let _scrimWasVisible = false
 
 const $ = id => document.getElementById(id)
@@ -33,6 +35,7 @@ function setStatus(text, error = false) {
 export function openPSASheet(cardId) {
   _cardId    = cardId
   _popHigher = undefined
+  _slab      = null
   const card = state.ALL_CARDS.find(c => c.id === cardId)
   if (!card) return
 
@@ -73,6 +76,63 @@ export function closePSASheet() {
   }
 }
 
+function _pendingCard(card) {
+  return {
+    ...card,
+    ...(_slab?.fields || {}),
+    ...(_slab?.grade ? { Grade: _slab.grade } : {}),
+    'Grading Company': $('reg_company').value,
+  }
+}
+
+// Read the slab label from a photo: company, grade, cert, subgrades, label
+// tier. One Cardsight call; nothing is saved until Save to Card.
+export function scanSlab() {
+  const input = $('slabFileInput')
+  input.value = ''
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+    const btn = $('btnScanSlab')
+    btn.disabled = true
+    btn.lastChild.textContent = 'Reading label…'
+    setStatus('')
+    try {
+      const { data, error } = await cardsight.identify.card(file, { slabOnly: 'true' })
+      if (error) throw new Error(error?.error === 'budget' ? 'Monthly Cardsight limit reached.' : 'Couldn’t reach Cardsight. Try again later.')
+      const grading = data?.detections?.[0]?.grading
+      if (!grading?.company?.name) throw new Error('Couldn’t read a slab label in that photo. Try a straight-on shot of the label.')
+
+      const company = grading.company.name.toUpperCase()
+      const known = ['PSA', 'BGS', 'SGC', 'CGC']
+      const fields = slabFields(grading)
+      _slab = { grade: grading.grade?.value || null, fields }
+      if (known.includes(company)) $('reg_company').value = company
+      if (fields.PSACert) $('psa_cert').value = fields.PSACert
+      syncRegistryLink()
+
+      const card = state.ALL_CARDS.find(c => c.id === _cardId)
+      const parts = [
+        `${company}${_slab.grade ? ' ' + _slab.grade : ''}`,
+        labelTierName(fields.LabelTier),
+        fields.PSACert ? `Cert ${fields.PSACert}` : 'cert not readable',
+        fields.Subgrades && subgradesText(fields.Subgrades),
+        fields.AutoGrade && `Auto ${fields.AutoGrade}`,
+      ].filter(Boolean)
+      const gradeChange = _slab.grade && card && String(card.Grade) !== String(_slab.grade)
+        ? ` Grade will change from ${card.Grade || 'none'} to ${_slab.grade} when saved.` : ''
+      const lowConf = grading.confidence === 'Low' ? ' (low confidence, please check)' : ''
+      setStatus(`Read: ${parts.join(' · ')}${lowConf}.${gradeChange}${known.includes(company) ? '' : ` ${company} isn't supported here.`}`)
+    } catch (err) {
+      setStatus(err.message || 'Scan failed', true)
+    } finally {
+      btn.disabled = false
+      btn.lastChild.textContent = 'Scan slab label'
+    }
+  }
+  input.click()
+}
+
 export async function fetchPopulation() {
   const card = state.ALL_CARDS.find(c => c.id === _cardId)
   if (!card) return
@@ -81,8 +141,9 @@ export async function fetchPopulation() {
   btn.textContent = 'Checking Cardsight…'
   setStatus('')
   try {
-    // Use the company picked in the sheet, in case it's being changed
-    const r = await lookupPopulation({ ...card, 'Grading Company': $('reg_company').value })
+    // Use what the sheet will save: a scanned grade / label tier and the
+    // company picked here, in case they differ from the card's
+    const r = await lookupPopulation(_pendingCard(card))
     $('reg_pop').value = String(r.pop)
     _popHigher = r.popHigher
     const synced = r.syncedAt ? ` · synced ${new Date(r.syncedAt).toLocaleDateString()}` : ''
@@ -110,6 +171,12 @@ export async function savePSAData() {
       PSAPop:  popVal ? Number(popVal) : null,
     }
     if (_popHigher !== undefined) Object.assign(updates, { PSAPopHigher: _popHigher, PSAPopAt: Date.now() })
+    if (_slab) {
+      // A fresh scan replaces the old label details (a re-slab or regrade)
+      Object.assign(updates, { Subgrades: null, LabelTier: null, AutoGrade: null, GradeQualifier: null }, _slab.fields)
+      if (_slab.grade) updates.Grade = _slab.grade
+      if (certVal) updates.PSACert = certVal  // the field wins if it was edited after the scan
+    }
     const card = state.ALL_CARDS.find(c => c.id === _cardId)
     if (card && card['Grading Company'] !== companyVal) updates['Grading Company'] = companyVal
 
