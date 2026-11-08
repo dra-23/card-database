@@ -158,6 +158,9 @@ export function buildCardDetailHTML(card, ctx) {
   const fav         = isFavorite(card)
   const yearSetNum  = [card.Year, card.Set].filter(Boolean).join(' ') + (card.Number ? ` #${card.Number}` : '')
 
+  // Ambient glow: a blurred copy of the card image, so it takes the card's colors
+  const glowImg = hasPSAImages ? (card.PSAImage || card.PSAImageBack) : getCleanImg(card['App Image'])
+
   const heroSection = hasPSAImages ? `
     <div class="cd2-hero-imgs">
       ${card.PSAImage     ? `<div class="cd2-hero-img-wrap cd2-hero-img-wrap-half"><img class="cd2-hero-img cd2-psa-main-img" src="${card.PSAImage}" alt="front"></div>` : ''}
@@ -250,7 +253,7 @@ export function buildCardDetailHTML(card, ctx) {
 
   return `
     <div class="cd2-hero">
-      <div class="cd2-hero-glow"></div>
+      ${glowImg ? `<div class="cd2-hero-glow" style="--glow:url('${escapeAttr(glowImg.replace(/'/g, '%27'))}')" aria-hidden="true"></div>` : ''}
       ${heroSection}
     </div>
 

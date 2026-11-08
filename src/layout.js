@@ -239,6 +239,9 @@ export function initPageSwipe() {
     pageIdx = PAGE_NAMES.indexOf(currentPage || 'players')
     // Stats page is not swipe-navigable
     if (pageIdx === PAGE_NAMES.indexOf('stats')) return
+    // Let horizontally scrolling rows (filter chips) scroll instead of
+    // switching pages
+    if (e.target.closest?.('.filter-chips')) return
     sx = e.touches[0].clientX; sy = e.touches[0].clientY
     lx = sx; locked = null; active = true
     track.classList.add('dragging')
