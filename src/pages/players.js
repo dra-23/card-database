@@ -175,6 +175,8 @@ export function initDetailSwipeBack() {
 
   dv.addEventListener('touchstart', e => {
     if (isWideLayout() || !state.selectedPlayer) return
+    // Swiping the filter chip row scrolls it rather than closing the player
+    if (e.target.closest?.('.filter-chips')) return
     const t = e.touches[0]
     sx = t.clientX; sy = t.clientY; lx = sx
     active = true; locked = null
