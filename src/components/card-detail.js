@@ -138,10 +138,8 @@ export function buildCardDetailHTML(card, ctx) {
           ${slabRows}
         </div>
         ${subgradeGrid}
-        <div class="cd2-mv-actions-list">
-          ${card.PSAPop == null ? popLine : ''}
-          ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" class="cd2-mv-action">${ICON_ARROW}<span>View cert on ${co}</span><span class="cd2-mv-action-hint">${co === 'BGS' ? 'beckett.com' : co === 'PSA' ? 'psacard.com' : co === 'SGC' ? 'gosgc.com' : 'cgccards.com'}</span></a>` : ''}
-        </div>` : `
+        ${card.PSAPop == null ? `<div class="cd2-mv-actions-list">${popLine}</div>` : ''}
+        ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" class="cd2-card-action cd2-btn-registry" data-co="${co}">View cert on ${co} ${ICON_ARROW}</a>` : ''}` : `
         ${subgradeGrid}
         <div class="cd2-mv-actions-list cd2-mv-actions-solo">
           <button type="button" class="cd2-mv-action" data-psa-edit="${escapeAttr(card.id)}">${ICON_PENCIL}<span>Add cert &amp; pop</span><span class="cd2-mv-action-hint">or scan the slab</span>${ICON_CHEVRON}</button>
