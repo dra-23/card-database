@@ -275,7 +275,7 @@ export function buildCardDetailHTML(card, ctx) {
     <div class="cd2-section">
       <span class="cd2-section-label">Notes</span>
       <button type="button" class="cd2-notes-btn cd2-notes-empty" data-notes-btn="${escapeAttr(card.id)}">
-        <span class="cd2-notes-ph">Add a note: where you got it, condition, plans…</span>
+        <span class="cd2-notes-ph">Add a note</span>
         ${ICON_PENCIL}
       </button>
     </div>`
