@@ -26,7 +26,13 @@ const ICON_HASH      = `<svg width="15" height="15" viewBox="0 0 24 24" fill="no
 const ICON_BOX       = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path><line x1="12" y1="13" x2="12" y2="21"></line></svg>`
 const ICON_SPORT     = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M6 5.5c2 2 3 4.5 3 6.5s-1 4.5-3 6.5"></path><path d="M18 5.5c-2 2-3 4.5-3 6.5s1 4.5 3 6.5"></path></svg>`
 const ICON_TEAM      = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>`
+const ICON_CHEVRON   = `<svg class="cd2-mv-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>`
 const ICON_TAG       = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.6L12.4 20.8a2 2 0 01-2.8 0L3 14.2V4h10.2l7.4 7.4a2 2 0 010 2.8z"></path><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"></circle></svg>`
+
+// $12,478.77
+const fmtMoney = n => '$' + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// 6,139% / 48.2% / 3.5%
+const fmtPct = n => Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: Math.abs(n) >= 100 ? 0 : 1 }) + '%'
 
 function isFavorite(card) {
   return card.Favorite === true || card.Favorite === 'true'
@@ -173,32 +179,36 @@ export function buildCardDetailHTML(card, ctx) {
       <button type="button" class="cd2-zoom-btn" data-zoom-single aria-label="Zoom card image">${ICON_ZOOM}</button>
     </div>`
 
+  // Market value: headline value, then what was paid and the gain, then
+  // actions as rows. The value, change and notes are painted in by
+  // _paintMarketValue / _paintAge once it's known.
+  const paidNum0 = parseFloat(card.Price)
+  const linked = !!card.CardsightId
   const marketSection = `
     <div class="cd2-section">
-      <span class="cd2-section-label">Market Value</span>
-      <div class="cd2-card cd2-market-card">
-        <div class="cd2-market-stats">
-          <div class="cd2-market-stat">
-            <span class="cd2-market-lbl">Purchase Price</span>
-            <span class="cd2-market-val">${pricePaid}</span>
+      <div class="cd2-section-label-row">
+        <span class="cd2-section-label">Market Value</span>
+        ${linked ? `<button type="button" class="cd2-edit-icon-btn cd2-mv-refresh" data-mv-refresh aria-label="Refresh market value" title="Refresh value">${ICON_REFRESH}</button>` : ''}
+      </div>
+      <div class="cd2-card cd2-mv-card">
+        <div class="cd2-mv-hero">
+          <span class="cd2-mv-cap">Estimated value</span>
+          <div class="cd2-mv-figure">
+            <span class="cd2-mv-value ${linked ? '' : 'cd2-mv-muted'}" data-mv-value>${linked ? '—' : 'Not checked yet'}</span>
+            <span class="cd2-mv-pill" data-mv-pill hidden></span>
           </div>
-          <div class="cd2-market-divider"></div>
-          <div class="cd2-market-stat">
-            <span class="cd2-market-lbl">Market Value</span>
-            <span class="cd2-market-val ${card.CardsightId ? '' : 'cd2-market-muted'}" data-mv-value>${card.CardsightId ? '—' : 'Not synced'}</span>
-            <span class="cd2-market-age" data-mv-age></span>
-          </div>
+          <div class="cd2-mv-meta"><span data-mv-note></span><span data-mv-age></span></div>
         </div>
-        <div class="cd2-market-change-row" data-mv-change-row style="display:none">
-          <span class="cd2-market-lbl">Gain / Loss</span>
-          <span class="cd2-market-val" data-mv-change></span>
+        <div class="cd2-card-rows cd2-mv-rows">
+          <div class="cd2-row"><span class="cd2-row-lbl">Paid</span><span class="cd2-row-val">${paidNum0 > 0 ? fmtMoney(paidNum0) : '—'}</span></div>
+          <div class="cd2-row" data-mv-change-row hidden><span class="cd2-row-lbl">Gain / Loss</span><span class="cd2-row-val" data-mv-change></span></div>
         </div>
-        <div class="cd2-mv-actions">
-          ${card.CardsightId
-            ? `<button type="button" class="cd2-check-value-btn" data-mv-refresh>${ICON_REFRESH} Refresh value</button>`
-            : `<button type="button" class="cd2-check-value-btn" data-mv-check>${ICON_REFRESH} Check current value</button>`}
-          <button type="button" class="cd2-check-value-btn" data-mv-link>${ICON_LINK} ${card.CardsightId ? 'Change match' : 'Find on Cardsight'}</button>
-          ${owned ? `<button type="button" class="cd2-check-value-btn" data-sold-mark>${ICON_TAG} Mark as Sold</button>` : ''}
+        <div class="cd2-mv-actions-list">
+          ${linked
+            ? `<button type="button" class="cd2-mv-action" data-mv-link>${ICON_LINK}<span>Cardsight match</span><span class="cd2-mv-action-hint">Change</span>${ICON_CHEVRON}</button>`
+            : `<button type="button" class="cd2-mv-action cd2-mv-action-primary" data-mv-check>${ICON_REFRESH}<span>Check current value</span>${ICON_CHEVRON}</button>
+               <button type="button" class="cd2-mv-action" data-mv-link>${ICON_LINK}<span>Match on Cardsight manually</span>${ICON_CHEVRON}</button>`}
+          ${owned ? `<button type="button" class="cd2-mv-action" data-sold-mark>${ICON_TAG}<span>Mark as sold</span>${ICON_CHEVRON}</button>` : ''}
         </div>
       </div>
     </div>`
@@ -330,7 +340,10 @@ async function _loadMarketValue(panelEl, card, { force = false } = {}) {
   const alive = () => _mvGen.get(panelEl) === gen
 
   const valEl = panelEl.querySelector('[data-mv-value]')
-  if (valEl) { valEl.textContent = 'Fetching…'; valEl.classList.add('cd2-market-muted') }
+  if (valEl) { valEl.textContent = 'Fetching…'; valEl.classList.add('cd2-mv-muted') }
+  panelEl.querySelector('[data-mv-pill]')?.setAttribute('hidden', '')
+  const refreshBtn = panelEl.querySelector('[data-mv-refresh]')
+  refreshBtn?.classList.add('spinning')
   _paintAge(panelEl, '')
 
   try {
@@ -360,6 +373,8 @@ async function _loadMarketValue(panelEl, card, { force = false } = {}) {
   } catch {
     if (!alive()) return
     _paintMarketValue(panelEl, card, null, 'N/A')
+  } finally {
+    if (alive()) refreshBtn?.classList.remove('spinning')
   }
 }
 
@@ -377,26 +392,37 @@ function _paintAge(panelEl, text) {
   if (el) el.textContent = text
 }
 
-// Value (or a muted label like "No data") plus the gain/loss row
-function _paintMarketValue(panelEl, card, value, label, title = '') {
+// Value (or a muted label like "No data"), the % change pill, the gain/loss
+// row and a note on where the value came from
+function _paintMarketValue(panelEl, card, value, label, note = '') {
   const valEl     = panelEl.querySelector('[data-mv-value]')
+  const pillEl    = panelEl.querySelector('[data-mv-pill]')
   const changeRow = panelEl.querySelector('[data-mv-change-row]')
   const changeEl  = panelEl.querySelector('[data-mv-change]')
+  const noteEl    = panelEl.querySelector('[data-mv-note]')
   if (!valEl) return
-  valEl.title = title
-  if (changeRow) changeRow.style.display = 'none'
-  if (value == null) { valEl.textContent = label; valEl.classList.add('cd2-market-muted'); return }
+  if (noteEl) noteEl.textContent = note
+  if (changeRow) changeRow.hidden = true
+  if (pillEl) pillEl.hidden = true
+  if (value == null) { valEl.textContent = label; valEl.classList.add('cd2-mv-muted'); return }
 
-  valEl.textContent = `$${value.toFixed(2)}`
-  valEl.classList.remove('cd2-market-muted')
+  valEl.textContent = fmtMoney(value)
+  valEl.classList.remove('cd2-mv-muted')
   const paid = parseFloat(card.Price)
-  if (changeRow && changeEl && paid > 0) {
+  if (paid > 0) {
     const diff = value - paid
-    const pct  = ((diff / paid) * 100).toFixed(1)
-    const sign = diff >= 0 ? '+' : ''
-    changeEl.textContent = `${sign}$${diff.toFixed(2)} (${sign}${pct}%)`
-    changeEl.className = `cd2-market-val ${diff >= 0 ? 'market-gain' : 'market-loss'}`
-    changeRow.style.display = ''
+    const up   = diff >= 0
+    const sign = up ? '+' : '−'
+    if (changeEl && changeRow) {
+      changeEl.textContent = `${sign}${fmtMoney(diff)}`
+      changeEl.className = `cd2-row-val ${up ? 'market-gain' : 'market-loss'}`
+      changeRow.hidden = false
+    }
+    if (pillEl) {
+      pillEl.textContent = `${up ? '▲' : '▼'} ${fmtPct((diff / paid) * 100)}`
+      pillEl.className = `cd2-mv-pill ${up ? 'st-up' : 'st-down'}`
+      pillEl.hidden = false
+    }
   }
 }
 
@@ -412,7 +438,7 @@ function _showSavedMarketValue(panelEl, card) {
     _paintMarketValue(panelEl, card, null, 'No data')
     _paintAge(panelEl, `Checked ${_timeAgo(checked)}`)
   } else {
-    _paintMarketValue(panelEl, card, null, 'Not checked')
+    _paintMarketValue(panelEl, card, null, 'Not checked yet')
   }
 }
 
@@ -423,7 +449,7 @@ export async function findAndLoadMarketValue(cardId, panelEl) {
   const player     = state.ALL_PLAYERS.find(p => p.id === c.Player)
   const playerName = player ? (player.Player || player.id) : (c.Player || '')
   const valEl = panelEl?.querySelector('[data-mv-value]')
-  if (valEl) { valEl.textContent = 'Searching…'; valEl.classList.add('cd2-market-muted') }
+  if (valEl) { valEl.textContent = 'Searching…'; valEl.classList.add('cd2-mv-muted') }
 
   try {
     const cardsightId = await findCardsightMatch(c, playerName)
@@ -532,10 +558,6 @@ export function renderCardPanelInto(panelEl, cardId, ctx, { keepScroll = false }
     openCardsightLink(cardId)
   })
   panelEl.querySelector('[data-mv-refresh]')?.addEventListener('click', () => {
-    const valEl = panelEl.querySelector('[data-mv-value]')
-    if (valEl) { valEl.textContent = 'Fetching…'; valEl.classList.add('cd2-market-muted') }
-    const changeRow = panelEl.querySelector('[data-mv-change-row]')
-    if (changeRow) changeRow.style.display = 'none'
     _loadMarketValue(panelEl, card, { force: true })
   })
 

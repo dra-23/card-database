@@ -1646,3 +1646,44 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
 
 /* How old a saved pop report is, beside the number */
 .cd2-row-age { margin-left: 8px; font-size: 12px; font-weight: 500; color: var(--md-on-surface-variant); }
+
+/* ================================================================
+   CARD DETAIL — MARKET VALUE
+   ================================================================ */
+.cd2-mv-hero { padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 4px; }
+.cd2-mv-cap { font-size: 13px; font-weight: 600; color: var(--md-on-surface-variant); }
+.cd2-mv-figure { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.cd2-mv-value { font-family: 'Google Sans Display', 'Google Sans', sans-serif; font-size: 34px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--md-on-surface); font-variant-numeric: tabular-nums; }
+.cd2-mv-value.cd2-mv-muted { font-size: 20px; font-weight: 600; letter-spacing: 0; color: var(--md-on-surface-variant); }
+.cd2-mv-pill { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cd2-mv-pill[hidden] { display: none; }
+.cd2-mv-meta { font-size: 12px; color: var(--md-on-surface-variant); min-height: 1.2em; line-height: 1.45; }
+.cd2-mv-meta span:not(:empty) + span:not(:empty)::before { content: ' · '; }
+.cd2-mv-rows { border-top: 1px solid color-mix(in srgb, var(--md-outline) 14%, transparent); }
+.cd2-mv-rows .cd2-row[hidden] { display: none; }
+.cd2-mv-rows .cd2-row { border-bottom: none; }
+.cd2-mv-rows .cd2-row:not([hidden]) ~ .cd2-row:not([hidden]) { border-top: 1px solid color-mix(in srgb, var(--md-outline) 14%, transparent); }
+.cd2-mv-actions-list { border-top: 1px solid color-mix(in srgb, var(--md-outline) 14%, transparent); display: flex; flex-direction: column; }
+.cd2-mv-action {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; background: none; border: none; cursor: pointer;
+  color: var(--md-on-surface); font: 600 14px 'Google Sans', sans-serif; text-align: left;
+}
+.cd2-mv-action + .cd2-mv-action { border-top: 1px solid color-mix(in srgb, var(--md-outline) 10%, transparent); }
+.cd2-mv-action > svg:first-child { color: var(--md-on-surface-variant); flex-shrink: 0; }
+.cd2-mv-action > span:first-of-type { flex: 1; }
+.cd2-mv-action-hint { color: var(--md-on-surface-variant); font-weight: 500; }
+.cd2-mv-chev { color: var(--md-on-surface-variant); opacity: 0.7; flex-shrink: 0; }
+.cd2-mv-action-primary, .cd2-mv-action-primary > svg:first-child { color: var(--md-accent); }
+.cd2-mv-action:active { background: color-mix(in srgb, var(--md-on-surface) 6%, transparent); }
+@media (hover: hover) and (pointer: fine) { .cd2-mv-action:hover { background: color-mix(in srgb, var(--md-on-surface) 4%, transparent); } }
+.cd2-mv-refresh { width: 34px; height: 34px; border-radius: 50%; }
+.cd2-mv-refresh svg { width: 16px; height: 16px; }
+.cd2-mv-refresh.spinning svg { animation: cd2-spin 0.9s linear infinite; }
+@keyframes cd2-spin { to { transform: rotate(360deg); } }
+[data-theme="dark"] .market-gain { color: #81C784; }
+[data-theme="dark"] .market-loss { color: #EF9A9A; }
+@media (max-width: 767px) {
+  .cd2-mv-value { font-size: 36px; }
+  .cd2-mv-cap, .cd2-mv-action { font-size: 15px; }
+  .cd2-mv-meta { font-size: 13px; }
+}
