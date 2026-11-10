@@ -1687,3 +1687,51 @@ button.cf2-photo { border: none; padding: 0; cursor: pointer; }
   .cd2-mv-cap, .cd2-mv-action { font-size: 15px; }
   .cd2-mv-meta { font-size: 13px; }
 }
+
+/* ================================================================
+   CARD DETAIL — PANE POLISH
+   ================================================================ */
+/* The colour glow sits behind the title, not over it */
+.cd2-title-block, .cd2-quick-actions { position: relative; z-index: 1; }
+
+/* Values in medium weight; bold is kept for the numbers that matter */
+.cd2-row-val { font-weight: 600; }
+.cd2-row-lbl { font-weight: 400; }
+
+/* Grading */
+.cd2-pop { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.cd2-pop-main { font-size: 14px; font-weight: 500; color: var(--md-on-surface); font-variant-numeric: tabular-nums; }
+.cd2-pop-main b { font-weight: 700; }
+.cd2-pop .cd2-row-age { margin-left: 0; }
+.cd2-subgrades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 4px 16px 14px; }
+.cd2-subgrade { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border-radius: 12px; background: color-mix(in srgb, var(--md-on-surface) 5%, transparent); }
+.cd2-subgrade-val { font: 700 18px 'Google Sans', sans-serif; color: var(--md-on-surface); font-variant-numeric: tabular-nums; }
+.cd2-subgrade-lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: var(--md-on-surface-variant); }
+.cd2-grade-card .cd2-card-rows + .cd2-subgrades { border-top: 1px solid color-mix(in srgb, var(--md-outline) 14%, transparent); padding-top: 14px; }
+.cd2-mv-actions-solo { border-top: none; }
+.cd2-grade-card a.cd2-mv-action { text-decoration: none; }
+
+/* Notes empty state */
+.cd2-notes-empty { justify-content: space-between; }
+.cd2-notes-ph { font-size: 14px; color: var(--md-on-surface-variant); }
+
+/* Compact header once the title scrolls away */
+.cd2-mini-wrap { position: sticky; top: 0; height: 0; z-index: 20; margin: 0 -24px -26px; }
+.cd2-mini {
+  display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 24px;
+  background: color-mix(in srgb, var(--md-surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid color-mix(in srgb, var(--md-outline) 16%, transparent);
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2,0,0,1);
+}
+.cd2-mini.show { opacity: 1; transform: none; }
+.cd2-mini-thumb { width: 28px; height: 39px; object-fit: cover; border-radius: 0; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); flex-shrink: 0; }
+.cd2-mini-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cd2-mini-name { font: 700 15px 'Google Sans', sans-serif; color: var(--md-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cd2-mini-sub { font-size: 12px; color: var(--md-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cd2-mini .badge-grade { font-size: 12px; padding: 2px 7px; flex-shrink: 0; }
+/* Wide-layout panes have 24px top padding; pin the compact header to the edge */
+#twoPane-coll-panel > .cd2-mini-wrap,
+#twoPane-grad-panel > .cd2-mini-wrap,
+#twoPane-panel > .cd2-mini-wrap { top: -24px; margin-top: -24px; }

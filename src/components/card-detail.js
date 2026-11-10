@@ -1,6 +1,6 @@
 import { db, doc, setDoc, ref, uploadBytes, getDownloadURL, storage } from '../firebase.js'
 import * as state from '../state.js'
-import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh, registryUrl as certUrl, subgradesText, labelTierName, popAge } from '../utils.js'
+import { getCleanImg, isOwned, isSold, escapeAttr, vibrate, imgPh, registryUrl as certUrl, labelTierName, popAge } from '../utils.js'
 import { markCardSold, unmarkCardSold } from './sold-prompt.js'
 import { promptPrice } from './price-prompt.js'
 import { promptNotes } from './notes-prompt.js'
@@ -98,33 +98,54 @@ export function buildCardDetailHTML(card, ctx) {
   const hasPSA      = isGraded && !!card.PSACert
   const hasPSAImages = !!(card.PSAImage || card.PSAImageBack)
   const registryUrl = hasPSA ? certUrl(co, card.PSACert) : ''
-  // From a slab scan: subgrades, Beckett label tier, autograph grade, qualifier
+  // From a slab scan: Beckett label tier, autograph grade, qualifier
   const slabRows = [
     labelTierName(card.LabelTier) && ['Label', escapeAttr(labelTierName(card.LabelTier))],
-    card.Subgrades && ['Subgrades', escapeAttr(subgradesText(card.Subgrades))],
     card.AutoGrade && ['Auto Grade', escapeAttr(card.AutoGrade)],
     card.GradeQualifier && ['Qualifier', escapeAttr(card.GradeQualifier)],
   ].filter(Boolean).map(([l, v]) => `<div class="cd2-row"><span class="cd2-row-lbl">${l}</span><span class="cd2-row-val">${v}</span></div>`).join('')
+  // Subgrades as four small boxes
+  const sg = card.Subgrades
+  const subgradeGrid = sg ? `
+          <div class="cd2-subgrades" aria-label="Subgrades">
+            ${[['Centering', sg.centering], ['Corners', sg.corners], ['Edges', sg.edges], ['Surface', sg.surface]].map(([l, v]) =>
+              `<div class="cd2-subgrade"><span class="cd2-subgrade-val">${escapeAttr(v || '—')}</span><span class="cd2-subgrade-lbl">${l}</span></div>`).join('')}
+          </div>` : ''
+  // Pop as one line: "41 at 9.5 · 6 higher" with its age underneath
+  const gradeNum = String(card.Grade || '').match(/\d+(\.\d+)?/)?.[0]
+  const popLine = card.PSAPop != null ? `
+          <div class="cd2-row cd2-pop-row">
+            <span class="cd2-row-lbl">Population</span>
+            <span class="cd2-pop">
+              <span class="cd2-pop-main"><b>${Number(card.PSAPop).toLocaleString()}</b>${gradeNum ? ` at ${escapeAttr(gradeNum)}` : ''}${card.PSAPopHigher != null ? ` · <b>${Number(card.PSAPopHigher).toLocaleString()}</b> higher` : ''}</span>
+              ${card.PSAPopAt ? `<span class="cd2-row-age">Updated ${popAge(card.PSAPopAt)}</span>` : ''}
+            </span>
+          </div>` : `
+          <button type="button" class="cd2-mv-action" data-psa-edit="${escapeAttr(card.id)}">${ICON_LAYERS}<span>Get pop report</span>${ICON_CHEVRON}</button>`
 
   const psaSection = isGraded ? `
     <div class="cd2-section">
       <div class="cd2-section-label-row">
-        <span class="cd2-section-label">${co} Registry Data</span>
+        <span class="cd2-section-label">Grading · ${co}</span>
         <button class="cd2-edit-icon-btn" data-psa-edit="${escapeAttr(card.id)}" aria-label="Edit grading info">${ICON_PENCIL}</button>
       </div>
-      <div class="cd2-card" data-co="${co}">
+      <div class="cd2-card cd2-grade-card" data-co="${co}">
         ${hasPSA ? `
         <div class="cd2-card-rows">
-          <div class="cd2-row"><span class="cd2-row-lbl">Cert #</span><span class="cd2-row-val">${card.PSACert}</span></div>
+          <div class="cd2-row"><span class="cd2-row-lbl">Cert #</span><span class="cd2-row-val">${escapeAttr(card.PSACert)}</span></div>
           ${card.PSAGrade ? `<div class="cd2-row"><span class="cd2-row-lbl">Grade</span><span class="cd2-grade-pill" data-co="${co}">${card.PSAGrade}</span></div>` : ''}
-          <div class="cd2-row"><span class="cd2-row-lbl">Pop Report</span><span class="cd2-row-val">${card.PSAPop ?? '—'}${card.PSAPop != null && card.PSAPopAt ? `<span class="cd2-row-age">${popAge(card.PSAPopAt)}</span>` : ''}</span></div>
-          ${card.PSAPopHigher != null ? `<div class="cd2-row"><span class="cd2-row-lbl">Pop Higher</span><span class="cd2-row-val">${card.PSAPopHigher}</span></div>` : ''}
+          ${card.PSAPop != null ? popLine : ''}
           ${slabRows}
         </div>
-        ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" class="cd2-card-action cd2-btn-registry" data-co="${co}">${co} Registry ${ICON_ARROW}</a>` : ''}` : `
-        <button class="cd2-link-row" data-psa-edit="${escapeAttr(card.id)}">
-          <span>Link ${co} cert #</span>${ICON_ARROW}
-        </button>`}
+        ${subgradeGrid}
+        <div class="cd2-mv-actions-list">
+          ${card.PSAPop == null ? popLine : ''}
+          ${registryUrl ? `<a href="${registryUrl}" target="_blank" rel="noopener" class="cd2-mv-action">${ICON_ARROW}<span>View cert on ${co}</span><span class="cd2-mv-action-hint">${co === 'BGS' ? 'beckett.com' : co === 'PSA' ? 'psacard.com' : co === 'SGC' ? 'gosgc.com' : 'cgccards.com'}</span></a>` : ''}
+        </div>` : `
+        ${subgradeGrid}
+        <div class="cd2-mv-actions-list cd2-mv-actions-solo">
+          <button type="button" class="cd2-mv-action" data-psa-edit="${escapeAttr(card.id)}">${ICON_PENCIL}<span>Add cert &amp; pop</span><span class="cd2-mv-action-hint">or scan the slab</span>${ICON_CHEVRON}</button>
+        </div>`}
       </div>
     </div>` : ''
 
@@ -220,30 +241,25 @@ export function buildCardDetailHTML(card, ctx) {
   const soldDate  = card.SoldDate ? new Date(`${card.SoldDate}T00:00:00`) : null
   const soldDateOk  = soldDate && !isNaN(soldDate)
   const soldDateStr = soldDateOk ? soldDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—'
-  const fmt2 = n => `$${Math.abs(n).toFixed(2)}`
   const soldSection = sold ? `
     <div class="cd2-section">
       <span class="cd2-section-label">Sale</span>
-      <div class="cd2-card cd2-sold-card">
-        <div class="cd2-market-stats">
-          <div class="cd2-market-stat">
-            <span class="cd2-market-lbl">Sold For</span>
-            <span class="cd2-market-val">${isNaN(soldPrice) ? '—' : fmt2(soldPrice)}</span>
-          </div>
-          <div class="cd2-market-divider"></div>
-          <div class="cd2-market-stat">
-            <span class="cd2-market-lbl">Date Sold</span>
-            <span class="cd2-market-val">${soldDateStr}</span>
+      <div class="cd2-card cd2-mv-card">
+        <div class="cd2-mv-hero">
+          <span class="cd2-mv-cap">Sold for</span>
+          <div class="cd2-mv-figure">
+            <span class="cd2-mv-value ${isNaN(soldPrice) ? 'cd2-mv-muted' : ''}">${isNaN(soldPrice) ? 'Price not recorded' : fmtMoney(soldPrice)}</span>
+            ${profit != null && paidNum > 0 ? `<span class="cd2-mv-pill ${profit >= 0 ? 'st-up' : 'st-down'}">${profit >= 0 ? '▲' : '▼'} ${fmtPct((profit / paidNum) * 100)}</span>` : ''}
           </div>
         </div>
-        ${profit != null ? `
-        <div class="cd2-market-change-row">
-          <span class="cd2-market-lbl">Profit / Loss</span>
-          <span class="cd2-market-val ${profit >= 0 ? 'market-gain' : 'market-loss'}">${profit >= 0 ? '+' : '−'}${fmt2(profit)}</span>
-        </div>` : ''}
-        <div class="cd2-mv-actions">
-          <button type="button" class="cd2-check-value-btn" data-sold-edit>${ICON_PENCIL} Edit sale</button>
-          <button type="button" class="cd2-check-value-btn" data-sold-undo>${ICON_REFRESH} Undo sale</button>
+        <div class="cd2-card-rows cd2-mv-rows">
+          <div class="cd2-row"><span class="cd2-row-lbl">Date sold</span><span class="cd2-row-val">${soldDateStr}</span></div>
+          <div class="cd2-row"><span class="cd2-row-lbl">Paid</span><span class="cd2-row-val">${paidNum > 0 ? fmtMoney(paidNum) : '—'}</span></div>
+          ${profit != null ? `<div class="cd2-row"><span class="cd2-row-lbl">Profit / Loss</span><span class="cd2-row-val ${profit >= 0 ? 'market-gain' : 'market-loss'}">${profit >= 0 ? '+' : '−'}${fmtMoney(profit)}</span></div>` : ''}
+        </div>
+        <div class="cd2-mv-actions-list">
+          <button type="button" class="cd2-mv-action" data-sold-edit>${ICON_PENCIL}<span>Edit sale</span>${ICON_CHEVRON}</button>
+          <button type="button" class="cd2-mv-action" data-sold-undo>${ICON_REFRESH}<span>Undo sale</span><span class="cd2-mv-action-hint">back to sleevd</span>${ICON_CHEVRON}</button>
         </div>
       </div>
     </div>` : ''
@@ -258,12 +274,24 @@ export function buildCardDetailHTML(card, ctx) {
     </div>` : `
     <div class="cd2-section">
       <span class="cd2-section-label">Notes</span>
-      <button type="button" class="cd2-notes-btn cd2-notes-empty" data-notes-btn="${escapeAttr(card.id)}" aria-label="Add notes">
+      <button type="button" class="cd2-notes-btn cd2-notes-empty" data-notes-btn="${escapeAttr(card.id)}">
+        <span class="cd2-notes-ph">Add a note: where you got it, condition, plans…</span>
         ${ICON_PENCIL}
       </button>
     </div>`
 
+  const miniThumb = hasPSAImages ? (card.PSAImage || card.PSAImageBack) : getCleanImg(card['App Image'])
   return `
+    <div class="cd2-mini-wrap" aria-hidden="true">
+      <div class="cd2-mini">
+        ${miniThumb ? `<img class="cd2-mini-thumb" src="${escapeAttr(miniThumb)}" alt="">` : ''}
+        <div class="cd2-mini-text">
+          <span class="cd2-mini-name">${playerName}</span>
+          <span class="cd2-mini-sub">${yearSetNum}</span>
+        </div>
+        ${gradeStr ? `<span class="badge-grade" data-co="${co}">${gradeStr}</span>` : ''}
+      </div>
+    </div>
     <div class="cd2-hero">
       ${glowImg ? `<div class="cd2-hero-glow" style="--glow:url('${escapeAttr(glowImg.replace(/'/g, '%27'))}')" aria-hidden="true"></div>` : ''}
       ${heroSection}
@@ -465,6 +493,22 @@ export async function findAndLoadMarketValue(cardId, panelEl) {
   }
 }
 
+// Compact header (thumb + name) that appears once the title scrolls away.
+// Either the panel or the pane around it scrolls, depending on layout.
+function _wireMiniHeader(panelEl) {
+  panelEl._miniObs?.disconnect()
+  const mini  = panelEl.querySelector('.cd2-mini')
+  const title = panelEl.querySelector('.cd2-player-name')
+  if (!mini || !title || !('IntersectionObserver' in window)) return
+  const scroller = [panelEl, panelEl.parentElement].find(el => el && /(auto|scroll)/.test(getComputedStyle(el).overflowY)) || null
+  const obs = new IntersectionObserver(([e]) => {
+    const rootTop = e.rootBounds ? e.rootBounds.top : 0
+    mini.classList.toggle('show', !e.isIntersecting && e.boundingClientRect.top < rootTop)
+  }, { root: scroller, rootMargin: '-56px 0px 0px 0px', threshold: 0 })
+  obs.observe(title)
+  panelEl._miniObs = obs
+}
+
 // ── Render card into a panel element ──────────────────────────────────────
 // `keepScroll` is for in-place refreshes of the card already on screen (a
 // saved market value, a favorite toggle…): the panel re-renders from
@@ -485,6 +529,8 @@ export function renderCardPanelInto(panelEl, cardId, ctx, { keepScroll = false }
   } else {
     panelEl.scrollTop = 0
   }
+
+  _wireMiniHeader(panelEl)
 
   // Toggle sleeved (owned)
   panelEl.querySelector(`[data-card-toggle]`)?.addEventListener('click', async () => {
@@ -533,9 +579,9 @@ export function renderCardPanelInto(panelEl, cardId, ctx, { keepScroll = false }
   })
 
   // PSA edit / link
-  panelEl.querySelector('[data-psa-edit]')?.addEventListener('click', () => {
+  panelEl.querySelectorAll('[data-psa-edit]').forEach(el => el.addEventListener('click', () => {
     window._openPSASheet?.(cardId)
-  })
+  }))
 
   // Notes add/edit
   panelEl.querySelector('[data-notes-btn]')?.addEventListener('click', async () => {
